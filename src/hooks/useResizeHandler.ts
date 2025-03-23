@@ -42,7 +42,7 @@ const useResizeHandler = ({
     const cancellationRef = useRef<CancellationFlags>({ isCancelled: false });
 
     // Store debounce timer
-    const resizeTimerRef = useRef<number | null>(null);
+    const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     /**
      * Calculate sprite scale based on dimensions with improved error handling
@@ -218,7 +218,8 @@ const useResizeHandler = ({
             if (resourceManager) {
                 resizeTimerRef.current = resourceManager.setTimeout(resizeFn, debounceTime);
             } else {
-                resizeTimerRef.current = window.setTimeout(resizeFn, debounceTime);
+                // Use type assertion since browser's setTimeout returns number while Node's returns Timeout
+                resizeTimerRef.current = window.setTimeout(resizeFn, debounceTime) as unknown as ReturnType<typeof setTimeout>;
             }
         } catch (error) {
             if (isDevelopment) {

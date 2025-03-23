@@ -22,7 +22,10 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}' --quiet || echo 'Linting skipped - continuing with build'",
-    "test": "jest || echo 'Tests skipped - continuing with build'",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage",
     "prepublishOnly": "npm run build",
     "release": "semantic-release"
   },

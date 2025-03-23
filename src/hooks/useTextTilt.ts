@@ -56,7 +56,7 @@ const useTextTilt = ({
                      }: UseTextTiltProps) => {
     // Enhanced refs with strict typing
     const lastMoveTimeRef = useRef<number>(0);
-    const tiltTimeoutRef = useRef<number | null>(null);
+    const tiltTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const animationStateRef = useRef<TiltState>({
         isAnimating: false,
         lastOffsetX: 0,
@@ -105,7 +105,15 @@ const useTextTilt = ({
             try {
                 // Validate slider element
                 if (!sliderElement) {
-                    throw new Error('Slider element is undefined');
+                    logError('calculateTiltValues', 'Slider element is undefined');
+                    return {
+                        containerShiftX: 0,
+                        containerShiftY: 0,
+                        titleShiftX: 0,
+                        subtitleShiftX: 0,
+                        centerX: 0,
+                        centerY: 0
+                    };
                 }
 
                 const containerWidth = sliderElement.clientWidth;
@@ -113,7 +121,15 @@ const useTextTilt = ({
 
                 // Validate container dimensions
                 if (containerWidth <= 0 || containerHeight <= 0) {
-                    throw new Error('Invalid container dimensions');
+                    logError('calculateTiltValues', 'Invalid container dimensions');
+                    return {
+                        containerShiftX: 0,
+                        containerShiftY: 0,
+                        titleShiftX: 0,
+                        subtitleShiftX: 0,
+                        centerX: 0,
+                        centerY: 0
+                    };
                 }
 
                 const centerX = containerWidth / 2;
@@ -142,8 +158,7 @@ const useTextTilt = ({
                 const titleShiftX = Math.max(Math.min(titleRawShiftX, maxTitleShift), -maxTitleShift);
 
                 const maxSubtitleShift = containerWidth * 0.15;
-                const subtitleRawShiftX = offsetX;
-                const subtitleShiftX = Math.max(Math.min(subtitleRawShiftX, maxSubtitleShift), -maxSubtitleShift);
+                const subtitleShiftX = Math.max(Math.min(offsetX, maxSubtitleShift), -maxSubtitleShift);
 
                 return {
                     containerShiftX,
@@ -382,7 +397,8 @@ const useTextTilt = ({
                 if (resourceManager) {
                     tiltTimeoutRef.current = resourceManager.setTimeout(setTimeoutFn, 300);
                 } else {
-                    tiltTimeoutRef.current = window.setTimeout(setTimeoutFn, 300);
+                    // Use type assertion since browser's setTimeout returns number while Node's returns Timeout
+                    tiltTimeoutRef.current = window.setTimeout(setTimeoutFn, 300) as unknown as ReturnType<typeof setTimeout>;
                 }
             } catch (error) {
                 logError('handleTextTilt', error);

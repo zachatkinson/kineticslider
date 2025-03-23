@@ -4,7 +4,6 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "jsx": "react",
-    "declaration": true,
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
@@ -15,26 +14,18 @@
     "isolatedModules": true,
     "noImplicitAny": false,
     "allowJs": true,
-    "importHelpers": true,
-    "noEmit": false,
-    "noEmitOnError": false,
-    "baseUrl": ".",
     "checkJs": false,
-    "outDir": "dist"
+    "noEmit": true,
+    "declaration": false
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/__tests__/**/*",
+    "./jest.setup.js",
+    "./jest.config.js",
+    "./__mocks__/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "src/scripts/**/*.cjs",
-    "src/__tests__",
-    "jest.config.js",
-    "jest.setup.js",
-    "__mocks__/**/*"
+    "dist"
   ]
 }

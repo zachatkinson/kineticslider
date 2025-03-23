@@ -11,7 +11,7 @@
 # TypeScript
 *.tsbuildinfo
 
-# Testing
+# Testing and Coverage
 /coverage
 
 # Development environments
@@ -32,3 +32,6 @@ yarn-error.log*
 .vscode/
 *.swp
 *.swo
+
+# Jest
+.jest-cache
