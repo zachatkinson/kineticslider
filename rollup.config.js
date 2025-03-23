@@ -4,7 +4,9 @@ import typescript from '@rollup/plugin-typescript';
 import postcss from 'rollup-plugin-postcss';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import { defineConfig } from 'rollup';
+import { createRequire } from 'module';
 
+const require = createRequire(import.meta.url);
 const packageJson = require('./package.json');
 
 export default defineConfig({
