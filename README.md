@@ -4,7 +4,7 @@
 A high-performance, WebGL-powered slider component using PIXI.js for stunning visual effects and smooth transitions. Features displacement effects, pixi filters, animations, and more - all optimized for modern web applications with React support.
 
 [![npm version](https://img.shields.io/npm/v/kinetic-slider.svg)](https://www.npmjs.com/package/kinetic-slider)
-[![License](https://img.shields.io/npm/l/kinetic-slider.svg)](https://github.com/zachatkinson/kineticslider/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/zachatkinson/kineticslider/blob/main/LICENSE)
 
 ## Features
 
@@ -149,4 +149,4 @@ See [our documentation](https://github.com/zachatkinson/kineticslider) for a com
 
 ## License
 
-MIT © [Creative Branding](https://creativebranding.ca)
+Apache 2.0 © [Creative Branding](https://creativebranding.ca)
