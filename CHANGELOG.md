@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/zachatkinson/kineticslider/compare/v1.0.4...v1.0.5) (2025-03-23)
+
+
+### Bug Fixes
+
+* 🐛attempt 5 to fix problems where our github action workflow wasnt updating version in package.json.  One more of these and the version numbers should be synced. ([58ccb12](https://github.com/zachatkinson/kineticslider/commit/58ccb1274933e2fefa673a7cd7be741ca2dc62e7))
+
 ## [1.0.4](https://github.com/zachatkinson/kineticslider/compare/v1.0.3...v1.0.4) (2025-03-23)
 
 
