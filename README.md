@@ -3,7 +3,7 @@
 A high-performance, WebGL-powered slider component using PIXI.js for stunning visual effects and smooth transitions. Features displacement effects, pixi filters, animations, and more - all optimized for modern web applications with React support.
 
 [![npm version](https://img.shields.io/npm/v/kinetic-slider.svg)](https://www.npmjs.com/package/kinetic-slider)
-[![License](https://img.shields.io/npm/l/kinetic-slider.svg)](https://github.com/yourusername/kinetic-slider/blob/main/LICENSE)
+[![License](https://img.shields.io/npm/l/kinetic-slider.svg)](https://github.com/zachatkinson/kineticslider/blob/main/LICENSE)
 
 ## Features
 
@@ -123,8 +123,8 @@ node src/scripts/generateAtlas.cjs --input=public/images/slides --name=slides-at
 
 ## API Reference
 
-See [our documentation](https://github.com/yourusername/kinetic-slider) for a complete API reference.
+See [our documentation](https://github.com/zachatkinson/kineticslider) for a complete API reference.
 
 ## License
 
-MIT © [Your Name]
+MIT © [Creative Branding](https://creativebranding.ca)
