@@ -76,47 +76,47 @@ export class FilterFactory {
 
     /** Map of filter types to their module paths for dynamic imports */
     private static readonly MODULE_PATHS: Record<FilterType, string> = {
-        'adjustment': './adjustmentFilter',
-        'advancedBloom': './advancedBloomFilter',
-        'alpha': './alphaFilter',
-        'ascii': './asciiFilter',
-        'backdropBlur': './backdropBlurFilter',
-        'bevel': './bevelFilter',
-        'bloom': './bloomFilter',
-        'blur': './blurFilter',
-        'bulgePinch': './bulgePinchFilter',
-        'colorGradient': './colorGradientFilter',
-        'colorMap': './colorMapFilter',
-        'colorMatrix': './colorMatrixFilter',
-        'colorOverlay': './colorOverlayFilter',
-        'colorReplace': './colorReplaceFilter',
-        'convolution': './convolutionFilter',
-        'crossHatch': './crossHatchFilter',
-        'crt': './crtFilter',
-        'dot': './dotFilter',
-        'dropShadow': './dropShadowFilter',
-        'emboss': './embossFilter',
-        'glitch': './glitchFilter',
-        'glow': './glowFilter',
-        'godray': './godrayFilter',
-        'grayscale': './grayscaleFilter',
-        'hsl': './hslAdjustmentFilter',
-        'kawaseBlur': './kawaseBlurFilter',
-        'motionBlur': './motionBlurFilter',
-        'multiColorReplace': './multiColorReplaceFilter',
-        'noise': './noiseFilter',
-        'oldFilm': './oldFilmFilter',
-        'outline': './outlineFilter',
-        'pixelate': './pixelateFilter',
-        'radialBlur': './radialBlurFilter',
-        'reflection': './reflectionFilter',
-        'rgbSplit': './rgbSplitFilter',
-        'shockwave': './shockwaveFilter',
-        'simpleLightmap': './simpleLightmapFilter',
-        'simplexNoise': './simplexNoiseFilter',
-        'tiltShift': './tiltShiftFilter',
-        'twist': './twistFilter',
-        'zoomBlur': './zoomBlurFilter'
+        'adjustment': './filters/adjustmentFilter.js',
+        'advancedBloom': './filters/advancedBloomFilter.js',
+        'alpha': './filters/alphaFilter.js',
+        'ascii': './filters/asciiFilter.js',
+        'backdropBlur': './filters/backdropBlurFilter.js',
+        'bevel': './filters/bevelFilter.js',
+        'bloom': './filters/bloomFilter.js',
+        'blur': './filters/blurFilter.js',
+        'bulgePinch': './filters/bulgePinchFilter.js',
+        'colorGradient': './filters/colorGradientFilter.js',
+        'colorMap': './filters/colorMapFilter.js',
+        'colorMatrix': './filters/colorMatrixFilter.js',
+        'colorOverlay': './filters/colorOverlayFilter.js',
+        'colorReplace': './filters/colorReplaceFilter.js',
+        'convolution': './filters/convolutionFilter.js',
+        'crossHatch': './filters/crossHatchFilter.js',
+        'crt': './filters/crtFilter.js',
+        'dot': './filters/dotFilter.js',
+        'dropShadow': './filters/dropShadowFilter.js',
+        'emboss': './filters/embossFilter.js',
+        'glitch': './filters/glitchFilter.js',
+        'glow': './filters/glowFilter.js',
+        'godray': './filters/godrayFilter.js',
+        'grayscale': './filters/grayscaleFilter.js',
+        'hsl': './filters/hslAdjustmentFilter.js',
+        'kawaseBlur': './filters/kawaseBlurFilter.js',
+        'motionBlur': './filters/motionBlurFilter.js',
+        'multiColorReplace': './filters/multiColorReplaceFilter.js',
+        'noise': './filters/noiseFilter.js',
+        'oldFilm': './filters/oldFilmFilter.js',
+        'outline': './filters/outlineFilter.js',
+        'pixelate': './filters/pixelateFilter.js',
+        'radialBlur': './filters/radialBlurFilter.js',
+        'reflection': './filters/reflectionFilter.js',
+        'rgbSplit': './filters/rgbSplitFilter.js',
+        'shockwave': './filters/shockwaveFilter.js',
+        'simpleLightmap': './filters/simpleLightmapFilter.js',
+        'simplexNoise': './filters/simplexNoiseFilter.js',
+        'tiltShift': './filters/tiltShiftFilter.js',
+        'twist': './filters/twistFilter.js',
+        'zoomBlur': './filters/zoomBlurFilter.js'
     };
 
     /**
@@ -319,22 +319,26 @@ export class FilterFactory {
         entry.state = FilterModuleState.LOADING;
         const startTime = performance.now();
 
-        const modulePath = this.MODULE_PATHS[type];
-        if (!modulePath) {
-            const error = new Error(`Unknown filter type: ${type}`);
-            entry.state = FilterModuleState.ERROR;
-            entry.error = error;
-            return Promise.reject(error);
+        // For better debuggability
+        if (this.debug) {
+            console.log(`[FilterFactory] Loading filter module: ${type}`);
         }
 
         try {
-            // Record the loading promise
-            entry.loadPromise = import(/* @vite-ignore */ modulePath).then(module => {
+            // Record the loading promise - now using a more reliable method with the index file
+            entry.loadPromise = this.importAllFilters().then(module => {
+                // Convert the filter type to the correct function name
+                // e.g., 'rgbSplit' -> 'createRGBSplitFilter'
                 const creatorFnName = `create${this.capitalizeFilterType(type)}Filter`;
+
+                if (this.debug) {
+                    console.log(`[FilterFactory] Looking for creator function: ${creatorFnName}`);
+                }
+
                 const creator = module[creatorFnName];
 
                 if (!creator || typeof creator !== 'function') {
-                    throw new Error(`Filter creator function ${creatorFnName} not found in module ${modulePath}`);
+                    throw new Error(`Filter creator function ${creatorFnName} not found in filters module`);
                 }
 
                 // Update registry entry
@@ -350,44 +354,60 @@ export class FilterFactory {
                 }
 
                 return creator;
-            }).catch(error => {
-                if (this.lazyLoadConfig.retryFailedLoads && retryCount < this.lazyLoadConfig.maxRetries) {
-                    if (this.debug) {
-                        console.warn(`[FilterFactory] Failed to load filter module ${type}, retrying (${retryCount + 1}/${this.lazyLoadConfig.maxRetries})...`);
-                    }
-
-                    // Clear the load promise to allow retry
-                    entry.loadPromise = undefined;
-                    entry.state = FilterModuleState.UNLOADED;
-
-                    // Exponential backoff for retries
-                    const backoffMs = Math.min(100 * Math.pow(2, retryCount), 5000);
-
-                    return new Promise(resolve => {
-                        setTimeout(() => {
-                            resolve(this.loadFilterModule(type, retryCount + 1));
-                        }, backoffMs);
-                    });
-                }
-
-                // Max retries exceeded or retries disabled
-                entry.state = FilterModuleState.ERROR;
-                entry.error = error;
-                entry.loadPromise = undefined;
-
-                if (this.debug) {
-                    console.error(`[FilterFactory] Failed to load filter module: ${type}`, error);
-                }
-
-                throw error;
             });
 
             return entry.loadPromise;
         } catch (error) {
-            // This catch is for synchronous errors in setting up the import
             entry.state = FilterModuleState.ERROR;
-            entry.error = error instanceof Error ? error : new Error(String(error));
-            throw entry.error;
+            entry.error = error as Error;
+
+            if (this.debug) {
+                console.error(`[FilterFactory] Error loading filter module ${type}:`, error);
+            }
+
+            // Retry loading if enabled and under max retries
+            if (this.lazyLoadConfig.retryFailedLoads && retryCount < this.lazyLoadConfig.maxRetries) {
+                if (this.debug) {
+                    console.log(`[FilterFactory] Retrying load for filter module ${type} (attempt ${retryCount + 1}/${this.lazyLoadConfig.maxRetries})`);
+                }
+
+                // Wait a bit before retrying (exponential backoff)
+                const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+
+                // Clear the error state
+                entry.state = FilterModuleState.UNLOADED;
+                entry.error = undefined;
+
+                // Try again with incremented retry count
+                return this.loadFilterModule(type, retryCount + 1);
+            }
+
+            return Promise.reject(error);
+        }
+    }
+
+    /**
+     * Import all filters from the consolidated module
+     * This is more reliable than individual dynamic imports
+     *
+     * @returns Promise resolving to the module with all filter creators
+     */
+    private static async importAllFilters(): Promise<any> {
+        if (this.debug) {
+            console.log('[FilterFactory] Importing all filters from consolidated module');
+        }
+
+        try {
+            // Try importing the main filters index
+            return import('./index');
+        } catch (error) {
+            if (this.debug) {
+                console.error('[FilterFactory] Error importing filter index:', error);
+            }
+
+            // If direct import fails, try relative path from current module
+            return import('../filters/index');
         }
     }
 
