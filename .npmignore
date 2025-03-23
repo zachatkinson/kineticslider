@@ -1,0 +1,41 @@
+# Source
+src/
+
+# Config files
+.gitignore
+tsconfig.json
+rollup.config.js
+.eslintrc.json
+.prettierrc
+.babelrc
+
+# Scripts
+scripts/
+
+# Development
+node_modules/
+.vscode/
+.idea/
+.github/
+.DS_Store
+
+# Testing
+tests/
+__tests__/
+*.test.ts
+*.test.tsx
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+.cache/
+.parcel-cache/
+
+# Examples and docs
+example/
+docs/
