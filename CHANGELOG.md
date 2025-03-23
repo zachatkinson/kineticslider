@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/zachatkinson/kineticslider/compare/v1.0.6...v1.0.7) (2025-03-23)
+
+
+### Bug Fixes
+
+* **typescript:** resolve timer type compatibility issues and setup testing infrastructure ([4de90f0](https://github.com/zachatkinson/kineticslider/commit/4de90f009016d5dc8652f3d0664426b82c634379))
+
 ## [1.0.6](https://github.com/zachatkinson/kineticslider/compare/v1.0.5...v1.0.6) (2025-03-23)
 
 
