@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     preset: 'ts-jest',
     testEnvironment: 'jsdom',
     moduleNameMapper: {
@@ -36,4 +36,4 @@ module.exports = {
             isolatedModules: true,
         },
     },
-};
+}; 
