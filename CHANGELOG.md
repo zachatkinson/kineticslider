@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/zachatkinson/kineticslider/compare/v1.0.7...v1.0.8) (2025-03-23)
+
+
+### Bug Fixes
+
+* 🐛 convert Jest config to ESM format ([3e72bb5](https://github.com/zachatkinson/kineticslider/commit/3e72bb58bad2fe240df6ca52fa9753d2b6164224))
+
 ## [1.0.7](https://github.com/zachatkinson/kineticslider/compare/v1.0.6...v1.0.7) (2025-03-23)
 
 
