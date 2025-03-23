@@ -137,7 +137,7 @@ export const usePixiSlider = (
             // Dynamic module imports with comprehensive error handling
             const [gsapModule, hooksModule] = await Promise.all([
                 safeImportModule(() => import('gsap'), 'GSAP'),
-                safeImportModule(() => import('./index.ts'), 'Hooks')
+                safeImportModule(() => import('./index'), 'Hooks')
             ]);
 
             // Check for cancellation after async operations

@@ -1,20 +1,19 @@
 {
   "name": "kinetic-slider",
-  "version": "0.1.0",
+  "version": "1.0.5",
   "description": "A WebGL-powered kinetic slider component using PIXI.js",
   "author": "Creative Branding <info@creativebranding.ca> (https://creativebranding.ca)",
   "license": "MIT",
   "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
+      "require": "./dist/cjs/index.cjs",
       "types": "./dist/types/index.d.ts"
-    },
-    "./style.css": "./dist/style.css"
+    }
   },
   "files": [
     "dist"
@@ -24,7 +23,8 @@
     "dev": "rollup -c -w",
     "lint": "eslint src",
     "test": "jest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "release": "semantic-release"
   },
   "repository": {
     "type": "git",
@@ -47,28 +47,45 @@
   ],
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "pixi.js": "^8.0.0",
+    "pixi-filters": "^6.0.0",
+    "gsap": "^3.12.0"
   },
   "dependencies": {
-    "gsap": "^3.12.7",
-    "pixi-filters": "^6.1.0",
-    "pixi.js": "^8.8.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^24.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.0",
-    "@rollup/plugin-replace": "^5.0.0",
-    "@rollup/plugin-typescript": "^11.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "pixi.js": "^8.8.0",
+    "pixi-filters": "^6.1.0",
+    "gsap": "^3.12.7",
+    "typescript": "^5.0.0",
+    "rollup": "^3.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-commonjs": "^24.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@rollup/plugin-replace": "^5.0.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-postcss": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.0.0",
-    "glob": "^11.0.1",
-    "rollup": "^3.0.0",
-    "rollup-plugin-esbuild": "^6.2.1",
-    "rollup-plugin-peer-deps-external": "^2.2.4",
-    "rollup-plugin-postcss": "^4.0.0",
-    "typescript": "^5.0.0"
+    "rollup-plugin-esbuild": "^5.0.0",
+    "esbuild": "^0.20.0",
+    "semantic-release": "^23.0.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/changelog": "^6.0.3"
+  },
+  "release": {
+    "branches": ["main"],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ]
   }
 }

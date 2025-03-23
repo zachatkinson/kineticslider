@@ -23,7 +23,48 @@ const replaceConfig = {
     "import('./index.ts')": "import('./index')",
     // Fix for dynamic filter imports
     "import(/* @vite-ignore */ modulePath)": "import(modulePath)",
+    // Fix GSAP plugin imports
+    "import('gsap/PixiPlugin')": "import('gsap').then(m => ({ default: m.gsap.plugins.PixiPlugin }))",
 };
+
+// Copy of the style-inject code to avoid relying on node_modules path
+const styleInjectCode = `
+function styleInject(css, { insertAt } = {}) {
+  if (!css || typeof document === 'undefined') return;
+
+  const head = document.head || document.getElementsByTagName('head')[0];
+  const style = document.createElement('style');
+  style.type = 'text/css';
+
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+export default styleInject;
+`;
+
+// All external packages that should not be bundled
+const external = [
+    'react',
+    'react-dom',
+    'pixi.js',
+    'pixi-filters',
+    'gsap',
+    'gsap/PixiPlugin',
+];
 
 // Create a separate build for each format to handle TypeScript declarations properly
 export default [
@@ -38,12 +79,32 @@ export default [
             sourcemap: true,
             exports: 'named',
             entryFileNames: '[name].js',
+            paths: {
+                'gsap/PixiPlugin': 'gsap'
+            }
         },
         plugins: [
+            // Create a virtual module for style-inject
+            {
+                name: 'virtual-style-inject',
+                resolveId(id) {
+                    if (id === 'style-inject') {
+                        return 'virtual:style-inject';
+                    }
+                    return null;
+                },
+                load(id) {
+                    if (id === 'virtual:style-inject') {
+                        return styleInjectCode;
+                    }
+                    return null;
+                }
+            },
             peerDepsExternal(),
             replace(replaceConfig),
             resolve({
-                extensions: ['.ts', '.tsx', '.js', '.jsx']
+                extensions: ['.ts', '.tsx', '.js', '.jsx'],
+                mainFields: ['module', 'browser', 'main']
             }),
             esbuild({
                 include: /\.[jt]sx?$/,
@@ -60,10 +121,14 @@ export default [
                 minimize: true,
                 modules: true,
                 extract: false,
-                inject: true
+                // Use our virtual style-inject module
+                inject: function (cssVariableName) {
+                    return `import styleInject from 'style-inject';\nstyleInject(${cssVariableName}, { insertAt: 'top' });`;
+                },
+                use: ['sass'],
             }),
         ],
-        external: ['react', 'react-dom', 'pixi.js', 'pixi-filters', 'gsap'],
+        external,
     }),
 
     // CJS build
@@ -76,13 +141,33 @@ export default [
             preserveModulesRoot: 'src',
             sourcemap: true,
             exports: 'named',
-            entryFileNames: '[name].js',
+            entryFileNames: '[name].cjs',
+            paths: {
+                'gsap/PixiPlugin': 'gsap'
+            }
         },
         plugins: [
+            // Create a virtual module for style-inject
+            {
+                name: 'virtual-style-inject',
+                resolveId(id) {
+                    if (id === 'style-inject') {
+                        return 'virtual:style-inject';
+                    }
+                    return null;
+                },
+                load(id) {
+                    if (id === 'virtual:style-inject') {
+                        return styleInjectCode;
+                    }
+                    return null;
+                }
+            },
             peerDepsExternal(),
             replace(replaceConfig),
             resolve({
-                extensions: ['.ts', '.tsx', '.js', '.jsx']
+                extensions: ['.ts', '.tsx', '.js', '.jsx'],
+                mainFields: ['main', 'module']
             }),
             esbuild({
                 include: /\.[jt]sx?$/,
@@ -99,10 +184,14 @@ export default [
                 minimize: true,
                 modules: true,
                 extract: false,
-                inject: true
+                // Use our virtual style-inject module
+                inject: function (cssVariableName) {
+                    return `import styleInject from 'style-inject';\nstyleInject(${cssVariableName}, { insertAt: 'top' });`;
+                },
+                use: ['sass'],
             }),
         ],
-        external: ['react', 'react-dom', 'pixi.js', 'pixi-filters', 'gsap'],
+        external,
     }),
 
     // Type declarations (separate build just for .d.ts files)
@@ -113,6 +202,7 @@ export default [
             format: 'esm',
             preserveModules: true,
             preserveModulesRoot: 'src',
+            sourcemap: true,
         },
         plugins: [
             peerDepsExternal(),
@@ -138,8 +228,9 @@ export default [
                 modules: true,
                 inject: false,
                 extract: false,
+                use: ['sass'],
             }),
         ],
-        external: ['react', 'react-dom', 'pixi.js', 'pixi-filters', 'gsap'],
+        external,
     })
 ];

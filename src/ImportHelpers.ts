@@ -46,13 +46,40 @@ export const loadPixiPlugin = async (): Promise<any> => {
 
         // Check if we're in a browser environment
         if (typeof window !== 'undefined') {
-            const { default: PixiPlugin } = await import('gsap/PixiPlugin');
+            // Load GSAP first if not already loaded
+            if (!importCache.has('gsap')) {
+                await loadGSAP();
+            }
 
-            // Store in cache
-            importCache.set('pixiPlugin', PixiPlugin);
-            console.log('GSAP PixiPlugin loaded successfully');
+            // Get GSAP instance
+            const gsap = importCache.get('gsap');
 
-            return PixiPlugin;
+            // Check if PixiPlugin is already available in GSAP
+            if (gsap.plugins && gsap.plugins.PixiPlugin) {
+                const PixiPlugin = gsap.plugins.PixiPlugin;
+                importCache.set('pixiPlugin', PixiPlugin);
+                console.log('GSAP PixiPlugin loaded from gsap.plugins');
+                return PixiPlugin;
+            }
+
+            // Otherwise try to import it directly
+            try {
+                const { default: PixiPlugin } = await import('gsap/PixiPlugin');
+                importCache.set('pixiPlugin', PixiPlugin);
+                console.log('GSAP PixiPlugin loaded successfully');
+                return PixiPlugin;
+            } catch (importError) {
+                console.warn('Failed to import PixiPlugin directly, trying to get from GSAP:', importError);
+
+                // As a fallback, try to access it from the GSAP instance
+                if (gsap.PixiPlugin) {
+                    importCache.set('pixiPlugin', gsap.PixiPlugin);
+                    console.log('GSAP PixiPlugin loaded from gsap instance');
+                    return gsap.PixiPlugin;
+                }
+
+                throw new Error('PixiPlugin not found in GSAP');
+            }
         } else {
             // When running in Node.js during build, return a mock
             console.log('Running in Node.js environment, using mock PixiPlugin');

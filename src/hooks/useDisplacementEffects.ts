@@ -515,7 +515,7 @@ export const useDisplacementEffects = ({
 
         // Create a function that performs the actual animation
         const animate = () => {
-            const animations = [];
+            const animations: gsap.core.Tween[] = [];
 
             // Background effect
             const bgSprite = backgroundDisplacementSpriteRef.current;
@@ -639,7 +639,7 @@ export const useDisplacementEffects = ({
 
         // Create a function that performs the actual animation
         const animate = () => {
-            const animations = [];
+            const animations: gsap.core.Tween[] = [];
 
             // Background effect
             const bgSprite = backgroundDisplacementSpriteRef.current;

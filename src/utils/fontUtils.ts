@@ -66,7 +66,7 @@ export function identifyCustomFonts(parsedFonts: string[]): string[] {
  */
 export async function findFontFile(fontName: string, extensions = FONT_EXTENSIONS): Promise<string | null> {
     // List of paths to try - check both case-sensitive and lowercase versions
-    const fontPaths = [];
+    const fontPaths: string[] = [];
     for (const ext of extensions) {
         // Original case
         fontPaths.push(`/fonts/${fontName}${ext}`);
@@ -74,7 +74,7 @@ export async function findFontFile(fontName: string, extensions = FONT_EXTENSION
         fontPaths.push(`/fonts/${fontName.toLowerCase()}${ext}`);
     }
 
-    const additionalPaths = [];
+    const additionalPaths: string[] = [];
     for (const ext of extensions) {
         // Original case
         additionalPaths.push(`/public/fonts/${fontName}${ext}`);

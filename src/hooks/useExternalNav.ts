@@ -160,7 +160,7 @@ const useExternalNav = ({
             // Check if both elements are found
             if (!prevNav || !nextNav) {
                 // Create helpful error message
-                const missingElements = [];
+                const missingElements: string[] = [];
                 if (!prevNav) missingElements.push(`"${navElement.prev}"`);
                 if (!nextNav) missingElements.push(`"${navElement.next}"`);
 
