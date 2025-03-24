@@ -1,3 +1,10 @@
+## [1.0.15](https://github.com/zachatkinson/kineticslider/compare/v1.0.14...v1.0.15) (2025-03-24)
+
+
+### Bug Fixes
+
+* 🐛 improve mock texture in ResourceManager test ([5656b5e](https://github.com/zachatkinson/kineticslider/commit/5656b5e5d1445740a0742fb09a489f89e685afba))
+
 ## [1.0.14](https://github.com/zachatkinson/kineticslider/compare/v1.0.13...v1.0.14) (2025-03-24)
 
 
