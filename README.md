@@ -8,7 +8,7 @@ A high-performance, WebGL-powered slider component using PIXI.js for stunning vi
 
 ## Features
 
-- WebGL-powered rendering with [PIXI.js](https://pixis.com) and [pixi-filters](https://pixijs.io/filters/examples/)
+- WebGL-powered rendering with PIXI.js
 - Advanced displacement effects for interactive cursor and transitions
 - Customizable filters for both images and text
 - Touch swipe and mouse drag support
@@ -24,6 +24,180 @@ npm install kinetic-slider
 # or
 yarn add kinetic-slider
 ```
+
+## Browser Support
+
+KineticSlider is built with modern web standards and supports all major browsers:
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+- Opera 76+
+
+For older browsers, consider using a polyfill for WebGL support.
+
+## Examples
+
+### Basic Slider with Text
+```jsx
+<KineticSlider
+    images={['slide1.jpg', 'slide2.jpg']}
+    texts={[['Welcome', 'Start your journey'], ['Features', 'Discover our capabilities']]}
+/>
+```
+
+### Advanced Effects
+```jsx
+<KineticSlider
+    images={images}
+    texts={texts}
+    cursorImgEffect={true}
+    cursorTextEffect={true}
+    imageFilters={[
+        { type: 'bloom', intensity: 0.5 },
+        { type: 'colorOverlay', color: '#ff0000', alpha: 0.2 }
+    ]}
+    textFilters={[
+        { type: 'glow', intensity: 0.8, color: '#ffffff' }
+    ]}
+/>
+```
+
+### Custom Navigation
+```jsx
+<KineticSlider
+    images={images}
+    texts={texts}
+    externalNav={true}
+    navElement={{
+        prev: '#custom-prev',
+        next: '#custom-next'
+    }}
+/>
+```
+
+### Performance Optimized
+```jsx
+<KineticSlider
+    images={images}
+    texts={texts}
+    useSlidesAtlas={true}
+    slidesAtlas="slides-atlas"
+    enableFilterBatching={true}
+    filterBatchConfig={{
+        bufferMs: 16,
+        maxBatchSize: 10
+    }}
+/>
+```
+
+### Accessibility Focused
+```jsx
+<KineticSlider
+    images={images}
+    texts={texts}
+    enableKeyboardNav={true}
+    enableAria={true}
+    ariaLabels={{
+        prevButton: 'Previous slide',
+        nextButton: 'Next slide',
+        slide: 'Slide {current} of {total}'
+    }}
+/>
+```
+
+## Performance Tips
+
+1. **Image Optimization**
+    - Use WebP format for better compression
+    - Optimize image dimensions to match display size
+    - Consider using responsive images
+    - Use texture atlases for multiple images
+
+2. **Filter Usage**
+    - Enable filter batching for multiple filters
+    - Use appropriate filter intensities
+    - Consider disabling complex filters on mobile
+    - Use shader pooling for better performance
+
+3. **Memory Management**
+    - Clean up resources when component unmounts
+    - Use appropriate texture atlas sizes
+    - Monitor memory usage with large datasets
+    - Consider lazy loading for large images
+
+4. **Animation Performance**
+    - Use appropriate transition durations
+    - Enable hardware acceleration
+    - Monitor frame rates during transitions
+    - Consider reducing effects on lower-end devices
+
+## Common Issues
+
+### Performance Issues
+1. **Slow Transitions**
+   ```jsx
+   // Reduce filter complexity
+   <KineticSlider
+       imageFilters={[
+           { type: 'blur', intensity: 0.3 } // Reduced from 0.5
+       ]}
+       transitionDuration={300} // Faster transition
+   />
+   ```
+
+2. **High Memory Usage**
+   ```jsx
+   // Enable texture atlases and limit cache
+   <KineticSlider
+       useSlidesAtlas={true}
+       maxShaderCacheSize={50}
+       enableShaderPooling={true}
+   />
+   ```
+
+### Visual Issues
+1. **Text Rendering**
+   ```jsx
+   // Adjust text settings
+   <KineticSlider
+       textTitleSize={48} // Reduced from 64
+       textSubTitleSize={18} // Reduced from 24
+   />
+   ```
+
+2. **Filter Artifacts**
+   ```jsx
+   // Adjust filter settings
+   <KineticSlider
+       imageFilters={[
+           { 
+               type: 'bloom',
+               intensity: 0.3,
+               quality: 0.5
+           }
+       ]}
+   />
+   ```
+
+### Browser Compatibility
+1. **WebGL Support**
+   ```jsx
+   // Add fallback for WebGL
+   <KineticSlider
+       fallbackRenderer="canvas" // Falls back to canvas if WebGL not available
+   />
+   ```
+
+2. **Touch Events**
+   ```jsx
+   // Improve touch handling
+   <KineticSlider
+       touchSensitivity={0.5} // Adjust touch sensitivity
+       enableTouchGestures={true}
+   />
+   ```
 
 ## Usage
 
@@ -58,6 +232,181 @@ const MySlider = () => {
 };
 
 export default MySlider;
+```
+
+## Configuration Options
+
+The KineticSlider component accepts a wide range of configuration options to customize its behavior and appearance. Here's a complete reference of all available options:
+
+### Content Sources
+```jsx
+{
+    // Array of image URLs or paths
+    images: string[],
+    
+    // Array of text arrays, each containing [title, subtitle]
+    texts: [string, string][],
+    
+    // Base path for all slide images (optional)
+    slidesBasePath: string,
+}
+```
+
+### Displacement Settings
+```jsx
+{
+    // Path to the background displacement texture
+    backgroundDisplacementSpriteLocation: string,
+    
+    // Path to the cursor displacement texture
+    cursorDisplacementSpriteLocation: string,
+    
+    // Enable displacement effect on images
+    cursorImgEffect: boolean,
+    
+    // Enable displacement effect on text
+    cursorTextEffect: boolean,
+    
+    // Intensity of the cursor scale effect (0-1)
+    cursorScaleIntensity: number,
+    
+    // Momentum of the cursor effect (0-1)
+    cursorMomentum: number,
+}
+```
+
+### Text Styling
+```jsx
+{
+    // Title text color
+    textTitleColor: string,
+    
+    // Title text size in pixels
+    textTitleSize: number,
+    
+    // Title text letter spacing in pixels
+    textTitleLetterspacing: number,
+    
+    // Subtitle text color
+    textSubTitleColor: string,
+    
+    // Subtitle text size in pixels
+    textSubTitleSize: number,
+    
+    // Subtitle text letter spacing in pixels
+    textSubTitleLetterspacing: number,
+}
+```
+
+### Navigation Settings
+```jsx
+{
+    // Whether to use external navigation elements
+    externalNav: boolean,
+    
+    // Selectors for external navigation elements
+    navElement: {
+        prev: string,  // CSS selector for previous button
+        next: string   // CSS selector for next button
+    },
+}
+```
+
+### Texture Atlas Settings
+```jsx
+{
+    // Enable texture atlas for slides
+    useSlidesAtlas: boolean,
+    
+    // Name of the slides texture atlas
+    slidesAtlas: string,
+    
+    // Enable texture atlas for effects
+    useEffectsAtlas: boolean,
+    
+    // Name of the effects texture atlas
+    effectsAtlas: string,
+}
+```
+
+### Filter Settings
+```jsx
+{
+    // Array of filters to apply to images
+    imageFilters: FilterConfig[],
+    
+    // Array of filters to apply to text
+    textFilters: FilterConfig[],
+}
+```
+
+### Performance Settings
+```jsx
+{
+    // Whether to enable filter batching for better performance
+    enableFilterBatching: boolean,
+    
+    // Configuration for filter batching
+    filterBatchConfig: {
+        bufferMs: number,        // How long to wait before applying updates
+        maxBatchSize: number     // Maximum number of updates to process
+    },
+    
+    // Whether to enable shader pooling
+    enableShaderPooling: boolean,
+    
+    // Maximum size of the shader cache
+    maxShaderCacheSize: number,
+}
+```
+
+### Animation Settings
+```jsx
+{
+    // Duration of slide transitions in milliseconds
+    transitionDuration: number,
+    
+    // Easing function for transitions
+    transitionEasing: string,
+    
+    // Whether to enable automatic transitions
+    autoPlay: boolean,
+    
+    // Delay between automatic transitions in milliseconds
+    autoPlayDelay: number,
+}
+```
+
+### Accessibility Settings
+```jsx
+{
+    // Whether to enable keyboard navigation
+    enableKeyboardNav: boolean,
+    
+    // Whether to enable ARIA attributes
+    enableAria: boolean,
+    
+    // Custom ARIA labels
+    ariaLabels: {
+        prevButton: string,
+        nextButton: string,
+        slide: string
+    },
+}
+```
+
+### Debug Settings
+```jsx
+{
+    // Whether to enable debug mode
+    debug: boolean,
+    
+    // Whether to show performance metrics
+    showPerformanceMetrics: boolean,
+    
+    // Whether to log filter operations
+    logFilterOperations: boolean,
+}
 ```
 
 ## Advanced Configuration
@@ -596,23 +945,106 @@ Applies a zoom blur effect.
 
 ## Using Texture Atlases
 
-For better performance, KineticSlider supports texture atlases:
+Texture atlases are a powerful optimization technique that combines multiple images into a single texture, reducing the number of draw calls and improving performance. KineticSlider supports texture atlases for both slides and effects.
+
+### Benefits
+- Reduced number of WebGL draw calls
+- Faster loading times
+- Lower memory usage
+- Better performance on mobile devices
+- Smoother animations and transitions
+
+### Implementation
 
 ```jsx
 <KineticSlider
-    // Same props as above
+    // Enable texture atlases
     useSlidesAtlas={true}
     slidesAtlas="slides-atlas"
     useEffectsAtlas={true}
     effectsAtlas="effects-atlas"
+    
+    // Other props remain the same
+    images={images}
+    texts={texts}
 />
 ```
 
-You can generate texture atlases using the included script:
+### Generating Texture Atlases
+
+The package includes a utility script to generate texture atlases from your slide images:
 
 ```bash
+# Basic usage
 node src/scripts/generateAtlas.cjs --input=public/images/slides --name=slides-atlas
+
+# Advanced options
+node src/scripts/generateAtlas.cjs \
+    --input=public/images/slides \
+    --name=slides-atlas \
+    --padding=2 \
+    --max-width=2048 \
+    --max-height=2048 \
+    --format=json
 ```
+
+#### Atlas Generation Options
+- `--input`: Directory containing your slide images
+- `--name`: Name for the generated atlas
+- `--padding`: Padding between images (default: 2)
+- `--max-width`: Maximum atlas width (default: 2048)
+- `--max-height`: Maximum atlas height (default: 2048)
+- `--format`: Output format (json/png, default: json)
+
+### Best Practices
+1. **Image Preparation**
+    - Use consistent image sizes
+    - Optimize images before creating the atlas
+    - Consider using WebP format for better compression
+
+2. **Atlas Size**
+    - Keep atlas dimensions under 2048x2048 for best compatibility
+    - Split into multiple atlases if needed
+    - Consider device capabilities when setting max dimensions
+
+3. **Performance**
+    - Monitor memory usage with large atlases
+    - Use the `enableShaderPooling` option for better performance
+    - Consider lazy loading for large atlases
+
+4. **Development Workflow**
+    - Generate atlases during build process
+    - Keep source images separate from generated atlases
+    - Version control both source images and generated atlases
+
+### Troubleshooting
+
+If you experience issues with texture atlases:
+
+1. **Memory Issues**
+   ```jsx
+   // Reduce atlas size
+   <KineticSlider
+       useSlidesAtlas={true}
+       slidesAtlas="slides-atlas"
+       maxShaderCacheSize={100} // Limit shader cache
+   />
+   ```
+
+2. **Loading Performance**
+   ```jsx
+   // Enable lazy loading
+   <KineticSlider
+       useSlidesAtlas={true}
+       slidesAtlas="slides-atlas"
+       enableShaderPooling={true}
+   />
+   ```
+
+3. **Visual Artifacts**
+    - Check padding settings in atlas generation
+    - Verify image dimensions are consistent
+    - Ensure proper image format support
 
 ## Automated Releases
 
