@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/zachatkinson/kineticslider/compare/v1.0.9...v1.0.10) (2025-03-24)
+
+
+### Bug Fixes
+
+* 🐛 correct BlurFilterConfig properties in test ([fc0394f](https://github.com/zachatkinson/kineticslider/commit/fc0394f5e15a902b9085ce8f0e6c43ca94c1572b))
+
 ## [1.0.9](https://github.com/zachatkinson/kineticslider/compare/v1.0.8...v1.0.9) (2025-03-24)
 
 
