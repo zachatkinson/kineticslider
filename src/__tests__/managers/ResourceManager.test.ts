@@ -23,7 +23,13 @@ describe('ResourceManager', () => {
 
     test('should track textures correctly', () => {
         const textureId = 'test-texture';
-        const mockTexture = { id: textureId } as any;
+        // Create a more complete mock texture with destroy method
+        const mockTexture = {
+            id: textureId,
+            destroy: jest.fn(),
+            width: 100,
+            height: 100
+        } as any;
 
         // Add a texture
         resourceManager.trackTexture(textureId, mockTexture);
