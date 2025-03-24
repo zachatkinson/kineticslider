@@ -1,3 +1,11 @@
+## [1.0.14](https://github.com/zachatkinson/kineticslider/compare/v1.0.13...v1.0.14) (2025-03-24)
+
+
+### Bug Fixes
+
+* 🔧 remove duplicate pixi.js entry in package.json ([528083d](https://github.com/zachatkinson/kineticslider/commit/528083d2e531e9b23f8452929ba6065716d4c9f7))
+* 🔧 remove duplicate pixi.js entry in package.json ([99cbf63](https://github.com/zachatkinson/kineticslider/commit/99cbf6317ceb99370b0b1ab24bf43a6a4bc61758))
+
 ## [1.0.13](https://github.com/zachatkinson/kineticslider/compare/v1.0.12...v1.0.13) (2025-03-24)
 
 
