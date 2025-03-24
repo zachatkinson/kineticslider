@@ -1,5 +1,6 @@
 import { FilterFactory } from '../../filters';
-import { FilterType } from '../../filters/';
+import { BlurFilterConfig } from '../../filters/types';
+import { jest, describe, beforeEach, test, expect } from '@jest/globals';
 
 // Mock the filter modules that FilterFactory might try to load
 jest.mock('../../filters/blurFilter', () => ({
@@ -34,10 +35,15 @@ describe('FilterFactory', () => {
             enableDebug: false,
         });
 
-        // Create a simple filter
-        const filterConfig = {
-            type: 'blur' as FilterType,
+        // Create a properly typed filter config
+        const filterConfig: BlurFilterConfig = {
+            type: 'blur',
             intensity: 0.5,
+            enabled: true,
+            strength: 5,
+            quality: 4,
+            kernelSize: 5,
+            resolution: 1
         };
 
         // Attempt to create the filter

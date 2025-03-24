@@ -1,6 +1,7 @@
 // Import Jest DOM extensions for DOM element assertions
 import '@testing-library/jest-dom';
 import 'jest-canvas-mock';
+import { jest } from '@jest/globals';
 
 // Mock the GSAP library
 jest.mock('gsap', () => ({
