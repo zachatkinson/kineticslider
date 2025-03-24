@@ -1,3 +1,11 @@
+## [1.0.16](https://github.com/zachatkinson/kineticslider/compare/v1.0.15...v1.0.16) (2025-03-24)
+
+
+### Bug Fixes
+
+* 🔧 suppress Node.js experimental warnings and update Jest config ([306305b](https://github.com/zachatkinson/kineticslider/commit/306305bceca9ac4a41a24ad98200905f28f84970))
+* 🔧 suppress Node.js experimental warnings and update Jest config ([617ac27](https://github.com/zachatkinson/kineticslider/commit/617ac27f573f0e4c554c7dee673cad6f7db81364))
+
 ## [1.0.15](https://github.com/zachatkinson/kineticslider/compare/v1.0.14...v1.0.15) (2025-03-24)
 
 
