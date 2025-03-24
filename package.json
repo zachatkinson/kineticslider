@@ -109,5 +109,8 @@
       ],
       "@semantic-release/github"
     ]
+  },
+  "jest": {
+    "type": "module"
   }
 }
