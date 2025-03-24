@@ -16,6 +16,7 @@ export default {
             useESM: true,
         }],
     },
+    resolver: 'jest-resolve',
     setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
     testPathIgnorePatterns: ['/node_modules/', '/dist/'],
     collectCoverageFrom: [
@@ -35,6 +36,10 @@ export default {
         'jest-watch-typeahead/filename',
         'jest-watch-typeahead/testname',
     ],
+    // Explicitly enable experimental modules
+    experimental: {
+        experimentalVmModule: true
+    },
     // Environment variables for tests
     testEnvironmentOptions: {
         customExportConditions: ['node', 'node-addons'],
