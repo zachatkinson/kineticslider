@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "jsx": "react",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
@@ -16,10 +16,12 @@
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
-    "declaration": false
+    "declaration": false,
+    "lib": ["DOM", "DOM.Iterable", "ES2022"]
   },
   "include": [
     "src/__tests__/**/*",
+    "src/__mocks__/**/*",
     "./jest.setup.js",
     "./jest.config.js",
     "./__mocks__/**/*"

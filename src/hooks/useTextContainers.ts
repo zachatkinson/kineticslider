@@ -332,8 +332,9 @@ const useTextContainers = ({
                     const titleText = container.children[0] as Text;
                     titleText.style.fontSize = computedTitleSize;
                     titleText.style.fontFamily = titleFontFamily;
-                    // Force text update
-                    titleText.text = titleText.text;
+                    // Force text update by reassigning the text content
+                    const titleContent = titleText.text;
+                    titleText.text = titleContent;
 
                     // Update subtitle text
                     const subText = container.children[1] as Text;
@@ -341,8 +342,9 @@ const useTextContainers = ({
                     subText.style.fontFamily = subtitleFontFamily;
                     // Reposition subtitle
                     subText.y = titleText.height + computedSubTitleOffset;
-                    // Force text update
-                    subText.text = subText.text;
+                    // Force text update by reassigning the text content
+                    const subContent = subText.text;
+                    subText.text = subContent;
 
                     // Update container pivot
                     container.pivot.y = container.height / 2;

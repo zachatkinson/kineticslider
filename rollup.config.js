@@ -9,7 +9,6 @@ import { createRequire } from 'module';
 import replace from '@rollup/plugin-replace';
 
 const require = createRequire(import.meta.url);
-const packageJson = require('./package.json');
 
 // Common replace config for import.meta.env
 const replaceConfig = {
@@ -66,6 +65,23 @@ const external = [
     'gsap/PixiPlugin',
 ];
 
+// Create a custom plugin for style-inject
+const virtualStyleInject = {
+    name: 'virtual-style-inject',
+    resolveId(id) {
+        if (id === 'style-inject') {
+            return 'virtual:style-inject';
+        }
+        return null;
+    },
+    load(id) {
+        if (id === 'virtual:style-inject') {
+            return styleInjectCode;
+        }
+        return null;
+    }
+};
+
 // Create a separate build for each format to handle TypeScript declarations properly
 export default [
     // ESM build
@@ -84,22 +100,7 @@ export default [
             }
         },
         plugins: [
-            // Create a virtual module for style-inject
-            {
-                name: 'virtual-style-inject',
-                resolveId(id) {
-                    if (id === 'style-inject') {
-                        return 'virtual:style-inject';
-                    }
-                    return null;
-                },
-                load(id) {
-                    if (id === 'virtual:style-inject') {
-                        return styleInjectCode;
-                    }
-                    return null;
-                }
-            },
+            virtualStyleInject,
             peerDepsExternal(),
             replace(replaceConfig),
             resolve({
@@ -147,22 +148,7 @@ export default [
             }
         },
         plugins: [
-            // Create a virtual module for style-inject
-            {
-                name: 'virtual-style-inject',
-                resolveId(id) {
-                    if (id === 'style-inject') {
-                        return 'virtual:style-inject';
-                    }
-                    return null;
-                },
-                load(id) {
-                    if (id === 'virtual:style-inject') {
-                        return styleInjectCode;
-                    }
-                    return null;
-                }
-            },
+            virtualStyleInject,
             peerDepsExternal(),
             replace(replaceConfig),
             resolve({
