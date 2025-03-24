@@ -8,7 +8,7 @@ A high-performance, WebGL-powered slider component using PIXI.js for stunning vi
 
 ## Features
 
-- WebGL-powered rendering with PIXI.js
+- WebGL-powered rendering with [PIXI.js](https://pixis.com) and [pixi-filters](https://pixijs.io/filters/examples/)
 - Advanced displacement effects for interactive cursor and transitions
 - Customizable filters for both images and text
 - Touch swipe and mouse drag support
