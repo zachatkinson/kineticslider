@@ -1,3 +1,11 @@
+## [1.0.11](https://github.com/zachatkinson/kineticslider/compare/v1.0.10...v1.0.11) (2025-03-24)
+
+
+### Bug Fixes
+
+* 🔧 resolve React version conflicts with development tools ([a9e257b](https://github.com/zachatkinson/kineticslider/commit/a9e257b51c53937778ec7a2c0f79d1a09ce35596))
+* 🔧 resolve React version conflicts with development tools ([e62279a](https://github.com/zachatkinson/kineticslider/commit/e62279a8c35b79f0f5760debcc707c2d2c2054ed))
+
 ## [1.0.10](https://github.com/zachatkinson/kineticslider/compare/v1.0.9...v1.0.10) (2025-03-24)
 
 
