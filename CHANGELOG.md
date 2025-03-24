@@ -1,3 +1,11 @@
+## [1.0.12](https://github.com/zachatkinson/kineticslider/compare/v1.0.11...v1.0.12) (2025-03-24)
+
+
+### Bug Fixes
+
+* 🔧 add missing postcss dependency ([d6cf0ad](https://github.com/zachatkinson/kineticslider/commit/d6cf0ad0f9201e3b55141f93aba14a9189e1a181))
+* 🔧 improve test compatibility with CI environments ([cce996e](https://github.com/zachatkinson/kineticslider/commit/cce996e32ea1af68444d233e38eaa6cd7ee79943))
+
 ## [1.0.11](https://github.com/zachatkinson/kineticslider/compare/v1.0.10...v1.0.11) (2025-03-24)
 
 
