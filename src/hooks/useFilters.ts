@@ -14,7 +14,9 @@ import { createHookUpdateHelper, UpdateType } from '../managers/UpdateTypes';
 import gsap from 'gsap';
 
 // Development environment check
-const isDevelopment = import.meta.env.DEV;
+const isDevelopment = typeof import.meta.env !== 'undefined' && import.meta.env.DEV !== undefined
+    ? import.meta.env.DEV
+    : process.env.NODE_ENV === 'development';
 
 // Define the custom event name for filter coordination
 const FILTER_COORDINATION_EVENT = 'kinetic-slider:filter-update';

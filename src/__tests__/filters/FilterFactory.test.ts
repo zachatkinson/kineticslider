@@ -1,9 +1,9 @@
 import { FilterFactory } from '../../filters';
-import { BlurFilterConfig } from '../../filters/types';
+import { FilterType, BlurFilterConfig } from '../../filters/types';
 import { jest, describe, beforeEach, test, expect } from '@jest/globals';
 
 // Mock the filter modules that FilterFactory might try to load
-jest.mock('../../filters/blurFilter.ts', () => ({
+jest.mock('../../filters/blurFilter', () => ({
     createBlurFilter: jest.fn().mockReturnValue({
         type: 'blur',
         filter: { blur: 5 },
