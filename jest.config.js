@@ -2,6 +2,7 @@ export default {
     preset: 'ts-jest/presets/js-with-ts-esm',
     testEnvironment: 'jsdom',
     extensionsToTreatAsEsm: ['.ts', '.tsx'],
+    type: 'module',
     moduleNameMapper: {
         // Handle CSS imports (with CSS modules)
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',

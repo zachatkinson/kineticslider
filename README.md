@@ -150,3 +150,9 @@ See [our documentation](https://github.com/zachatkinson/kineticslider) for a com
 ## License
 
 Apache 2.0 © [Creative Branding](https://creativebranding.ca)
+
+---
+
+## Development Status
+
+Test suite is currently under maintenance. Some tests may fail during the transition to ESM (ECMAScript Modules) format.
