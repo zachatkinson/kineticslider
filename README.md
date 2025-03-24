@@ -155,7 +155,13 @@ Apache 2.0 © [Creative Branding](https://creativebranding.ca)
 
 ## Development Status
 
-Test suite is currently under maintenance. Some tests may fail during the transition to ESM (ECMAScript Modules) format.
+Test suite is currently under maintenance as we migrate to ESM (ECMAScript Modules) format. Tests are allowed to fail in CI pipelines without blocking builds. Key known issues being addressed:
+
+- ResourceManager test has type compatibility issues with class methods
+- FilterFactory test has module resolution issues
+- Environment variable handling needs improvement for test environments
+
+These issues will be fixed in upcoming releases.
 
 ## Development
 
@@ -168,4 +174,3 @@ npm install --legacy-peer-deps
 ```
 
 This is necessary because the library supports multiple React versions (17-19) but development tools may have strict version requirements.
-
