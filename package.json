@@ -1,6 +1,6 @@
 {
   "name": "kinetic-slider",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "A WebGL-powered kinetic slider component using PIXI.js",
   "author": "Creative Branding <info@creativebranding.ca> (https://creativebranding.ca)",
   "license": "Apache-2.0",
