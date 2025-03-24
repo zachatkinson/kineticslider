@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/zachatkinson/kineticslider/compare/v1.0.8...v1.0.9) (2025-03-24)
+
+
+### Bug Fixes
+
+* 🐛 resolve Jest configuration conflicts ([5be8285](https://github.com/zachatkinson/kineticslider/commit/5be828521381ca7e768d46e92d895785550b1ed2))
+
 ## [1.0.8](https://github.com/zachatkinson/kineticslider/compare/v1.0.7...v1.0.8) (2025-03-23)
 
 
