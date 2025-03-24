@@ -1,3 +1,10 @@
+## [1.0.13](https://github.com/zachatkinson/kineticslider/compare/v1.0.12...v1.0.13) (2025-03-24)
+
+
+### Bug Fixes
+
+* 🔄 update test approach for CI pipeline ([5a2d32b](https://github.com/zachatkinson/kineticslider/commit/5a2d32b639dbf7cc6b09ca3beca7de8ac92a0096))
+
 ## [1.0.12](https://github.com/zachatkinson/kineticslider/compare/v1.0.11...v1.0.12) (2025-03-24)
 
 
