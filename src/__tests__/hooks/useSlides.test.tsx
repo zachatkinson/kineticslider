@@ -1,5 +1,7 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { useSlides } from '../../hooks/useSlides';
+import { TextPair } from '../../types';
+import { jest, describe, test, expect } from '@jest/globals';
 
 // Mock dependencies
 jest.mock('../../managers/ResourceManager');
@@ -11,7 +13,7 @@ describe('useSlides Hook', () => {
     // Setup mock props and refs
     const mockProps = {
         images: ['/images/slide1.jpg', '/images/slide2.jpg'],
-        texts: [['Title 1', 'Subtitle 1'], ['Title 2', 'Subtitle 2']],
+        texts: [['Title 1', 'Subtitle 1'], ['Title 2', 'Subtitle 2']] as TextPair[],
         slidesBasePath: '/images/',
         useSlidesAtlas: false,
     };
@@ -22,6 +24,13 @@ describe('useSlides Hook', () => {
         slides: { current: [] },
         background: { current: null },
         cursor: { current: null },
+        textContainers: { current: [] },
+        backgroundDisplacementSprite: { current: null },
+        cursorDisplacementSprite: { current: null },
+        bgDispFilter: { current: null },
+        cursorDispFilter: { current: null },
+        filters: { current: [] },
+        currentIndex: { current: 0 }
     };
 
     const mockOnSlideChange = jest.fn();

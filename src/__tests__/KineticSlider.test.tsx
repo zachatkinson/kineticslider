@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { KineticSlider } from '../index';
 import { TextPair } from '../types'; // Import the TextPair type
+import { jest, describe, beforeAll, afterAll, beforeEach, test, expect } from '@jest/globals';
 
 // Mock window properties and methods that might be used by the KineticSlider
 // Use Object.defineProperty instead of direct assignment for readonly properties

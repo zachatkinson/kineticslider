@@ -1,4 +1,5 @@
-import ResourceManager from '../../../managers/ResourceManager';
+import ResourceManager from '../../managers/ResourceManager';
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals';
 
 describe('ResourceManager', () => {
     let resourceManager: ResourceManager;

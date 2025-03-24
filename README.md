@@ -156,3 +156,15 @@ Apache 2.0 © [Creative Branding](https://creativebranding.ca)
 ## Development Status
 
 Test suite is currently under maintenance. Some tests may fail during the transition to ESM (ECMAScript Modules) format.
+
+## Development
+
+When installing dependencies for development, use the following command to avoid peer dependency conflicts:
+
+```bash
+npm run dev:install
+# or directly:
+npm install --legacy-peer-deps
+```
+
+This is necessary because the library supports multiple React versions (17-19) but development tools may have strict version requirements.

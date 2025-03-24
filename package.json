@@ -1,6 +1,6 @@
 {
   "name": "kinetic-slider",
-  "version": "1.0.9",
+  "version": "1.0.6",
   "description": "A WebGL-powered kinetic slider component using PIXI.js",
   "author": "Creative Branding <info@creativebranding.ca> (https://creativebranding.ca)",
   "license": "Apache-2.0",
@@ -27,7 +27,8 @@
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --config=jest.config.js",
     "test:ci": "NODE_OPTIONS=--experimental-vm-modules jest --ci --coverage --config=jest.config.js",
     "prepublishOnly": "npm run build",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "dev:install": "npm install --legacy-peer-deps"
   },
   "repository": {
     "type": "git",
@@ -54,6 +55,23 @@
     "pixi.js": "^8.0.0",
     "pixi-filters": "^6.0.0",
     "gsap": "^3.12.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": false
+    },
+    "react-dom": {
+      "optional": false
+    },
+    "pixi.js": {
+      "optional": false
+    },
+    "pixi-filters": {
+      "optional": false
+    },
+    "gsap": {
+      "optional": false
+    }
   },
   "dependencies": {},
   "devDependencies": {
@@ -86,7 +104,13 @@
     "jest-canvas-mock": "^2.5.2",
     "identity-obj-proxy": "^3.0.0",
     "jest-watch-typeahead": "^2.2.2",
-    "@jest/globals": "^29.7.0"
+    "@jest/globals": "^29.7.0",
+    "@testing-library/react": "^14.1.2",
+    "@types/testing-library__jest-dom": "^5.14.9"
+  },
+  "optionalDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "release": {
     "branches": [
