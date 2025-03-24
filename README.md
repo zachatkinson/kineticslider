@@ -174,4 +174,3 @@ npm install --legacy-peer-deps
 ```
 
 This is necessary because the library supports multiple React versions (17-19) but development tools may have strict version requirements.
-
