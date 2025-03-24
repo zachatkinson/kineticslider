@@ -7,6 +7,8 @@ export default {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         // Handle image imports
         '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
+        // Map mock modules
+        '../../filters/blurFilter': '<rootDir>/src/__mocks__/blurFilterMock.js'
     },
     transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {

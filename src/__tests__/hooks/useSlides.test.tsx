@@ -1,7 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { useSlides } from '../../hooks/useSlides';
-import { TextPair } from '../../types';
+import { TextPair, PixiRefs } from '../../types';
 import { jest, describe, test, expect } from '@jest/globals';
+import { Application } from 'pixi.js';
 
 // Mock dependencies
 jest.mock('../../managers/ResourceManager');
@@ -19,8 +20,42 @@ describe('useSlides Hook', () => {
     };
 
     const mockSliderRef = { current: document.createElement('div') };
+
+    // Create a properly typed mock app
+    const mockApp = {
+        stage: {
+            addChild: jest.fn(),
+            removeChild: jest.fn(),
+            children: []
+        },
+        renderer: {
+            resize: jest.fn(),
+            plugins: {
+                interaction: {
+                    on: jest.fn(),
+                    off: jest.fn()
+                }
+            },
+            view: document.createElement('canvas'),
+            resolution: 1
+        },
+        ticker: {
+            add: jest.fn(),
+            remove: jest.fn()
+        },
+        view: document.createElement('canvas'),
+        screen: { width: 800, height: 600 },
+        destroy: jest.fn(),
+        render: jest.fn(),
+        init: jest.fn(),
+        canvas: document.createElement('canvas'),
+        start: jest.fn(),
+        stop: jest.fn()
+    } as unknown as Application;
+
+    // Create properly typed refs object
     const mockPixi = {
-        app: { current: { stage: { addChild: jest.fn() } } },
+        app: { current: mockApp },
         slides: { current: [] },
         background: { current: null },
         cursor: { current: null },
@@ -31,7 +66,7 @@ describe('useSlides Hook', () => {
         cursorDispFilter: { current: null },
         filters: { current: [] },
         currentIndex: { current: 0 }
-    };
+    } as unknown as PixiRefs;
 
     const mockOnSlideChange = jest.fn();
 
