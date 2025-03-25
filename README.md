@@ -16,36 +16,36 @@ A high-performance, WebGL-powered slider component using PIXI.js for stunning vi
 - [Changelog](#changelog)
 - [Browser Support](#browser-support)
 - [Examples](#examples)
-   - [Basic Slider with Text](#basic-slider-with-text)
-   - [Advanced Effects](#advanced-effects)
-   - [Custom Navigation](#custom-navigation)
-   - [Performance Optimized](#performance-optimized)
-   - [Accessibility Focused](#accessibility-focused)
+    - [Basic Slider with Text](#basic-slider-with-text)
+    - [Advanced Effects](#advanced-effects)
+    - [Custom Navigation](#custom-navigation)
+    - [Performance Optimized](#performance-optimized)
+    - [Accessibility Focused](#accessibility-focused)
 - [Performance Tips](#performance-tips)
 - [Common Issues](#common-issues)
-   - [Performance Issues](#performance-issues)
-   - [Visual Issues](#visual-issues)
-   - [Browser Compatibility](#browser-compatibility)
+    - [Performance Issues](#performance-issues)
+    - [Visual Issues](#visual-issues)
+    - [Browser Compatibility](#browser-compatibility)
 - [Usage](#usage)
 - [Configuration Options](#configuration-options)
-   - [Content Sources](#content-sources)
-   - [Displacement Settings](#displacement-settings)
-   - [Text Styling](#text-styling)
-   - [Navigation Settings](#navigation-settings)
-   - [Texture Atlas Settings](#texture-atlas-settings)
-   - [Filter Settings](#filter-settings)
-   - [Performance Settings](#performance-settings)
-   - [Animation Settings](#animation-settings)
-   - [Accessibility Settings](#accessibility-settings)
-   - [Debug Settings](#debug-settings)
+    - [Content Sources](#content-sources)
+    - [Displacement Settings](#displacement-settings)
+    - [Text Styling](#text-styling)
+    - [Navigation Settings](#navigation-settings)
+    - [Texture Atlas Settings](#texture-atlas-settings)
+    - [Filter Settings](#filter-settings)
+    - [Performance Settings](#performance-settings)
+    - [Animation Settings](#animation-settings)
+    - [Accessibility Settings](#accessibility-settings)
+    - [Debug Settings](#debug-settings)
 - [Advanced Configuration](#advanced-configuration)
 - [Available Filters](#available-filters)
 - [Using Texture Atlases](#using-texture-atlases)
-   - [Benefits](#benefits)
-   - [Implementation](#implementation)
-   - [Generating Texture Atlases](#generating-texture-atlases)
-   - [Best Practices](#best-practices)
-   - [Troubleshooting](#troubleshooting)
+    - [Benefits](#benefits)
+    - [Implementation](#implementation)
+    - [Generating Texture Atlases](#generating-texture-atlases)
+    - [Best Practices](#best-practices)
+    - [Troubleshooting](#troubleshooting)
 - [Automated Releases](#automated-releases)
 - [API Reference](#api-reference)
 - [License](#license)
@@ -80,12 +80,12 @@ import React from 'react';
 import { KineticSlider } from 'kinetic-slider';
 
 function App() {
-  return (
-    <KineticSlider
-      images={['/slide1.jpg', '/slide2.jpg']}
-      texts={[['Welcome', 'Get Started'], ['Features', 'Explore']]}
-    />
-  );
+    return (
+        <KineticSlider
+            images={['/slide1.jpg', '/slide2.jpg']}
+            texts={[['Welcome', 'Get Started'], ['Features', 'Explore']]}
+        />
+    );
 }
 ```
 
@@ -212,28 +212,28 @@ For older browsers, consider using a polyfill for WebGL support.
 ## Performance Tips
 
 1. **Image Optimization**
-   - Use WebP format for better compression
-   - Optimize image dimensions to match display size
-   - Consider using responsive images
-   - Use texture atlases for multiple images
+    - Use WebP format for better compression
+    - Optimize image dimensions to match display size
+    - Consider using responsive images
+    - Use texture atlases for multiple images
 
 2. **Filter Usage**
-   - Enable filter batching for multiple filters
-   - Use appropriate filter intensities
-   - Consider disabling complex filters on mobile
-   - Use shader pooling for better performance
+    - Enable filter batching for multiple filters
+    - Use appropriate filter intensities
+    - Consider disabling complex filters on mobile
+    - Use shader pooling for better performance
 
 3. **Memory Management**
-   - Clean up resources when component unmounts
-   - Use appropriate texture atlas sizes
-   - Monitor memory usage with large datasets
-   - Consider lazy loading for large images
+    - Clean up resources when component unmounts
+    - Use appropriate texture atlas sizes
+    - Monitor memory usage with large datasets
+    - Consider lazy loading for large images
 
 4. **Animation Performance**
-   - Use appropriate transition durations
-   - Enable hardware acceleration
-   - Monitor frame rates during transitions
-   - Consider reducing effects on lower-end devices
+    - Use appropriate transition durations
+    - Enable hardware acceleration
+    - Monitor frame rates during transitions
+    - Consider reducing effects on lower-end devices
 
 ## Common Issues
 
@@ -345,12 +345,12 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Array of image URLs or paths
     images: string[],
-    
-    // Array of text arrays, each containing [title, subtitle]
-    texts: [string, string][],
-    
-    // Base path for all slide images (optional)
-    slidesBasePath: string,
+
+        // Array of text arrays, each containing [title, subtitle]
+        texts: [string, string][],
+
+        // Base path for all slide images (optional)
+        slidesBasePath: string,
 }
 ```
 
@@ -359,21 +359,21 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Path to the background displacement texture
     backgroundDisplacementSpriteLocation: string,
-    
-    // Path to the cursor displacement texture
-    cursorDisplacementSpriteLocation: string,
-    
-    // Enable displacement effect on images
-    cursorImgEffect: boolean,
-    
-    // Enable displacement effect on text
-    cursorTextEffect: boolean,
-    
-    // Intensity of the cursor scale effect (0-1)
-    cursorScaleIntensity: number,
-    
-    // Momentum of the cursor effect (0-1)
-    cursorMomentum: number,
+
+        // Path to the cursor displacement texture
+        cursorDisplacementSpriteLocation: string,
+
+        // Enable displacement effect on images
+        cursorImgEffect: boolean,
+
+        // Enable displacement effect on text
+        cursorTextEffect: boolean,
+
+        // Intensity of the cursor scale effect (0-1)
+        cursorScaleIntensity: number,
+
+        // Momentum of the cursor effect (0-1)
+        cursorMomentum: number,
 }
 ```
 
@@ -382,21 +382,21 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Title text color
     textTitleColor: string,
-    
-    // Title text size in pixels
-    textTitleSize: number,
-    
-    // Title text letter spacing in pixels
-    textTitleLetterspacing: number,
-    
-    // Subtitle text color
-    textSubTitleColor: string,
-    
-    // Subtitle text size in pixels
-    textSubTitleSize: number,
-    
-    // Subtitle text letter spacing in pixels
-    textSubTitleLetterspacing: number,
+
+        // Title text size in pixels
+        textTitleSize: number,
+
+        // Title text letter spacing in pixels
+        textTitleLetterspacing: number,
+
+        // Subtitle text color
+        textSubTitleColor: string,
+
+        // Subtitle text size in pixels
+        textSubTitleSize: number,
+
+        // Subtitle text letter spacing in pixels
+        textSubTitleLetterspacing: number,
 }
 ```
 
@@ -405,11 +405,11 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Whether to use external navigation elements
     externalNav: boolean,
-    
-    // Selectors for external navigation elements
-    navElement: {
+
+        // Selectors for external navigation elements
+        navElement: {
         prev: string,  // CSS selector for previous button
-        next: string   // CSS selector for next button
+            next: string   // CSS selector for next button
     },
 }
 ```
@@ -419,15 +419,15 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Enable texture atlas for slides
     useSlidesAtlas: boolean,
-    
-    // Name of the slides texture atlas
-    slidesAtlas: string,
-    
-    // Enable texture atlas for effects
-    useEffectsAtlas: boolean,
-    
-    // Name of the effects texture atlas
-    effectsAtlas: string,
+
+        // Name of the slides texture atlas
+        slidesAtlas: string,
+
+        // Enable texture atlas for effects
+        useEffectsAtlas: boolean,
+
+        // Name of the effects texture atlas
+        effectsAtlas: string,
 }
 ```
 
@@ -436,9 +436,9 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Array of filters to apply to images
     imageFilters: FilterConfig[],
-    
-    // Array of filters to apply to text
-    textFilters: FilterConfig[],
+
+        // Array of filters to apply to text
+        textFilters: FilterConfig[],
 }
 ```
 
@@ -447,18 +447,18 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Whether to enable filter batching for better performance
     enableFilterBatching: boolean,
-    
-    // Configuration for filter batching
-    filterBatchConfig: {
+
+        // Configuration for filter batching
+        filterBatchConfig: {
         bufferMs: number,        // How long to wait before applying updates
-        maxBatchSize: number     // Maximum number of updates to process
+            maxBatchSize: number     // Maximum number of updates to process
     },
-    
+
     // Whether to enable shader pooling
     enableShaderPooling: boolean,
-    
-    // Maximum size of the shader cache
-    maxShaderCacheSize: number,
+
+        // Maximum size of the shader cache
+        maxShaderCacheSize: number,
 }
 ```
 
@@ -467,15 +467,15 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Duration of slide transitions in milliseconds
     transitionDuration: number,
-    
-    // Easing function for transitions
-    transitionEasing: string,
-    
-    // Whether to enable automatic transitions
-    autoPlay: boolean,
-    
-    // Delay between automatic transitions in milliseconds
-    autoPlayDelay: number,
+
+        // Easing function for transitions
+        transitionEasing: string,
+
+        // Whether to enable automatic transitions
+        autoPlay: boolean,
+
+        // Delay between automatic transitions in milliseconds
+        autoPlayDelay: number,
 }
 ```
 
@@ -484,15 +484,15 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Whether to enable keyboard navigation
     enableKeyboardNav: boolean,
-    
-    // Whether to enable ARIA attributes
-    enableAria: boolean,
-    
-    // Custom ARIA labels
-    ariaLabels: {
+
+        // Whether to enable ARIA attributes
+        enableAria: boolean,
+
+        // Custom ARIA labels
+        ariaLabels: {
         prevButton: string,
-        nextButton: string,
-        slide: string
+            nextButton: string,
+            slide: string
     },
 }
 ```
@@ -502,12 +502,12 @@ The KineticSlider component accepts a wide range of configuration options to cus
 {
     // Whether to enable debug mode
     debug: boolean,
-    
-    // Whether to show performance metrics
-    showPerformanceMetrics: boolean,
-    
-    // Whether to log filter operations
-    logFilterOperations: boolean,
+
+        // Whether to show performance metrics
+        showPerformanceMetrics: boolean,
+
+        // Whether to log filter operations
+        logFilterOperations: boolean,
 }
 ```
 
@@ -562,11 +562,11 @@ Adjusts brightness, contrast, saturation, and gamma.
 ```jsx
 {
     type: 'adjustment',
-    intensity: 1,
-    brightness: 0,    // -1 to 1
-    contrast: 0,      // -1 to 1
-    saturation: 0,    // -1 to 1
-    gamma: 0          // -1 to 1
+        intensity: 1,
+        brightness: 0,    // -1 to 1
+        contrast: 0,      // -1 to 1
+        saturation: 0,    // -1 to 1
+        gamma: 0          // -1 to 1
 }
 ```
 
@@ -575,11 +575,11 @@ Applies a high-quality bloom effect with advanced controls.
 ```jsx
 {
     type: 'advancedBloom',
-    intensity: 1,
-    bloomScale: 1.0,    // Bloom strength
-    blur: 2,            // Blur strength
-    brightness: 1.0,    // Bloom brightness
-    threshold: 0.5      // Brightness threshold (0-1)
+        intensity: 1,
+        bloomScale: 1.0,    // Bloom strength
+        blur: 2,            // Blur strength
+        brightness: 1.0,    // Bloom brightness
+        threshold: 0.5      // Brightness threshold (0-1)
 }
 ```
 
@@ -588,8 +588,8 @@ Controls the alpha/opacity of the element.
 ```jsx
 {
     type: 'alpha',
-    intensity: 1,
-    alpha: 1.0  // 0 to 1
+        intensity: 1,
+        alpha: 1.0  // 0 to 1
 }
 ```
 
@@ -598,8 +598,8 @@ Converts the image to ASCII art.
 ```jsx
 {
     type: 'ascii',
-    intensity: 1,
-    size: 8  // Size of ASCII characters
+        intensity: 1,
+        size: 8  // Size of ASCII characters
 }
 ```
 
@@ -608,10 +608,10 @@ Applies a Gaussian blur to everything behind the element.
 ```jsx
 {
     type: 'backdropBlur',
-    intensity: 1,
-    strength: 10,     // Blur strength (0-100)
-    quality: 5,       // Quality of blur
-    kernelSize: 5     // Size of blur kernel (5,7,9,11,13,15)
+        intensity: 1,
+        strength: 10,     // Blur strength (0-100)
+        quality: 5,       // Quality of blur
+        kernelSize: 5     // Size of blur kernel (5,7,9,11,13,15)
 }
 ```
 
@@ -620,9 +620,9 @@ Creates a beveled edge effect.
 ```jsx
 {
     type: 'bevel',
-    intensity: 1,
-    rotation: 45,     // Rotation angle
-    thickness: 2      // Edge thickness
+        intensity: 1,
+        rotation: 45,     // Rotation angle
+        thickness: 2      // Edge thickness
 }
 ```
 
@@ -631,10 +631,10 @@ Applies a simple bloom/glow effect.
 ```jsx
 {
     type: 'bloom',
-    intensity: 1,
-    strength: 5,      // Overall strength
-    strengthX: 5,     // Horizontal strength
-    strengthY: 5      // Vertical strength
+        intensity: 1,
+        strength: 5,      // Overall strength
+        strengthX: 5,     // Horizontal strength
+        strengthY: 5      // Vertical strength
 }
 ```
 
@@ -643,10 +643,10 @@ Applies a Gaussian blur effect.
 ```jsx
 {
     type: 'blur',
-    intensity: 1,
-    strength: 5,      // Overall strength
-    quality: 5,       // Quality of blur
-    kernelSize: 5     // Size of blur kernel (5,7,9,11,13,15)
+        intensity: 1,
+        strength: 5,      // Overall strength
+        quality: 5,       // Quality of blur
+        kernelSize: 5     // Size of blur kernel (5,7,9,11,13,15)
 }
 ```
 
@@ -655,9 +655,9 @@ Creates a bulge or pinch distortion effect.
 ```jsx
 {
     type: 'bulgePinch',
-    intensity: 1,
-    radius: 100,      // Radius of effect
-    strength: 1       // Strength of effect (-1 to 1)
+        intensity: 1,
+        radius: 100,      // Radius of effect
+        strength: 1       // Strength of effect (-1 to 1)
 }
 ```
 
@@ -666,10 +666,10 @@ Applies a color gradient overlay.
 ```jsx
 {
     type: 'colorGradient',
-    intensity: 1,
-    color1: '#ff0000',
-    color2: '#00ff00',
-    angle: 45         // Gradient angle
+        intensity: 1,
+        color1: '#ff0000',
+        color2: '#00ff00',
+        angle: 45         // Gradient angle
 }
 ```
 
@@ -678,9 +678,9 @@ Applies a color mapping effect using a texture.
 ```jsx
 {
     type: 'colorMap',
-    intensity: 1,
-    colorMap: 'path/to/colormap.png',
-    mix: 0.5          // Mix ratio (0-1)
+        intensity: 1,
+        colorMap: 'path/to/colormap.png',
+        mix: 0.5          // Mix ratio (0-1)
 }
 ```
 
@@ -689,8 +689,8 @@ Applies a color matrix transformation.
 ```jsx
 {
     type: 'colorMatrix',
-    intensity: 1,
-    matrix: [1,0,0,0,0, 0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0]  // 4x5 matrix
+        intensity: 1,
+        matrix: [1,0,0,0,0, 0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0]  // 4x5 matrix
 }
 ```
 
@@ -699,9 +699,9 @@ Applies a solid color overlay.
 ```jsx
 {
     type: 'colorOverlay',
-    intensity: 1,
-    color: '#ff0000',
-    alpha: 0.5        // Overlay opacity (0-1)
+        intensity: 1,
+        color: '#ff0000',
+        alpha: 0.5        // Overlay opacity (0-1)
 }
 ```
 
@@ -710,10 +710,10 @@ Replaces a specific color with another.
 ```jsx
 {
     type: 'colorReplace',
-    intensity: 1,
-    originalColor: '#ff0000',
-    newColor: '#00ff00',
-    tolerance: 0.1    // Color matching tolerance (0-1)
+        intensity: 1,
+        originalColor: '#ff0000',
+        newColor: '#00ff00',
+        tolerance: 0.1    // Color matching tolerance (0-1)
 }
 ```
 
@@ -722,9 +722,9 @@ Applies a custom convolution matrix.
 ```jsx
 {
     type: 'convolution',
-    intensity: 1,
-    matrix: [0,1,0, 1,1,1, 0,1,0],  // 3x3 matrix
-    bias: 0                          // Bias value
+        intensity: 1,
+        matrix: [0,1,0, 1,1,1, 0,1,0],  // 3x3 matrix
+        bias: 0                          // Bias value
 }
 ```
 
@@ -733,9 +733,9 @@ Applies a cross-hatching effect.
 ```jsx
 {
     type: 'crossHatch',
-    intensity: 1,
-    lineWidth: 1,     // Width of lines
-    lineSpacing: 5    // Space between lines
+        intensity: 1,
+        lineWidth: 1,     // Width of lines
+        lineSpacing: 5    // Space between lines
 }
 ```
 
@@ -744,10 +744,10 @@ Simulates a CRT monitor effect.
 ```jsx
 {
     type: 'crt',
-    intensity: 1,
-    curvature: 0.5,   // Screen curvature (0-1)
-    lineWidth: 1,     // Scan line width
-    lineContrast: 0.5 // Line contrast (0-1)
+        intensity: 1,
+        curvature: 0.5,   // Screen curvature (0-1)
+        lineWidth: 1,     // Scan line width
+        lineContrast: 0.5 // Line contrast (0-1)
 }
 ```
 
@@ -756,10 +756,10 @@ Applies a halftone dot effect.
 ```jsx
 {
     type: 'dot',
-    intensity: 1,
-    angle: 5,         // Angle of dots
-    scale: 1,         // Scale of effect
-    grayscale: true   // Whether to use grayscale
+        intensity: 1,
+        angle: 5,         // Angle of dots
+        scale: 1,         // Scale of effect
+        grayscale: true   // Whether to use grayscale
 }
 ```
 
@@ -768,12 +768,12 @@ Applies a drop shadow effect.
 ```jsx
 {
     type: 'dropShadow',
-    intensity: 1,
-    alpha: 0.5,       // Shadow opacity
-    blur: 4,          // Shadow blur
-    color: '#000000', // Shadow color
-    distance: 5,      // Shadow distance
-    rotation: 45      // Shadow angle
+        intensity: 1,
+        alpha: 0.5,       // Shadow opacity
+        blur: 4,          // Shadow blur
+        color: '#000000', // Shadow color
+        distance: 5,      // Shadow distance
+        rotation: 45      // Shadow angle
 }
 ```
 
@@ -782,8 +782,8 @@ Creates an embossed effect.
 ```jsx
 {
     type: 'emboss',
-    intensity: 1,
-    strength: 5       // Emboss strength
+        intensity: 1,
+        strength: 5       // Emboss strength
 }
 ```
 
@@ -792,9 +792,9 @@ Applies a glitch/distortion effect.
 ```jsx
 {
     type: 'glitch',
-    intensity: 1,
-    offset: 10,       // Offset amount
-    slices: 10        // Number of slices
+        intensity: 1,
+        offset: 10,       // Offset amount
+        slices: 10        // Number of slices
 }
 ```
 
@@ -803,12 +803,12 @@ Applies a simple glow effect.
 ```jsx
 {
     type: 'glow',
-    intensity: 1,
-    distance: 15,     // Glow distance
-    outerStrength: 4, // Outer glow strength
-    innerStrength: 0, // Inner glow strength
-    color: '#ffffff', // Glow color
-    quality: 0.5      // Quality of effect
+        intensity: 1,
+        distance: 15,     // Glow distance
+        outerStrength: 4, // Outer glow strength
+        innerStrength: 0, // Inner glow strength
+        color: '#ffffff', // Glow color
+        quality: 0.5      // Quality of effect
 }
 ```
 
@@ -817,11 +817,11 @@ Creates a light ray effect.
 ```jsx
 {
     type: 'godray',
-    intensity: 1,
-    angle: 30,        // Ray angle
-    gain: 0.5,        // Light gain
-    lacunarity: 2.0,  // Lacunarity
-    time: 0           // Animation time
+        intensity: 1,
+        angle: 30,        // Ray angle
+        gain: 0.5,        // Light gain
+        lacunarity: 2.0,  // Lacunarity
+        time: 0           // Animation time
 }
 ```
 
@@ -830,7 +830,7 @@ Converts the image to grayscale.
 ```jsx
 {
     type: 'grayscale',
-    intensity: 1
+        intensity: 1
 }
 ```
 
@@ -839,10 +839,10 @@ Adjusts hue, saturation, and lightness.
 ```jsx
 {
     type: 'hsl',
-    intensity: 1,
-    hue: 0,           // Hue rotation (-180 to 180)
-    saturation: 0,    // Saturation adjustment (-1 to 1)
-    lightness: 0      // Lightness adjustment (-1 to 1)
+        intensity: 1,
+        hue: 0,           // Hue rotation (-180 to 180)
+        saturation: 0,    // Saturation adjustment (-1 to 1)
+        lightness: 0      // Lightness adjustment (-1 to 1)
 }
 ```
 
@@ -851,9 +851,9 @@ Applies a Kawase blur effect.
 ```jsx
 {
     type: 'kawaseBlur',
-    intensity: 1,
-    blur: 4,          // Blur amount
-    quality: 3        // Quality of blur
+        intensity: 1,
+        blur: 4,          // Blur amount
+        quality: 3        // Quality of blur
 }
 ```
 
@@ -862,10 +862,10 @@ Applies a motion blur effect.
 ```jsx
 {
     type: 'motionBlur',
-    intensity: 1,
-    velocity: 20,     // Blur velocity
-    kernelSize: 5,    // Size of blur kernel
-    offset: 0         // Offset amount
+        intensity: 1,
+        velocity: 20,     // Blur velocity
+        kernelSize: 5,    // Size of blur kernel
+        offset: 0         // Offset amount
 }
 ```
 
@@ -874,12 +874,12 @@ Replaces multiple colors at once.
 ```jsx
 {
     type: 'multiColorReplace',
-    intensity: 1,
-    replacements: [   // Array of [originalColor, newColor] pairs
+        intensity: 1,
+        replacements: [   // Array of [originalColor, newColor] pairs
         ['#ff0000', '#00ff00'],
         ['#0000ff', '#ffff00']
     ],
-    tolerance: 0.05   // Color matching tolerance (0-1)
+        tolerance: 0.05   // Color matching tolerance (0-1)
 }
 ```
 
@@ -888,9 +888,9 @@ Applies random noise to the image.
 ```jsx
 {
     type: 'noise',
-    intensity: 1,
-    noiseLevel: 0.5,  // Amount of noise (0-1)
-    seed: 0           // Random seed
+        intensity: 1,
+        noiseLevel: 0.5,  // Amount of noise (0-1)
+        seed: 0           // Random seed
 }
 ```
 
@@ -899,14 +899,14 @@ Simulates old film effects.
 ```jsx
 {
     type: 'oldFilm',
-    intensity: 1,
-    noise: 0.3,       // Noise intensity
-    noiseSize: 1,     // Noise size
-    scratch: 0.5,     // Scratch frequency
-    scratchDensity: 0.3, // Scratch density
-    scratchWidth: 1,  // Scratch width
-    sepia: 0.3,       // Sepia intensity
-    vignetting: 0.3   // Vignette intensity
+        intensity: 1,
+        noise: 0.3,       // Noise intensity
+        noiseSize: 1,     // Noise size
+        scratch: 0.5,     // Scratch frequency
+        scratchDensity: 0.3, // Scratch density
+        scratchWidth: 1,  // Scratch width
+        sepia: 0.3,       // Sepia intensity
+        vignetting: 0.3   // Vignette intensity
 }
 ```
 
@@ -915,10 +915,10 @@ Creates an outline effect.
 ```jsx
 {
     type: 'outline',
-    intensity: 1,
-    thickness: 1,     // Outline thickness
-    color: '#000000', // Outline color
-    quality: 0.5      // Quality of effect
+        intensity: 1,
+        thickness: 1,     // Outline thickness
+        color: '#000000', // Outline color
+        quality: 0.5      // Quality of effect
 }
 ```
 
@@ -927,10 +927,10 @@ Applies a pixelation effect.
 ```jsx
 {
     type: 'pixelate',
-    intensity: 1,
-    size: 10,         // Pixel size
-    sizeX: 10,        // Horizontal pixel size
-    sizeY: 10         // Vertical pixel size
+        intensity: 1,
+        size: 10,         // Pixel size
+        sizeX: 10,        // Horizontal pixel size
+        sizeY: 10         // Vertical pixel size
 }
 ```
 
@@ -939,9 +939,9 @@ Applies a radial blur effect.
 ```jsx
 {
     type: 'radialBlur',
-    intensity: 1,
-    angle: 30,        // Blur angle
-    center: [0.5, 0.5] // Center point [x, y]
+        intensity: 1,
+        angle: 30,        // Blur angle
+        center: [0.5, 0.5] // Center point [x, y]
 }
 ```
 
@@ -950,12 +950,12 @@ Creates a reflection effect.
 ```jsx
 {
     type: 'reflection',
-    intensity: 1,
-    boundary: 0.5,    // Reflection boundary (0-1)
-    amplitude: 20,    // Wave amplitude
-    waveLength: 30,   // Wave length
-    alpha: 0.5,       // Reflection opacity
-    time: 0           // Animation time
+        intensity: 1,
+        boundary: 0.5,    // Reflection boundary (0-1)
+        amplitude: 20,    // Wave amplitude
+        waveLength: 30,   // Wave length
+        alpha: 0.5,       // Reflection opacity
+        time: 0           // Animation time
 }
 ```
 
@@ -964,10 +964,10 @@ Splits the RGB channels.
 ```jsx
 {
     type: 'rgbSplit',
-    intensity: 1,
-    red: [0, 0],      // Red channel offset [x, y]
-    green: [0, 0],    // Green channel offset [x, y]
-    blue: [0, 0]      // Blue channel offset [x, y]
+        intensity: 1,
+        red: [0, 0],      // Red channel offset [x, y]
+        green: [0, 0],    // Green channel offset [x, y]
+        blue: [0, 0]      // Blue channel offset [x, y]
 }
 ```
 
@@ -976,12 +976,12 @@ Creates a shockwave effect.
 ```jsx
 {
     type: 'shockwave',
-    intensity: 1,
-    center: [0.5, 0.5], // Center point [x, y]
-    radius: 100,        // Wave radius
-    wavelength: 30,     // Wave length
-    amplitude: 30,      // Wave amplitude
-    speed: 500          // Wave speed
+        intensity: 1,
+        center: [0.5, 0.5], // Center point [x, y]
+        radius: 100,        // Wave radius
+        wavelength: 30,     // Wave length
+        amplitude: 30,      // Wave amplitude
+        speed: 500          // Wave speed
 }
 ```
 
@@ -990,9 +990,9 @@ Applies a lightmap overlay.
 ```jsx
 {
     type: 'simpleLightmap',
-    intensity: 1,
-    lightMap: 'path/to/lightmap.png',
-    alpha: 0.5         // Overlay opacity (0-1)
+        intensity: 1,
+        lightMap: 'path/to/lightmap.png',
+        alpha: 0.5         // Overlay opacity (0-1)
 }
 ```
 
@@ -1001,12 +1001,12 @@ Applies simplex noise.
 ```jsx
 {
     type: 'simplexNoise',
-    intensity: 1,
-    scale: 100,        // Noise scale
-    octaves: 3,        // Number of octaves
-    persistence: 0.5,  // Persistence
-    lacunarity: 2.0,   // Lacunarity
-    baseFrequency: 1.0 // Base frequency
+        intensity: 1,
+        scale: 100,        // Noise scale
+        octaves: 3,        // Number of octaves
+        persistence: 0.5,  // Persistence
+        lacunarity: 2.0,   // Lacunarity
+        baseFrequency: 1.0 // Base frequency
 }
 ```
 
@@ -1015,11 +1015,11 @@ Applies a tilt-shift effect.
 ```jsx
 {
     type: 'tiltShift',
-    intensity: 1,
-    blur: 100,         // Blur amount
-    gradientBlur: 600, // Gradient blur
-    start: 0.2,        // Start point (0-1)
-    end: 0.8           // End point (0-1)
+        intensity: 1,
+        blur: 100,         // Blur amount
+        gradientBlur: 600, // Gradient blur
+        start: 0.2,        // Start point (0-1)
+        end: 0.8           // End point (0-1)
 }
 ```
 
@@ -1028,9 +1028,9 @@ Applies a twist distortion effect.
 ```jsx
 {
     type: 'twist',
-    intensity: 1,
-    angle: 5,          // Twist angle
-    radius: 100        // Effect radius
+        intensity: 1,
+        angle: 5,          // Twist angle
+        radius: 100        // Effect radius
 }
 ```
 
@@ -1039,9 +1039,9 @@ Applies a zoom blur effect.
 ```jsx
 {
     type: 'zoomBlur',
-    intensity: 1,
-    strength: 0.1,     // Blur strength
-    center: [0.5, 0.5] // Center point [x, y]
+        intensity: 1,
+        strength: 0.1,     // Blur strength
+        center: [0.5, 0.5] // Center point [x, y]
 }
 ```
 
@@ -1065,7 +1065,7 @@ Texture atlases are a powerful optimization technique that combines multiple ima
     slidesAtlas="slides-atlas"
     useEffectsAtlas={true}
     effectsAtlas="effects-atlas"
-    
+
     // Other props remain the same
     images={images}
     texts={texts}
@@ -1100,24 +1100,24 @@ node src/scripts/generateAtlas.cjs \
 
 ### Best Practices
 1. **Image Preparation**
-   - Use consistent image sizes
-   - Optimize images before creating the atlas
-   - Consider using WebP format for better compression
+    - Use consistent image sizes
+    - Optimize images before creating the atlas
+    - Consider using WebP format for better compression
 
 2. **Atlas Size**
-   - Keep atlas dimensions under 2048x2048 for best compatibility
-   - Split into multiple atlases if needed
-   - Consider device capabilities when setting max dimensions
+    - Keep atlas dimensions under 2048x2048 for best compatibility
+    - Split into multiple atlases if needed
+    - Consider device capabilities when setting max dimensions
 
 3. **Performance**
-   - Monitor memory usage with large atlases
-   - Use the `enableShaderPooling` option for better performance
-   - Consider lazy loading for large atlases
+    - Monitor memory usage with large atlases
+    - Use the `enableShaderPooling` option for better performance
+    - Consider lazy loading for large atlases
 
 4. **Development Workflow**
-   - Generate atlases during build process
-   - Keep source images separate from generated atlases
-   - Version control both source images and generated atlases
+    - Generate atlases during build process
+    - Keep source images separate from generated atlases
+    - Version control both source images and generated atlases
 
 ### Troubleshooting
 
@@ -1144,9 +1144,9 @@ If you experience issues with texture atlases:
    ```
 
 3. **Visual Artifacts**
-   - Check padding settings in atlas generation
-   - Verify image dimensions are consistent
-   - Ensure proper image format support
+    - Check padding settings in atlas generation
+    - Verify image dimensions are consistent
+    - Ensure proper image format support
 
 ## Automated Releases
 
@@ -1181,23 +1181,81 @@ Apache 2.0 © [Creative Branding](https://creativebranding.ca)
 
 ## Development Status
 
-Test suite is currently under maintenance as we migrate to ESM (ECMAScript Modules) format. Tests are allowed to fail in CI pipelines without blocking builds. Key known issues being addressed:
+KineticSlider is currently in active development. Here's the current status:
 
-- ResourceManager test has type compatibility issues with class methods
-- FilterFactory test has module resolution issues
-- Environment variable handling needs improvement for test environments
+- ✅ Core slider functionality
+- ✅ Basic WebGL effects and transitions
+- ✅ React component implementation
+- ✅ Performance optimizations
+- ✅ Basic documentation
+- 🚧 Advanced filter implementations
+- 🚧 Additional effect presets
+- 🚧 Performance monitoring tools
+- 📋 Mobile optimization improvements
+- 📋 Additional browser compatibility testing
 
-These issues will be fixed in upcoming releases.
+## Automated Releases
+
+KineticSlider uses semantic versioning and automated releases through GitHub Actions. The release process includes:
+
+1. Automated version bumping based on commit messages
+2. Automated changelog generation
+3. Automated npm package publishing
+4. Automated GitHub release creation
+
+For more details on our release process, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## API Reference
+
+For detailed API documentation, please visit our [API Documentation](https://github.com/zachatkinson/kineticslider/wiki/API-Reference) page in the wiki.
+
+The API documentation includes:
+- Complete component props reference
+- Filter API documentation
+- Event handlers and callbacks
+- TypeScript type definitions
+- Advanced configuration options
 
 ## Development
 
-When installing dependencies for development, use the following command to avoid peer dependency conflicts:
+### Setting Up the Development Environment
 
+1. Clone the repository:
 ```bash
-npm run dev:install
-# or directly:
-npm install --legacy-peer-deps
+git clone https://github.com/zachatkinson/kineticslider.git
+cd kineticslider
 ```
 
-This is necessary because the library supports multiple React versions (17-19) but development tools may have strict version requirements.
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+### Building
+
+To build the project:
+```bash
+npm run build
+```
+
+### Testing
+
+Run the test suite:
+```bash
+npm test
+```
+
+Run tests with coverage:
+```bash
+npm run test:coverage
+```
+
+### Contributing
+
+Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to contribute to the project.
 
