@@ -1,14 +1,15 @@
+import { isDevelopment } from '../utils/environment';
 import { useEffect, useRef, type RefObject } from "react";
 import { Container, DisplacementFilter } from "pixi.js";
 import { gsap } from "gsap";
 import ResourceManager from '../managers/ResourceManager';
 
 // Development environment check
-const isDevelopment = import.meta.env?.MODE === 'development';
+const devMode = isDevelopment();
 
 // Enhanced error logging utility
 const logError = (context: string, error: unknown) => {
-    if (isDevelopment) {
+    if (isDevelopment()) {
         console.error(`[useTextTilt:${context}] Error:`, error);
     }
 };
@@ -71,7 +72,7 @@ const useTextTilt = ({
 
         // Early exit if effect is disabled
         if (!cursorTextEffect || !sliderRef.current) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.log('Text tilt effect disabled or missing slider reference');
             }
             return;

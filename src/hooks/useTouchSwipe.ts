@@ -1,8 +1,9 @@
+import { isDevelopment } from '../utils/environment';
 import { useEffect, useRef, type RefObject } from "react";
 import ResourceManager from '../managers/ResourceManager';
 
 // Development environment check
-const isDevelopment = import.meta.env?.MODE === 'development';
+const devMode = isDevelopment();
 
 interface UseTouchSwipeProps {
     sliderRef: RefObject<HTMLDivElement | null>;
@@ -42,7 +43,7 @@ const useTouchSwipe = ({
 
         const slider = sliderRef.current;
         if (!slider) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.warn('useTouchSwipe: Slider reference is not available');
             }
             return;
@@ -80,11 +81,11 @@ const useTouchSwipe = ({
                 touchStateRef.current.touchStartY = touchEvent.touches[0].clientY;
                 touchStateRef.current.swiping = true;
 
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.log(`Touch start at (${touchStateRef.current.touchStartX}, ${touchStateRef.current.touchStartY})`);
                 }
             } catch (error) {
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.error('Error in touch start handler:', error);
                 }
             }
@@ -105,7 +106,7 @@ const useTouchSwipe = ({
                 touchStateRef.current.touchEndX = touchEvent.touches[0].clientX;
                 touchStateRef.current.touchEndY = touchEvent.touches[0].clientY;
             } catch (error) {
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.error('Error in touch move handler:', error);
                 }
             }
@@ -128,7 +129,7 @@ const useTouchSwipe = ({
                 const absX = Math.abs(deltaX);
                 const absY = Math.abs(deltaY);
 
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.log(`Touch end: deltaX=${deltaX}, deltaY=${deltaY}, threshold=${swipeThreshold}`);
                 }
 
@@ -137,12 +138,12 @@ const useTouchSwipe = ({
                 if (absX > absY && absX > swipeThreshold) {
                     // Determine direction and trigger appropriate callback
                     if (deltaX < 0) {
-                        if (isDevelopment) {
+                        if (isDevelopment()) {
                             console.log('Swipe left detected');
                         }
                         onSwipeLeft();
                     } else {
-                        if (isDevelopment) {
+                        if (isDevelopment()) {
                             console.log('Swipe right detected');
                         }
                         onSwipeRight();
@@ -152,7 +153,7 @@ const useTouchSwipe = ({
                 // Reset swiping state
                 touchStateRef.current.swiping = false;
             } catch (error) {
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.error('Error in touch end handler:', error);
                 }
                 // Reset swiping state even on error
@@ -165,13 +166,13 @@ const useTouchSwipe = ({
          */
         const handleTouchCancel = () => {
             try {
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.log('Touch canceled');
                 }
                 // Reset swiping state
                 touchStateRef.current.swiping = false;
             } catch (error) {
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.error('Error in touch cancel handler:', error);
                 }
                 // Reset swiping state even on error

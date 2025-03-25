@@ -1,9 +1,10 @@
+import { isDevelopment } from '../utils/environment';
 import { useEffect, useRef, useCallback, type RefObject } from "react";
 import { Application, Sprite, Container } from "pixi.js";
 import ResourceManager from '../managers/ResourceManager';
 
 // Development environment check
-const isDevelopment = import.meta.env?.MODE === 'development';
+const devMode = isDevelopment();
 
 // Default debounce time
 const DEFAULT_DEBOUNCE_TIME = 100;
@@ -55,7 +56,7 @@ const useResizeHandler = ({
         try {
             // Validate texture and dimensions
             if (!sprite.texture || !sprite.texture.width || !sprite.texture.height) {
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.warn('Invalid sprite or texture for scaling', {
                         textureExists: !!sprite.texture,
                         width: sprite.texture?.width,
@@ -70,7 +71,7 @@ const useResizeHandler = ({
 
             // Skip invalid container dimensions
             if (!containerWidth || !containerHeight) {
-                if (isDevelopment) {
+                if (isDevelopment()) {
                     console.warn('Invalid container dimensions for sprite scaling', {
                         containerWidth,
                         containerHeight
@@ -104,7 +105,7 @@ const useResizeHandler = ({
 
             return true;
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Unexpected error in sprite scaling:', error);
             }
             return false;
@@ -128,7 +129,7 @@ const useResizeHandler = ({
                 resourceManager.trackDisplayObject(container);
             }
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error centering container:', error);
             }
         }
@@ -143,7 +144,7 @@ const useResizeHandler = ({
 
         // Validate essential references
         if (!sliderRef.current || !appRef.current) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.warn('useResizeHandler: Missing essential references');
             }
             return;
@@ -154,7 +155,7 @@ const useResizeHandler = ({
             const containerWidth = sliderRef.current.clientWidth;
             const containerHeight = sliderRef.current.clientHeight;
 
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.log(`Resizing to: ${containerWidth}x${containerHeight}`);
             }
 
@@ -204,11 +205,11 @@ const useResizeHandler = ({
                         );
                     }
 
-                    if (isDevelopment) {
+                    if (isDevelopment()) {
                         console.log('Resize handler completed successfully');
                     }
                 } catch (error) {
-                    if (isDevelopment) {
+                    if (isDevelopment()) {
                         console.error('Error in resize handler execution:', error);
                     }
                 }
@@ -222,7 +223,7 @@ const useResizeHandler = ({
                 resizeTimerRef.current = window.setTimeout(resizeFn, debounceTime) as unknown as ReturnType<typeof setTimeout>;
             }
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Unexpected error in resize handling:', error);
             }
         }

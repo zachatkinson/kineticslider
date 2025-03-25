@@ -1,10 +1,11 @@
+import { isDevelopment } from '../utils/environment';
 import { useEffect, useRef, useCallback, type RefObject } from "react";
 import { Sprite } from "pixi.js";
 import { gsap } from "gsap";
 import ResourceManager from '../managers/ResourceManager';
 
 // Development environment check
-const isDevelopment = import.meta.env?.MODE === 'development';
+const devMode = isDevelopment();
 
 interface UseMouseDragProps {
     sliderRef: RefObject<HTMLDivElement | null>;
@@ -63,11 +64,11 @@ const useMouseDrag = ({
             // Clear the array by setting length to 0 (more efficient than creating a new array)
             activeAnimations.length = 0;
 
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.log('Processed batch animations for mouse drag');
             }
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error processing batch animations:', error);
             }
             // Clear array even on error
@@ -93,7 +94,7 @@ const useMouseDrag = ({
             // Reset animation state
             dragStateRef.current.isAnimating = false;
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error cleaning up animations:', error);
             }
         }
@@ -134,7 +135,7 @@ const useMouseDrag = ({
             // Process animations in batch
             processBatchAnimations();
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error handling drag effect:', error);
             }
         }
@@ -182,7 +183,7 @@ const useMouseDrag = ({
             // Process animations in batch
             processBatchAnimations();
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error resetting slide scale:', error);
             }
             // Ensure animation state is reset even on error
@@ -207,7 +208,7 @@ const useMouseDrag = ({
             dragStateRef.current.startX = e.clientX;
             dragStateRef.current.endX = e.clientX;
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error in mouse down handler:', error);
             }
         }
@@ -236,7 +237,7 @@ const useMouseDrag = ({
             // Apply drag effect
             handleDragEffect(deltaX);
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error in mouse move handler:', error);
             }
         }
@@ -273,7 +274,7 @@ const useMouseDrag = ({
                 }, 50);
             }
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error in mouse up handler:', error);
             }
             // Reset dragging state even on error
@@ -295,7 +296,7 @@ const useMouseDrag = ({
             // Reset slide scale
             resetSlideScale();
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error in mouse leave handler:', error);
             }
             // Reset dragging state even on error
@@ -356,13 +357,13 @@ const useMouseDrag = ({
                         slider.removeEventListener('mouseleave', handleMouseLeave);
                     }
                 } catch (cleanupError) {
-                    if (isDevelopment) {
+                    if (isDevelopment()) {
                         console.error('Error during useMouseDrag cleanup:', cleanupError);
                     }
                 }
             };
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error setting up mouse drag handlers:', error);
             }
             // Return empty cleanup function

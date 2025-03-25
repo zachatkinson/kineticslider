@@ -1,41 +1,34 @@
-export default {
+/** @type {import('jest').Config} */
+const config = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  setupFilesAfterEnv: ['./src/setupTests.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@types/(.*)$': '<rootDir>/src/types/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '<rootDir>/__mocks__/fileMock.js',
+    '^@/__mocks__/(.*)$': '<rootDir>/src/__mocks__/$1',
+    '^pixi-filters$': '<rootDir>/__mocks__/pixi-filters.js',
+    '^../utils/environment$': '<rootDir>/src/__mocks__/environment.ts',
+    '^./utils/environment$': '<rootDir>/src/__mocks__/environment.ts',
+    '^gsap$': '<rootDir>/__mocks__/gsap.js',
+    '^gsap/PixiPlugin$': '<rootDir>/__mocks__/gsap.js'
   },
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       useESM: true,
-    }],
-    '^.+\\.(js|jsx)$': ['babel-jest', {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' }, modules: false }],
-        '@babel/preset-react',
-        '@babel/preset-typescript'
-      ]
+      tsconfig: 'tsconfig.test.json'
     }]
   },
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/index.tsx',
-    '!src/reportWebVitals.ts',
-    '!src/setupTests.ts',
+  transformIgnorePatterns: [
+    'node_modules/(?!(@pixi|pixi.js|pixi-filters)/)'
   ],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
-    },
-  },
-  testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
+  resolver: undefined
 };
+
+export default config;

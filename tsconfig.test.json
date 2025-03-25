@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -17,7 +18,11 @@
     "checkJs": false,
     "noEmit": true,
     "declaration": false,
-    "lib": ["DOM", "DOM.Iterable", "ES2022"]
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": [
     "src/__tests__/**/*",

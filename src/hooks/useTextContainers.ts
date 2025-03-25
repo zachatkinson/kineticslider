@@ -1,3 +1,4 @@
+import { isDevelopment } from '../utils/environment';
 import { useEffect, type RefObject } from 'react';
 import { Application, Container, Text, TextStyle, Sprite } from 'pixi.js';
 import { gsap } from 'gsap';
@@ -6,22 +7,22 @@ import { setupCustomFonts } from '../utils/fontUtils';
 import ResourceManager from '../managers/ResourceManager';
 
 // Development environment check
-const isDevelopment = import.meta.env?.MODE === 'development';
+const devMode = isDevelopment();
 
 // Comprehensive logging utility
 const log = {
     info: (message: string, ...args: any[]) => {
-        if (isDevelopment) {
+        if (isDevelopment()) {
             console.log(`[useTextContainers:INFO] ${message}`, ...args);
         }
     },
     warn: (message: string, ...args: any[]) => {
-        if (isDevelopment) {
+        if (isDevelopment()) {
             console.warn(`[useTextContainers:WARN] ${message}`, ...args);
         }
     },
     error: (message: string, error?: unknown) => {
-        if (isDevelopment) {
+        if (isDevelopment()) {
             console.error(`[useTextContainers:ERROR] ${message}`, error);
         }
     }

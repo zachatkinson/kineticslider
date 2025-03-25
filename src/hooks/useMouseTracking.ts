@@ -1,3 +1,4 @@
+import { isDevelopment } from '../utils/environment';
 import { useEffect, useRef, useCallback, type RefObject } from 'react';
 import { Sprite, DisplacementFilter } from 'pixi.js';
 import { gsap } from 'gsap';
@@ -6,7 +7,7 @@ import RenderScheduler from '../managers/RenderScheduler';
 import { UpdateType } from '../managers/UpdateTypes';
 
 // Development environment check
-const isDevelopment = import.meta.env?.MODE === 'development';
+const devMode = isDevelopment();
 
 // Define a custom event for filter coordination
 const FILTER_COORDINATION_EVENT = 'kinetic-slider:filter-update';
@@ -90,11 +91,11 @@ const useMouseTracking = ({
             // Clear array by setting length to 0 (more efficient than creating new array)
             animations.length = 0;
 
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.log('Processed batch animations for mouse tracking');
             }
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error processing batch animations:', error);
             }
             // Clear array even on error to avoid stuck state
@@ -117,7 +118,7 @@ const useMouseTracking = ({
             // Clear array
             animations.length = 0;
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error cleaning up animations:', error);
             }
             // Reset array even on error
@@ -149,7 +150,7 @@ const useMouseTracking = ({
             // Normalize intensity (0-1 range)
             return Math.min(1, distanceFromCenter / (maxDistance * 0.7));
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error calculating displacement intensity:', error);
             }
             // Return safe default value on error
@@ -179,11 +180,11 @@ const useMouseTracking = ({
             const event = new CustomEvent(FILTER_COORDINATION_EVENT, { detail });
             window.dispatchEvent(event);
 
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.log(`Dispatched filter update for ${filterId} with intensity ${intensity} (priority: ${priority})`);
             }
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error dispatching filter update:', error);
             }
         }
@@ -211,7 +212,7 @@ const useMouseTracking = ({
             const bgFilter = backgroundDisplacementFilterRef?.current;
             const cursorFilter = cursorDisplacementFilterRef?.current;
 
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.log('Animating displacement with intensity:', displacementIntensity, {
                     hasBgSprite: !!backgroundSprite,
                     hasCursorSprite: !!cursorSprite,
@@ -249,7 +250,7 @@ const useMouseTracking = ({
 
                     // Ensure the filter is visible by applying immediate scale
                     if (bgFilter.scale.x === 0 || bgFilter.scale.y === 0 || bgFilter.scale.x < intensity) {
-                        if (isDevelopment) {
+                        if (isDevelopment()) {
                             console.log(`Background filter was inactive or too small (${bgFilter.scale.x}, ${bgFilter.scale.y}), setting to ${intensity}`);
                         }
                         bgFilter.scale.x = intensity;
@@ -291,7 +292,7 @@ const useMouseTracking = ({
 
                     // Ensure the filter is visible by applying immediate scale
                     if (cursorFilter.scale.x === 0 || cursorFilter.scale.y === 0 || cursorFilter.scale.x < intensity) {
-                        if (isDevelopment) {
+                        if (isDevelopment()) {
                             console.log(`Cursor filter was inactive or too small (${cursorFilter.scale.x}, ${cursorFilter.scale.y}), setting to ${intensity}`);
                         }
                         cursorFilter.scale.x = intensity;
@@ -323,7 +324,7 @@ const useMouseTracking = ({
                 'mouseTracking',
                 UpdateType.DISPLACEMENT_EFFECT,
                 () => {
-                    if (isDevelopment) {
+                    if (isDevelopment()) {
                         console.log('Immediate render update for displacement effect');
                     }
                 },
@@ -333,7 +334,7 @@ const useMouseTracking = ({
             // Reset pending update flag after processing
             debounceStateRef.current.pendingUpdate = false;
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error animating displacement:', error);
             }
             // Reset pending update flag even on error
@@ -379,7 +380,7 @@ const useMouseTracking = ({
                 }
             }, debounceStateRef.current.debounceDelay);
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error in debounced update:', error);
             }
         }
@@ -436,7 +437,7 @@ const useMouseTracking = ({
                 'high'
             );
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error handling mouse move:', error);
             }
         }
@@ -449,7 +450,7 @@ const useMouseTracking = ({
         try {
             if (!isMountedRef.current) return;
 
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.log('[useMouseTracking] Mouse left slider - fading out displacement effects');
             }
 
@@ -501,14 +502,14 @@ const useMouseTracking = ({
                 'mouseTracking',
                 UpdateType.DISPLACEMENT_EFFECT,
                 () => {
-                    if (isDevelopment) {
+                    if (isDevelopment()) {
                         console.log('[useMouseTracking] Fade-out render update for mouse leave');
                     }
                 },
                 'high'
             );
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('[useMouseTracking] Error handling mouse leave:', error);
             }
         }
@@ -574,13 +575,13 @@ const useMouseTracking = ({
                         node.removeEventListener('mouseleave', handleMouseLeave); // Remove mouseleave handler
                     }
                 } catch (cleanupError) {
-                    if (isDevelopment) {
+                    if (isDevelopment()) {
                         console.error('Error during mouse tracking cleanup:', cleanupError);
                     }
                 }
             };
         } catch (error) {
-            if (isDevelopment) {
+            if (isDevelopment()) {
                 console.error('Error setting up mouse tracking:', error);
             }
             // Return empty cleanup function

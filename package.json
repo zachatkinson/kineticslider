@@ -12,9 +12,9 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "NODE_NO_WARNINGS=1 jest",
+    "test:watch": "NODE_NO_WARNINGS=1 jest --watch",
+    "test:coverage": "NODE_NO_WARNINGS=1 jest --coverage",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
@@ -43,6 +43,8 @@
   },
   "homepage": "https://github.com/zachatkinson/kineticslider#readme",
   "peerDependencies": {
+    "pixi-filters": "^6.1.2",
+    "pixi.js": "^8.0.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
@@ -51,6 +53,7 @@
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.26.3",
     "@babel/preset-typescript": "^7.27.0",
+    "@eslint/js": "^9.23.0",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-replace": "^6.0.2",
@@ -64,7 +67,6 @@
     "@types/react-dom": "^19.0.4",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
-    "@eslint/js": "^9.23.0",
     "babel-jest": "^29.7.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.23.0",
@@ -72,10 +74,13 @@
     "eslint-plugin-prettier": "^5.2.4",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "gsap": "3.12.7",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "lru-cache": "^11.1.0",
+    "pixi-filters": "^6.1.2",
+    "pixi.js": "^8.0.0",
     "prettier": "^3.5.3",
     "read-package-up": "^11.0.0",
     "rimraf": "^6.0.1",
@@ -90,7 +95,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   }
 }
