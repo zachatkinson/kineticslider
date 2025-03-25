@@ -1,145 +1,96 @@
 {
-  "name": "kinetic-slider",
-  "version": "1.1.0",
-  "description": "A WebGL-powered kinetic slider component using PIXI.js",
-  "author": "Creative Branding <info@creativebranding.ca> (https://creativebranding.ca)",
-  "license": "Apache-2.0",
+  "name": "kineticslider",
+  "version": "1.0.0",
+  "description": "A high-performance, customizable slider component with kinetic scrolling and advanced effects",
   "type": "module",
-  "main": "./dist/cjs/index.cjs",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs",
-      "types": "./dist/types/index.d.ts"
-    }
-  },
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}' --quiet || echo 'Linting skipped - continuing with build'",
-    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config=jest.config.js",
-    "test:watch": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --watch --config=jest.config.js",
-    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --coverage --config=jest.config.js",
-    "test:ci": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config=jest.config.js --passWithNoTests || echo 'Tests failed but continuing build'",
-    "prepublishOnly": "npm run build",
-    "release": "semantic-release",
-    "dev:install": "npm install --legacy-peer-deps"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "prepublishOnly": "npm test && npm run lint && npm run build",
+    "docs": "typedoc --out docs src",
+    "release": "semantic-release"
   },
+  "keywords": [
+    "react",
+    "slider",
+    "kinetic",
+    "scroll",
+    "effects",
+    "filters",
+    "performance",
+    "typescript"
+  ],
+  "author": "Zach Atkinson",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zachatkinson/kineticslider.git"
+    "url": "git+https://github.com/zachatkinson/kineticslider.git"
   },
-  "homepage": "https://creativebranding.ca",
   "bugs": {
     "url": "https://github.com/zachatkinson/kineticslider/issues"
   },
-  "keywords": [
-    "slider",
-    "webgl",
-    "pixi.js",
-    "animation",
-    "react",
-    "typescript",
-    "displacement",
-    "effects",
-    "transition"
-  ],
+  "homepage": "https://github.com/zachatkinson/kineticslider#readme",
   "peerDependencies": {
-    "gsap": "^3.12.0",
-    "pixi-filters": "^6.0.0",
-    "pixi.js": "^8.0.0",
-    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": false
-    },
-    "react-dom": {
-      "optional": false
-    },
-    "pixi.js": {
-      "optional": false
-    },
-    "pixi-filters": {
-      "optional": false
-    },
-    "gsap": {
-      "optional": false
-    }
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.23.0",
-    "@jest/globals": "^29.7.0",
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.27.0",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-replace": "^6.0.2",
+    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
-    "@types/jest": "^29.5.12",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@types/testing-library__jest-dom": "^5.14.9",
-    "@typescript-eslint/eslint-plugin": "^8.27.0",
-    "@typescript-eslint/parser": "^8.27.0",
-    "esbuild": "^0.25.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^29.5.14",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@eslint/js": "^9.23.0",
+    "babel-jest": "^29.7.0",
+    "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.23.0",
-    "eslint-plugin-react": "^7.34.1",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.4",
+    "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "globals": "^16.0.0",
-    "gsap": "^3.12.7",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
-    "jest-canvas-mock": "^2.5.2",
     "jest-environment-jsdom": "^29.7.0",
-    "jest-watch-typeahead": "^2.2.2",
-    "pixi-filters": "^6.1.2",
-    "pixi.js": "^8.9.0",
-    "postcss": "^8.4.38",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "lru-cache": "^11.1.0",
+    "prettier": "^3.5.3",
+    "read-package-up": "^11.0.0",
+    "rimraf": "^6.0.1",
     "rollup": "^4.37.0",
-    "rollup-plugin-esbuild": "^6.2.1",
+    "rollup-plugin-dts": "^6.2.1",
     "rollup-plugin-peer-deps-external": "^2.2.4",
-    "rollup-plugin-postcss": "^4.0.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "sass": "^1.86.0",
     "semantic-release": "^24.2.3",
     "ts-jest": "^29.3.0",
-    "tslib": "^2.8.1",
-    "typescript": "^5.4.3"
+    "typedoc": "^0.28.1",
+    "typescript": "^5.8.2"
   },
-  "optionalDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
-  "release": {
-    "branches": [
-      "main"
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "package.json",
-            "package-lock.json",
-            "CHANGELOG.md"
-          ],
-          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-        }
-      ],
-      "@semantic-release/github"
-    ]
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }

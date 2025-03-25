@@ -6,6 +6,52 @@ A high-performance, WebGL-powered slider component using PIXI.js for stunning vi
 [![npm version](https://img.shields.io/npm/v/kinetic-slider.svg)](https://www.npmjs.com/package/kinetic-slider)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/zachatkinson/kineticslider/blob/main/LICENSE)
 
+## Table of Contents
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+- [Support](#support)
+- [Changelog](#changelog)
+- [Browser Support](#browser-support)
+- [Examples](#examples)
+   - [Basic Slider with Text](#basic-slider-with-text)
+   - [Advanced Effects](#advanced-effects)
+   - [Custom Navigation](#custom-navigation)
+   - [Performance Optimized](#performance-optimized)
+   - [Accessibility Focused](#accessibility-focused)
+- [Performance Tips](#performance-tips)
+- [Common Issues](#common-issues)
+   - [Performance Issues](#performance-issues)
+   - [Visual Issues](#visual-issues)
+   - [Browser Compatibility](#browser-compatibility)
+- [Usage](#usage)
+- [Configuration Options](#configuration-options)
+   - [Content Sources](#content-sources)
+   - [Displacement Settings](#displacement-settings)
+   - [Text Styling](#text-styling)
+   - [Navigation Settings](#navigation-settings)
+   - [Texture Atlas Settings](#texture-atlas-settings)
+   - [Filter Settings](#filter-settings)
+   - [Performance Settings](#performance-settings)
+   - [Animation Settings](#animation-settings)
+   - [Accessibility Settings](#accessibility-settings)
+   - [Debug Settings](#debug-settings)
+- [Advanced Configuration](#advanced-configuration)
+- [Available Filters](#available-filters)
+- [Using Texture Atlases](#using-texture-atlases)
+   - [Benefits](#benefits)
+   - [Implementation](#implementation)
+   - [Generating Texture Atlases](#generating-texture-atlases)
+   - [Best Practices](#best-practices)
+   - [Troubleshooting](#troubleshooting)
+- [Automated Releases](#automated-releases)
+- [API Reference](#api-reference)
+- [License](#license)
+- [Development Status](#development-status)
+- [Development](#development)
+
 ## Features
 
 - WebGL-powered rendering with PIXI.js
@@ -24,6 +70,62 @@ npm install kinetic-slider
 # or
 yarn add kinetic-slider
 ```
+
+## Quick Start
+
+Get started with KineticSlider in minutes:
+
+```jsx
+import React from 'react';
+import { KineticSlider } from 'kinetic-slider';
+
+function App() {
+  return (
+    <KineticSlider
+      images={['/slide1.jpg', '/slide2.jpg']}
+      texts={[['Welcome', 'Get Started'], ['Features', 'Explore']]}
+    />
+  );
+}
+```
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Code of Conduct
+- Development Process
+- Pull Request Process
+- Coding Standards
+- Commit Message Guidelines
+
+## Roadmap
+
+### Planned Features
+- [ ] React 18 concurrent mode support
+- [ ] Server-side rendering improvements
+- [ ] More filter presets
+- [ ] Custom transition effects
+- [ ] Virtual slides for large datasets
+- [ ] Touch gesture improvements
+- [ ] Performance monitoring tools
+
+### Known Issues
+- See [Development Status](#development-status) for current issues
+- Check [GitHub Issues](https://github.com/zachatkinson/kineticslider/issues) for more
+
+## Support
+
+Need help? Here's how to get it:
+
+- 📚 [Documentation](https://github.com/zachatkinson/kineticslider)
+- 🐛 [Report a Bug](https://github.com/zachatkinson/kineticslider/issues/new?labels=bug)
+- 💡 [Request a Feature](https://github.com/zachatkinson/kineticslider/issues/new?labels=enhancement)
+- ❓ [Ask a Question](https://github.com/zachatkinson/kineticslider/discussions)
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes and version history.
 
 ## Browser Support
 
@@ -110,28 +212,28 @@ For older browsers, consider using a polyfill for WebGL support.
 ## Performance Tips
 
 1. **Image Optimization**
-    - Use WebP format for better compression
-    - Optimize image dimensions to match display size
-    - Consider using responsive images
-    - Use texture atlases for multiple images
+   - Use WebP format for better compression
+   - Optimize image dimensions to match display size
+   - Consider using responsive images
+   - Use texture atlases for multiple images
 
 2. **Filter Usage**
-    - Enable filter batching for multiple filters
-    - Use appropriate filter intensities
-    - Consider disabling complex filters on mobile
-    - Use shader pooling for better performance
+   - Enable filter batching for multiple filters
+   - Use appropriate filter intensities
+   - Consider disabling complex filters on mobile
+   - Use shader pooling for better performance
 
 3. **Memory Management**
-    - Clean up resources when component unmounts
-    - Use appropriate texture atlas sizes
-    - Monitor memory usage with large datasets
-    - Consider lazy loading for large images
+   - Clean up resources when component unmounts
+   - Use appropriate texture atlas sizes
+   - Monitor memory usage with large datasets
+   - Consider lazy loading for large images
 
 4. **Animation Performance**
-    - Use appropriate transition durations
-    - Enable hardware acceleration
-    - Monitor frame rates during transitions
-    - Consider reducing effects on lower-end devices
+   - Use appropriate transition durations
+   - Enable hardware acceleration
+   - Monitor frame rates during transitions
+   - Consider reducing effects on lower-end devices
 
 ## Common Issues
 
@@ -998,24 +1100,24 @@ node src/scripts/generateAtlas.cjs \
 
 ### Best Practices
 1. **Image Preparation**
-    - Use consistent image sizes
-    - Optimize images before creating the atlas
-    - Consider using WebP format for better compression
+   - Use consistent image sizes
+   - Optimize images before creating the atlas
+   - Consider using WebP format for better compression
 
 2. **Atlas Size**
-    - Keep atlas dimensions under 2048x2048 for best compatibility
-    - Split into multiple atlases if needed
-    - Consider device capabilities when setting max dimensions
+   - Keep atlas dimensions under 2048x2048 for best compatibility
+   - Split into multiple atlases if needed
+   - Consider device capabilities when setting max dimensions
 
 3. **Performance**
-    - Monitor memory usage with large atlases
-    - Use the `enableShaderPooling` option for better performance
-    - Consider lazy loading for large atlases
+   - Monitor memory usage with large atlases
+   - Use the `enableShaderPooling` option for better performance
+   - Consider lazy loading for large atlases
 
 4. **Development Workflow**
-    - Generate atlases during build process
-    - Keep source images separate from generated atlases
-    - Version control both source images and generated atlases
+   - Generate atlases during build process
+   - Keep source images separate from generated atlases
+   - Version control both source images and generated atlases
 
 ### Troubleshooting
 
@@ -1042,9 +1144,9 @@ If you experience issues with texture atlases:
    ```
 
 3. **Visual Artifacts**
-    - Check padding settings in atlas generation
-    - Verify image dimensions are consistent
-    - Ensure proper image format support
+   - Check padding settings in atlas generation
+   - Verify image dimensions are consistent
+   - Ensure proper image format support
 
 ## Automated Releases
 

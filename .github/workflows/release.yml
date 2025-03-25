@@ -1,51 +1,60 @@
 name: Release
+
 on:
   push:
     branches:
       - main
-      - master
-  workflow_dispatch: # Allow manual triggering
+  pull_request:
+    branches:
+      - main
 
 jobs:
   release:
-    name: Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
-      - name: Verify file structure
-        run: |
-          echo "Current directory contents:"
-          ls -la
-          echo "Source directory contents:"
-          ls -la src || echo "src directory not found"
-
-      - name: Lint
-        run: npm run lint
-        continue-on-error: true
+      - name: Run tests
+        run: npm test
 
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm run test:ci
-        continue-on-error: true
-
-      - name: Release
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Publish to NPM
+        if: startsWith(github.ref, 'refs/tags/')
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Update documentation
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          npm run docs
+          git add .
+          git commit -m "docs: update documentation for ${{ github.ref_name }}"
+          git push

@@ -1,0 +1,95 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+# Source code
+*.css text
+*.html text
+*.js text
+*.json text
+*.jsx text
+*.ts text
+*.tsx text
+*.xml text
+*.yaml text
+*.yml text
+
+# Documentation
+*.md text diff=markdown
+*.txt text
+*.pdf binary
+*.doc binary
+*.docx binary
+*.rtf binary
+*.odt binary
+*.ppt binary
+*.pptx binary
+*.xls binary
+*.xlsx binary
+*.odp binary
+*.ods binary
+*.odg binary
+*.odf binary
+*.swf binary
+*.svg text
+
+# Graphics
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.bmp binary
+*.tiff binary
+*.psd binary
+*.ai binary
+*.eps binary
+*.svg text
+
+# Fonts
+*.ttf binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+
+# Scripts
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Configs
+*.ini text
+*.conf text
+*.config text
+*.properties text
+*.yml text
+*.yaml text
+*.json text
+*.xml text
+*.toml text
+*.lock text
+*.log text
+*.env text
+*.env.* text
+
+# Archives
+*.7z binary
+*.dmg binary
+*.gz binary
+*.iso binary
+*.jar binary
+*.rar binary
+*.tar binary
+*.zip binary
+
+# Database
+*.sqlite binary
+*.sqlite3 binary
+*.db binary
+
+# OS generated files
+.DS_Store? binary
+._* binary
+.Spotlight-V100 binary
+.Trashes binary
+ehthumbs.db binary
+Thumbs.db binary

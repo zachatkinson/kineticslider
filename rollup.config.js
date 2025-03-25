@@ -1,29 +1,33 @@
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
-import postcss from 'rollup-plugin-postcss';
-import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import esbuild from 'rollup-plugin-esbuild';
-import { defineConfig } from 'rollup';
 import { createRequire } from 'module';
-import replace from '@rollup/plugin-replace';
+import { readFileSync } from 'fs';
 
 const require = createRequire(import.meta.url);
+const resolve = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const typescript = require('@rollup/plugin-typescript');
+const peerDepsExternal = require('rollup-plugin-peer-deps-external');
+const terser = require('@rollup/plugin-terser');
+const replace = require('@rollup/plugin-replace');
+const dts = require('rollup-plugin-dts');
+const postcss = require('rollup-plugin-postcss');
+
+// Read package.json as ES module
+const pkg = JSON.parse(readFileSync('./package.json'));
 
 // Common replace config for import.meta.env
 const replaceConfig = {
-    preventAssignment: true,
-    'import.meta.env?.MODE': JSON.stringify('production'),
-    'import.meta.env.MODE': JSON.stringify('production'),
-    'import.meta.env.DEV': JSON.stringify(false),
-    'import.meta.env.NODE_ENV': JSON.stringify('production'),
-    'process.env.NODE_ENV': JSON.stringify('production'),
-    // Fix for the import with .ts extension
-    "import('./index.ts')": "import('./index')",
-    // Fix for dynamic filter imports
-    "import(/* @vite-ignore */ modulePath)": "import(modulePath)",
-    // Fix GSAP plugin imports
-    "import('gsap/PixiPlugin')": "import('gsap').then(m => ({ default: m.gsap.plugins.PixiPlugin }))",
+  preventAssignment: true,
+  'import.meta.env?.MODE': JSON.stringify('production'),
+  'import.meta.env.MODE': JSON.stringify('production'),
+  'import.meta.env.DEV': JSON.stringify(false),
+  'import.meta.env.NODE_ENV': JSON.stringify('production'),
+  'process.env.NODE_ENV': JSON.stringify('production'),
+  // Fix for the import with .ts extension
+  "import('./index.ts')": "import('./index')",
+  // Fix for dynamic filter imports
+  "import(/* @vite-ignore */ modulePath)": "import(modulePath)",
+  // Fix GSAP plugin imports
+  "import('gsap/PixiPlugin')": "import('gsap').then(m => ({ default: m.gsap.plugins.PixiPlugin }))",
 };
 
 // Copy of the style-inject code to avoid relying on node_modules path
@@ -57,166 +61,109 @@ export default styleInject;
 
 // All external packages that should not be bundled
 const external = [
-    'react',
-    'react-dom',
-    'pixi.js',
-    'pixi-filters',
-    'gsap',
-    'gsap/PixiPlugin',
+  'react',
+  'react-dom',
+  'pixi.js',
+  'pixi-filters',
+  'gsap',
+  'gsap/PixiPlugin',
 ];
 
 // Create a custom plugin for style-inject
 const virtualStyleInject = {
-    name: 'virtual-style-inject',
-    resolveId(id) {
-        if (id === 'style-inject') {
-            return 'virtual:style-inject';
-        }
-        return null;
-    },
-    load(id) {
-        if (id === 'virtual:style-inject') {
-            return styleInjectCode;
-        }
-        return null;
+  name: 'virtual-style-inject',
+  resolveId(id) {
+    if (id === 'style-inject') {
+      return 'virtual:style-inject';
     }
+    return null;
+  },
+  load(id) {
+    if (id === 'virtual:style-inject') {
+      return styleInjectCode;
+    }
+    return null;
+  }
 };
 
-// Create a separate build for each format to handle TypeScript declarations properly
 export default [
-    // ESM build
-    defineConfig({
-        input: 'src/index.ts',
-        output: {
-            dir: 'dist/esm',
-            format: 'esm',
-            preserveModules: true,
-            preserveModulesRoot: 'src',
-            sourcemap: true,
-            exports: 'named',
-            entryFileNames: '[name].js',
-            paths: {
-                'gsap/PixiPlugin': 'gsap'
-            }
-        },
-        plugins: [
-            virtualStyleInject,
-            peerDepsExternal(),
-            replace(replaceConfig),
-            resolve({
-                extensions: ['.ts', '.tsx', '.js', '.jsx'],
-                mainFields: ['module', 'browser', 'main']
-            }),
-            esbuild({
-                include: /\.[jt]sx?$/,
-                exclude: /node_modules/,
-                sourceMap: true,
-                minify: false,
-                target: 'es2020',
-                jsx: 'transform',
-                tsconfig: './tsconfig.json',
-            }),
-            commonjs(),
-            postcss({
-                extensions: ['.css'],
-                minimize: true,
-                modules: true,
-                extract: false,
-                // Use our virtual style-inject module
-                inject: function (cssVariableName) {
-                    return `import styleInject from 'style-inject';\nstyleInject(${cssVariableName}, { insertAt: 'top' });`;
-                },
-                use: ['sass'],
-            }),
-        ],
-        external,
-    }),
-
-    // CJS build
-    defineConfig({
-        input: 'src/index.ts',
-        output: {
-            dir: 'dist/cjs',
-            format: 'cjs',
-            preserveModules: true,
-            preserveModulesRoot: 'src',
-            sourcemap: true,
-            exports: 'named',
-            entryFileNames: '[name].cjs',
-            paths: {
-                'gsap/PixiPlugin': 'gsap'
-            }
-        },
-        plugins: [
-            virtualStyleInject,
-            peerDepsExternal(),
-            replace(replaceConfig),
-            resolve({
-                extensions: ['.ts', '.tsx', '.js', '.jsx'],
-                mainFields: ['main', 'module']
-            }),
-            esbuild({
-                include: /\.[jt]sx?$/,
-                exclude: /node_modules/,
-                sourceMap: true,
-                minify: false,
-                target: 'es2020',
-                jsx: 'transform',
-                tsconfig: './tsconfig.json',
-            }),
-            commonjs(),
-            postcss({
-                extensions: ['.css'],
-                minimize: true,
-                modules: true,
-                extract: false,
-                // Use our virtual style-inject module
-                inject: function (cssVariableName) {
-                    return `import styleInject from 'style-inject';\nstyleInject(${cssVariableName}, { insertAt: 'top' });`;
-                },
-                use: ['sass'],
-            }),
-        ],
-        external,
-    }),
-
-    // Type declarations (separate build just for .d.ts files)
-    defineConfig({
-        input: 'src/index.ts',
-        output: {
-            dir: 'dist/types',
-            format: 'esm',
-            preserveModules: true,
-            preserveModulesRoot: 'src',
-            sourcemap: true,
-        },
-        plugins: [
-            peerDepsExternal(),
-            typescript({
-                tsconfig: './tsconfig.json',
-                declaration: true,
-                declarationDir: 'dist/types',
-                outDir: 'dist/types',
-                emitDeclarationOnly: true,
-                rootDir: 'src',
-                compilerOptions: {
-                    moduleResolution: "node",
-                    noEmitOnError: false,
-                }
-            }),
-            resolve({
-                extensions: ['.ts', '.tsx', '.js', '.jsx']
-            }),
-            replace(replaceConfig),
-            commonjs(),
-            postcss({
-                extensions: ['.css'],
-                modules: true,
-                inject: false,
-                extract: false,
-                use: ['sass'],
-            }),
-        ],
-        external,
-    })
+  {
+    input: 'src/index.ts',
+    output: [
+      {
+        file: pkg.main,
+        format: 'cjs',
+        sourcemap: true,
+        exports: 'named',
+      },
+      {
+        file: pkg.module,
+        format: 'esm',
+        sourcemap: true,
+      },
+    ],
+    plugins: [
+      peerDepsExternal(),
+      resolve({
+        extensions: ['.ts', '.tsx', '.js', '.jsx']
+      }),
+      commonjs(),
+      typescript({
+        tsconfig: './tsconfig.json',
+        sourceMap: true,
+        inlineSources: true
+      }),
+      postcss({
+        extensions: ['.css'],
+        modules: true,
+        use: ['sass'],
+      }),
+      terser(),
+    ],
+    external,
+  },
+  {
+    input: 'dist/types/index.d.ts',
+    output: [{ file: 'dist/index.d.ts', format: 'esm' }],
+    plugins: [dts()],
+  },
+  // Type declarations (separate build just for .d.ts files)
+  {
+    input: 'src/index.ts',
+    output: {
+      dir: 'dist/types',
+      format: 'esm',
+      preserveModules: true,
+      preserveModulesRoot: 'src',
+      sourcemap: true,
+    },
+    plugins: [
+      peerDepsExternal(),
+      typescript({
+        tsconfig: './tsconfig.json',
+        declaration: true,
+        declarationDir: 'dist/types',
+        outDir: 'dist/types',
+        emitDeclarationOnly: true,
+        rootDir: 'src',
+        compilerOptions: {
+          moduleResolution: "bundler",
+          noEmitOnError: false,
+        }
+      }),
+      resolve({
+        extensions: ['.ts', '.tsx', '.js', '.jsx']
+      }),
+      replace(replaceConfig),
+      commonjs(),
+      postcss({
+        extensions: ['.css'],
+        modules: true,
+        inject: false,
+        extract: false,
+        use: ['sass'],
+      }),
+    ],
+    external,
+  }
 ];
