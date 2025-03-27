@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "npm run dev",
+    "start": "pnpm run dev",
     "clean": "rimraf dist coverage .jest-cache",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -28,13 +28,13 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
     "typecheck": "tsc --noEmit",
-    "validate": "npm run typecheck && npm run lint && npm run test",
+    "validate": "pnpm run typecheck && pnpm run lint && pnpm run test",
     "prepare": "husky install",
-    "prepublishOnly": "npm run clean && npm run validate",
+    "prepublishOnly": "pnpm run clean && pnpm run validate && pnpm run build",
     "postpublish": "git push --follow-tags",
     "analyze": "rollup -c --configPlugin @rollup/plugin-visualizer",
     "size": "size-limit",
-    "audit": "npm audit fix",
+    "audit": "pnpm audit fix",
     "docs": "typedoc src/index.ts"
   },
   "keywords": [
@@ -46,7 +46,7 @@
   ],
   "engines": {
     "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "pnpm": ">=8.0.0"
   },
   "repository": {
     "type": "git",
@@ -86,6 +86,7 @@
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/jest": "^29.5.12",
     "@types/prettier": "^3.0.0",
     "@types/react": "^18.2.64",
@@ -107,6 +108,7 @@
     "jest-watch-typeahead": "^2.2.2",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.6.11",
     "rimraf": "^5.0.5",
     "rollup": "^4.12.0",
     "rollup-plugin-typescript2": "^0.36.0",
@@ -128,8 +130,17 @@
       "prettier --write"
     ]
   },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/react",
+      "**/react-dom"
+    ]
+  },
   "publishConfig": {
-    "access": "public",
+    "access": "restricted",
     "registry": "https://registry.npmjs.org/",
     "tag": "latest"
   },
@@ -147,9 +158,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js",
-      "default": "./dist/index.js"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
