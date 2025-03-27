@@ -6,21 +6,36 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import prettier from 'eslint-plugin-prettier';
 import jsdoc from 'eslint-plugin-jsdoc';
+import importPlugin from 'eslint-plugin-import';
+import security from 'eslint-plugin-security';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   // Base configuration
   {
-    ignores: ['node_modules/**', 'dist/**', '.cursor/**'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      '.cursor/**',
+      'coverage/**',
+      '.next/**',
+      'out/**'
+    ],
     languageOptions: {
-      ecmaVersion: 'latest',
+      ecmaVersion: 2022,
       sourceType: 'module',
       parser: typescriptParser,
       parserOptions: {
         ecmaFeatures: {
           jsx: true,
         },
+        project: './tsconfig.json',
+        tsconfigRootDir: '.',
       },
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: true,
+      noInlineConfig: true,
     },
     plugins: {
       '@typescript-eslint': typescript,
@@ -29,6 +44,19 @@ export default [
       'jsx-a11y': jsxA11y,
       'prettier': prettier,
       'jsdoc': jsdoc,
+      'import': importPlugin,
+      'security': security,
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json',
+        },
+      },
     },
     rules: {
       // JSDoc rules
@@ -204,20 +232,116 @@ export default [
       'no-duplicate-imports': 'error',
       'no-unused-vars': 'off', // Using TypeScript's no-unused-vars
       'prettier/prettier': 'error',
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-      'jsx-a11y': {
-        components: {
-          Button: 'button',
-          Link: 'a',
-          Input: 'input',
-          Select: 'select',
-          Textarea: 'textarea',
+
+      // Import rules
+      'import/no-unresolved': 'error',
+      'import/named': 'error',
+      'import/default': 'error',
+      'import/namespace': 'error',
+      'import/no-restricted-paths': ['error', {
+        zones: [
+          {
+            target: './src',
+            from: './public',
+          },
+        ],
+      }],
+      'import/no-cycle': ['error', { maxDepth: 1 }],
+      'import/no-self-import': 'error',
+      'import/no-useless-path-segments': 'error',
+      'import/order': ['error', {
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
         },
-      },
+      }],
+      'import/no-duplicates': 'error',
+
+      // Security rules
+      'security/detect-object-injection': 'warn',
+      'security/detect-non-literal-regexp': 'warn',
+      'security/detect-non-literal-require': 'warn',
+      'security/detect-possible-timing-attacks': 'warn',
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-no-csrf-before-method-override': 'error',
+      'security/detect-buffer-noassert': 'error',
+      'security/detect-unsafe-regex': 'error',
+      'security/detect-new-buffer': 'error',
+
+      // Additional TypeScript rules
+      '@typescript-eslint/strict-boolean-expressions': ['error', {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
+      }],
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': ['error', {
+        checksVoidReturn: true,
+        checksConditionals: true,
+      }],
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'interface',
+          format: ['PascalCase'],
+          prefix: ['I'],
+        },
+        {
+          selector: 'typeAlias',
+          format: ['PascalCase'],
+          suffix: ['Type'],
+        },
+        {
+          selector: 'enum',
+          format: ['PascalCase'],
+          suffix: ['Enum'],
+        },
+      ],
+
+      // Additional React rules
+      'react/function-component-definition': ['error', {
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
+      }],
+      'react/jsx-handler-names': ['error', {
+        eventHandlerPrefix: 'handle',
+        eventHandlerPropPrefix: 'on',
+      }],
+      'react/jsx-key': ['error', {
+        checkFragmentShorthand: true,
+        checkKeyMustBeforeSpread: true,
+      }],
+      'react/jsx-no-leaked-render': ['error', {
+        validStrategies: ['ternary', 'coerce'],
+      }],
+      'react/hook-use-state': ['error', {
+        allowDestructuredState: true,
+      }],
+
+      // Performance rules
+      'react/jsx-no-constructed-context-values': 'error',
+      'react/jsx-no-useless-fragment': 'error',
+      'react/no-array-index-key': 'error',
+      'react/no-unstable-nested-components': ['error', {
+        allowAsProps: false,
+      }],
+      'react/memo': ['error', {
+        allowArrowFunctions: true,
+      }],
+
+      // Error handling rules
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      'no-debugger': 'error',
+      'no-alert': 'error',
+      'no-throw-literal': 'error',
+      '@typescript-eslint/no-throw-literal': 'error',
     },
   },
 
