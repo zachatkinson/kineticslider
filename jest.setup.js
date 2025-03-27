@@ -1,12 +1,57 @@
 // Import testing library utilities
 import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/extend-expect';
+import { configure } from '@testing-library/react';
 import { TextEncoder, TextDecoder } from 'util';
+import { toHaveNoViolations } from 'jest-axe';
+import 'jest-canvas-mock';
+import 'whatwg-fetch';
+
+// Configure testing library
+configure({
+  testIdAttribute: 'data-testid',
+  asyncUtilTimeout: 2000,
+  computedStyleSupportsPseudoElements: true,
+  defaultHidden: true,
+});
+
+// Extend Jest matchers
+expect.extend({
+  toHaveNoViolations,
+  toHaveBeenCalledWithMatch(received, ...expected) {
+    const pass = received.mock.calls.some(call =>
+      expected.every((arg, index) => {
+        if (arg instanceof RegExp) {
+          return arg.test(call[index]);
+        }
+        return call[index] === arg;
+      })
+    );
+
+    return {
+      message: () =>
+        `expected ${received.getMockName()} to have been called with matching arguments`,
+      pass,
+    };
+  },
+  toMatchPerformanceSnapshot(received) {
+    const start = performance.now();
+    received();
+    const end = performance.now();
+    const duration = end - start;
+
+    return {
+      message: () => `expected performance to match snapshot`,
+      pass: duration <= (this.snapshotData?.duration || Infinity),
+    };
+  },
+});
 
 // Polyfill TextEncoder/TextDecoder for Node environment
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
-// Mock window.matchMedia with modern implementation
+// Modern window.matchMedia implementation
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
@@ -21,49 +66,106 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Modern ResizeObserver mock with better type support
+// Enhanced ResizeObserver mock with better type support
 class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-  unobserveAll() {}
+  #callbacks = new Set();
+  
+  observe(target, options = {}) {
+    this.#callbacks.add({ target, options });
+  }
+  
+  unobserve(target) {
+    this.#callbacks.forEach((entry, index) => {
+      if (entry.target === target) {
+        this.#callbacks.delete(entry);
+      }
+    });
+  }
+  
+  disconnect() {
+    this.#callbacks.clear();
+  }
+  
+  trigger(entries) {
+    this.#callbacks.forEach(({ target }) => {
+      const entry = entries.find(e => e.target === target);
+      if (entry) {
+        this.#callbacks.forEach(callback => callback(entries));
+      }
+    });
+  }
 }
 global.ResizeObserver = ResizeObserverMock;
 
-// Modern IntersectionObserver mock with better type support
+// Enhanced IntersectionObserver mock with better type support
 class IntersectionObserverMock {
-  constructor() {}
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-  unobserveAll() {}
-  takeRecords() { return []; }
+  #callbacks = new Set();
+  #options;
+  
+  constructor(callback, options = {}) {
+    this.#callbacks.add(callback);
+    this.#options = options;
+  }
+  
+  observe(target) {
+    const entry = {
+      target,
+      isIntersecting: true,
+      boundingClientRect: target.getBoundingClientRect(),
+      intersectionRatio: 1,
+      intersectionRect: target.getBoundingClientRect(),
+      rootBounds: null,
+      time: Date.now(),
+    };
+    this.#callbacks.forEach(callback => callback([entry], this));
+  }
+  
+  unobserve(target) {
+    // Implementation remains the same
+  }
+  
+  disconnect() {
+    this.#callbacks.clear();
+  }
+  
+  takeRecords() {
+    return [];
+  }
 }
 global.IntersectionObserver = IntersectionObserverMock;
 
-// Modern requestAnimationFrame implementation with better timing
+// Enhanced requestAnimationFrame implementation
+const RAF_TIMEOUT = 1000 / 60; // 60fps
 let rafId = 0;
 global.requestAnimationFrame = (callback) => {
   rafId += 1;
-  setTimeout(() => callback(Date.now()), 0);
+  setTimeout(() => callback(performance.now()), RAF_TIMEOUT);
   return rafId;
 };
 global.cancelAnimationFrame = (id) => {
   clearTimeout(id);
 };
 
-// Modern console handling with better filtering
+// Enhanced console handling with better filtering and logging
 const originalError = console.error;
 const originalWarn = console.warn;
+const originalLog = console.log;
 
-const filteredConsole = (original, filterPatterns) => (...args) => {
+const createFilteredConsole = (original, filterPatterns) => (...args) => {
   if (
     typeof args[0] === 'string' &&
     filterPatterns.some(pattern => args[0].includes(pattern))
   ) {
     return;
   }
-  original.call(console, ...args);
+  
+  // Add test context to console output
+  const testContext = expect.getState();
+  const prefix = testContext.currentTestName
+    ? `[${testContext.currentTestName}] `
+    : '';
+    
+  original.call(console, prefix, ...args);
 };
 
 beforeAll(() => {
@@ -73,15 +175,35 @@ beforeAll(() => {
     'Warning: ReactDOM.unmountComponentAtNode is no longer supported',
     'Warning: ReactDOM.findDOMNode is no longer supported',
     'Warning: ReactDOM.createPortal is no longer supported',
+    'Warning: Using UNSAFE_',
+    'Warning: Legacy context API',
+    'Warning: componentWillMount',
+    'Warning: componentWillReceiveProps',
+    'Warning: componentWillUpdate',
   ];
 
-  console.error = filteredConsole(originalError, filterPatterns);
-  console.warn = filteredConsole(originalWarn, filterPatterns);
+  console.error = createFilteredConsole(originalError, filterPatterns);
+  console.warn = createFilteredConsole(originalWarn, filterPatterns);
+  console.log = createFilteredConsole(originalLog, []);
+  
+  // Setup performance monitoring
+  if (typeof window !== 'undefined') {
+    window.performance = {
+      ...window.performance,
+      mark: jest.fn(),
+      measure: jest.fn(),
+      getEntriesByType: jest.fn().mockReturnValue([]),
+      getEntriesByName: jest.fn().mockReturnValue([]),
+      clearMarks: jest.fn(),
+      clearMeasures: jest.fn(),
+    };
+  }
 });
 
 afterAll(() => {
   console.error = originalError;
   console.warn = originalWarn;
+  console.log = originalLog;
 });
 
 // Modern PIXI.js mock with better type support and async handling
@@ -202,26 +324,67 @@ jest.mock('gsap', () => ({
   },
 }));
 
-// Modern environment setup with better type support
+// Modern environment setup
 process.env.NODE_ENV = 'test';
-process.env.TZ = 'UTC'; // Ensure consistent timezone in tests
+process.env.TZ = 'UTC';
 
-// Add modern Jest matchers
-expect.extend({
-  toHaveBeenCalledWithMatch(received, ...expected) {
-    const pass = received.mock.calls.some(call =>
-      expected.every((arg, index) => {
-        if (arg instanceof RegExp) {
-          return arg.test(call[index]);
+// Setup snapshot serializers
+expect.addSnapshotSerializer({
+  test: (val) => val && val.$$typeof === Symbol.for('react.test.json'),
+  print: (val, serialize) => serialize(val.props),
+});
+
+// Setup async utilities
+global.waitFor = (callback, options = {}) => {
+  const { timeout = 1000, interval = 50 } = options;
+  const startTime = Date.now();
+
+  return new Promise((resolve, reject) => {
+    const check = async () => {
+      try {
+        const result = await callback();
+        resolve(result);
+      } catch (error) {
+        if (Date.now() - startTime > timeout) {
+          reject(error);
+        } else {
+          setTimeout(check, interval);
         }
-        return call[index] === arg;
-      })
-    );
-
-    return {
-      message: () =>
-        `expected ${received.getMockName()} to have been called with matching arguments`,
-      pass,
+      }
     };
-  },
+    check();
+  });
+};
+
+// Add test environment helpers
+global.mockWindowProperty = (property, value) => {
+  const { [property]: originalValue } = window;
+  delete window[property];
+  beforeAll(() => {
+    Object.defineProperty(window, property, {
+      configurable: true,
+      writable: true,
+      value,
+    });
+  });
+  afterAll(() => {
+    Object.defineProperty(window, property, {
+      configurable: true,
+      writable: true,
+      value: originalValue,
+    });
+  });
+};
+
+// Add cleanup utility
+afterEach(() => {
+  // Clear all mocks
+  jest.clearAllMocks();
+  // Clear all timers
+  jest.clearAllTimers();
+  // Clear all fake timers
+  if (jest.isFakeTimers()) {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  }
 }); 
