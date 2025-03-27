@@ -1,33 +1,70 @@
 ## Description
-Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context.
+<!-- Provide a brief description of the changes in this PR -->
 
-Fixes # (issue)
-
-## Type of change
-Please delete options that are not relevant.
-
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
+## Type of Change
+<!-- Mark the appropriate option with an "x" -->
+- [ ] Bug fix (non-breaking change that fixes an issue)
+- [ ] New feature (non-breaking change that adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] This change requires a documentation update
+- [ ] Performance improvement
+- [ ] Documentation update
+- [ ] Code refactoring
+- [ ] Dependency update
 
-## How Has This Been Tested?
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce.
+## Related Issues
+<!-- Link to any related issues using "Fixes #" or "Related to #" -->
 
-- [ ] Test A
-- [ ] Test B
+## Testing
+<!-- Describe the tests you've added or modified -->
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] E2E tests added/updated
+- [ ] Performance tests added/updated
+- [ ] Accessibility tests added/updated
 
-## Checklist:
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
+## Performance Impact
+<!-- Describe any performance implications and measurements -->
+- [ ] Bundle size impact assessed
+- [ ] Performance benchmarks run
+- [ ] No significant performance regression
+- [ ] Core Web Vitals impact considered
 
-## Screenshots (if appropriate):
+## Accessibility
+<!-- Describe accessibility considerations and testing -->
+- [ ] WCAG 2.1 Level AA compliant
+- [ ] Screen reader tested
+- [ ] Keyboard navigation tested
+- [ ] Color contrast requirements met
+- [ ] Touch targets sized appropriately
 
-## Additional context
-Add any other context about the pull request here. 
+## Documentation
+<!-- List documentation updates -->
+- [ ] API documentation updated
+- [ ] README updated (if needed)
+- [ ] JSDoc comments added/updated
+- [ ] Code examples updated
+- [ ] Breaking changes documented
+- [ ] Migration guide provided (if needed)
+
+## Security
+<!-- Describe security considerations -->
+- [ ] Security best practices followed
+- [ ] No sensitive information exposed
+- [ ] Dependencies security audited
+
+## Checklist
+<!-- Mark completed items with an "x" -->
+- [ ] Code follows the style guidelines
+- [ ] Self review completed
+- [ ] Tests pass locally
+- [ ] Documentation is up-to-date
+- [ ] No new warnings introduced
+- [ ] Performance impact acceptable
+- [ ] Accessibility requirements met
+- [ ] Security requirements met
+
+## Screenshots/Videos
+<!-- If applicable, add screenshots or videos to help explain your changes -->
+
+## Additional Notes
+<!-- Add any additional notes or context about the changes --> 

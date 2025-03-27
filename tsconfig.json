@@ -37,9 +37,9 @@
     "noPropertyAccessFromIndexSignature": true,
     "exactOptionalPropertyTypes": true,
     "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
+    "allowUnusedLabels": false
   },
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"],
   "include": ["src/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 } 

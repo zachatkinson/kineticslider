@@ -2,54 +2,149 @@ name: Dependency Update
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Run weekly on Sunday
+    - cron: '0 0 * * 1'  # Run weekly on Mondays
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18.x'
+  MAX_RETRIES: 3
+  PERFORMANCE_THRESHOLD: 5  # 5% regression threshold
 
 jobs:
-  update:
+  update-dependencies:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          
-      - name: Install dependencies
-        run: npm ci
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Backup package files
+      run: |
+        cp package.json package.json.backup
+        cp package-lock.json package-lock.json.backup
+
+    - name: Install dependencies
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: ${{ env.MAX_RETRIES }}
+        command: npm ci
+        on_retry_command: |
+          npm cache clean --force
+          rm -rf node_modules
+
+    - name: Collect initial metrics
+      id: initial-metrics
+      run: |
+        # Run type check and collect stats
+        npm run type-check 2> type-check-before.log
+        echo "TYPE_ERRORS_BEFORE=$(grep -c "error TS" type-check-before.log || echo "0")" >> $GITHUB_ENV
         
-      - name: Update dependencies
-        run: npm update
+        # Run tests and collect coverage
+        npm test -- --coverage --json --outputFile=coverage-before.json
         
-      - name: Check for updates
-        id: check-updates
-        run: |
-          if git diff --exit-code package.json package-lock.json; then
-            echo "No updates available"
-            exit 0
-          else
-            echo "Updates available"
-            exit 1
-          fi
-          
-      - name: Create Pull Request
-        if: failure()
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: 'chore: update dependencies'
-          title: 'chore: update dependencies'
-          body: |
-            Automated dependency update
-            
-            This PR updates dependencies to their latest versions.
-            
-            Please review the changes and ensure they don't break anything.
-            
-            - [ ] Tests pass
-            - [ ] Build succeeds
-            - [ ] No breaking changes
-          branch: chore/update-dependencies
-          delete-branch: true
-          labels: |
-            dependencies
-            automated pr 
+        # Collect bundle size
+        npm run build
+        echo "BUNDLE_SIZE_BEFORE=$(du -sb .next/static/chunks | cut -f1)" >> $GITHUB_ENV
+        
+        # Run Lighthouse CI
+        npx @lhci/cli@0.13.x autorun --collect.url=http://localhost:3000 --collect.startServerCommand="npm run start" --jsonOutput=./lighthouse-before.json
+
+    - name: Update dependencies
+      id: update
+      run: |
+        # Get outdated packages
+        npm outdated --json > outdated.json
+        
+        # Update dependencies
+        npx npm-check-updates -u
+        npm install
+        
+        # Generate update report
+        echo "# Dependency Updates" > update-report.md
+        echo "\`\`\`json" >> update-report.md
+        cat outdated.json >> update-report.md
+        echo "\`\`\`" >> update-report.md
+
+    - name: Type compatibility check
+      id: type-check
+      run: |
+        npm run type-check 2> type-check-after.log
+        echo "TYPE_ERRORS_AFTER=$(grep -c "error TS" type-check-after.log || echo "0")" >> $GITHUB_ENV
+        
+        # Generate type compatibility report
+        echo "## Type Compatibility Changes" >> update-report.md
+        echo "- Before: ${{ env.TYPE_ERRORS_BEFORE }} type errors" >> update-report.md
+        echo "- After: ${{ env.TYPE_ERRORS_AFTER }} type errors" >> update-report.md
+        
+        if [ "${{ env.TYPE_ERRORS_AFTER }}" -gt "${{ env.TYPE_ERRORS_BEFORE }}" ]; then
+          echo "⚠️ New type errors introduced" >> update-report.md
+          echo "### New Type Errors" >> update-report.md
+          echo "\`\`\`" >> update-report.md
+          diff type-check-before.log type-check-after.log | grep "^>" >> update-report.md
+          echo "\`\`\`" >> update-report.md
+        fi
+
+    - name: Run tests
+      id: test
+      run: |
+        npm test -- --coverage --json --outputFile=coverage-after.json
+        
+        # Compare test coverage
+        echo "## Test Coverage Impact" >> update-report.md
+        node .github/scripts/compare-coverage.js coverage-before.json coverage-after.json >> update-report.md
+
+    - name: Performance impact check
+      id: performance
+      run: |
+        # Build and measure bundle size
+        npm run build
+        echo "BUNDLE_SIZE_AFTER=$(du -sb .next/static/chunks | cut -f1)" >> $GITHUB_ENV
+        
+        # Run Lighthouse CI
+        npx @lhci/cli@0.13.x autorun --collect.url=http://localhost:3000 --collect.startServerCommand="npm run start" --jsonOutput=./lighthouse-after.json
+        
+        # Compare metrics
+        node .github/scripts/compare-metrics.js
+
+    - name: Generate final report
+      run: |
+        # Add bundle size comparison
+        echo "## Bundle Size Impact" >> update-report.md
+        echo "- Before: $(numfmt --to=iec ${{ env.BUNDLE_SIZE_BEFORE }})" >> update-report.md
+        echo "- After: $(numfmt --to=iec ${{ env.BUNDLE_SIZE_AFTER }})" >> update-report.md
+        
+        # Add performance report
+        echo "## Performance Impact" >> update-report.md
+        cat performance-report.md >> update-report.md
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore(deps): update dependencies"
+        title: "chore(deps): update dependencies"
+        body-path: update-report.md
+        branch: "chore/dependency-updates"
+        labels: dependencies
+
+    - name: Cleanup
+      if: always()
+      run: |
+        # Restore original package files if update failed
+        if [ ${{ job.status }} != 'success' ]; then
+          mv package.json.backup package.json
+          mv package-lock.json.backup package-lock.json
+        fi
+        
+        # Cleanup temporary files
+        rm -f *.backup
+        rm -f *.log
+        rm -f coverage-*.json
+        rm -f lighthouse-*.json 

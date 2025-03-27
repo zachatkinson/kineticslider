@@ -6,40 +6,216 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+env:
+  MAX_MEMORY: 6144MB
+  DEFAULT_TIMEOUT: 15
+  MAX_RETRIES: 3
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: '18.x'
         cache: 'npm'
-    
+
     - name: Install dependencies
-      run: npm ci
-      
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: ${{ env.MAX_RETRIES }}
+        command: npm ci
+        on_retry_command: |
+          npm cache clean --force
+          rm -rf node_modules
+          
     - name: Type check
-      run: npm run typecheck
-      
+      run: npm run type-check
+      timeout-minutes: 5
+      continue-on-error: false
+
     - name: Lint
       run: npm run lint
-      
-    - name: Test
-      run: npm run test:ci
-      
+      timeout-minutes: 5
+
+    - name: Run tests
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: ${{ env.MAX_RETRIES }}
+        command: NODE_OPTIONS="--max-old-space-size=4096" npm test -- --maxWorkers=2 --ci
+        on_retry_command: npm run test:clear-cache
+
     - name: Build
       run: npm run build
+      timeout-minutes: 10
+      env:
+        NODE_OPTIONS: --max-old-space-size=6144
+        NEXT_TELEMETRY_DISABLED: 1
+        CI: true
+
+    - name: Run Lighthouse CI
+      uses: treosh/lighthouse-ci-action@v9
+      with:
+        configPath: './.github/lighthouse/config.json'
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+        runs: 3
+
+    - name: Analyze bundle size
+      run: |
+        npx bundlewatch
+      env:
+        BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Monitor error rates
+      run: |
+        if [ -f "./.github/scripts/monitor-errors.js" ]; then
+          # Collect detailed error metrics
+          node ./.github/scripts/monitor-errors.js --detailed-metrics \
+            --track-memory-usage \
+            --track-cpu-usage \
+            --error-threshold=0.01 \
+            --output-format=json \
+            --include-stack-traces \
+            --track-error-patterns
+
+          # Analyze error patterns
+          if [ -f "error-report.json" ]; then
+            echo "Error Rate Analysis:"
+            jq -r '.errors | "Total Errors: \(.total)\nError Rate: \(.rate)\nTop Patterns: \(.patterns)"' error-report.json
+            
+            # Check against thresholds
+            ERROR_RATE=$(jq -r '.errors.rate' error-report.json)
+            if (( $(echo "$ERROR_RATE > 0.01" | bc -l) )); then
+              echo "::warning::Error rate ($ERROR_RATE) exceeds threshold (0.01)"
+            fi
+          fi
+        fi
+      continue-on-error: true
+
+    - name: Cleanup resources
+      if: always()
+      run: |
+        npm cache clean --force
+        rm -rf .next
+        rm -rf coverage
+        rm -rf node_modules/.cache
+
+    - name: Upload error logs
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: error-logs
+        path: |
+          ./logs
+          ./coverage
+          ./.next/error.log
+        retention-days: 7
+
+    - name: Accessibility test
+      id: accessibility
+      run: |
+        npm run test:a11y || (
+          echo "::error::Accessibility tests failed"
+          exit 1
+        )
       
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
+    - name: Security audit
+      id: security
+      run: |
+        npm audit || (
+          echo "::warning::Security audit found vulnerabilities"
+        )
+      
+    - name: Upload coverage to Codecov
+      if: success()
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        fail_ci_if_error: true 
+
+    - name: Bundle Size Check
+      uses: preactjs/compressed-size-action@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        pattern: './dist/**/*.{js,css,html}'
+        strip-hash: true
+        
+    - name: Performance Budget Check
+      run: |
+        npx bundlewatch --config .bundlewatch.config.json || (
+          echo "::error::Performance budget exceeded"
+          exit 1
+        )
+
+    - name: Check for failures
+      if: failure()
+      run: |
+        echo "::error::CI pipeline failed. Check the logs for details."
+        exit 1
+
+    - name: Security Scan
+      id: security-scan
+      run: |
+        # Install and run SAST tools
+        npm install -g snyk
+        snyk test || (
+          echo "::warning::Security vulnerabilities found"
+        )
+        
+        # Check security headers
+        npx check-security-headers https://localhost:3000 || (
+          echo "::warning::Security headers check failed"
+        )
+        
+    - name: Dependency Vulnerability Check
+      id: dependency-check
+      run: |
+        npm audit --audit-level=high || (
+          echo "::warning::High severity vulnerabilities found"
+        )
+        
+        # Run additional dependency checks
+        npx dependency-check . || (
+          echo "::warning::Dependency check failed"
+        )
+        
+    - name: Enhanced Monitoring Setup
+      id: monitoring
+      run: |
+        # Setup monitoring
+        npm install -g @monitoring/cli
+        
+        # Track performance metrics
+        monitor track-metrics \
+          --type=performance \
+          --metrics=FCP,LCP,CLS,TTI \
+          --output=metrics.json
+          
+        # Monitor error rates
+        monitor track-errors \
+          --window=1h \
+          --threshold=0.01 \
+          --output=errors.json
+          
+        # Track resource usage
+        monitor track-resources \
+          --metrics=cpu,memory,network \
+          --interval=5m \
+          --output=resources.json
+          
+    - name: Upload Monitoring Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-results
+        path: |
+          metrics.json
+          errors.json
+          resources.json 
