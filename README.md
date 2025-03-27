@@ -8,58 +8,80 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue.svg)][ts-url]
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)][contributing-url]
 
-A modern, accessible, and performant slider component for React applications. Built with TypeScript and optimized for performance using GSAP animations.
-
-## Overview
-
-KineticSlider is a highly performant React slider component that prioritizes accessibility, smooth animations, and developer experience. It's built with TypeScript and uses GSAP for fluid animations, making it perfect for modern web applications.
+A modern, accessible, and performant slider component for React applications.
 
 ## Features
 
-- 🎯 **Accessibility**: Fully WCAG 2.1 compliant with ARIA support
-- 🚀 **Performance**: Optimized with GSAP animations and virtual rendering
-- 🎨 **Customization**: Extensive styling options and animation controls
-- 📱 **Responsive**: Adaptive design with touch support
-- 🔧 **TypeScript**: Full type safety with comprehensive definitions
-- 📦 **Bundle Size**: Tree-shakeable with minimal dependencies
-- 🧪 **Testing**: 100% test coverage with Jest and Testing Library
-- 📚 **Documentation**: Extensive docs with live examples
+- 🎨 Smooth animations powered by GSAP
+- 📱 Touch and swipe gestures support
+- ♿️ Accessible by default
+- 🎯 TypeScript support
+- 🔄 Infinite loop option
+- 🎮 Customizable controls and animations
 
 ## Installation
 
 ```bash
-# Using npm
 npm install kineticslider
-
-# Using yarn
+# or
 yarn add kineticslider
-
-# Using pnpm
+# or
 pnpm add kineticslider
 ```
 
-## Quick Start
+## Usage
 
 ```tsx
 import { KineticSlider } from 'kineticslider';
 
 function App() {
   return (
-    <KineticSlider
-      items={[
-        { id: 1, content: 'Slide 1' },
-        { id: 2, content: 'Slide 2' },
-        { id: 3, content: 'Slide 3' },
-      ]}
-      options={{
-        animation: 'fade',
-        duration: 0.5,
-        autoplay: true,
-      }}
-    />
+    <KineticSlider>
+      <div>Slide 1</div>
+      <div>Slide 2</div>
+      <div>Slide 3</div>
+    </KineticSlider>
   );
 }
 ```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | Required | The slides to be rendered in the slider |
+| `className` | `string` | `''` | Custom class name for the slider container |
+| `style` | `CSSProperties` | `undefined` | Custom inline styles for the slider container |
+| `duration` | `number` | `0.5` | Animation duration in seconds |
+| `ease` | `string` | `'power2.out'` | Animation easing function |
+| `enableGestures` | `boolean` | `true` | Whether to enable touch/swipe gestures |
+| `onChange` | `(index: number) => void` | `undefined` | Callback fired when the active slide changes |
+| `initialIndex` | `number` | `0` | Initial active slide index |
+| `infinite` | `boolean` | `true` | Whether to enable infinite looping |
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Run tests
+pnpm test
+
+# Build for production
+pnpm build
+```
+
+## License
+
+MIT © [Zach](LICENSE)
+
+## Overview
+
+KineticSlider is a highly performant React slider component that prioritizes accessibility, smooth animations, and developer experience. It's built with TypeScript and uses GSAP for fluid animations, making it perfect for modern web applications.
 
 ## Documentation
 
@@ -145,12 +167,12 @@ Visit our [documentation site][docs-url] for comprehensive guides and API refere
 
 ### Browser Support
 
-- Chrome ≥ 88
-- Firefox ≥ 87
-- Safari ≥ 14
-- Edge ≥ 88
-- iOS Safari ≥ 14
-- Android Chrome ≥ 88
+- Chrome ≥ 92
+- Firefox ≥ 90
+- Safari ≥ 15
+- Edge ≥ 92
+- iOS Safari ≥ 15
+- Android Chrome ≥ 92
 
 ## Development
 
@@ -161,12 +183,13 @@ Visit our [documentation site][docs-url] for comprehensive guides and API refere
 
 ### Project Structure
 
-This project is set up as a monorepo using pnpm workspaces. The main packages are located in the `packages` directory:
+The project follows a standard React library structure:
 
 ```bash
 kineticslider/
-├── packages/         # Workspace packages
-├── pnpm-workspace.yaml
+├── src/           # Source code
+├── dist/          # Built package output
+├── tests/         # Test files
 └── package.json
 ```
 
@@ -197,7 +220,17 @@ pnpm dev
 | `pnpm test` | Run test suite |
 | `pnpm lint` | Lint code |
 | `pnpm format` | Format code |
-| `pnpm storybook` | Start Storybook |
+| `pnpm validate` | Run type check, lint, and tests |
+| `pnpm size` | Check bundle size |
+| `pnpm docs` | Generate documentation |
+
+### Dependencies
+
+The project uses the following key dependencies:
+
+- GSAP for smooth animations
+- Pixi.js for advanced rendering capabilities
+- React ≥ 18.0.0 (peer dependency)
 
 ## Contributing
 
