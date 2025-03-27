@@ -1,48 +1,150 @@
 # Contributing to KineticSlider
 
-We love your input! We want to make contributing to KineticSlider as easy and transparent as possible, whether it's:
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-- Reporting a bug
-- Discussing the current state of the code
-- Submitting a fix
-- Proposing new features
-- Becoming a maintainer
+## Table of Contents
+- [Introduction](#introduction)
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+  - [Development Setup](#development-setup)
+  - [Project Structure](#project-structure)
+- [Development Process](#development-process)
+  - [Branch Naming](#branch-naming)
+  - [Commit Guidelines](#commit-guidelines)
+  - [Pull Request Process](#pull-request-process)
+- [Testing Guidelines](#testing-guidelines)
+- [Documentation](#documentation)
+- [Performance Considerations](#performance-considerations)
+- [Security Guidelines](#security-guidelines)
+- [Community](#community)
+- [License](#license)
 
-## We Develop with Github
-We use GitHub to host code, to track issues and feature requests, as well as accept pull requests.
+## Introduction
 
-## We Use [Github Flow](https://guides.github.com/introduction/flow/index.html)
-Pull requests are the best way to propose changes to the codebase. We actively welcome your pull requests:
+Thank you for considering contributing to KineticSlider! We love your input and want to make contributing as easy and transparent as possible. This document provides guidelines and instructions for contributing to the project.
 
-1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
-5. Make sure your code lints.
-6. Issue that pull request!
+## Code of Conduct
 
-## Any contributions you make will be under the MIT Software License
-In short, when you submit code changes, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
+This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [project maintainers](mailto:maintainers@kineticslider.dev).
 
-## Report bugs using Github's [issue tracker](https://github.com/zach/kineticslider/issues)
-We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/zach/kineticslider/issues/new); it's that easy!
+## Getting Started
 
-## Write bug reports with detail, background, and sample code
+### Development Setup
 
-**Great Bug Reports** tend to have:
+1. Fork the repository
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/kineticslider.git
+   cd kineticslider
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Create a branch for your changes:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
-- A quick summary and/or background
-- Steps to reproduce
-  - Be specific!
-  - Give sample code if you can.
-- What you expected would happen
-- What actually happens
-- Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
+### Project Structure
 
-## Use a Consistent Coding Style
+```
+kineticslider/
+├── src/           # Source code
+├── tests/         # Test files
+├── docs/          # Documentation
+├── examples/      # Example implementations
+└── scripts/       # Build and utility scripts
+```
 
-* 2 spaces for indentation rather than tabs
-* You can try running `npm run lint` for style unification
+## Development Process
+
+### Branch Naming
+
+- `feature/*`: New features
+- `fix/*`: Bug fixes
+- `docs/*`: Documentation changes
+- `refactor/*`: Code refactoring
+- `test/*`: Adding or modifying tests
+- `perf/*`: Performance improvements
+
+### Commit Guidelines
+
+We use [Conventional Commits](https://www.conventionalcommits.org/) for clear communication. Each commit message should be structured as follows:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Code style changes
+- `refactor`: Code refactoring
+- `test`: Adding/updating tests
+- `perf`: Performance improvements
+- `chore`: Maintenance tasks
+
+### Pull Request Process
+
+1. Update documentation to reflect any changes
+2. Add or update tests as needed
+3. Ensure all tests pass: `npm test`
+4. Update the CHANGELOG.md
+5. Submit the PR with a clear description
+6. Wait for review and address any feedback
+
+## Testing Guidelines
+
+- Write tests for all new features and bug fixes
+- Maintain or improve code coverage
+- Run the full test suite before submitting:
+  ```bash
+  npm run test
+  npm run test:e2e
+  npm run test:integration
+  ```
+
+## Documentation
+
+- Update README.md if needed
+- Add JSDoc comments for new functions/components
+- Include usage examples
+- Update API documentation
+- Add TypeScript types and interfaces
+
+## Performance Considerations
+
+- Run performance tests: `npm run perf`
+- Consider bundle size impact
+- Follow React best practices
+- Optimize animations and transitions
+- Use performance monitoring tools
+
+## Security Guidelines
+
+- Never commit sensitive data
+- Follow security best practices
+- Report security issues privately
+- Use security scanning tools
+- Keep dependencies updated
+
+## Community
+
+- [Discord Community](https://discord.gg/kineticslider)
+- [GitHub Discussions](https://github.com/zach/kineticslider/discussions)
+- [Stack Overflow](https://stackoverflow.com/questions/tagged/kineticslider)
 
 ## License
-By contributing, you agree that your contributions will be licensed under its MIT License. 
+
+By contributing to KineticSlider, you agree that your contributions will be licensed under the [MIT License](LICENSE.md).
+
+---
+
+Need help? [Join our Discord community](https://discord.gg/kineticslider) or [open an issue](https://github.com/zach/kineticslider/issues/new/choose). 
