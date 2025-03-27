@@ -1,8 +1,13 @@
 /** @type {import('jest').Config} */
 const config = {
-  // Test environment
+  // Test environment and setup
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['./jest.setup.js'],
+  setupFilesAfterEnv: [
+    './jest.setup.js',
+    '@testing-library/jest-dom/extend-expect'
+  ],
+  globalSetup: './jest.global-setup.js',
+  globalTeardown: './jest.global-teardown.js',
 
   // Module resolution
   moduleNameMapper: {
@@ -13,6 +18,7 @@ const config = {
     '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@assets/(.*)$': '<rootDir>/src/assets/$1',
+    '^@test-utils/(.*)$': '<rootDir>/src/test-utils/$1',
 
     // Static assets
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
@@ -37,6 +43,15 @@ const config = {
       tsconfig: 'tsconfig.test.json',
       diagnostics: {
         ignoreCodes: [151001]
+      },
+      isolatedModules: true,
+      astTransformers: {
+        before: [
+          {
+            path: 'ts-jest-mock-import-meta',
+            options: { metaObjectReplacement: { url: 'https://localhost' } }
+          }
+        ]
       }
     }]
   },
@@ -52,7 +67,9 @@ const config = {
   // Test matching patterns
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}'
+    '<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}',
+    '<rootDir>/src/**/*.integration.{js,jsx,ts,tsx}',
+    '<rootDir>/e2e/**/*.test.{js,jsx,ts,tsx}'
   ],
 
   // Coverage configuration
@@ -65,101 +82,129 @@ const config = {
     '!src/**/__tests__/**',
     '!src/**/__mocks__/**',
     '!src/**/index.{js,jsx,ts,tsx}',
-    '!src/**/*.config.{js,jsx,ts,tsx}'
+    '!src/**/*.config.{js,jsx,ts,tsx}',
+    '!src/test-utils/**'
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
+  coverageReporters: [
+    'text',
+    'lcov',
+    'html',
+    'json-summary',
+    'cobertura'
+  ],
   coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,
       lines: 80,
       statements: 80
+    },
+    './src/components/': {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90
     }
   },
 
   // Test environment options
   testEnvironmentOptions: {
-    url: 'http://localhost'
+    url: 'http://localhost',
+    customExportConditions: ['node', 'node-addons'],
+    testURL: 'http://localhost',
+    html: true
   },
 
   // Watch mode configuration
   watchPlugins: [
     'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname'
+    'jest-watch-typeahead/testname',
+    'jest-watch-select-projects'
   ],
 
-  // Verbose output
+  // Verbose output and error handling
   verbose: true,
-
-  // Test timeout
+  bail: 5,
   testTimeout: 10000,
-
-  // Maximum workers
   maxWorkers: '50%',
+  maxConcurrency: 5,
 
-  // Cache directory
+  // Cache and performance
   cacheDirectory: '.jest-cache',
+  cache: true,
+  detectOpenHandles: true,
+  forceExit: true,
 
-  // Clear mocks between tests
+  // Mock configuration
   clearMocks: true,
-
-  // Reset mocks between tests
   resetMocks: true,
-
-  // Restore mocks between tests
   restoreMocks: true,
-
-  // Reset modules between tests
   resetModules: true,
 
-  // Root directory
+  // Directory configuration
   rootDir: '.',
-
-  // Test path ignore patterns
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/',
     '/coverage/',
-    '/.git/'
+    '/.git/',
+    '/e2e/'
   ],
-
-  // Module paths
   modulePaths: ['<rootDir>/src'],
-
-  // Roots
   roots: ['<rootDir>/src'],
 
-  // Snapshot serializers
-  snapshotSerializers: ['@testing-library/jest-dom/serializer'],
-
-  // Test results processor
-  testResultsProcessor: 'jest-sonar-reporter',
-
-  // Coverage path ignore patterns
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '/coverage/',
-    '/.git/',
-    '/__tests__/',
-    '/__mocks__/'
-  ],
-
   // Snapshot configuration
+  snapshotSerializers: [
+    '@testing-library/jest-dom/serializer',
+    'jest-serializer-html'
+  ],
   snapshotFormat: {
     escapeString: true,
-    printBasicPrototype: false
+    printBasicPrototype: false,
+    minified: true
   },
 
-  // Reporter configuration
+  // Reporting configuration
+  testResultsProcessor: 'jest-sonar-reporter',
   reporters: [
     'default',
+    ['jest-junit', {
+      outputDirectory: 'coverage',
+      outputName: 'junit.xml',
+      classNameTemplate: '{classname}',
+      titleTemplate: '{title}',
+      ancestorSeparator: ' › ',
+      usePathForSuiteName: true
+    }],
     ['jest-sonar-reporter', {
       outputDirectory: 'coverage',
       outputName: 'sonar-report.xml',
       reportedFilePathStyle: 'relative'
+    }],
+    ['jest-html-reporter', {
+      pageTitle: 'Test Report',
+      outputPath: 'coverage/test-report.html',
+      includeFailureMsg: true,
+      includeSuiteFailure: true
     }]
+  ],
+
+  // Error handling
+  errorOnDeprecated: true,
+  notify: true,
+  notifyMode: 'failure-change',
+
+  // Projects configuration for monorepo support
+  projects: [
+    {
+      displayName: 'unit',
+      testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}']
+    },
+    {
+      displayName: 'integration',
+      testMatch: ['<rootDir>/src/**/*.integration.{ts,tsx}']
+    }
   ]
 };
 
