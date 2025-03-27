@@ -18,12 +18,7 @@
       "@utils/*": ["src/utils/*"],
       "@types/*": ["src/types/*"]
     },
-    "types": [
-      "node",
-      "jest",
-      "vite/client",
-      "@types/node"
-    ],
+    "types": ["vite/client"],
     "resolveJsonModule": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
@@ -40,11 +35,18 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "allowUnreachableCode": false,
-    "allowUnusedLabels": false
+    "allowUnusedLabels": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "useUnknownInCatchVariables": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "vite.config.ts",
-    "rollup.config.ts",
     "jest.config.ts",
     "vitest.config.ts"
   ]
