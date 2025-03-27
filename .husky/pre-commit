@@ -1,4 +1,11 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx lint-staged 
+# Check if required dependencies are installed
+command -v npx >/dev/null 2>&1 || { echo "Error: npx is required but not installed. Please install Node.js and npm first." >&2; exit 1; }
+
+# Run lint-staged with error handling
+npx lint-staged || {
+  echo "Error: Pre-commit hook failed. Please fix the issues and try committing again." >&2
+  exit 1
+} 
