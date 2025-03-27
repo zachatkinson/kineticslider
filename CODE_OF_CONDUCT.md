@@ -1,5 +1,23 @@
 # Contributor Covenant Code of Conduct
 
+![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)
+
+**Version**: 2.1.0  
+**Last Updated**: 2024-03-21
+
+## Table of Contents
+
+- [Our Pledge](#our-pledge)
+- [Our Standards](#our-standards)
+- [Enforcement Responsibilities](#enforcement-responsibilities)
+- [Scope](#scope)
+- [Enforcement](#enforcement)
+- [Enforcement Guidelines](#enforcement-guidelines)
+- [Project Leadership](#project-leadership)
+- [Appeals Process](#appeals-process)
+- [Security Reporting](#security-reporting)
+- [Attribution](#attribution)
+
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our
@@ -108,6 +126,38 @@ individual, or aggression toward or disparagement of classes of individuals.
 **Consequence**: A permanent ban from any sort of public interaction within
 the community.
 
+## Project Leadership
+
+The KineticSlider project is governed by its core team, who are responsible for:
+
+* Setting the strategic direction of the project
+* Reviewing and accepting contributions
+* Enforcing the Code of Conduct
+* Making final decisions in complex situations
+* Maintaining project security and stability
+
+Current core team members are listed in our [GOVERNANCE.md](./GOVERNANCE.md) file.
+
+## Appeals Process
+
+If you feel you have been falsely or unfairly accused of violating this Code of Conduct, you should notify the project leadership with a concise description of your grievance. Your grievance will be handled in accordance with our existing governance policies.
+
+The appeal should be sent to [appeals@kineticslider.dev](mailto:appeals@kineticslider.dev) and will be reviewed by a panel of at least two core team members not involved in the original decision.
+
+## Security Reporting
+
+While the Code of Conduct is focused on community behavior, we also take security seriously. If you discover a security vulnerability, please follow our security reporting process outlined in [SECURITY.md](./SECURITY.md) rather than filing a public issue.
+
+## Response Time Commitment
+
+We strive to address all Code of Conduct violations promptly:
+
+* Initial response: Within 24 hours
+* Investigation completion: Within 7 days
+* Resolution communication: Within 14 days
+
+For urgent matters involving immediate safety concerns, we will respond as quickly as possible.
+
 ## Attribution
 
 This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org).
@@ -117,4 +167,11 @@ enforcement ladder](https://github.com/mozilla/diversity).
 
 For answers to common questions about this code of conduct, see the FAQ at
 https://www.contributor-covenant.org/faq. Translations are available at
-https://www.contributor-covenant.org/translations. 
+https://www.contributor-covenant.org/translations.
+
+---
+
+For additional information about our community standards, please see:
+- [Contributing Guidelines](./CONTRIBUTING.md)
+- [Security Policy](./SECURITY.md)
+- [Project Governance](./GOVERNANCE.md) 
