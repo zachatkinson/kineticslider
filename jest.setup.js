@@ -1,130 +1,227 @@
-// Import Jest DOM extensions for DOM element assertions
+// Import testing library utilities
 import '@testing-library/jest-dom';
-import 'jest-canvas-mock';
-import { jest } from '@jest/globals';
+import { TextEncoder, TextDecoder } from 'util';
 
-// Mock the GSAP library
-jest.mock('gsap', () => ({
-    gsap: {
-        to: jest.fn().mockReturnValue({
-            pause: jest.fn(),
-            play: jest.fn(),
-            kill: jest.fn(),
-        }),
-        timeline: jest.fn().mockReturnValue({
-            to: jest.fn().mockReturnThis(),
-            from: jest.fn().mockReturnThis(),
-            fromTo: jest.fn().mockReturnThis(),
-            pause: jest.fn(),
-            play: jest.fn(),
-            progress: jest.fn(),
-            kill: jest.fn(),
-            add: jest.fn().mockReturnThis(),
-        }),
-    },
-    Power2: {
-        easeInOut: 'ease-in-out',
-        easeOut: 'ease-out',
-        easeIn: 'ease-in',
-    },
-}));
+// Polyfill TextEncoder/TextDecoder for Node environment
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
-// Mock the window.matchMedia function
+// Mock window.matchMedia with modern implementation
 Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: jest.fn().mockImplementation(query => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: jest.fn(), // Deprecated
-        removeListener: jest.fn(), // Deprecated
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-    })),
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
 });
 
-// Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-    constructor(callback) {
-        this.callback = callback;
-    }
-    observe() {}
-    unobserve() {}
-    disconnect() {}
+// Modern ResizeObserver mock with better type support
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  unobserveAll() {}
+}
+global.ResizeObserver = ResizeObserverMock;
+
+// Modern IntersectionObserver mock with better type support
+class IntersectionObserverMock {
+  constructor() {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  unobserveAll() {}
+  takeRecords() { return []; }
+}
+global.IntersectionObserver = IntersectionObserverMock;
+
+// Modern requestAnimationFrame implementation with better timing
+let rafId = 0;
+global.requestAnimationFrame = (callback) => {
+  rafId += 1;
+  setTimeout(() => callback(Date.now()), 0);
+  return rafId;
+};
+global.cancelAnimationFrame = (id) => {
+  clearTimeout(id);
 };
 
-// Mock requestAnimationFrame
-global.requestAnimationFrame = callback => setTimeout(callback, 0);
-global.cancelAnimationFrame = id => clearTimeout(id);
+// Modern console handling with better filtering
+const originalError = console.error;
+const originalWarn = console.warn;
 
-// Mock for import.meta.env
-global.import = {
-    meta: {
-        env: {
-            MODE: 'test',
-        }
-    }
+const filteredConsole = (original, filterPatterns) => (...args) => {
+  if (
+    typeof args[0] === 'string' &&
+    filterPatterns.some(pattern => args[0].includes(pattern))
+  ) {
+    return;
+  }
+  original.call(console, ...args);
 };
 
-// Create mock for PIXI
-const PixiMock = {
-    Application: jest.fn(() => ({
-        stage: {
-            addChild: jest.fn(),
-            removeChild: jest.fn(),
-            children: [],
-        },
-        renderer: {
-            resize: jest.fn(),
-            plugins: {
-                interaction: {
-                    on: jest.fn(),
-                    off: jest.fn(),
-                },
-            },
-            view: document.createElement('canvas'),
-        },
-        destroy: jest.fn(),
-        ticker: {
-            add: jest.fn(),
-            remove: jest.fn(),
-        },
-    })),
-    Sprite: jest.fn(() => ({
-        anchor: { set: jest.fn() },
-        position: { set: jest.fn() },
-        scale: { set: jest.fn() },
-        texture: null,
-        filters: [],
-        width: 100,
-        height: 100,
-    })),
-    Container: jest.fn(() => ({
-        addChild: jest.fn(),
-        removeChild: jest.fn(),
-        children: [],
-        filters: [],
-    })),
-    DisplacementFilter: jest.fn(() => ({
-        scale: { x: 0, y: 0 },
-    })),
-    Texture: {
-        from: jest.fn(() => ({
-            width: 100,
-            height: 100,
-        })),
-        WHITE: 'WHITE-TEXTURE',
+beforeAll(() => {
+  const filterPatterns = [
+    'Warning: ReactDOM.render is no longer supported',
+    'Warning: ReactDOM.hydrate is no longer supported',
+    'Warning: ReactDOM.unmountComponentAtNode is no longer supported',
+    'Warning: ReactDOM.findDOMNode is no longer supported',
+    'Warning: ReactDOM.createPortal is no longer supported',
+  ];
+
+  console.error = filteredConsole(originalError, filterPatterns);
+  console.warn = filteredConsole(originalWarn, filterPatterns);
+});
+
+afterAll(() => {
+  console.error = originalError;
+  console.warn = originalWarn;
+});
+
+// Modern PIXI.js mock with better type support and async handling
+jest.mock('pixi.js', () => ({
+  Application: jest.fn().mockImplementation(() => ({
+    view: document.createElement('canvas'),
+    stage: {
+      addChild: jest.fn(),
+      removeChild: jest.fn(),
+      children: [],
     },
-    Assets: {
-        load: jest.fn().mockResolvedValue({}),
+    renderer: {
+      resize: jest.fn(),
+      plugins: {
+        interaction: {
+          on: jest.fn(),
+          off: jest.fn(),
+        },
+      },
+      view: document.createElement('canvas'),
     },
-    Filter: jest.fn(),
-};
-
-jest.mock('pixi.js', () => PixiMock);
-
-// Mock pixi-filters
-jest.mock('pixi-filters', () => ({
-    // Add mock implementations for specific filters if needed
+    destroy: jest.fn(),
+    ticker: {
+      add: jest.fn(),
+      remove: jest.fn(),
+    },
+  })),
+  Container: jest.fn().mockImplementation(() => ({
+    addChild: jest.fn(),
+    removeChild: jest.fn(),
+    children: [],
+    filters: [],
+    destroy: jest.fn(),
+  })),
+  Sprite: jest.fn().mockImplementation(() => ({
+    anchor: { set: jest.fn() },
+    position: { set: jest.fn() },
+    scale: { set: jest.fn() },
+    texture: null,
+    filters: [],
+    width: 100,
+    height: 100,
+    destroy: jest.fn(),
+  })),
+  Texture: {
+    from: jest.fn().mockImplementation(() => ({
+      baseTexture: {},
+      width: 100,
+      height: 100,
+      destroy: jest.fn(),
+    })),
+    WHITE: 'WHITE-TEXTURE',
+  },
+  Assets: {
+    load: jest.fn().mockImplementation(() => Promise.resolve({})),
+    unload: jest.fn(),
+  },
+  Filter: jest.fn(),
+  DisplacementFilter: jest.fn().mockImplementation(() => ({
+    scale: { x: 0, y: 0 },
+  })),
 }));
+
+// Modern GSAP mock with better type support and async handling
+jest.mock('gsap', () => ({
+  to: jest.fn().mockImplementation(() => ({
+    play: jest.fn(),
+    pause: jest.fn(),
+    restart: jest.fn(),
+    reverse: jest.fn(),
+    kill: jest.fn(),
+  })),
+  from: jest.fn().mockImplementation(() => ({
+    play: jest.fn(),
+    pause: jest.fn(),
+    restart: jest.fn(),
+    reverse: jest.fn(),
+    kill: jest.fn(),
+  })),
+  fromTo: jest.fn().mockImplementation(() => ({
+    play: jest.fn(),
+    pause: jest.fn(),
+    restart: jest.fn(),
+    reverse: jest.fn(),
+    kill: jest.fn(),
+  })),
+  timeline: jest.fn().mockImplementation(() => ({
+    to: jest.fn(),
+    from: jest.fn(),
+    fromTo: jest.fn(),
+    play: jest.fn(),
+    pause: jest.fn(),
+    restart: jest.fn(),
+    reverse: jest.fn(),
+    kill: jest.fn(),
+    progress: jest.fn(),
+    add: jest.fn().mockReturnThis(),
+  })),
+  set: jest.fn(),
+  getProperty: jest.fn(),
+  setProperty: jest.fn(),
+  registerPlugin: jest.fn(),
+  Power2: {
+    easeInOut: 'ease-in-out',
+    easeOut: 'ease-out',
+    easeIn: 'ease-in',
+  },
+  config: {
+    autoSleep: 60,
+    force3D: false,
+    nullTargetWarn: true,
+    units: {
+      lineHeight: '',
+      rotation: 'deg',
+      xPercent: '%',
+      yPercent: '%',
+    },
+  },
+}));
+
+// Modern environment setup with better type support
+process.env.NODE_ENV = 'test';
+process.env.TZ = 'UTC'; // Ensure consistent timezone in tests
+
+// Add modern Jest matchers
+expect.extend({
+  toHaveBeenCalledWithMatch(received, ...expected) {
+    const pass = received.mock.calls.some(call =>
+      expected.every((arg, index) => {
+        if (arg instanceof RegExp) {
+          return arg.test(call[index]);
+        }
+        return call[index] === arg;
+      })
+    );
+
+    return {
+      message: () =>
+        `expected ${received.getMockName()} to have been called with matching arguments`,
+      pass,
+    };
+  },
+}); 

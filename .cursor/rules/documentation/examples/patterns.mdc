@@ -1,0 +1,206 @@
+---
+description: Documentation Patterns and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.md", "**/*.mdx", "**/*.stories.[tj]sx?"]
+alwaysApply: true
+extends: ["documentation/base-documentation"]
+tags: ["documentation", "patterns", "best-practices"]
+---
+
+# Documentation Patterns
+
+## Related Rules
+- documentation/base-documentation: Base documentation requirements
+- documentation/component-driven/index: Component documentation standards
+- documentation/examples/antipatterns: What to avoid in documentation
+- documentation/api/index: API documentation standards
+
+## Version History
+- 1.0.0: Initial version
+  - Established core documentation patterns
+  - Defined component documentation templates
+  - Implemented API documentation standards
+  - Added accessibility documentation requirements
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Enforces documentation patterns and best practices"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "readabilityScore": 80,
+        "documentationCompleteness": 95,
+        "exampleCoverage": 90
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "README.md",
+        "CONTRIBUTING.md",
+        "*.stories.[tj]sx?",
+        "*.test.[tj]sx?"
+      ],
+      "forbidden": [
+        "TODO.md",
+        "FIXME.md"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "markdown-preview",
+          "code-snippets",
+          "documentation-search"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "documentation-site",
+          "api-reference",
+          "example-playground"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "documentation-links",
+          "code-examples",
+          "accessibility-docs"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "documentation-coverage",
+          "broken-links",
+          "usage-analytics"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "no-sensitive-data",
+        "sanitized-examples",
+        "validated-links"
+      ],
+      "validations": [
+        "content-security",
+        "link-validation",
+        "code-scanning"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 90,
+      "requirements": [
+        "example-validation",
+        "link-checking",
+        "accessibility-validation"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "markdown": "^1.0.0",
+        "mdx": "^2.0.0",
+        "typescript": "^5.0.0"
+      },
+      "optional": {
+        "prettier": "^3.0.0",
+        "remark": "^14.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Clear and consistent documentation structure
+- Comprehensive component documentation
+- Interactive examples for all components
+- Accessibility documentation
+- API reference documentation
+
+## Patterns and Examples
+```markdown
+# Component Name
+
+## Overview
+Brief description of the component's purpose and main features.
+
+## Usage
+```tsx
+import { Component } from '@/components';
+
+function Example() {
+  return <Component prop="value" />;
+}
+```
+
+## Props
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| prop | string | - | Description |
+
+## Accessibility
+- ARIA roles
+- Keyboard navigation
+- Screen reader considerations
+
+## Best Practices
+- Do's and don'ts
+- Common use cases
+- Edge cases to consider
+```
+
+## Integration Standards
+- IDE must support documentation previews
+- Build process must generate documentation site
+- Testing must validate documentation examples
+- Monitoring must track documentation coverage
+
+## Security Considerations
+- No sensitive data in examples
+- Sanitized code snippets
+- Validated external links
+- Secure documentation hosting
+
+## Testing Requirements
+- Validate code examples
+- Check documentation links
+- Test accessibility documentation
+- Verify API references
+
+## Maintenance
+- Monthly documentation review
+- Regular updates for new features
+- Deprecation notices
+- Migration guides
+
+## Compatibility Matrix
+| Feature | Markdown | MDX | TypeScript |
+|---------|----------|-----|------------|
+| Preview | ✅ | ✅ | ✅ |
+| Syntax | ✅ | ✅ | ✅ |
+| Examples | ✅ | ✅ | ✅ |
+| API Docs | ⚠️ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Markdown | MDX | TypeScript |
+|---------|----------|-----|------------|
+| 1.0.0   | ≥1.0.0  | ≥2.0.0 | ≥5.0.0 | 

@@ -1,0 +1,272 @@
+---
+description: Package Management Standards and Best Practices for Dependency Management and Version Control
+version: 1.0.0
+globs: ["**/package.json", "**/pnpm-lock.yaml", "**/yarn.lock", "**/package-lock.json"]
+alwaysApply: true
+extends:
+  - core/security.mdc
+  - core/performance.mdc
+  - tooling/build/build-tools.mdc
+tags:
+  - package-management
+  - dependencies
+  - versioning
+  - security
+---
+
+# Package Management Standards
+
+## Related Rules
+- Security (`core/security.mdc`): Security standards
+- Performance (`core/performance.mdc`): Performance standards
+- Build Tools (`tooling/build/build-tools.mdc`): Build configuration
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added package management standards
+  - Implemented dependency management
+  - Added version control guidelines
+  - Established security practices
+
+## Configuration
+```json
+{
+  "packageManagement": {
+    "manager": "pnpm",
+    "version": "8.0.0",
+    "lockfile": {
+      "required": true,
+      "type": "pnpm-lock.yaml",
+      "commit": true
+    },
+    "scripts": {
+      "required": [
+        "build",
+        "dev",
+        "start",
+        "test",
+        "lint",
+        "format"
+      ],
+      "recommended": [
+        "clean",
+        "typecheck",
+        "validate",
+        "prepare"
+      ]
+    },
+    "dependencies": {
+      "versioning": {
+        "format": "^",
+        "allowRange": false,
+        "exceptions": [
+          "react",
+          "next",
+          "@types/*"
+        ]
+      },
+      "audit": {
+        "enabled": true,
+        "level": "high",
+        "autofix": true
+      },
+      "pruning": {
+        "enabled": true,
+        "automatic": true
+      }
+    },
+    "publishing": {
+      "registry": "https://registry.npmjs.org/",
+      "access": "restricted",
+      "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+      ],
+      "scripts": {
+        "prepublishOnly": "npm run build",
+        "postpublish": "git push --follow-tags"
+      }
+    },
+    "workspaces": {
+      "enabled": true,
+      "packages": [
+        "packages/*",
+        "apps/*"
+      ],
+      "nohoist": [
+        "**/react",
+        "**/react-dom"
+      ]
+    },
+    "caching": {
+      "enabled": true,
+      "strategy": "content-hash",
+      "compression": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Package manager
+- Version control
+- Dependencies
+- Scripts
+- Publishing
+- Workspaces
+- Security
+- Performance
+- Caching
+- Documentation
+
+## Package Structure
+```json
+{
+  "name": "@scope/package",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Package description",
+  "author": "Author Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/org/repo.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "validate": "pnpm run typecheck && pnpm run lint && pnpm run test",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}
+```
+
+## Version Control
+- Semantic versioning
+- Lock file management
+- Dependency updates
+- Security patches
+- Breaking changes
+- Release notes
+- Changelogs
+- Git tags
+
+## Security Standards
+- Dependency auditing
+- Version pinning
+- Source verification
+- License checking
+- CVE monitoring
+- Update policies
+- Access control
+- Registry security
+
+## Performance Standards
+- Dependency size
+- Tree shaking
+- Dead code
+- Bundle size
+- Load time
+- Cache hits
+- Build time
+- Install time
+
+## Integration Standards
+- IDE integration:
+  - Package completion
+  - Version lookup
+  - Dependency graph
+  - Update checking
+- Build integration:
+  - Lock file validation
+  - Dependency checks
+  - Security audits
+  - Performance metrics
+- Testing integration:
+  - Version tests
+  - Update tests
+  - Security tests
+  - Performance tests
+- Monitoring integration:
+  - Dependency tracking
+  - Update monitoring
+  - Security alerts
+  - Performance metrics
+
+## Testing Requirements
+- Version tests
+- Update tests
+- Security tests
+- Performance tests
+- Integration tests
+- Dependency tests
+- Script tests
+- Build tests
+
+## Maintenance
+- Regular updates
+- Security patches
+- Performance monitoring
+- Dependency review
+- Script updates
+- Documentation
+- Migration
+- Versioning
+
+## Compatibility Matrix
+| Feature | pnpm 8.0+ | npm 9.0+ | yarn 4.0+ |
+|---------|-----------|----------|-----------|
+| Workspaces | ✅ | ✅ | ✅ |
+| PnP | ❌ | ❌ | ✅ |
+| Content Hash | ✅ | ❌ | ✅ |
+| Hoisting | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | pnpm | TypeScript |
+|---------|---------|------|------------|
+| 1.0.0   | ≥18.0.0 | ≥8.0.0 | ≥5.0.0 | 

@@ -1,0 +1,14 @@
+{
+  "name": "cursor-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Validation tools for Cursor configuration files",
+  "main": "validate-configs.js",
+  "scripts": {
+    "cursor-validate": "node validate-configs.js",
+    "cursor-validate:all": "node validate-configs.js ../rules"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+} 

@@ -1,0 +1,213 @@
+---
+description: Testing Documentation Standards and Requirements for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.test.{ts,tsx,js,jsx}", "**/*.spec.{ts,tsx,js,jsx}", "**/tests/**/*.md", "**/tests/**/*.mdx", "**/test/**/*.md", "**/test/**/*.mdx"]
+alwaysApply: true
+extends:
+  - documentation/base-documentation.mdc
+  - tooling/testing/base-testing.mdc
+tags:
+  - testing
+  - documentation
+  - standards
+  - examples
+---
+
+# Testing Documentation Standards
+
+## Related Rules
+- Base Documentation (`documentation/base-documentation.mdc`): Core documentation patterns
+- Base Testing (`tooling/testing/base-testing.mdc`): Testing standards
+- TypeScript (`development/typescript.mdc`): Type testing patterns
+- Virtual DOM (`development/virtual-dom.mdc`): Component testing docs
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added testing documentation standards
+  - Implemented test case documentation
+  - Added coverage documentation
+  - Established testing patterns
+
+## Configuration
+```json
+{
+  "testing-docs": {
+    "format": {
+      "markdown": true,
+      "jsdoc": true,
+      "typescript": true
+    },
+    "requirements": {
+      "description": true,
+      "setup": true,
+      "teardown": true,
+      "examples": true,
+      "coverage": true
+    },
+    "validation": {
+      "links": true,
+      "examples": true,
+      "types": true,
+      "coverage": true
+    },
+    "generation": {
+      "coverage": true,
+      "reports": true,
+      "examples": true,
+      "snapshots": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Test case docs
+- Setup guides
+- Teardown guides
+- Coverage docs
+- Pattern docs
+- Mock guides
+- Fixture docs
+- Example tests
+- Edge cases
+- Error tests
+- Performance tests
+- Security tests
+- Integration tests
+- E2E tests
+- Component tests
+- API tests
+
+## Patterns and Examples
+```markdown
+# Test Suite: Component Name
+
+## Overview
+Description of what this test suite covers and its importance.
+
+## Setup
+```typescript
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Component } from './Component';
+
+describe('Component', () => {
+  beforeEach(() => {
+    // Setup code
+  });
+
+  afterEach(() => {
+    // Cleanup code
+  });
+
+  // Test cases...
+});
+```
+
+## Test Cases
+
+### Basic Rendering
+```typescript
+it('renders without crashing', () => {
+  render(<Component />);
+  expect(screen.getByRole('button')).toBeInTheDocument();
+});
+```
+
+### User Interactions
+```typescript
+it('handles click events', async () => {
+  const onClickMock = jest.fn();
+  render(<Component onClick={onClickMock} />);
+  
+  await fireEvent.click(screen.getByRole('button'));
+  expect(onClickMock).toHaveBeenCalled();
+});
+```
+
+### Edge Cases
+```typescript
+it('handles empty data gracefully', () => {
+  render(<Component data={[]} />);
+  expect(screen.getByText('No data available')).toBeInTheDocument();
+});
+```
+
+## Coverage Requirements
+- Unit test coverage: 80%
+- Integration test coverage: 70%
+- E2E test coverage: 60%
+- Branch coverage: 75%
+- Function coverage: 85%
+
+## Notes
+Additional information about testing considerations, limitations, or special cases.
+
+## See Also
+- [Testing Utils]
+- [Test Helpers]
+```
+
+## Integration Standards
+- IDE integration:
+  - Test runner
+  - Coverage viewer
+  - Snapshot viewer
+  - Debug support
+- Build integration:
+  - CI pipeline
+  - Coverage reports
+  - Test automation
+  - Result publishing
+- Testing integration:
+  - Framework setup
+  - Mock system
+  - Assertion library
+  - Fixtures
+- Monitoring integration:
+  - Test metrics
+  - Coverage trends
+  - Performance stats
+  - Error tracking
+
+## Security Considerations
+- Test data security
+- Mock data safety
+- Credential handling
+- Environment isolation
+- Network security
+- API security
+- Database security
+- Secret management
+
+## Documentation Requirements
+- Test setup
+- Test cases
+- Coverage
+- Patterns
+- Mocks
+- Fixtures
+- Examples
+- Results
+
+## Maintenance
+- Regular updates
+- Coverage tracking
+- Pattern updates
+- Example updates
+- Tool updates
+- Framework updates
+- Library updates
+- Report updates
+
+## Compatibility Matrix
+| Feature | Unit | Integration | E2E |
+|---------|------|-------------|-----|
+| Docs | ✅ | ✅ | ✅ |
+| Coverage | ✅ | ✅ | ✅ |
+| Examples | ✅ | ✅ | ✅ |
+| Snapshots | ✅ | ❌ | ❌ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥16.0.0 | ≥5.0.0 | ≥0.34.0 |

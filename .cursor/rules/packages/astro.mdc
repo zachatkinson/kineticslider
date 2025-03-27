@@ -1,0 +1,337 @@
+---
+description: Astro Framework Configuration and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.astro", "**/astro.config.{js,ts,mjs}", "**/src/pages/**/*", "**/src/layouts/**/*"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - development/typescript.mdc
+tags:
+  - astro
+  - framework
+  - performance
+  - islands
+---
+
+# Astro Framework Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Base performance standards
+- TypeScript (`development/typescript.mdc`): Type definitions and patterns
+- Server Components (`development/server-components.mdc`): Server-side patterns
+- Virtual DOM (`development/virtual-dom.mdc`): Component patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added Astro configuration standards
+  - Implemented island architecture patterns
+  - Added performance optimization guidelines
+  - Established component best practices
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Astro Framework Configuration Standards and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "performance": {
+          "tti": 2000,
+          "fcp": 1500,
+          "lcp": 2500,
+          "cls": 0.1,
+          "fid": 100
+        },
+        "buildTime": {
+          "ssg": 60000,
+          "ssr": 30000
+        },
+        "bundleSize": {
+          "js": 150000,
+          "css": 50000,
+          "total": 250000
+        },
+        "hydration": {
+          "time": 100,
+          "size": 50000
+        }
+      },
+      "patterns": {
+        "required": [
+          "island-architecture",
+          "static-generation",
+          "server-rendering",
+          "partial-hydration",
+          "view-transitions",
+          "asset-optimization"
+        ],
+        "forbidden": [
+          "client-only-components",
+          "full-hydration",
+          "unsafe-html",
+          "inline-scripts"
+        ],
+        "build": {
+          "server": "node",
+          "format": "directory",
+          "assets": true,
+          "splitting": true
+        },
+        "optimization": {
+          "prefetch": true,
+          "prerender": true,
+          "compression": true,
+          "imageOptimization": true
+        }
+      },
+      "integrations": {
+        "islands": {
+          "hydration": "load",
+          "clientOnly": false,
+          "streaming": true,
+          "partialHydration": true
+        },
+        "performance": {
+          "viewTransitions": true,
+          "assetFingerprinting": true,
+          "inlineScripts": true,
+          "cssMinification": true
+        },
+        "ide": {
+          "componentPreview": true,
+          "typeChecking": true,
+          "buildValidation": true,
+          "errorDetection": true
+        },
+        "build": {
+          "staticGeneration": true,
+          "assetOptimization": true,
+          "bundleAnalysis": true,
+          "codeSplitting": true
+        }
+      },
+      "security": {
+        "contentSecurity": true,
+        "xssProtection": true,
+        "sanitization": true,
+        "scriptSafety": true,
+        "assetSafety": true,
+        "inputValidation": true,
+        "outputEncoding": true,
+        "markdownSafety": true
+      },
+      "testing": {
+        "componentTestRequired": true,
+        "integrationTestRequired": true,
+        "e2eTestRequired": true,
+        "visualTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "weekly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "astro": ">=3.0.0",
+        "node": ">=18.14.1",
+        "typescript": ">=5.0.0",
+        "vite": ">=4.0.0",
+        "frameworks": {
+          "react": ">=18.0.0",
+          "vue": ">=3.0.0",
+          "svelte": ">=4.0.0",
+          "solid": ">=1.7.0"
+        }
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Island architecture
+- Static generation
+- Server-side rendering
+- Partial hydration
+- Asset optimization
+- View transitions
+- Routing system
+- Data fetching
+- Component design
+- Error handling
+- Performance
+- Security
+- SEO
+- Best practices
+- Documentation
+
+## Patterns and Examples
+```typescript
+// Page Component Pattern
+---
+import Layout from '../layouts/Base.astro';
+import { getStaticPaths } from '../utils/paths';
+import type { Post } from '../types';
+
+export async function getStaticPaths() {
+  const posts = await getStaticPaths();
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post }
+  }));
+}
+
+const { post } = Astro.props;
+---
+
+<Layout title={post.title}>
+  <article>
+    <h1>{post.title}</h1>
+    <div set:html={post.content} />
+  </article>
+</Layout>
+
+// Island Component Pattern
+---
+import { useState } from 'react';
+import Counter from '../components/Counter';
+
+interface Props {
+  initialCount: number;
+}
+
+const { initialCount } = Astro.props;
+---
+
+<div class="island">
+  <Counter client:load initialCount={initialCount} />
+</div>
+
+<style>
+  .island {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: var(--surface);
+  }
+</style>
+
+// Layout Component Pattern
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { ViewTransitions } from 'astro:transitions';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <ViewTransitions />
+  </head>
+  <body>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+// Data Fetching Pattern
+---
+import { getCollection } from 'astro:content';
+import PostCard from '../components/PostCard.astro';
+
+const posts = await getCollection('blog', ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const sortedPosts = posts.sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<section>
+  {sortedPosts.map(post => (
+    <PostCard post={post} />
+  ))}
+</section>
+```
+
+## Integration Standards
+- IDE integration:
+  - Component preview
+  - Type checking
+  - Build validation
+  - Error detection
+- Build integration:
+  - Static generation
+  - Asset optimization
+  - Bundle analysis
+  - Code splitting
+- Testing integration:
+  - Component tests
+  - Integration tests
+  - E2E tests
+  - Visual tests
+- Monitoring integration:
+  - Performance metrics
+  - Error tracking
+  - Usage analytics
+  - Build stats
+
+## Security Considerations
+- Content security
+- Input validation
+- XSS prevention
+- CSRF protection
+- Asset security
+- API security
+- Authentication
+- Authorization
+
+## Testing Requirements
+- Unit tests
+- Integration tests
+- E2E tests
+- Component tests
+- Visual tests
+- Performance tests
+- Security tests
+- SEO tests
+
+## Maintenance
+- Regular updates
+- Performance monitoring
+- Security audits
+- Documentation
+- Training
+- Reviews
+- Optimization
+- Monitoring
+
+## Compatibility Matrix
+| Feature | SSG | SSR | Islands |
+|---------|-----|-----|---------|
+| Pages | ✅ | ✅ | ✅ |
+| API Routes | ✅ | ✅ | ❌ |
+| Middleware | ✅ | ✅ | ❌ |
+| View Transitions | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Astro | Node.js | TypeScript |
+|---------|-------|---------|------------|
+| 1.0.0   | ≥4.0.0 | ≥18.14.1 | ≥5.0.0 | 

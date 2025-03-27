@@ -1,0 +1,201 @@
+---
+description: Storybook Configuration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.stories.tsx", "**/*.stories.ts", "**/*.stories.jsx", "**/*.stories.js"]
+alwaysApply: true
+extends: ["documentation/component-driven/index"]
+tags: ["documentation", "component-driven", "storybook"]
+---
+
+# Storybook Standards
+
+## Related Rules
+- documentation/component-driven/index: Base component documentation standards
+- documentation/component-driven/chromatic: Visual regression testing standards
+- documentation/examples/patterns: Common documentation patterns
+- documentation/base-documentation: Base documentation requirements
+
+## Version History
+- 1.0.0: Initial version
+  - Established core Storybook configuration standards
+  - Defined component documentation requirements
+  - Implemented accessibility testing integration
+  - Added performance monitoring capabilities
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Enforces Storybook documentation standards and best practices"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "documentationCoverage": 90,
+        "accessibilityScore": 95,
+        "interactionTestCoverage": 80
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "*.stories.[tj]sx?",
+        "*.mdx"
+      ],
+      "forbidden": [
+        "*.stories.md"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "story-preview",
+          "component-documentation",
+          "accessibility-checks"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "static-build",
+          "documentation-extraction",
+          "type-inference"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "interaction-testing",
+          "accessibility-testing",
+          "visual-regression"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "performance-tracking",
+          "bundle-size-monitoring",
+          "usage-analytics"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "sanitized-markdown",
+        "safe-html-rendering",
+        "controlled-external-links"
+      ],
+      "validations": [
+        "xss-prevention",
+        "content-security-policy",
+        "dependency-scanning"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 90,
+      "requirements": [
+        "interaction-tests",
+        "accessibility-tests",
+        "visual-regression-tests"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "storybook": "^7.0.0",
+        "react": "^18.0.0",
+        "typescript": "^5.0.0"
+      },
+      "optional": {
+        "@storybook/addon-a11y": "^7.0.0",
+        "@storybook/addon-interactions": "^7.0.0",
+        "@storybook/addon-docs": "^7.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Each component must have a corresponding story file
+- Stories must include both component documentation and interactive examples
+- Documentation must cover props, usage patterns, and accessibility considerations
+- Visual regression tests must be configured for critical components
+- Interaction tests must be included for complex components
+
+## Patterns and Examples
+```typescript
+// Basic Story Pattern
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Components/Button',
+  component: Button,
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary'],
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Primary Button',
+  },
+};
+```
+
+## Integration Standards
+- IDE integration must provide story preview capabilities
+- Build process must generate static documentation
+- Testing suite must include interaction and accessibility tests
+- Monitoring must track documentation coverage and usage
+
+## Security Considerations
+- Markdown content must be sanitized
+- External links must be validated
+- Code examples must be properly escaped
+- Dependencies must be regularly scanned for vulnerabilities
+
+## Testing Requirements
+- Interaction tests for user flows
+- Accessibility tests using @storybook/addon-a11y
+- Visual regression tests for UI components
+- Performance monitoring for documentation site
+
+## Maintenance
+- Monthly review of documentation coverage
+- Quarterly audit of accessibility compliance
+- Automated dependency updates
+- Migration guides for major version updates
+
+## Compatibility Matrix
+| Feature | React | Vue | Svelte |
+|---------|-------|-----|---------|
+| MDX Docs | ✅ | ✅ | ✅ |
+| TypeScript | ✅ | ✅ | ✅ |
+| Controls | ✅ | ✅ | ✅ |
+| Actions | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Storybook | React | TypeScript |
+|---------|-----------|-------|------------|
+| 1.0.0   | ≥7.0.0   | ≥18.0.0| ≥5.0.0   | 

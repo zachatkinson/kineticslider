@@ -1,0 +1,290 @@
+---
+description: VirtualDOM and React Performance Rules for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{tsx,jsx}", "**/components/**/*", "**/pages/**/*", "**/app/**/*"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/code-style.mdc
+tags:
+  - react
+  - virtual-dom
+  - performance
+  - optimization
+---
+
+# Virtual DOM Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Core performance patterns
+- Code Style (`core/code-style.mdc`): Code style standards
+- TypeScript (`development/typescript.mdc`): Type patterns
+- Server Components (`development/server-components.mdc`): Server rendering
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added Virtual DOM standards
+  - Implemented React performance rules
+  - Added optimization patterns
+  - Established rendering guidelines
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "VirtualDOM and React Performance Rules for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "renderTime": 16,
+        "memoryUsage": 50000000,
+        "bundleSize": 250000,
+        "reflows": 1,
+        "repaints": 2,
+        "fps": 60,
+        "coverage": {
+          "performance": 90,
+          "memory": 85,
+          "render": 95
+        }
+      },
+      "patterns": {
+        "required": [
+          "memo-usage",
+          "lazy-loading",
+          "code-splitting",
+          "suspense-boundaries",
+          "error-boundaries",
+          "virtual-lists"
+        ],
+        "forbidden": [
+          "direct-dom-manipulation",
+          "inline-event-handlers",
+          "unsafe-component-updates",
+          "nested-state-updates"
+        ],
+        "performance": {
+          "memoization": true,
+          "lazyLoading": true,
+          "codeSpitting": true,
+          "suspense": true
+        },
+        "optimization": {
+          "renderOptimization": true,
+          "stateManagement": true,
+          "eventHandling": true,
+          "lifecycles": true
+        }
+      },
+      "integrations": {
+        "ide": {
+          "performanceHints": true,
+          "bundleAnalysis": true,
+          "memoryProfiling": true,
+          "renderTracking": true
+        },
+        "build": {
+          "codeSplitting": true,
+          "treeSplitting": true,
+          "bundleOptimization": true,
+          "chunkLoading": true
+        },
+        "test": {
+          "performanceTests": true,
+          "memoryTests": true,
+          "renderTests": true,
+          "eventTests": true
+        },
+        "monitor": {
+          "performanceMetrics": true,
+          "memoryUsage": true,
+          "renderTimes": true,
+          "errorTracking": true
+        }
+      },
+      "security": {
+        "xssPrevention": true,
+        "csrfProtection": true,
+        "inputValidation": true,
+        "outputEncoding": true,
+        "stateIsolation": true,
+        "eventValidation": true,
+        "propsValidation": true,
+        "memoryLimits": true
+      },
+      "testing": {
+        "performanceTestRequired": true,
+        "memoryTestRequired": true,
+        "renderTestRequired": true,
+        "eventTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "monthly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "react": ">=18.0.0",
+        "typescript": ">=5.0.0",
+        "node": ">=18.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Component design
+- State management
+- Props handling
+- Event handling
+- Lifecycle management
+- Render optimization
+- Memory management
+- Error boundaries
+- Code splitting
+- Lazy loading
+- Suspense
+- Concurrent features
+- Server components
+- Hydration
+- Streaming
+- Progressive enhancement
+
+## Patterns and Examples
+```tsx
+// Component Pattern
+interface Props {
+  data: Data;
+  onUpdate: (data: Data) => void;
+}
+
+const Component = memo(function Component({ data, onUpdate }: Props) {
+  // State management
+  const [state, setState] = useState<State>(() => 
+    computeInitialState(data)
+  );
+
+  // Memoized values
+  const computed = useMemo(() => 
+    expensiveComputation(state), 
+    [state]
+  );
+
+  // Memoized callbacks
+  const handleUpdate = useCallback((newData: Data) => {
+    onUpdate(newData);
+  }, [onUpdate]);
+
+  // Side effects
+  useEffect(() => {
+    const cleanup = setupSubscription(data);
+    return () => cleanup();
+  }, [data]);
+
+  // Render optimization
+  if (!shouldRender(data)) {
+    return null;
+  }
+
+  return (
+    <ErrorBoundary fallback={<ErrorFallback />}>
+      <Suspense fallback={<Loading />}>
+        <ChildComponent
+          data={computed}
+          onUpdate={handleUpdate}
+        />
+      </Suspense>
+    </ErrorBoundary>
+  );
+});
+
+// List Virtualization
+const VirtualList = memo(function VirtualList({ items }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 10 });
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => updateVisibleRange(entries),
+      { root: containerRef.current }
+    );
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef}>
+      {items.slice(visibleRange.start, visibleRange.end).map(item => (
+        <ListItem key={item.id} data={item} />
+      ))}
+    </div>
+  );
+});
+```
+
+## Integration Standards
+- IDE integration:
+  - Performance hints
+  - Bundle analysis
+  - Memory profiling
+  - Render tracking
+- Build integration:
+  - Code splitting
+  - Tree shaking
+  - Bundle optimization
+  - Chunk loading
+- Testing integration:
+  - Performance tests
+  - Memory tests
+  - Render tests
+  - Event tests
+- Monitoring integration:
+  - Performance metrics
+  - Memory usage
+  - Render times
+  - Error tracking
+
+## Security Considerations
+- XSS prevention
+- CSRF protection
+- Input validation
+- Output encoding
+- State isolation
+- Event validation
+- Props validation
+- Memory limits
+
+## Performance Requirements
+- Render time
+- Memory usage
+- Bundle size
+- Load time
+- TTI metrics
+- FCP metrics
+- LCP metrics
+- CLS metrics
+
+## Maintenance
+- Regular audits
+- Performance monitoring
+- Memory profiling
+- Bundle analysis
+- Dependency updates
+- Pattern updates
+- Documentation
+- Training
+
+## Compatibility Matrix
+| Feature | React 18+ | React 17 | React 16 |
+|---------|-----------|----------|-----------|
+| Suspense | ✅ | ✅ | ❌ |
+| Concurrent | ✅ | ❌ | ❌ |
+| Streaming | ✅ | ❌ | ❌ |
+| Automatic | ✅ | ❌ | ❌ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | React |
+|---------|---------|------------|--------|
+| 1.0.0   | ≥16.0.0 | ≥5.0.0 | ≥18.0.0 | 

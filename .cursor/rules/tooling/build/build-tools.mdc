@@ -1,0 +1,303 @@
+---
+description: Build Tool Configuration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/vite.config.*", "**/webpack.config.*", "**/rollup.config.*", "**/tsconfig.*", "**/package.json"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - development/typescript.mdc
+tags:
+  - build
+  - bundling
+  - optimization
+  - standards
+---
+
+# Build Tool Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Performance standards
+- TypeScript (`development/typescript.mdc`): Type patterns
+- Package Management (`tooling/package-management.mdc`): Package patterns
+- Testing (`tooling/testing/base-testing.mdc`): Test patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added build tool standards
+  - Implemented bundling patterns
+  - Added optimization guidelines
+  - Established config patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Build Tool Configuration Standards and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "buildTime": 60000,
+        "bundleSize": {
+          "js": 250000,
+          "css": 50000,
+          "assets": 1000000
+        },
+        "chunkCount": 10,
+        "coverage": {
+          "unit": 80,
+          "integration": 70,
+          "e2e": 60
+        },
+        "performance": {
+          "firstBuild": 120000,
+          "incrementalBuild": 5000,
+          "hmrUpdate": 100
+        }
+      },
+      "patterns": {
+        "required": [
+          "code-splitting",
+          "tree-shaking",
+          "minification",
+          "compression",
+          "source-maps",
+          "hot-reload",
+          "type-checking"
+        ],
+        "forbidden": [
+          "sync-builds",
+          "unsafe-plugins",
+          "unoptimized-assets",
+          "blocking-operations"
+        ],
+        "tools": {
+          "vite": true,
+          "webpack": true,
+          "rollup": true,
+          "typescript": true
+        },
+        "optimization": {
+          "minification": true,
+          "treeshaking": true,
+          "splitting": true,
+          "compression": true
+        }
+      },
+      "integrations": {
+        "ide": {
+          "buildCommands": true,
+          "errorReporting": true,
+          "typeChecking": true,
+          "sourceMaps": true
+        },
+        "build": {
+          "hmr": true,
+          "sourcemaps": true,
+          "typescript": true,
+          "css": true
+        },
+        "test": {
+          "runners": true,
+          "coverage": true,
+          "e2e": true,
+          "unit": true
+        },
+        "monitor": {
+          "buildMetrics": true,
+          "performanceStats": true,
+          "errorTracking": true,
+          "usageAnalytics": true
+        }
+      },
+      "security": {
+        "dependencyScanning": true,
+        "sourceValidation": true,
+        "outputValidation": true,
+        "pluginSafety": true,
+        "configSafety": true,
+        "assetSafety": true,
+        "cacheSafety": true,
+        "buildSafety": true
+      },
+      "testing": {
+        "unitTestRequired": true,
+        "integrationTestRequired": true,
+        "e2eTestRequired": true,
+        "buildTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "weekly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0",
+        "vite": ">=4.0.0",
+        "webpack": ">=5.0.0",
+        "rollup": ">=3.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Build optimization
+- Code splitting
+- Asset optimization
+- Bundle analysis
+- Performance monitoring
+- Error handling
+- Type checking
+- Source maps
+- Hot reloading
+- CSS processing
+- File watching
+- Cache management
+- Dependency management
+- Plugin system
+- Configuration
+- Documentation
+
+## Patterns and Examples
+```javascript
+// Vite Configuration Pattern
+export default defineConfig({
+  // Build Options
+  build: {
+    target: 'esnext',
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: true,
+    minify: 'esbuild',
+    
+    // Optimization
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          utils: ['lodash-es', 'date-fns']
+        }
+      }
+    },
+    
+    // Performance
+    chunkSizeWarningLimit: 500,
+    cssCodeSplit: true,
+    
+    // Assets
+    assetsInlineLimit: 4096,
+    emptyOutDir: true
+  },
+  
+  // Dev Server
+  server: {
+    port: 3000,
+    strictPort: true,
+    hmr: true,
+    
+    // Optimization
+    watch: {
+      usePolling: false,
+      interval: 100
+    }
+  },
+  
+  // Plugins
+  plugins: [
+    react(),
+    tsconfigPaths(),
+    svgr(),
+    compression()
+  ],
+  
+  // Resolve
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
+  },
+  
+  // Optimizations
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    exclude: ['@internal/pkg']
+  }
+});
+```
+
+## Integration Standards
+- IDE integration:
+  - Build commands
+  - Error reporting
+  - Type checking
+  - Source maps
+- Testing integration:
+  - Test runners
+  - Coverage tools
+  - E2E testing
+  - Unit testing
+- CI/CD integration:
+  - Build pipelines
+  - Deploy scripts
+  - Cache management
+  - Asset optimization
+- Monitoring integration:
+  - Build metrics
+  - Performance stats
+  - Error tracking
+  - Usage analytics
+
+## Security Considerations
+- Dependency scanning
+- Source validation
+- Output validation
+- Plugin safety
+- Config safety
+- Asset safety
+- Cache safety
+- Build safety
+
+## Performance Requirements
+- Build speed
+- Bundle size
+- Code splitting
+- Tree shaking
+- Minification
+- Compression
+- Caching
+- Lazy loading
+- Asset optimization
+- Module federation
+- HMR efficiency
+- Watch mode
+- Incremental builds
+- Parallel processing
+- Memory usage
+- CPU usage
+
+## Maintenance
+- Regular updates
+- Tool updates
+- Plugin updates
+- Config updates
+- Documentation
+- Training
+- Reviews
+- Testing
+
+## Compatibility Matrix
+| Feature | Vite | Webpack | Rollup |
+|---------|------|---------|--------|
+| ESM | ✅ | ✅ | ✅ |
+| HMR | ✅ | ✅ | ❌ |
+| TypeScript | ✅ | ✅ | ✅ |
+| CSS Modules | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | ESLint |
+|---------|---------|------------|---------|
+| 1.0.0   | ≥16.0.0 | ≥5.0.0 | ≥8.0.0 | 

@@ -1,0 +1,372 @@
+---
+description: Accessibility Standards and WCAG Compliance Requirements
+version: 1.0.0
+globs: ["**/*.{ts,tsx,jsx,html}", "**/components/**/*", "**/pages/**/*"]
+alwaysApply: true
+extends:
+  - core/code-style.mdc
+tags:
+  - accessibility
+  - wcag
+  - a11y
+  - aria
+---
+
+# Accessibility Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Base coding standards
+- React/Next.js (`development/react-nextjs.mdc`): Component accessibility
+- Error Handling (`core/error-handling.mdc`): Error announcements
+- Performance (`core/performance.mdc`): Performance impact
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added WCAG 2.1 compliance requirements
+  - Implemented ARIA patterns
+  - Added keyboard navigation standards
+  - Established color contrast requirements
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Accessibility Standards and WCAG Compliance Requirements"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "wcagLevel": "AA",
+        "wcagVersion": "2.1",
+        "colorContrast": 4.5,
+        "touchTargetSize": 44
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "aria-roles",
+        "aria-attributes",
+        "keyboard-navigation",
+        "focus-management",
+        "screen-reader-support"
+      ],
+      "forbidden": [
+        "positive-tabindex",
+        "redundant-alt-text",
+        "click-events-without-key-events"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "aria-validation",
+          "color-contrast-checking",
+          "accessibility-linting"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "automated-testing",
+          "wcag-validation"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "screen-reader-testing",
+          "keyboard-navigation-testing",
+          "color-contrast-testing"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "accessibility-violations-tracking",
+          "user-feedback-collection"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "aria-attributes-sanitization",
+        "user-input-validation"
+      ],
+      "validations": [
+        "xss-prevention",
+        "content-injection-prevention"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 90,
+      "requirements": [
+        "automated-accessibility-tests",
+        "manual-screen-reader-tests",
+        "keyboard-navigation-tests",
+        "color-contrast-tests"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "quarterly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "wcag": "2.1",
+        "aria": "1.2",
+        "html": "5.2"
+      },
+      "optional": {
+        "wcag": "2.2"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- WCAG 2.1 Level AA compliance
+- Proper ARIA implementation
+- Keyboard navigation support
+- Color contrast requirements
+- Focus management
+- Screen reader support
+- Alternative text
+- Form accessibility
+- Media accessibility
+- Error announcements
+- Skip navigation
+- Landmark regions
+- Semantic HTML
+- Heading hierarchy
+- List structure
+- Table accessibility
+- Dialog management
+- Touch targets
+- Motion control
+- Time limits
+
+## Patterns and Examples
+```typescript
+// Focus Management Pattern
+class FocusManager {
+  private previousFocus: HTMLElement | null = null;
+
+  trapFocus(container: HTMLElement): void {
+    this.previousFocus = document.activeElement as HTMLElement;
+    
+    const focusableElements = container.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    
+    const firstFocusable = focusableElements[0] as HTMLElement;
+    const lastFocusable = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement;
+
+    container.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        if (e.shiftKey) {
+          if (document.activeElement === firstFocusable) {
+            lastFocusable.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastFocusable) {
+            firstFocusable.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    });
+
+    firstFocusable.focus();
+  }
+
+  releaseFocus(): void {
+    this.previousFocus?.focus();
+    this.previousFocus = null;
+  }
+}
+
+// ARIA Announcer Pattern
+class AriaAnnouncer {
+  private container: HTMLElement;
+
+  constructor() {
+    this.container = document.createElement('div');
+    this.container.setAttribute('role', 'status');
+    this.container.setAttribute('aria-live', 'polite');
+    this.container.style.position = 'absolute';
+    this.container.style.width = '1px';
+    this.container.style.height = '1px';
+    this.container.style.padding = '0';
+    this.container.style.overflow = 'hidden';
+    this.container.style.clip = 'rect(0, 0, 0, 0)';
+    this.container.style.whiteSpace = 'nowrap';
+    this.container.style.border = '0';
+    document.body.appendChild(this.container);
+  }
+
+  announce(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
+    this.container.setAttribute('aria-live', priority);
+    this.container.textContent = message;
+  }
+
+  clear(): void {
+    this.container.textContent = '';
+  }
+}
+
+// Accessible Component Pattern
+interface AccessibleProps {
+  id: string;
+  label: string;
+  description?: string;
+  errorMessage?: string;
+}
+
+function AccessibleComponent({
+  id,
+  label,
+  description,
+  errorMessage
+}: AccessibleProps): JSX.Element {
+  return (
+    <div role="group" aria-labelledby={`${id}-label`}>
+      <label id={`${id}-label`}>{label}</label>
+      {description && (
+        <div id={`${id}-description`} aria-describedby={`${id}-label`}>
+          {description}
+        </div>
+      )}
+      {errorMessage && (
+        <div
+          id={`${id}-error`}
+          role="alert"
+          aria-live="assertive"
+        >
+          {errorMessage}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - ARIA validation
+  - Color contrast checking
+  - Accessibility linting
+  - Semantic HTML validation
+- Build integration:
+  - Automated testing
+  - WCAG validation
+  - Bundle analysis
+  - CSS validation
+- Testing integration:
+  - Screen reader testing
+  - Keyboard navigation
+  - Color contrast
+  - ARIA validation
+- Monitoring integration:
+  - Accessibility violations
+  - User complaints
+  - Error tracking
+  - Usage patterns
+
+## Performance Metrics
+- Load Time Impact:
+  - ARIA attributes: < 1kb additional markup
+  - Focus management: < 5ms per trap/release operation
+  - Screen reader compatibility: No measurable impact
+- Runtime Performance:
+  - Focus management operations: < 16ms
+  - ARIA live region updates: < 8ms
+  - Dynamic content updates: < 16ms
+- Memory Impact:
+  - Focus management: < 1kb per instance
+  - ARIA announcer: < 2kb per instance
+- Network Impact:
+  - Additional HTML attributes: < 2kb per page
+  - Accessibility scripts: < 10kb gzipped
+
+## Security Considerations
+- Input Validation:
+  - Sanitize all ARIA labels and descriptions
+  - Validate dynamic content updates
+  - Escape HTML in announcements
+- Access Control:
+  - Protect sensitive information in ARIA labels
+  - Secure skip links and landmarks
+  - Validate keyboard shortcuts
+- Error Handling:
+  - Safe error announcements
+  - Secure focus management
+  - Protected state management
+
+## Testing Requirements
+- Automated Testing:
+  - WCAG compliance validation
+  - ARIA attribute validation
+  - Keyboard navigation testing
+  - Color contrast verification
+- Manual Testing:
+  - Screen reader compatibility
+  - Keyboard navigation flows
+  - Touch target sizing
+  - Focus management
+- Performance Testing:
+  - Load time impact
+  - Runtime performance
+  - Memory usage
+  - Network impact
+- Compatibility Testing:
+  - Browser support
+  - Screen reader support
+  - Assistive technology support
+  - Mobile device support
+
+## Maintenance
+- Regular Reviews:
+  - WCAG compliance updates
+  - Browser compatibility
+  - Screen reader support
+  - Performance metrics
+- Update Procedures:
+  - Version compatibility checks
+  - Dependency updates
+  - Migration guides
+  - Breaking changes
+- Deprecation Process:
+  - Advance notice periods
+  - Migration documentation
+  - Legacy support
+  - Fallback patterns
+
+## Compatibility Matrix
+| Feature | Chrome | Firefox | Safari | Edge | NVDA | VoiceOver | JAWS |
+|---------|--------|---------|--------|------|------|-----------|------|
+| ARIA Attributes | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Focus Management | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Live Regions | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Keyboard Nav | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Touch Targets | ✅ | ✅ | ✅ | ✅ | N/A | N/A | N/A |
+| Media Controls | ✅ | ✅ | ⚠️ | ✅ | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | React | Next.js | TypeScript | Node.js |
+|---------|-------|---------|------------|---------|
+| 1.0.0   | ≥16.8.0 | ≥12.0.0 | ≥4.5.0 | ≥14.0.0 |
+| 1.1.0   | ≥17.0.0 | ≥13.0.0 | ≥4.8.0 | ≥16.0.0 |
+| 2.0.0   | ≥18.0.0 | ≥14.0.0 | ≥5.0.0 | ≥18.0.0 |

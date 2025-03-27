@@ -1,0 +1,448 @@
+---
+description: Production Environment Configuration Standards and Best Practices
+version: 1.0.0
+globs: ["**/production/**/*", "**/.env.production", "**/docker-compose.prod.yml"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/security.mdc
+  - tooling/environments/staging.mdc
+tags:
+  - production
+  - environment
+  - deployment
+  - reliability
+---
+
+# Production Environment Standards
+
+## Related Rules
+- Staging (`tooling/environments/staging.mdc`): Staging environment patterns
+- Performance (`core/performance.mdc`): Production performance standards
+- Security (`core/security.mdc`): Security guidelines for production
+- Testing (`tooling/testing/base-testing.mdc`): Testing environment setup
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added production environment standards
+  - Implemented high availability configurations
+  - Added disaster recovery guidelines
+  - Established SLA monitoring
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Production Environment Configuration Standards and Best Practices"
+  },
+  "options": {
+    "metrics": {
+      "availability": 99.99,
+      "latency": {
+        "p95": 200,
+        "p99": 500,
+        "p999": 1000
+      },
+      "errorRate": {
+        "critical": 0.001,
+        "warning": 0.01
+      },
+      "resourceUsage": {
+        "cpu": {
+          "target": 60,
+          "limit": 80
+        },
+        "memory": {
+          "target": 70,
+          "limit": 85
+        },
+        "storage": {
+          "warning": 80,
+          "critical": 90
+        }
+      }
+    },
+    "patterns": {
+      "required": [
+        "high-availability",
+        "disaster-recovery",
+        "geo-redundancy",
+        "load-balancing",
+        "auto-scaling",
+        "ssl-tls",
+        "authentication",
+        "authorization"
+      ],
+      "forbidden": [
+        "development-features",
+        "test-endpoints",
+        "debug-logging",
+        "insecure-protocols"
+      ],
+      "deployment": {
+        "strategy": "canary",
+        "autoScaling": true,
+        "minInstances": 4,
+        "maxInstances": 12,
+        "healthCheck": {
+          "enabled": true,
+          "path": "/health",
+          "interval": "15s",
+          "timeout": "5s",
+          "unhealthyThreshold": 2,
+          "healthyThreshold": 3
+        },
+        "rollout": {
+          "strategy": "gradual",
+          "batchSize": "25%",
+          "interval": "5m"
+        }
+      }
+    },
+    "integrations": {
+      "monitoring": {
+        "metrics": true,
+        "logging": true,
+        "tracing": true,
+        "alerting": {
+          "pagerDuty": true,
+          "slack": true
+        }
+      },
+      "security": {
+        "waf": true,
+        "ddos": true,
+        "audit": true,
+        "scanning": true
+      },
+      "backup": {
+        "automated": true,
+        "geoRedundant": true,
+        "testing": true,
+        "monitoring": true
+      },
+      "cdn": {
+        "static": true,
+        "dynamic": true,
+        "purging": true,
+        "monitoring": true
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "ssl-tls",
+        "authentication",
+        "authorization",
+        "rate-limiting",
+        "ddos-protection",
+        "waf",
+        "audit-logging"
+      ],
+      "validations": [
+        "security-scanning",
+        "penetration-testing",
+        "compliance-audit"
+      ]
+    },
+    "testing": {
+      "configValidation": true,
+      "unitTestRequired": true,
+      "integrationTestRequired": true,
+      "e2eTestRequired": true
+    },
+    "maintenance": {
+      "updateFrequency": "monthly",
+      "deprecationPolicy": "semver",
+      "backwardCompatibility": "major"
+    },
+    "compatibility": {
+      "required": {
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0",
+        "os": {
+          "linux": ["ubuntu-20.04", "debian-11"],
+          "container": ["alpine-3.16"]
+        }
+      },
+      "optional": {
+        "cloud": {
+          "aws": ">=2.0.0",
+          "gcp": ">=2.0.0",
+          "azure": ">=2.0.0"
+        }
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- High availability setup
+- Disaster recovery plan
+- Geographic redundancy
+- Load balancing
+- Auto-scaling
+- SSL/TLS configuration
+- Authentication/Authorization
+- Rate limiting
+- DDoS protection
+- WAF implementation
+- Backup strategy
+- Monitoring setup
+- Logging system
+- Error tracking
+- Performance monitoring
+- Security scanning
+- Compliance checking
+- Audit logging
+- SLA monitoring
+
+## Patterns and Examples
+```typescript
+// Production Deployment Pattern
+interface ProductionDeploymentConfig {
+  version: string;
+  environment: 'production';
+  instances: number;
+  healthCheck: HealthCheckConfig;
+  rollout: RolloutConfig;
+}
+
+class ProductionDeployment {
+  private config: ProductionDeploymentConfig;
+  private services: Map<string, Service>;
+  private monitoring: MonitoringService;
+  private loadBalancer: LoadBalancer;
+
+  constructor(config: ProductionDeploymentConfig) {
+    this.config = config;
+    this.services = new Map();
+    this.monitoring = new MonitoringService();
+    this.loadBalancer = new LoadBalancer();
+  }
+
+  async deploy() {
+    // Pre-deployment checks
+    await this.runPreflightChecks();
+    
+    // Start canary deployment
+    const deployment = await this.startCanaryDeployment();
+    
+    // Monitor canary metrics
+    await this.monitorCanaryHealth(deployment);
+    
+    // Gradually roll out if canary is healthy
+    if (deployment.canaryHealth.success) {
+      await this.gradualRollout(deployment);
+    } else {
+      await this.rollback(deployment);
+    }
+  }
+
+  private async runPreflightChecks() {
+    const preflight = new PreflightChecker();
+    const checks = await preflight.run({
+      security: true,
+      performance: true,
+      dependencies: true,
+      configuration: true
+    });
+
+    if (!checks.success) {
+      throw new Error(`Preflight checks failed: ${checks.errors.join(', ')}`);
+    }
+  }
+
+  private async startCanaryDeployment() {
+    const canary = new CanaryDeployment({
+      version: this.config.version,
+      instances: 1,
+      healthCheck: this.config.healthCheck
+    });
+    
+    return await canary.start();
+  }
+
+  private async monitorCanaryHealth(deployment: Deployment) {
+    const monitor = new CanaryMonitor({
+      metrics: ['error_rate', 'latency', 'cpu_usage'],
+      duration: '15m',
+      threshold: {
+        error_rate: '0.1%',
+        latency_p95: '200ms',
+        cpu_usage: '80%'
+      }
+    });
+
+    deployment.canaryHealth = await monitor.observe(deployment.canary);
+  }
+
+  private async gradualRollout(deployment: Deployment) {
+    const rollout = new GradualRollout({
+      strategy: this.config.rollout.strategy,
+      batchSize: this.config.rollout.batchSize,
+      interval: this.config.rollout.interval
+    });
+
+    await rollout.execute(deployment);
+  }
+
+  private async rollback(deployment: Deployment) {
+    await deployment.rollback();
+    this.monitoring.alert({
+      level: 'critical',
+      message: 'Production deployment rollback initiated',
+      deployment: deployment.id,
+      reason: deployment.canaryHealth.failures
+    });
+  }
+}
+
+// High Availability Pattern
+class HighAvailabilityService {
+  private config: HAConfig;
+  private loadBalancer: LoadBalancer;
+  private healthChecker: HealthChecker;
+  private failover: FailoverService;
+
+  constructor(config: HAConfig) {
+    this.config = config;
+    this.setupServices();
+  }
+
+  private setupServices() {
+    this.loadBalancer = new LoadBalancer({
+      algorithm: 'least_connections',
+      healthCheck: this.config.healthCheck,
+      ssl: this.config.ssl
+    });
+
+    this.healthChecker = new HealthChecker({
+      interval: this.config.healthCheck.interval,
+      timeout: this.config.healthCheck.timeout,
+      unhealthyThreshold: this.config.healthCheck.unhealthyThreshold
+    });
+
+    this.failover = new FailoverService({
+      regions: this.config.regions,
+      strategy: 'active-active'
+    });
+  }
+
+  async handleFailover(region: string) {
+    // Start failover process
+    const failover = await this.failover.initiate({
+      fromRegion: region,
+      reason: 'region_failure'
+    });
+
+    // Update DNS
+    await this.updateDNS(failover);
+
+    // Notify stakeholders
+    await this.notifyFailover(failover);
+  }
+
+  private async updateDNS(failover: Failover) {
+    const dns = new DNSService();
+    await dns.updateRecords({
+      type: 'CNAME',
+      name: this.config.domain,
+      value: failover.newEndpoint,
+      ttl: 300
+    });
+  }
+
+  private async notifyFailover(failover: Failover) {
+    const notification = new NotificationService();
+    await notification.send({
+      channel: ['slack', 'pagerduty'],
+      priority: 'critical',
+      message: `Failover initiated from ${failover.fromRegion}`,
+      details: failover
+    });
+  }
+}
+```
+
+## Integration Standards
+- CI/CD integration:
+  - Deployment pipeline
+  - Canary deployments
+  - Blue-green deployments
+  - Rollback procedures
+- Monitoring integration:
+  - Metrics collection
+  - Log aggregation
+  - Trace collection
+  - Alert management
+  - SLA monitoring
+- Security integration:
+  - WAF integration
+  - SIEM integration
+  - Vulnerability scanning
+  - Compliance checking
+  - Access control
+  - Audit logging
+- Infrastructure integration:
+  - Load balancer setup
+  - CDN configuration
+  - Database replication
+  - Cache management
+  - Backup systems
+
+## Security Considerations
+- SSL/TLS configuration
+- Authentication setup
+- Authorization rules
+- Data encryption
+- Network security
+- Access control
+- Audit logging
+- Vulnerability scanning
+- DDoS protection
+- Rate limiting
+- Security headers
+- CORS policies
+- WAF rules
+- SIEM integration
+- Compliance requirements
+
+## Testing Requirements
+- Load tests
+- Stress tests
+- Failover tests
+- Security tests
+- Performance tests
+- Compliance tests
+- Disaster recovery tests
+- Chaos tests
+
+## Maintenance
+- Regular updates
+- Security patches
+- Performance tuning
+- Log rotation
+- Backup verification
+- Certificate renewal
+- Dependency updates
+- Configuration review
+- Compliance audits
+- Capacity planning
+
+## Compatibility Matrix
+| Feature | Cloud | Container | Serverless |
+|---------|-------|-----------|------------|
+| Auto-scaling | ✅ | ✅ | ✅ |
+| Canary Deploy | ✅ | ✅ | ✅ |
+| Geo-redundancy | ✅ | ✅ | ✅ |
+| WAF | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0 | ≥0.34.0 | 

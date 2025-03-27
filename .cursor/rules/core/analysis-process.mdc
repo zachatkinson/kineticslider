@@ -1,0 +1,218 @@
+---
+description: Code Review and Quality Assessment Standards
+version: 1.0.0
+globs: ["**/*.{ts,tsx,js,jsx}", "**/*.test.{ts,tsx,js,jsx}", "**/*.spec.{ts,tsx,js,jsx}"]
+alwaysApply: true
+extends:
+  - core/code-style.mdc
+  - core/error-handling.mdc
+tags:
+  - analysis
+  - quality
+  - review
+  - testing
+---
+
+# Code Analysis Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Base coding standards
+- Error Handling (`core/error-handling.mdc`): Error analysis patterns
+- Testing (`tooling/testing/base-testing.mdc`): Test analysis standards
+- TypeScript (`development/typescript.mdc`): Type analysis patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added code review standards
+  - Implemented quality metrics
+  - Added analysis patterns
+  - Established review process
+
+## Configuration
+```json
+{
+  "analysis": {
+    "metrics": {
+      "complexity": {
+        "maxCyclomaticComplexity": 10,
+        "maxCognitiveComplexity": 15,
+        "maxDepth": 3
+      },
+      "size": {
+        "maxFunctionLength": 20,
+        "maxFileLength": 300,
+        "maxParameterCount": 3
+      },
+      "quality": {
+        "minCoverage": 80,
+        "maxDuplication": 3,
+        "maxTodoCount": 5
+      }
+    },
+    "review": {
+      "required": true,
+      "minReviewers": 2,
+      "blockingLabels": [
+        "security",
+        "breaking-change"
+      ]
+    },
+    "automation": {
+      "linting": true,
+      "testing": true,
+      "coverage": true,
+      "security": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Code review process
+- Quality metrics
+- Static analysis
+- Dynamic analysis
+- Security scanning
+- Performance analysis
+- Coverage analysis
+- Complexity metrics
+- Dependency analysis
+- Documentation review
+- Test validation
+- Style compliance
+- Type checking
+- Error handling
+- Best practices
+
+## Patterns and Examples
+```typescript
+// Code Review Pattern
+interface CodeReview {
+  id: string;
+  author: string;
+  reviewers: string[];
+  files: string[];
+  comments: Comment[];
+  status: ReviewStatus;
+  metrics: CodeMetrics;
+}
+
+interface CodeMetrics {
+  complexity: number;
+  coverage: number;
+  duplication: number;
+  maintainability: number;
+}
+
+// Quality Gate Pattern
+class QualityGate {
+  private thresholds: Record<string, number>;
+
+  constructor(thresholds: Record<string, number>) {
+    this.thresholds = thresholds;
+  }
+
+  check(metrics: CodeMetrics): boolean {
+    return Object.entries(this.thresholds).every(
+      ([key, threshold]) => metrics[key] >= threshold
+    );
+  }
+}
+
+// Analysis Pattern
+class CodeAnalyzer {
+  analyze(code: string): CodeMetrics {
+    return {
+      complexity: this.calculateComplexity(code),
+      coverage: this.calculateCoverage(code),
+      duplication: this.findDuplication(code),
+      maintainability: this.assessMaintainability(code)
+    };
+  }
+
+  private calculateComplexity(code: string): number {
+    // Implementation
+    return 0;
+  }
+
+  private calculateCoverage(code: string): number {
+    // Implementation
+    return 0;
+  }
+
+  private findDuplication(code: string): number {
+    // Implementation
+    return 0;
+  }
+
+  private assessMaintainability(code: string): number {
+    // Implementation
+    return 0;
+  }
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - Code analysis
+  - Quality metrics
+  - Review tools
+  - Issue tracking
+- Build integration:
+  - Static analysis
+  - Test coverage
+  - Quality gates
+  - Security scans
+- Testing integration:
+  - Coverage tracking
+  - Performance tests
+  - Security tests
+  - Integration tests
+- Monitoring integration:
+  - Quality metrics
+  - Review stats
+  - Issue tracking
+  - Team velocity
+
+## Security Considerations
+- Security scanning
+- Vulnerability checks
+- Dependency audits
+- Code injection
+- Access control
+- Data validation
+- Error handling
+- Secure defaults
+
+## Testing Requirements
+- Unit test coverage
+- Integration tests
+- Performance tests
+- Security tests
+- Static analysis
+- Dynamic analysis
+- Code review
+- Quality gates
+
+## Maintenance
+- Regular reviews
+- Metric tracking
+- Tool updates
+- Process updates
+- Documentation
+- Training
+- Monitoring
+- Feedback
+
+## Compatibility Matrix
+| Feature | Static Analysis | Dynamic Analysis | Security Scan |
+|---------|----------------|------------------|---------------|
+| TypeScript | ✅ | ✅ | ✅ |
+| JavaScript | ✅ | ✅ | ✅ |
+| React | ✅ | ✅ | ✅ |
+| Tests | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | ESLint | Jest | SonarQube |
+|---------|--------|------|-----------|
+| 1.0.0   | ≥8.0.0 | ≥29.0.0 | ≥9.0.0 | 

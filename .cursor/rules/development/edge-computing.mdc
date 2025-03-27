@@ -1,0 +1,345 @@
+---
+description: Edge Computing Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/edge/**/*.{ts,tsx}", "**/middleware.{ts,tsx}", "**/app/api/edge/**/*", "**/pages/api/edge/**/*"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/error-handling.mdc
+  - development/server-components.mdc
+tags:
+  - edge
+  - performance
+  - middleware
+  - streaming
+---
+
+# Edge Computing Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Core performance patterns
+- Error Handling (`core/error-handling.mdc`): Error patterns
+- Server Components (`development/server-components.mdc`): Server patterns
+- TypeScript (`development/typescript.mdc`): Type patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added Edge Computing standards
+  - Implemented middleware patterns
+  - Added streaming guidelines
+  - Established caching patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Edge Computing Standards and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "latency": 50,
+        "throughput": 10000,
+        "errorRate": 0.001,
+        "cacheHitRate": 0.95,
+        "streamingLatency": 100,
+        "rateLimit": {
+          "requests": 1000,
+          "period": 60
+        },
+        "coverage": {
+          "edge": 90,
+          "middleware": 85,
+          "streaming": 80
+        }
+      },
+      "patterns": {
+        "required": [
+          "edge-runtime",
+          "middleware-chain",
+          "streaming-response",
+          "cache-control",
+          "rate-limiting",
+          "geo-fencing"
+        ],
+        "forbidden": [
+          "blocking-operations",
+          "large-payloads",
+          "unsafe-headers",
+          "sync-operations"
+        ],
+        "runtime": {
+          "enabled": true,
+          "streaming": true,
+          "caching": true,
+          "middleware": true
+        },
+        "caching": {
+          "enabled": true,
+          "revalidation": true,
+          "tags": true,
+          "stale": true
+        },
+        "performance": {
+          "streaming": true,
+          "compression": true,
+          "optimization": true,
+          "monitoring": true
+        },
+        "security": {
+          "headers": true,
+          "validation": true,
+          "ratelimit": true,
+          "geofencing": true
+        }
+      },
+      "integrations": {
+        "ide": {
+          "edgeDetection": true,
+          "typeChecking": true,
+          "debugSupport": true,
+          "performanceHints": true
+        },
+        "build": {
+          "edgeBundling": true,
+          "codeSplitting": true,
+          "treeSplitting": true,
+          "optimization": true
+        },
+        "test": {
+          "edgeTests": true,
+          "loadTests": true,
+          "e2eTests": true,
+          "securityTests": true
+        },
+        "monitor": {
+          "performanceMetrics": true,
+          "errorTracking": true,
+          "cacheStats": true,
+          "streamingMetrics": true
+        }
+      },
+      "security": {
+        "secureHeaders": true,
+        "inputValidation": true,
+        "rateLimiting": true,
+        "geoFencing": true,
+        "ddosProtection": true,
+        "botProtection": true,
+        "originValidation": true,
+        "tlsEnforcement": true
+      },
+      "testing": {
+        "edgeTestRequired": true,
+        "loadTestRequired": true,
+        "e2eTestRequired": true,
+        "securityTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "weekly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "node": ">=18.0.0",
+        "nextjs": ">=14.0.0",
+        "typescript": ">=5.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Edge runtime
+- Middleware
+- Streaming
+- Caching
+- Revalidation
+- Rate limiting
+- Geofencing
+- Headers
+- Authentication
+- Authorization
+- Error handling
+- Performance
+- Monitoring
+- Security
+- Analytics
+- Logging
+
+## Patterns and Examples
+```typescript
+// Edge Runtime Pattern
+export const config = {
+  runtime: 'edge',
+  regions: ['iad1', 'sfo1', 'fra1']
+};
+
+// Middleware Pattern
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export async function middleware(request: NextRequest) {
+  const country = request.geo?.country || 'US';
+  const headers = new Headers(request.headers);
+  
+  // Rate limiting
+  const ip = request.ip || 'unknown';
+  const rateLimit = await checkRateLimit(ip);
+  
+  if (!rateLimit.success) {
+    return new NextResponse(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers: {
+        'Retry-After': rateLimit.retryAfter.toString()
+      }
+    });
+  }
+  
+  // Geofencing
+  if (!isAllowedCountry(country)) {
+    return new NextResponse(null, {
+      status: 451,
+      statusText: 'Unavailable For Legal Reasons'
+    });
+  }
+  
+  // Security headers
+  const response = NextResponse.next();
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
+  
+  return response;
+}
+
+// Streaming Pattern
+async function EdgeStream(request: Request) {
+  const stream = new TransformStream();
+  const writer = stream.writable.getWriter();
+  const encoder = new TextEncoder();
+  
+  const write = (data: string) => {
+    writer.write(encoder.encode(data));
+  };
+  
+  try {
+    write('<html><body>');
+    
+    for await (const chunk of generateChunks()) {
+      write(`<div>${chunk}</div>`);
+    }
+    
+    write('</body></html>');
+  } finally {
+    writer.close();
+  }
+  
+  return new Response(stream.readable, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Transfer-Encoding': 'chunked'
+    }
+  });
+}
+
+// Cache Pattern
+async function EdgeCache(request: Request) {
+  const cache = await caches.open('edge-cache');
+  const cacheKey = new Request(request.url, {
+    method: 'GET',
+    headers: request.headers
+  });
+  
+  let response = await cache.match(cacheKey);
+  
+  if (!response) {
+    response = await fetch(request);
+    
+    if (response.ok) {
+      await cache.put(cacheKey, response.clone());
+    }
+  }
+  
+  return response;
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - Edge detection
+  - Type checking
+  - Debug support
+  - Performance hints
+- Build integration:
+  - Edge bundling
+  - Code splitting
+  - Tree shaking
+  - Optimization
+- Testing integration:
+  - Edge tests
+  - Load tests
+  - E2E tests
+  - Security tests
+- Monitoring integration:
+  - Performance metrics
+  - Error tracking
+  - Cache stats
+  - Load metrics
+
+## Security Considerations
+- Rate limiting
+- Geofencing
+- Input validation
+- Output encoding
+- Authentication
+- Authorization
+- Headers
+- Caching
+
+## Performance Requirements
+- Edge time
+- Cache hits
+- Network time
+- Load time
+- TTFB metrics
+- FCP metrics
+- LCP metrics
+- INP metrics
+
+## Maintenance
+- Regular updates
+- Cache management
+- Performance monitoring
+- Error tracking
+- Security audits
+- Documentation
+- Training
+- Reviews
+
+## Compatibility Matrix
+| Feature | Edge | Lambda | Workers |
+|---------|------|---------|---------|
+| Runtime | ✅ | ✅ | ✅ |
+| Streaming | ✅ | ❌ | ✅ |
+| WebCrypto | ✅ | ❌ | ✅ |
+| WebAssembly | ✅ | ❌ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0 | ≥0.34.0 |
+
+## Migration Guide
+### From Traditional API Routes
+1. Convert API routes to edge runtime
+2. Implement proper caching strategies
+3. Add geographic routing
+4. Configure middleware
+5. Update error handling to use core patterns
+6. Implement monitoring
+7. Update tests
+8. Verify performance 

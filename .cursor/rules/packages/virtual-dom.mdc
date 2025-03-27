@@ -1,0 +1,141 @@
+---
+description: VirtualDOM and React Performance Rules
+globs: ["src/**/*.{ts,tsx}"]
+alwaysApply: true
+---
+# VirtualDOM and React Performance Rules
+
+## Extends
+- Development Virtual DOM Standards (`development/virtual-dom.mdc`)
+- Base Documentation Standards (`base-documentation.mdc`)
+- Base Testing Standards (`base-testing.mdc`)
+
+## Version History
+- 1.1.0: Refactored to extend development virtual-dom standards
+- 1.0.0: Initial standardized version
+
+## Note
+This package-specific Virtual DOM standard extends the development Virtual DOM standards.
+Please refer to `development/virtual-dom.mdc` for base requirements.
+This file contains only package-specific additions and overrides.
+
+## Configuration
+```json
+{
+  "react": {
+    "strictMode": true,
+    "concurrentMode": true
+  },
+  "development": {
+    "profiling": true
+  }
+}
+```
+
+## Core Concepts
+- Understand VirtualDOM architecture
+- Master reconciliation process
+- Grasp component lifecycle
+- Understand state management
+- Master render optimization
+- Understand event handling
+- Grasp ref management
+- Understand component patterns and composition
+- Master state synchronization
+- Grasp context usage
+
+## Best Practices
+- Implement proper reconciliation
+- Use appropriate key props
+- Handle component updates efficiently
+- Implement proper memoization
+- Use appropriate component splitting
+- Handle state updates properly
+- Implement proper ref handling
+- Use appropriate hooks
+- Implement proper error boundaries
+- Handle side effects properly
+- Use appropriate component patterns
+- Implement proper prop drilling
+- Handle component composition
+- Use appropriate context usage
+- Implement proper state persistence
+- Handle state dependencies properly
+- Use appropriate state patterns
+- Implement proper state cleanup
+- Handle component lifecycle properly
+- Use appropriate state hooks
+- Document component APIs with JSDoc (extends base documentation)
+- Include usage examples in documentation (extends base documentation)
+- Document prop types and requirements (extends base documentation)
+- Document component lifecycle methods (extends base documentation)
+- Document state management patterns (extends base documentation)
+
+## Integration
+- Integrate with TypeScript properly (extends base documentation)
+- Work with state management
+- Handle different environments (extends base testing)
+- Integrate with testing tools (extends base testing)
+- Work with build tools
+- Handle different browsers
+- Integrate with performance tools
+- Integrate with documentation tools (extends base documentation)
+- Work with JSDoc validation (extends base documentation)
+- Handle documentation generation (extends base documentation)
+
+## Performance
+- Use React.memo appropriately
+- Implement proper useMemo usage
+- Handle useCallback properly
+- Use appropriate lazy loading
+- Implement proper code splitting
+- Handle render optimization
+- Use appropriate profiling tools
+- Implement proper batching
+- Handle memory leaks
+- Use appropriate performance monitoring
+- Implement proper state synchronization
+- Handle component lifecycle efficiently
+- Use appropriate component patterns
+- Implement proper render optimization
+- Handle performance bottlenecks
+- Optimize documentation generation (extends base documentation)
+- Handle large component documentation (extends base documentation)
+- Implement documentation caching (extends base documentation)
+
+## Security
+- Validate component props
+- Handle user input safely
+- Implement proper error boundaries
+- Handle component failures gracefully
+- Validate component state
+- Implement proper access control
+- Handle security vulnerabilities
+- Use appropriate sanitization
+- Implement proper XSS prevention
+- Handle sensitive data properly
+- Validate documentation security (extends base documentation)
+- Handle sensitive documentation (extends base documentation)
+- Implement documentation access control (extends base documentation)
+
+## Testing
+- Test component rendering (extends base testing)
+- Validate state updates
+- Test event handling
+- Validate performance (extends base testing)
+- Test error boundaries
+- Validate hooks usage
+- Test component lifecycle
+- Validate ref handling
+- Test memoization
+- Validate integration (extends base testing)
+- Test component patterns
+- Validate state persistence
+- Test component composition
+- Validate context usage
+- Test documentation examples (extends base documentation)
+- Validate JSDoc completeness (extends base documentation)
+- Test documentation accuracy (extends base documentation)
+- Validate parameter documentation (extends base documentation)
+- Test return type documentation (extends base documentation)
+- Validate example code execution (extends base documentation) 

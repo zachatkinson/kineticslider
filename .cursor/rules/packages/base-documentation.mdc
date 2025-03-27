@@ -1,0 +1,228 @@
+---
+description: Base Documentation Standards and Requirements
+globs: ["src/**/*.{ts,tsx}", "**/*.md"]
+alwaysApply: true
+---
+# Base Documentation Standards
+
+## Extends
+- Core Documentation Standards (`documentation/base-documentation.mdc`)
+
+## Version History
+- 1.1.0: Refactored to extend core documentation standards
+- 1.0.0: Initial standardized version
+
+## Note
+This package-specific documentation standard extends the core documentation standards.
+Please refer to `documentation/base-documentation.mdc` for base requirements.
+This file contains only package-specific additions and overrides.
+
+## Configuration
+```json
+{
+  "jsdoc": {
+    "requireDescription": true,
+    "requireParam": true,
+    "requireParamType": true,
+    "requireParamDescription": true,
+    "requireReturn": true,
+    "requireReturnType": true,
+    "requireReturnDescription": true,
+    "requireExample": true,
+    "requireVersion": true,
+    "requireSince": true,
+    "checkTypes": true,
+    "checkReturnTypes": true,
+    "checkParameterTypes": true,
+    "requireThrowsDescription": true,
+    "requirePropertyDescription": true,
+    "requireMethodDescription": true,
+    "requireClassDescription": true,
+    "requireInterfaceDescription": true,
+    "requireTypeDescription": true,
+    "checkTypesPattern": "^[A-Z][A-Za-z0-9]*$",
+    "validateParameterSeparator": ", ",
+    "preferredTypeDelimiter": "|",
+    "requireParamOptionalMark": true,
+    "requireReturnOptionalMark": true,
+    "requireNullableType": true,
+    "requireGenericDescription": true
+  },
+  "typedoc": {
+    "plugin": ["typedoc-plugin-markdown"],
+    "validation": {
+      "invalidLink": true,
+      "notDocumented": true,
+      "notExported": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Write clear API documentation
+- Include usage examples
+- Document parameters and types
+- Document return values
+- Document error cases
+- Include code examples
+- Document performance implications
+- Document security considerations
+- Document type definitions
+- Document interfaces and classes
+- Document method signatures
+- Document async patterns
+- Document generic constraints
+- Document type guards
+- Document mapped types
+- Document conditional types
+- Document state mutations
+- Document side effects
+- Document lifecycle hooks
+- Document event handlers
+
+## TypeScript Standards
+- Use JSDoc for all public APIs
+- Document generic type constraints
+- Include type guard predicates
+- Document mapped type transforms
+- Use proper type annotations
+- Document async patterns
+- Include version info
+- Note breaking changes
+- Document type intersections
+- Specify mapped types
+- Note conditional types
+- Document type narrowing
+- Document utility types
+- Document type inference
+- Document type assertions
+- Document index signatures
+- Document discriminated unions
+- Document abstract classes
+- Document decorators
+- Document enums
+
+## JSDoc Format
+```typescript
+/**
+ * Brief description
+ * 
+ * Detailed description including:
+ * - Purpose
+ * - Usage context
+ * - Important notes
+ * - Side effects
+ * 
+ * @since version
+ * @version current
+ * 
+ * @template T - Type parameter description
+ * @template U extends keyof T - Constrained type parameter
+ * 
+ * @param {Type} name - Description
+ * @param {(value: T) => U} [callback] - Optional parameter
+ * @param {Partial<T>} [options={}] - Optional with default
+ * 
+ * @returns {Promise<U>} Description
+ * @throws {TypeError} Description of error cases
+ * 
+ * @example
+ * ```typescript
+ * // Basic usage
+ * const result = await someFunction(value);
+ * 
+ * // With options
+ * const result = await someFunction(value, {
+ *   option: 'value'
+ * });
+ * ```
+ * 
+ * @see Related function or documentation
+ */
+```
+
+## Best Practices
+- Use consistent formatting
+- Write clear descriptions
+- Include examples
+- Document edge cases
+- Note type constraints
+- Document async behavior
+- Include version info
+- Note breaking changes
+- Use proper markdown
+- Include TOC
+- Document dependencies
+- Include troubleshooting
+- Document error handling
+- Note performance implications
+- Include accessibility notes
+- Document browser support
+- Note security considerations
+- Include migration guides
+- Follow tag order:
+  1. Description
+  2. @since/@version
+  3. @template
+  4. @param
+  5. @returns
+  6. @throws
+  7. @example
+  8. @see/@link
+
+## Integration
+- Work with TypeScript
+- Use JSDoc validation
+- Generate documentation
+- Support IDE features
+- Handle versioning
+- Support testing
+- Enable CI/CD
+- Support refactoring
+- Enable type inference
+- Support hot reloading
+- Handle code splitting
+- Support tree shaking
+
+## Performance
+- Optimize generation
+- Handle large docs
+- Use caching
+- Monitor performance
+- Handle bundling
+- Optimize search
+- Enable incremental
+- Cache type info
+- Lazy load examples
+- Use documentation chunks
+- Enable fast refresh
+- Support hot updates
+
+## Security
+- Handle sensitive docs
+- Control access
+- Validate security
+- Handle API keys
+- Note implications
+- Handle versions
+- Use redaction
+- Document patterns
+- Sanitize examples
+- Validate inputs
+- Handle permissions
+- Document risks
+
+## Testing
+- Test examples
+- Validate JSDoc
+- Test accuracy
+- Check links
+- Validate types
+- Test generation
+- Monitor coverage
+- Verify exports
+- Test code samples
+- Validate snippets
+- Check accessibility
+- Test integrations 

@@ -24,24 +24,28 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Environment:**
-- OS: [e.g. iOS]
-- Browser: [e.g. Chrome, Safari]
-- Version: [e.g. 1.0.0]
-- Device: [e.g. iPhone 12, MacBook Pro]
+ - OS: [e.g. macOS]
+ - Browser: [e.g. Chrome, Safari]
+ - Version: [e.g. 22]
+ - KineticSlider Version: [e.g. 0.1.0]
+
+**Code Example**
+```tsx
+// Your code here
+<KineticSlider
+  items={items}
+  options={{
+    // your options
+  }}
+/>
+```
 
 **Additional context**
 Add any other context about the problem here.
 
-**Code snippet**
-If applicable, add a code snippet to help explain your problem:
-
-```javascript
-// Your code here
-```
-
 **Checklist:**
-- [ ] I have searched for similar issues before submitting
+- [ ] I have searched the existing issues
 - [ ] I have reproduced the issue with the latest version
-- [ ] I have included all relevant information
-- [ ] I have provided steps to reproduce
-- [ ] I have included code snippets if applicable 
+- [ ] I have provided a minimal reproduction
+- [ ] I have provided all relevant environment information
+- [ ] I have provided a code example 

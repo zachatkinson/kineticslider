@@ -1,0 +1,288 @@
+---
+description: Prettier Configuration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{ts,tsx,js,jsx,json,css,scss,md,mdx}", "**/.prettierrc.*"]
+alwaysApply: true
+extends:
+  - core/code-style.mdc
+tags:
+  - prettier
+  - formatting
+  - style
+  - standards
+---
+
+# Prettier Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Code style standards
+- ESLint (`tooling/linting/eslint.mdc`): Linting patterns
+- TypeScript (`development/typescript.mdc`): Type patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added Prettier standards
+  - Implemented format patterns
+  - Added plugin guidelines
+  - Established config patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Prettier Configuration Standards and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "lineLength": {
+          "soft": 80,
+          "hard": 100
+        },
+        "indentation": {
+          "spaces": 2,
+          "tabs": false
+        },
+        "performance": {
+          "formatTime": 1000,
+          "cacheHitRate": 0.9
+        },
+        "coverage": {
+          "files": 100,
+          "languages": 100
+        }
+      },
+      "patterns": {
+        "required": [
+          "consistent-formatting",
+          "language-support",
+          "plugin-integration",
+          "ide-integration",
+          "git-integration"
+        ],
+        "forbidden": [
+          "custom-parsers",
+          "unsafe-plugins",
+          "mixed-formatting",
+          "inconsistent-style"
+        ],
+        "formatting": {
+          "printWidth": 80,
+          "tabWidth": 2,
+          "useTabs": false,
+          "semi": true,
+          "singleQuote": true,
+          "quoteProps": "as-needed",
+          "jsxSingleQuote": false,
+          "trailingComma": "es5",
+          "bracketSpacing": true,
+          "bracketSameLine": false,
+          "arrowParens": "always"
+        }
+      },
+      "integrations": {
+        "plugins": {
+          "typescript": true,
+          "markdown": true,
+          "css": true,
+          "json": true
+        },
+        "tools": {
+          "eslint": true,
+          "typescript": true,
+          "vscode": true,
+          "git": true
+        },
+        "ide": {
+          "formatOnSave": true,
+          "formatSelection": true,
+          "formatFile": true,
+          "configDetection": true
+        },
+        "git": {
+          "preCommitHooks": true,
+          "stagedFiles": true,
+          "ignorePatterns": true,
+          "configFiles": true
+        }
+      },
+      "security": {
+        "configValidation": true,
+        "pluginSafety": true,
+        "parserSafety": true,
+        "fileSafety": true,
+        "pathSafety": true,
+        "inputValidation": true,
+        "outputSafety": true,
+        "cacheSafety": true
+      },
+      "testing": {
+        "configValidation": true,
+        "formatTests": true,
+        "integrationTests": true,
+        "performanceTests": true
+      },
+      "maintenance": {
+        "updateFrequency": "weekly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "prettier": ">=3.0.0",
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0",
+        "eslint": ">=8.0.0",
+        "languages": {
+          "typescript": true,
+          "javascript": true,
+          "jsx": true,
+          "css": true,
+          "scss": true,
+          "markdown": true,
+          "json": true
+        }
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Code formatting
+- Style consistency
+- Language support
+- Plugin integration
+- IDE integration
+- Git integration
+- Build integration
+- Documentation
+- Maintenance
+- Training
+- Reviews
+- Testing
+
+## Patterns and Examples
+```javascript
+// Prettier Configuration Pattern
+module.exports = {
+  // Line Length
+  printWidth: 80,
+  
+  // Indentation
+  tabWidth: 2,
+  useTabs: false,
+  
+  // Quotes
+  singleQuote: true,
+  jsxSingleQuote: false,
+  quoteProps: 'as-needed',
+  
+  // Semicolons
+  semi: true,
+  
+  // Commas
+  trailingComma: 'es5',
+  
+  // Spacing
+  bracketSpacing: true,
+  bracketSameLine: false,
+  
+  // Parentheses
+  arrowParens: 'always',
+  
+  // Plugins
+  plugins: [
+    '@prettier/plugin-typescript',
+    'prettier-plugin-tailwindcss'
+  ],
+  
+  // Overrides
+  overrides: [
+    {
+      files: '*.md',
+      options: {
+        proseWrap: 'always'
+      }
+    },
+    {
+      files: '*.{ts,tsx}',
+      options: {
+        parser: 'typescript'
+      }
+    }
+  ]
+};
+```
+
+## Integration Standards
+- IDE integration:
+  - Format on save
+  - Format selection
+  - Format file
+  - Config detection
+- Build integration:
+  - Pre-commit hooks
+  - CI/CD checks
+  - Bundle analysis
+  - Cache management
+- ESLint integration:
+  - Plugin config
+  - Rule alignment
+  - Format rules
+  - Style rules
+- Git integration:
+  - Pre-commit hooks
+  - Staged files
+  - Ignore patterns
+  - Config files
+
+## Security Considerations
+- Config validation
+- Plugin safety
+- Parser safety
+- File safety
+- Path safety
+- Input validation
+- Output safety
+- Cache safety
+
+## Format Requirements
+- Line length
+- Indentation
+- Quotes
+- Semicolons
+- Commas
+- Spacing
+- Brackets
+- Parentheses
+- Comments
+- Imports
+- Exports
+- JSX
+- TypeScript
+- Markdown
+- JSON
+- CSS/SCSS
+
+## Maintenance
+- Regular updates
+- Plugin updates
+- Config updates
+- Documentation
+- Training
+- Reviews
+- Testing
+
+## Compatibility Matrix
+| Feature | Prettier 3+ | Prettier 2 | Prettier 1 |
+|---------|-------------|------------|------------|
+| TypeScript | ✅ | ✅ | ✅ |
+| JSX | ✅ | ✅ | ✅ |
+| CSS/SCSS | ✅ | ✅ | ✅ |
+| Markdown | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | ESLint |
+|---------|---------|------------|---------|
+| 1.0.0   | ≥16.0.0 | ≥5.0.0 | ≥8.0.0 | 

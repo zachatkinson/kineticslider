@@ -1,0 +1,318 @@
+---
+description: React and Next.js Configuration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{tsx,jsx}", "**/next.config.{js,ts}", "**/app/**/*"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/accessibility.mdc
+  - development/typescript.mdc
+  - development/server-components.mdc
+tags:
+  - react
+  - nextjs
+  - frontend
+  - framework
+---
+
+# React and Next.js Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Core performance patterns
+- TypeScript (`development/typescript.mdc`): Type patterns
+- Virtual DOM (`development/virtual-dom.mdc`): React patterns
+- Server Components (`development/server-components.mdc`): Server patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added React/Next.js standards
+  - Implemented app router patterns
+  - Added optimization guidelines
+  - Established integration patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "React and Next.js Configuration Standards and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "buildTime": 120000,
+        "firstContentfulPaint": 1000,
+        "largestContentfulPaint": 2500,
+        "timeToInteractive": 3500,
+        "totalBlockingTime": 200,
+        "cumulativeLayoutShift": 0.1,
+        "bundleSize": {
+          "total": 250000,
+          "initial": 100000,
+          "page": 50000
+        },
+        "coverage": {
+          "unit": 80,
+          "integration": 70,
+          "e2e": 60
+        }
+      },
+      "patterns": {
+        "required": [
+          "app-router",
+          "server-components",
+          "streaming",
+          "suspense-boundaries",
+          "error-boundaries",
+          "metadata-export",
+          "type-safety"
+        ],
+        "forbidden": [
+          "pages-router",
+          "class-components",
+          "render-props",
+          "unsafe-lifecycle",
+          "direct-dom-manipulation"
+        ],
+        "runtime": {
+          "mode": "strict",
+          "concurrentFeatures": true,
+          "serverComponents": true,
+          "streaming": true
+        },
+        "routing": {
+          "appRouter": true,
+          "middleware": true,
+          "intercepting": true,
+          "parallel": true
+        },
+        "optimization": {
+          "imageOptimization": true,
+          "fontOptimization": true,
+          "scriptOptimization": true,
+          "styleOptimization": true
+        }
+      },
+      "integrations": {
+        "ide": {
+          "typeCheck": true,
+          "codeCompletion": true,
+          "debugSupport": true,
+          "performanceHints": true
+        },
+        "build": {
+          "bundling": true,
+          "treeShaking": true,
+          "codeSplitting": true,
+          "optimization": true
+        },
+        "test": {
+          "unitTests": true,
+          "integrationTests": true,
+          "e2eTests": true,
+          "componentTests": true
+        },
+        "monitor": {
+          "performanceMetrics": true,
+          "errorTracking": true,
+          "analytics": true,
+          "logging": true
+        }
+      },
+      "security": {
+        "inputValidation": true,
+        "outputEncoding": true,
+        "csrfProtection": true,
+        "xssPrevention": true,
+        "authentication": true,
+        "authorization": true,
+        "secureHeaders": true,
+        "environmentProtection": true
+      },
+      "testing": {
+        "unitTestRequired": true,
+        "integrationTestRequired": true,
+        "e2eTestRequired": true,
+        "componentTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "monthly",
+        "deprecationPolicy": "major-version",
+        "backwardCompatibility": "minor-version"
+      },
+      "compatibility": {
+        "react": ">=18.0.0",
+        "nextjs": ">=14.0.0",
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- App router
+- Server components
+- Client components
+- Data fetching
+- Route handlers
+- Middleware
+- Layouts
+- Templates
+- Loading UI
+- Error handling
+- Metadata
+- Static assets
+- Dynamic imports
+- Environment vars
+- TypeScript
+- Testing
+
+## Patterns and Examples
+```tsx
+// App Router Pattern
+// app/layout.tsx
+export default function RootLayout({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>
+          <Header />
+          {children}
+          <Footer />
+        </Providers>
+      </body>
+    </html>
+  );
+}
+
+// Data Fetching Pattern
+// app/posts/page.tsx
+async function getPosts() {
+  const res = await fetch('https://api.example.com/posts', {
+    next: {
+      revalidate: 60,
+      tags: ['posts']
+    }
+  });
+  
+  if (!res.ok) {
+    throw new Error('Failed to fetch posts');
+  }
+  
+  return res.json();
+}
+
+export default async function Posts() {
+  const posts = await getPosts();
+  
+  return (
+    <section>
+      <Suspense fallback={<Loading />}>
+        <PostList posts={posts} />
+      </Suspense>
+    </section>
+  );
+}
+
+// Route Handler Pattern
+// app/api/posts/route.ts
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  try {
+    const posts = await fetchPosts();
+    return NextResponse.json(posts);
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch posts' },
+      { status: 500 }
+    );
+  }
+}
+
+// Middleware Pattern
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const headers = new Headers(request.headers);
+  
+  // Add security headers
+  const response = NextResponse.next();
+  response.headers.set('X-Frame-Options', 'DENY');
+  
+  return response;
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - Type checking
+  - Code completion
+  - Debug support
+  - Performance hints
+- Build integration:
+  - Bundling
+  - Tree shaking
+  - Code splitting
+  - Optimization
+- Testing integration:
+  - Unit tests
+  - Integration tests
+  - E2E tests
+  - Component tests
+- Monitoring integration:
+  - Performance metrics
+  - Error tracking
+  - Analytics
+  - Logging
+
+## Security Considerations
+- Input validation
+- Output encoding
+- CSRF protection
+- XSS prevention
+- Authentication
+- Authorization
+- Headers
+- Environment
+
+## Performance Requirements
+- Build time
+- Load time
+- Render time
+- TTFB metrics
+- FCP metrics
+- LCP metrics
+- CLS metrics
+- INP metrics
+
+## Maintenance
+- Regular updates
+- Dependency updates
+- Performance monitoring
+- Error tracking
+- Security audits
+- Documentation
+- Training
+- Reviews
+
+## Compatibility Matrix
+| Feature | Next 13+ | Next 12 | Next 11 |
+|---------|----------|---------|---------|
+| App Router | ✅ | ❌ | ❌ |
+| RSC | ✅ | ❌ | ❌ |
+| Streaming | ✅ | ❌ | ❌ |
+| Turbopack | ✅ | ❌ | ❌ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | React |
+|---------|---------|------------|-------|
+| 1.0.0   | ≥16.14.0 | ≥5.0.0 | ≥18.2.0 | 

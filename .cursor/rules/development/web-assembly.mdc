@@ -1,0 +1,318 @@
+---
+description: WebAssembly Integration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.wasm", "**/*.wat", "**/wasm/**/*", "**/assembly/**/*"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/error-handling.mdc
+tags:
+  - wasm
+  - performance
+  - optimization
+  - integration
+---
+
+# WebAssembly Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Core performance patterns
+- Error Handling (`core/error-handling.mdc`): Error patterns
+- TypeScript (`development/typescript.mdc`): Type patterns
+- Edge Computing (`development/edge-computing.mdc`): Edge patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added WebAssembly standards
+  - Implemented integration patterns
+  - Added optimization guidelines
+  - Established memory patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "WebAssembly Integration Standards and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "loadTime": 500,
+        "compileTime": 1000,
+        "instantiateTime": 500,
+        "executionTime": 16,
+        "memoryUsage": {
+          "initial": 67108864,
+          "maximum": 2147483648
+        },
+        "threadCount": 4,
+        "coverage": {
+          "wasm": 90,
+          "integration": 85,
+          "performance": 80
+        }
+      },
+      "patterns": {
+        "required": [
+          "streaming-instantiation",
+          "memory-management",
+          "error-handling",
+          "type-safety",
+          "simd-support",
+          "thread-safety"
+        ],
+        "forbidden": [
+          "sync-compilation",
+          "unsafe-memory-access",
+          "unmanaged-resources",
+          "blocking-operations"
+        ],
+        "runtime": {
+          "streaming": true,
+          "threading": true,
+          "simd": true,
+          "memory": {
+            "initial": "64MB",
+            "maximum": "2GB",
+            "shared": true,
+            "growth": true
+          }
+        },
+        "optimization": {
+          "compilation": true,
+          "caching": true,
+          "streaming": true,
+          "instantiation": true
+        }
+      },
+      "integrations": {
+        "ide": {
+          "wasmDetection": true,
+          "debugSupport": true,
+          "performanceHints": true,
+          "memoryProfiling": true
+        },
+        "build": {
+          "wasmBundling": true,
+          "codeSplitting": true,
+          "optimization": true,
+          "sourceMaps": true
+        },
+        "test": {
+          "unitTests": true,
+          "integrationTests": true,
+          "performanceTests": true,
+          "memoryTests": true
+        },
+        "monitor": {
+          "performanceMetrics": true,
+          "memoryUsage": true,
+          "errorTracking": true,
+          "loadMetrics": true
+        }
+      },
+      "security": {
+        "memorySafety": true,
+        "inputValidation": true,
+        "outputValidation": true,
+        "sandboxing": true,
+        "threadingSafety": true,
+        "resourceLimits": true,
+        "accessControl": true,
+        "errorHandling": true
+      },
+      "testing": {
+        "wasmTestRequired": true,
+        "integrationTestRequired": true,
+        "performanceTestRequired": true,
+        "memoryTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "monthly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "wasm": ">=2.0.0",
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0",
+        "browsers": {
+          "chrome": ">=90.0.0",
+          "firefox": ">=90.0.0",
+          "safari": ">=15.0.0",
+          "edge": ">=90.0.0"
+        }
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Module loading
+- Memory management
+- Threading
+- SIMD
+- Error handling
+- Performance
+- Type safety
+- Integration
+- Optimization
+- Debugging
+- Profiling
+- Security
+- Testing
+- Documentation
+- Maintenance
+- Monitoring
+
+## Patterns and Examples
+```typescript
+// Module Loading Pattern
+async function loadWasmModule(url: string): Promise<WebAssembly.Instance> {
+  try {
+    const response = await fetch(url);
+    const wasmBuffer = await response.arrayBuffer();
+    const wasmModule = await WebAssembly.compile(wasmBuffer);
+    
+    return await WebAssembly.instantiate(wasmModule, {
+      env: {
+        memory: new WebAssembly.Memory({ initial: 256 }),
+        abort: (msg: number, file: number, line: number, column: number) => {
+          console.error(`Abort: ${msg} at ${file}:${line}:${column}`);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Failed to load WASM module:', error);
+    throw error;
+  }
+}
+
+// Memory Management Pattern
+class WasmMemoryManager {
+  private memory: WebAssembly.Memory;
+  private view: Int32Array;
+
+  constructor(initial: number, maximum?: number) {
+    this.memory = new WebAssembly.Memory({
+      initial,
+      maximum,
+      shared: true
+    });
+    this.view = new Int32Array(this.memory.buffer);
+  }
+
+  allocate(size: number): number {
+    const ptr = this.view[0];
+    this.view[0] += size;
+    return ptr;
+  }
+
+  free(ptr: number): void {
+    // Implement memory freeing strategy
+  }
+
+  write(ptr: number, data: ArrayBuffer): void {
+    new Uint8Array(this.memory.buffer).set(
+      new Uint8Array(data),
+      ptr
+    );
+  }
+
+  read(ptr: number, size: number): ArrayBuffer {
+    return this.memory.buffer.slice(ptr, ptr + size);
+  }
+}
+
+// Threading Pattern
+async function initializeWasmThread(): Promise<Worker> {
+  const worker = new Worker('wasm-worker.js');
+  const memory = new SharedArrayBuffer(1024 * 1024);
+  
+  worker.postMessage({ type: 'init', memory });
+  
+  return new Promise((resolve) => {
+    worker.onmessage = (event) => {
+      if (event.data.type === 'ready') {
+        resolve(worker);
+      }
+    };
+  });
+}
+
+// SIMD Pattern
+async function initializeSIMD(): Promise<WebAssembly.Instance> {
+  if (!WebAssembly.validate(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]))) {
+    throw new Error('SIMD not supported');
+  }
+  
+  return loadWasmModule('simd.wasm');
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - WASM detection
+  - Debug support
+  - Performance hints
+  - Memory profiling
+- Build integration:
+  - WASM bundling
+  - Code splitting
+  - Optimization
+  - Source maps
+- Testing integration:
+  - Unit tests
+  - Integration tests
+  - Performance tests
+  - Memory tests
+- Monitoring integration:
+  - Performance metrics
+  - Memory usage
+  - Error tracking
+  - Load metrics
+
+## Security Considerations
+- Memory safety
+- Input validation
+- Output validation
+- Sandboxing
+- Threading safety
+- Resource limits
+- Access control
+- Error handling
+
+## Performance Requirements
+- Load time
+- Execution time
+- Memory usage
+- Thread usage
+- SIMD usage
+- Cache hits
+- Instantiation time
+- Compilation time
+
+## Maintenance
+- Regular updates
+- Memory profiling
+- Performance monitoring
+- Error tracking
+- Security audits
+- Documentation
+- Training
+- Reviews
+
+## Compatibility Matrix
+| Feature | Chrome | Firefox | Safari | Edge |
+|---------|--------|----------|--------|------|
+| WASM | ✅ | ✅ | ✅ | ✅ |
+| Threads | ✅ | ✅ | ❌ | ✅ |
+| SIMD | ✅ | ✅ | ❌ | ✅ |
+| BigInt | ✅ | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥16.0.0 | ≥5.0.0 | ≥0.34.0 | 

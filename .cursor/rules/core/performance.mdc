@@ -1,0 +1,311 @@
+---
+description: Unified Performance and Resource Management Standards
+version: 1.0.0
+globs: ["**/*.{ts,tsx,js,jsx}"]
+alwaysApply: true
+extends:
+  - core/code-style.mdc
+tags:
+  - performance
+  - optimization
+  - monitoring
+  - web-vitals
+---
+
+# Base Performance Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Base coding standards
+- Error Handling (`core/error-handling.mdc`): Performance monitoring integration
+- Build Tools (`tooling/build/build-tools.mdc`): Build performance standards
+- Virtual DOM (`development/virtual-dom.mdc`): React performance patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added cross-references with build tools
+  - Standardized monitoring configuration
+  - Added resource management guidelines
+  - Implemented performance budgets
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "warning",
+    "autofix": false,
+    "description": "Unified Performance and Resource Management Standards"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "FCP": 1800,
+        "LCP": 2500,
+        "FID": 100,
+        "CLS": 0.1,
+        "TTI": 3800,
+        "TBT": 200,
+        "fps": 60,
+        "memoryUsage": 0.8,
+        "cpuUsage": 0.7
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "lazy-loading",
+        "resource-pooling",
+        "memory-management",
+        "event-cleanup",
+        "request-cancellation"
+      ],
+      "forbidden": [
+        "sync-xhr",
+        "heavy-computation-main-thread",
+        "unbounded-memory-growth"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "performance-profiling",
+          "memory-analysis",
+          "bundle-analysis"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "tree-shaking",
+          "code-splitting",
+          "asset-optimization"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "performance-benchmarks",
+          "memory-leak-detection",
+          "load-testing"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "web-vitals-tracking",
+          "resource-usage-alerts",
+          "performance-metrics"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "resource-limits",
+        "rate-limiting",
+        "dos-protection"
+      ],
+      "validations": [
+        "memory-bounds",
+        "cpu-limits",
+        "request-throttling"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 85,
+      "requirements": [
+        "performance-benchmarks",
+        "memory-leak-tests",
+        "load-tests",
+        "resource-cleanup-tests"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "node": ">=14.0.0",
+        "browser": {
+          "chrome": ">=90",
+          "firefox": ">=88",
+          "safari": ">=14"
+        }
+      },
+      "optional": {
+        "webworkers": true,
+        "webgl": true,
+        "webassembly": true
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Initialize resources lazily
+- Release resources promptly
+- Use WeakRef for cleanup
+- Monitor heap usage
+- Avoid memory leaks
+- Use proper data structures
+- Track Web Vitals
+- Monitor JS execution time
+- Remove event listeners
+- Clear timeouts/intervals
+- Cancel pending requests
+- Clean WebGL contexts
+- Use object pools
+- Use worker pools
+- Pool network connections
+- Manage WebGL buffers
+- Use service workers
+- Cache computations
+- Use requestAnimationFrame
+- Batch DOM updates
+
+## Patterns and Examples
+```typescript
+// Resource Pool Pattern
+class ResourcePool<T> {
+  private resources: T[] = [];
+  private inUse = new Set<T>();
+
+  constructor(
+    private factory: () => T,
+    private reset: (resource: T) => void,
+    private initialSize: number
+  ) {
+    for (let i = 0; i < initialSize; i++) {
+      this.resources.push(factory());
+    }
+  }
+
+  acquire(): T {
+    let resource = this.resources.pop();
+    if (!resource) {
+      resource = this.factory();
+    }
+    this.inUse.add(resource);
+    return resource;
+  }
+
+  release(resource: T): void {
+    if (this.inUse.has(resource)) {
+      this.reset(resource);
+      this.inUse.delete(resource);
+      this.resources.push(resource);
+    }
+  }
+}
+
+// Performance Monitoring Pattern
+class PerformanceMonitor {
+  private metrics: Map<string, number[]> = new Map();
+
+  track(metric: string, value: number): void {
+    const values = this.metrics.get(metric) || [];
+    values.push(value);
+    this.metrics.set(metric, values);
+  }
+
+  getMetrics(metric: string): {
+    avg: number;
+    p95: number;
+    max: number;
+  } {
+    const values = this.metrics.get(metric) || [];
+    return {
+      avg: values.reduce((a, b) => a + b, 0) / values.length,
+      p95: values.sort()[Math.floor(values.length * 0.95)],
+      max: Math.max(...values)
+    };
+  }
+}
+
+// Resource Cleanup Pattern
+class ResourceManager {
+  private cleanupTasks = new Set<() => void>();
+
+  register(cleanup: () => void): void {
+    this.cleanupTasks.add(cleanup);
+  }
+
+  cleanup(): void {
+    for (const task of this.cleanupTasks) {
+      task();
+    }
+    this.cleanupTasks.clear();
+  }
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - Performance profiling
+  - Memory analysis
+  - Bundle size warnings
+  - Resource usage tracking
+- Build integration:
+  - Bundle analysis
+  - Tree shaking
+  - Code splitting
+  - Asset optimization
+- Testing integration:
+  - Performance benchmarks
+  - Memory leak detection
+  - Load testing
+  - Resource monitoring
+- Monitoring integration:
+  - Web Vitals tracking
+  - Resource usage alerts
+  - Performance metrics
+  - Error correlation
+
+## Security Considerations
+- Resource exhaustion prevention
+- Memory limit enforcement
+- CPU usage monitoring
+- Rate limiting implementation
+- Asset validation
+- Resource access control
+- Performance isolation
+- DoS protection
+
+## Testing Requirements
+- Performance benchmarks
+- Memory leak tests
+- Load tests
+- Stress tests
+- Resource cleanup tests
+- Concurrency tests
+- Integration tests
+- Security tests
+
+## Maintenance
+- Regular performance audits
+- Resource usage monitoring
+- Memory leak detection
+- Performance regression testing
+- Configuration updates
+- Threshold adjustments
+- Documentation updates
+- Tool updates
+
+## Compatibility Matrix
+| Feature | Browser | Node.js | Edge Runtime |
+|---------|---------|---------|--------------|
+| Resource Pooling | ✅ | ✅ | ✅ |
+| Web Vitals | ✅ | ❌ | ✅ |
+| Memory Monitor | ✅ | ✅ | ✅ |
+| Worker Pools | ✅ | ✅ | ❌ |
+
+## Version Compatibility
+| Version | Node.js | Browser | Build Tools |
+|---------|---------|---------|-------------|
+| 1.0.0   | ≥18.0.0 | Modern  | Latest     |

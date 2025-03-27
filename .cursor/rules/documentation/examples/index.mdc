@@ -1,0 +1,314 @@
+---
+description: Documentation Examples Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.stories.{ts,tsx,mdx}", "**/*.example.{ts,tsx}", "**/examples/**/*.{ts,tsx}"]
+alwaysApply: true
+extends:
+  - documentation/base-documentation.mdc
+  - documentation/component-driven/index.mdc
+tags:
+  - documentation
+  - examples
+  - stories
+  - patterns
+---
+
+# Documentation Examples Standards
+
+## Related Rules
+- Base Documentation (`documentation/base-documentation.mdc`): Core documentation standards
+- Component Documentation (`documentation/component-driven/index.mdc`): Component documentation patterns
+- TypeScript (`development/typescript.mdc`): Type patterns
+- Testing Documentation (`documentation/testing-docs.mdc`): Testing examples
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added examples standards
+  - Implemented story patterns
+  - Added interactive examples
+  - Established testing examples
+
+## Configuration
+```json
+{
+  "examples": {
+    "stories": {
+      "interactive": true,
+      "documentation": true,
+      "testing": true,
+      "accessibility": true
+    },
+    "code": {
+      "typescript": true,
+      "jsx": true,
+      "mdx": true,
+      "playground": true
+    },
+    "organization": {
+      "byFeature": true,
+      "byComponent": true,
+      "byComplexity": true
+    },
+    "validation": {
+      "linting": true,
+      "testing": true,
+      "types": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Interactive examples
+- Code snippets
+- Usage patterns
+- Edge cases
+- Error handling
+- Testing examples
+- Performance examples
+- Security examples
+- Accessibility examples
+- Integration examples
+- API examples
+- Configuration examples
+- Deployment examples
+- Troubleshooting examples
+- Best practices
+- Anti-patterns
+
+## Patterns and Examples
+```typescript
+// Basic Component Example
+import { Button } from './Button';
+
+export default {
+  title: 'Components/Button',
+  component: Button,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Interactive button component with various states and styles.'
+      }
+    }
+  }
+};
+
+// Simple Usage
+export const Basic = () => (
+  <Button onClick={() => alert('Clicked!')}>
+    Click Me
+  </Button>
+);
+
+// With Props
+export const WithProps = () => (
+  <Button
+    variant="primary"
+    size="large"
+    disabled={false}
+    onClick={() => console.log('Clicked')}
+  >
+    Primary Button
+  </Button>
+);
+
+// Error Handling Example
+export const ErrorHandling = () => {
+  const [error, setError] = useState<Error | null>(null);
+
+  const handleClick = async () => {
+    try {
+      await someAsyncOperation();
+    } catch (err) {
+      setError(err);
+    }
+  };
+
+  return (
+    <div>
+      <Button onClick={handleClick}>
+        Trigger Error
+      </Button>
+      {error && (
+        <div className="error">
+          {error.message}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Testing Example
+describe('Button', () => {
+  it('handles click events', () => {
+    const handleClick = jest.fn();
+    render(<Button onClick={handleClick}>Click</Button>);
+    
+    fireEvent.click(screen.getByText('Click'));
+    expect(handleClick).toHaveBeenCalled();
+  });
+});
+
+// Integration Example
+const IntegrationExample = () => {
+  const { data, loading, error } = useQuery(SOME_QUERY);
+  
+  if (loading) return <Loading />;
+  if (error) return <Error error={error} />;
+  
+  return (
+    <div>
+      {data.items.map(item => (
+        <Button
+          key={item.id}
+          onClick={() => handleItem(item)}
+        >
+          {item.name}
+        </Button>
+      ))}
+    </div>
+  );
+};
+```
+
+## Documentation Structure
+- Basic usage
+- Props and configuration
+- Interactive examples
+- Edge cases
+- Error handling
+- Testing examples
+- Integration examples
+- Performance considerations
+- Accessibility guidelines
+- Security considerations
+- Best practices
+- Anti-patterns
+- Troubleshooting
+- Related components
+- API reference
+
+## Example Categories
+1. Component Examples
+   - Basic usage
+   - Advanced configurations
+   - Error handling
+   - Accessibility patterns
+   - Performance optimizations
+
+2. API Examples
+   - Request/response patterns
+   - Error handling
+   - Authentication
+   - Rate limiting
+
+3. Integration Examples
+   - Third-party services
+   - Internal services
+   - State management
+   - Data flow
+
+## Example Format
+```typescript
+// Example Title
+// Description of what the example demonstrates
+// Prerequisites (if any)
+
+// Code
+const example = {
+  basic: 'Show the simplest implementation',
+  advanced: 'Show a more complex use case',
+  edge: 'Show edge cases and error handling'
+};
+
+// Usage
+// Show how to use the code
+
+// Expected Output
+// Show what to expect
+
+// Common Pitfalls
+// List potential issues to watch for
+```
+
+## Interactive Examples
+- Provide CodeSandbox or similar links
+- Include step-by-step tutorials
+- Show real-world applications
+
+## Testing Examples
+- Unit test examples
+- Integration test examples
+- E2E test examples
+- Performance test examples
+
+## Best Practices
+- Clear and concise
+- Well-documented
+- Interactive when possible
+- Properly tested
+- Accessible
+- Maintainable
+- Reusable
+- Type-safe
+- Error handled
+- Performance optimized
+- Security conscious
+- Framework agnostic
+- Version compatible
+- Well-organized
+- Properly formatted
+
+## Anti-patterns
+- Unclear examples
+- Untested code
+- Poor performance
+- Security risks
+- Accessibility issues
+- Type unsafe
+- Hard to maintain
+- Tightly coupled
+- Poor error handling
+- Inconsistent style
+- Missing documentation
+- Outdated patterns
+- Version conflicts
+- Disorganized
+- Poor formatting
+
+## Testing Requirements
+- Unit tests
+- Integration tests
+- E2E tests
+- Performance tests
+- Accessibility tests
+- Security tests
+- Visual regression tests
+- Browser compatibility tests
+- Mobile responsiveness tests
+- Error handling tests
+
+## Maintenance
+- Regular updates
+- Version compatibility
+- Documentation updates
+- Test maintenance
+- Performance monitoring
+- Security updates
+- Accessibility audits
+- Code quality checks
+- Dependency updates
+- User feedback
+
+## Compatibility Matrix
+| Feature | React | Vue | Angular |
+|---------|-------|-----|---------|
+| Basic | ✅ | ✅ | ✅ |
+| Advanced | ✅ | ✅ | ✅ |
+| Testing | ✅ | ✅ | ✅ |
+| Interactive | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0    | ≥0.34.0  | 

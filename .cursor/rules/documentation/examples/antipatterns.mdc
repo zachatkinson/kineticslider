@@ -1,0 +1,213 @@
+---
+description: Documentation Anti-Patterns and Common Pitfalls to Avoid in Modern Web Applications
+version: 1.0.0
+globs: ["**/*.md", "**/*.mdx", "**/*.stories.[tj]sx?"]
+alwaysApply: true
+extends: ["documentation/examples/patterns"]
+tags: ["documentation", "antipatterns", "best-practices"]
+---
+
+# Documentation Anti-Patterns
+
+## Related Rules
+- documentation/examples/patterns: Recommended documentation patterns
+- documentation/base-documentation: Base documentation requirements
+- documentation/component-driven/index: Component documentation standards
+- documentation/api/index: API documentation standards
+
+## Version History
+- 1.0.0: Initial version
+  - Identified common documentation anti-patterns
+  - Established prevention guidelines
+  - Implemented validation rules
+  - Added automated checks
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Prevents common documentation anti-patterns and pitfalls"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "maxFileLength": 1000,
+        "maxHeadingDepth": 4,
+        "maxCodeBlockLength": 50
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "*.md",
+        "*.mdx"
+      ],
+      "forbidden": [
+        "*.txt",
+        "*.doc",
+        "*.docx",
+        "TODO.*",
+        "FIXME.*"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "lint-warnings",
+          "auto-formatting",
+          "spell-checking"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "validation-checks",
+          "broken-link-detection",
+          "style-enforcement"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "content-validation",
+          "example-verification",
+          "accessibility-checks"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "quality-metrics",
+          "readability-scores",
+          "update-tracking"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "no-secrets",
+        "no-internal-urls",
+        "no-personal-data"
+      ],
+      "validations": [
+        "content-scanning",
+        "link-validation",
+        "data-privacy"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 100,
+      "requirements": [
+        "pattern-validation",
+        "content-verification",
+        "style-checking"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "strict",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "markdownlint": "^0.25.0",
+        "prettier": "^3.0.0",
+        "textlint": "^12.0.0"
+      },
+      "optional": {
+        "vale": "^2.0.0",
+        "write-good": "^1.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- No undocumented code or features
+- No outdated documentation
+- No inconsistent formatting
+- No broken links or references
+- No unclear or ambiguous content
+
+## Patterns and Examples
+```markdown
+# ❌ Anti-Pattern Examples
+
+## Unclear Component Documentation
+❌ Bad:
+```tsx
+// Just a button
+function Button(props) {
+  return <button {...props} />;
+}
+```
+
+✅ Good:
+```tsx
+/**
+ * A customizable button component that follows design system guidelines.
+ * @param {object} props - Button properties
+ * @param {string} props.variant - Button style variant ('primary' | 'secondary')
+ * @param {ReactNode} props.children - Button content
+ */
+function Button({ variant = 'primary', children, ...props }) {
+  return <button className={styles[variant]} {...props}>{children}</button>;
+}
+```
+
+## Inconsistent Documentation Style
+❌ Bad:
+- this is a list
+* this is also a list
++ this is another list item
+
+✅ Good:
+- This is a consistent list
+- With proper capitalization
+- And consistent markers
+```
+
+## Integration Standards
+- IDE must highlight anti-patterns
+- Build process must fail on violations
+- Testing must catch documentation issues
+- Monitoring must track documentation quality
+
+## Security Considerations
+- No sensitive data in documentation
+- No internal URLs or endpoints
+- No personally identifiable information
+- No security vulnerabilities in examples
+
+## Testing Requirements
+- Validate against known anti-patterns
+- Check for documentation consistency
+- Verify example code validity
+- Test documentation completeness
+
+## Maintenance
+- Regular anti-pattern scans
+- Automated style enforcement
+- Documentation debt tracking
+- Quality metrics monitoring
+
+## Compatibility Matrix
+| Anti-Pattern | Markdown | MDX | TypeScript |
+|--------------|----------|-----|------------|
+| Inconsistent Style | ✅ | ✅ | ✅ |
+| Missing Docs | ✅ | ✅ | ✅ |
+| Bad Examples | ✅ | ✅ | ✅ |
+| Broken Links | ✅ | ✅ | N/A |
+
+## Version Compatibility
+| Version | Markdownlint | Prettier | Textlint |
+|---------|--------------|----------|----------|
+| 1.0.0   | ≥0.25.0    | ≥3.0.0  | ≥12.0.0  | 

@@ -1,0 +1,341 @@
+---
+description: Development Environment Configuration Standards and Best Practices
+version: 1.0.0
+globs: ["**/dev/**/*", "**/development/**/*", "**/.env.development", "**/docker-compose.dev.yml"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/security.mdc
+  - tooling/package-management.mdc
+tags:
+  - development
+  - environment
+  - configuration
+  - debugging
+---
+
+# Development Environment Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Development performance standards
+- Security (`core/security.mdc`): Security guidelines for development
+- Package Management (`tooling/package-management.mdc`): Dependency management
+- Testing (`tooling/testing/base-testing.mdc`): Testing environment setup
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added development environment standards
+  - Implemented debugging configurations
+  - Added hot reload guidelines
+  - Established local optimization patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Development Environment Configuration Standards and Best Practices",
+    "options": {
+      "metrics": {
+        "startupTime": 5000,
+        "hmrUpdateTime": 100,
+        "buildTime": 30000,
+        "resourceUsage": {
+          "cpu": 500,
+          "memory": 4096,
+          "disk": 10240
+        },
+        "performance": {
+          "compilationTime": 10000,
+          "hotReloadTime": 200,
+          "sourceMapTime": 1000
+        }
+      },
+      "patterns": {
+        "required": [
+          "hot-module-replacement",
+          "source-maps",
+          "error-overlay",
+          "debug-tools",
+          "local-https",
+          "cors-config"
+        ],
+        "forbidden": [
+          "production-apis",
+          "production-databases",
+          "minification",
+          "optimization"
+        ],
+        "server": {
+          "port": 3000,
+          "host": "localhost",
+          "https": true,
+          "cors": {
+            "enabled": true,
+            "origins": ["http://localhost:*"]
+          }
+        },
+        "hot-reload": {
+          "enabled": true,
+          "strategy": "hmr",
+          "overlay": true,
+          "clearConsole": false
+        }
+      },
+      "integrations": {
+        "ide": {
+          "debugging": true,
+          "hotReload": true,
+          "errorReporting": true,
+          "sourceMapSupport": true
+        },
+        "build": {
+          "bundleAnalyzer": true,
+          "speedMeasure": true,
+          "progressBar": true,
+          "memoryLimit": true
+        },
+        "test": {
+          "coverage": true,
+          "watch": true,
+          "debugger": true,
+          "mockServices": true
+        },
+        "monitor": {
+          "performance": true,
+          "memory": true,
+          "errors": true,
+          "logging": true
+        }
+      },
+      "security": {
+        "https": {
+          "enabled": true,
+          "key": ".cert/dev.key",
+          "cert": ".cert/dev.crt"
+        },
+        "cors": true,
+        "helmet": true,
+        "rateLimit": false,
+        "authentication": "mock",
+        "authorization": "mock"
+      },
+      "testing": {
+        "unitTestRequired": true,
+        "integrationTestRequired": true,
+        "e2eTestRequired": false,
+        "coverageRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "daily",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0",
+        "vite": ">=4.0.0",
+        "webpack": ">=5.0.0",
+        "browsers": {
+          "chrome": ">=90.0.0",
+          "firefox": ">=90.0.0",
+          "safari": ">=15.0.0",
+          "edge": ">=90.0.0"
+        }
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Local development server
+- Hot Module Replacement
+- Source map support
+- Debugging tools
+- Performance profiling
+- Error handling
+- Local HTTPS
+- CORS configuration
+- Environment variables
+- Local database
+- Cache management
+- Asset serving
+- Build pipeline
+- Test environment
+- Mock services
+- Development data
+
+## Patterns and Examples
+```typescript
+// Development Server Pattern
+import { createDevServer } from './server';
+import { loadDevConfig } from './config';
+
+async function startDevServer() {
+  const config = await loadDevConfig();
+  
+  const server = createDevServer({
+    port: config.server.port,
+    host: config.server.host,
+    https: config.server.https ? {
+      key: fs.readFileSync(config.security.https.key),
+      cert: fs.readFileSync(config.security.https.cert)
+    } : false,
+    cors: config.server.cors,
+    hot: config.hotReload.enabled
+  });
+
+  server.on('compiled', stats => {
+    if (config.performance.bundleAnalyzer) {
+      analyzeBundleSize(stats);
+    }
+  });
+
+  return server;
+}
+
+// Environment Configuration Pattern
+class DevEnvironment {
+  private config: DevConfig;
+  private services: Map<string, Service>;
+
+  constructor(config: DevConfig) {
+    this.config = config;
+    this.services = new Map();
+  }
+
+  async initialize() {
+    // Initialize development database
+    await this.initDatabase();
+    
+    // Start mock services
+    await this.startMockServices();
+    
+    // Configure hot reload
+    if (this.config.hotReload.enabled) {
+      this.setupHotReload();
+    }
+    
+    // Setup debugging
+    if (this.config.debugging.enabled) {
+      this.setupDebugging();
+    }
+  }
+
+  private async initDatabase() {
+    const db = await createDevDatabase({
+      type: 'sqlite',
+      location: ':memory:',
+      logging: this.config.debugging.logging === 'debug'
+    });
+    
+    this.services.set('database', db);
+  }
+
+  private async startMockServices() {
+    const mockApi = createMockApiServer({
+      port: this.config.mockApi.port,
+      delay: this.config.mockApi.delay,
+      scenarios: loadTestScenarios()
+    });
+    
+    this.services.set('mockApi', mockApi);
+  }
+
+  private setupHotReload() {
+    const hmr = createHotModuleReload({
+      strategy: this.config.hotReload.strategy,
+      overlay: this.config.hotReload.overlay
+    });
+    
+    hmr.on('update', () => {
+      if (!this.config.hotReload.clearConsole) {
+        console.log('HMR Update applied');
+      }
+    });
+  }
+
+  private setupDebugging() {
+    if (this.config.debugging.sourceMap) {
+      enableSourceMaps();
+    }
+    
+    if (this.config.debugging.errorOverlay) {
+      enableErrorOverlay();
+    }
+    
+    setupDebugger({
+      breakpoints: this.config.debugging.breakpoints,
+      logging: this.config.debugging.logging
+    });
+  }
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - Debugger configuration
+  - Hot reload support
+  - Source map integration
+  - Error highlighting
+- Build integration:
+  - Development build config
+  - Asset optimization
+  - Module replacement
+  - Cache busting
+- Testing integration:
+  - Test runner config
+  - Mock data setup
+  - Coverage reporting
+  - Watch mode
+- Monitoring integration:
+  - Local metrics
+  - Error tracking
+  - Performance profiling
+  - Memory monitoring
+
+## Security Considerations
+- Local HTTPS setup
+- CORS configuration
+- Environment variables
+- Secrets management
+- Mock data security
+- API security
+- Database security
+- File permissions
+
+## Testing Requirements
+- Unit test environment
+- Integration test setup
+- E2E test config
+- Performance testing
+- Security testing
+- API testing
+- UI testing
+- Mock services
+
+## Maintenance
+- Regular updates
+- Dependency checks
+- Cache clearing
+- Log rotation
+- Database cleanup
+- Mock data refresh
+- Certificate renewal
+- Tool updates
+
+## Compatibility Matrix
+| Feature | Node.js | TypeScript | Bundler |
+|---------|---------|------------|----------|
+| HMR | ✅ | ✅ | ✅ |
+| Debugging | ✅ | ✅ | ✅ |
+| Source Maps | ✅ | ✅ | ✅ |
+| HTTPS | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0 | ≥0.34.0 | 

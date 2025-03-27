@@ -1,0 +1,392 @@
+---
+description: TypeScript Configuration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{ts,tsx}", "**/tsconfig.json", "**/tsconfig.*.json"]
+alwaysApply: true
+extends:
+  - core/code-style.mdc
+  - core/error-handling.mdc
+  - tooling/linting/eslint.mdc
+tags:
+  - typescript
+  - configuration
+  - type-safety
+  - development
+---
+
+# TypeScript Configuration Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Base code style patterns
+- Error Handling (`core/error-handling.mdc`): Error handling patterns
+- ESLint (`tooling/linting/eslint.mdc`): Linting configuration
+- React/Next.js (`development/react-nextjs.mdc`): Framework integration
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added TypeScript configuration standards
+  - Implemented strict type checking
+  - Added path aliases configuration
+  - Established module resolution patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "TypeScript Configuration Standards and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "typeCheckTime": 5000,
+        "maxBundleSize": 500000,
+        "maxFileSize": 100000,
+        "maxComplexity": 20,
+        "maxDepth": 4,
+        "coverage": {
+          "types": 95,
+          "tests": 90
+        }
+      },
+      "patterns": {
+        "required": [
+          "strict-null-checks",
+          "no-implicit-any",
+          "explicit-function-return-type",
+          "explicit-member-accessibility",
+          "consistent-type-definitions"
+        ],
+        "forbidden": [
+          "any-type-usage",
+          "non-null-assertion",
+          "type-assertion-without-check",
+          "unsafe-type-casting"
+        ],
+        "compiler": {
+          "target": "ES2022",
+          "lib": ["ES2022", "DOM", "DOM.Iterable"],
+          "module": "ESNext",
+          "moduleResolution": "bundler",
+          "jsx": "preserve",
+          "incremental": true,
+          "composite": true,
+          "declaration": true,
+          "sourceMap": true,
+          "skipLibCheck": true,
+          "allowJs": true,
+          "checkJs": true,
+          "esModuleInterop": true,
+          "isolatedModules": true,
+          "forceConsistentCasingInFileNames": true
+        },
+        "checks": {
+          "strict": true,
+          "noImplicitAny": true,
+          "strictNullChecks": true,
+          "strictFunctionTypes": true,
+          "strictBindCallApply": true,
+          "strictPropertyInitialization": true,
+          "noImplicitThis": true,
+          "useUnknownInCatchVariables": true,
+          "alwaysStrict": true,
+          "noUncheckedIndexedAccess": true,
+          "noImplicitReturns": true,
+          "noFallthroughCasesInSwitch": true,
+          "noUnusedLocals": true,
+          "noUnusedParameters": true
+        },
+        "paths": {
+          "enabled": true,
+          "baseUrl": ".",
+          "paths": {
+            "@/*": ["./src/*"],
+            "@components/*": ["./src/components/*"],
+            "@lib/*": ["./src/lib/*"],
+            "@utils/*": ["./src/utils/*"],
+            "@types/*": ["./src/types/*"]
+          }
+        }
+      },
+      "integrations": {
+        "ide": {
+          "typeCheckOnSave": true,
+          "organizeImportsOnSave": true,
+          "codeActionsOnSave": true,
+          "inlayHints": true
+        },
+        "build": {
+          "typeCheck": true,
+          "generateDeclarations": true,
+          "generateSourceMaps": true,
+          "incrementalBuild": true
+        },
+        "test": {
+          "typeCheckTests": true,
+          "generateCoverage": true
+        },
+        "monitor": {
+          "typeCheckPerformance": true,
+          "bundleSizeTracking": true
+        }
+      },
+      "security": {
+        "noEval": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "noUnsafeTypeAssertion": true
+      },
+      "testing": {
+        "unitTestRequired": true,
+        "typeCoverageRequired": true,
+        "integrationTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "quarterly",
+        "deprecationPolicy": "1-year",
+        "backwardCompatibility": "major-version"
+      },
+      "compatibility": {
+        "typescript": ">=5.0.0",
+        "node": ">=18.0.0",
+        "eslint": ">=8.0.0",
+        "prettier": ">=3.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Strict type checking
+- Path aliases
+- Module resolution
+- Declaration files
+- Source maps
+- Incremental builds
+- Project references
+- Type definitions
+- Error handling
+- Code organization
+
+## Type Patterns
+```typescript
+// Utility Types Pattern
+type Nullable<T> = T | null;
+type Optional<T> = T | undefined;
+type Required<T> = NonNullable<T>;
+type ReadOnly<T> = Readonly<T>;
+type DeepReadOnly<T> = {
+  readonly [P in keyof T]: T[P] extends object ? DeepReadOnly<T[P]> : T[P];
+};
+
+// Generic Type Pattern
+interface Result<T, E = Error> {
+  success: boolean;
+  data?: T;
+  error?: E;
+}
+
+// Union Type Pattern
+type Status = 'idle' | 'loading' | 'success' | 'error';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+// Type Guard Pattern
+function isError(value: unknown): value is Error {
+  return value instanceof Error;
+}
+
+function isNonNullable<T>(value: T): value is NonNullable<T> {
+  return value !== null && value !== undefined;
+}
+
+// Branded Type Pattern
+type Brand<K, T> = K & { __brand: T };
+type UserId = Brand<string, 'UserId'>;
+type Email = Brand<string, 'Email'>;
+
+function createUserId(id: string): UserId {
+  if (!validateUserId(id)) {
+    throw new Error('Invalid user id');
+  }
+  return id as UserId;
+}
+
+// Record Type Pattern
+type Config = Record<string, unknown>;
+type Headers = Record<string, string>;
+
+// Mapped Type Pattern
+type Mutable<T> = {
+  -readonly [P in keyof T]: T[P];
+};
+
+type Optional<T> = {
+  [P in keyof T]?: T[P];
+};
+
+// Conditional Type Pattern
+type ArrayElement<T> = T extends Array<infer U> ? U : never;
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+// Template Literal Type Pattern
+type CSSProperty = `${string}-${string}`;
+type EventHandler = `on${string}`;
+
+// Intersection Type Pattern
+type User = {
+  id: UserId;
+  email: Email;
+} & BaseEntity;
+
+// Index Type Pattern
+type PropType<T, K extends keyof T> = T[K];
+type Optional<T> = Partial<Pick<T, keyof T>>;
+```
+
+## Error Handling Patterns
+```typescript
+// Error Class Pattern
+class AppError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public status: number,
+    public data?: unknown
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
+}
+
+// Result Type Pattern
+class Result<T, E = Error> {
+  private constructor(
+    private readonly value: T | E,
+    private readonly isSuccess: boolean
+  ) {}
+
+  static success<T>(value: T): Result<T, never> {
+    return new Result(value, true);
+  }
+
+  static failure<E>(error: E): Result<never, E> {
+    return new Result(error, false);
+  }
+
+  map<U>(fn: (value: T) => U): Result<U, E> {
+    return this.isSuccess
+      ? Result.success(fn(this.value as T))
+      : (this as unknown as Result<U, E>);
+  }
+
+  mapError<U>(fn: (error: E) => U): Result<T, U> {
+    return this.isSuccess
+      ? (this as unknown as Result<T, U>)
+      : Result.failure(fn(this.value as E));
+  }
+
+  fold<U>(success: (value: T) => U, failure: (error: E) => U): U {
+    return this.isSuccess
+      ? success(this.value as T)
+      : failure(this.value as E);
+  }
+}
+
+// Validation Pattern
+interface Validator<T> {
+  validate(value: unknown): Result<T, ValidationError>;
+}
+
+class ValidationError extends AppError {
+  constructor(message: string, public errors: Record<string, string[]>) {
+    super(message, 'VALIDATION_ERROR', 400, errors);
+  }
+}
+
+// Type Guard Pattern
+function assertNonNull<T>(
+  value: T,
+  message = 'Value must not be null or undefined'
+): asserts value is NonNullable<T> {
+  if (value === null || value === undefined) {
+    throw new AppError(message, 'ASSERTION_ERROR', 500);
+  }
+}
+```
+
+## Module Resolution
+- Node resolution
+- Path mapping
+- Type definitions
+- Declaration files
+- Module augmentation
+- Ambient modules
+- External modules
+- Internal modules
+
+## Integration Standards
+- IDE integration:
+  - Type checking
+  - Code completion
+  - Quick fixes
+  - Refactoring
+- Build integration:
+  - Compilation
+  - Declaration files
+  - Source maps
+  - Project references
+- Testing integration:
+  - Type testing
+  - Mock types
+  - Test utilities
+  - Coverage types
+- Monitoring integration:
+  - Type errors
+  - Build metrics
+  - Performance
+  - Dependencies
+
+## Security Considerations
+- Type safety
+- Input validation
+- Output encoding
+- Secure defaults
+- Error handling
+- Sensitive data
+- Authentication
+- Authorization
+
+## Testing Requirements
+- Type tests
+- Unit tests
+- Integration tests
+- E2E tests
+- Type coverage
+- Mock testing
+- Error testing
+- Build testing
+
+## Maintenance
+- Regular updates
+- Type definitions
+- Performance monitoring
+- Security patches
+- Dependency updates
+- Documentation updates
+- Migration guides
+- Version compatibility
+
+## Compatibility Matrix
+| Feature | TypeScript 5.0+ | TypeScript 4.0+ | JavaScript |
+|---------|----------------|-----------------|------------|
+| Decorators | ✅ | ❌ | ❌ |
+| const | ✅ | ❌ | ❌ |
+| satisfies | ✅ | ❌ | ❌ |
+| using | ✅ | ❌ | ❌ |
+| moduleResolution | ✅ | ✅ | ❌ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | ESLint |
+|---------|---------|------------|---------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0 | ≥8.0.0 |

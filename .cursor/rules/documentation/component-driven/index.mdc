@@ -1,0 +1,252 @@
+---
+description: Component-Driven Documentation Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/components/**/*.{ts,tsx}", "**/stories/**/*.{stories.ts,stories.tsx}", "**/*.mdx"]
+alwaysApply: true
+extends:
+  - documentation/base-documentation.mdc
+  - development/react-nextjs.mdc
+tags:
+  - documentation
+  - components
+  - storybook
+  - design-system
+---
+
+# Component-Driven Documentation Standards
+
+## Related Rules
+- Base Documentation (`documentation/base-documentation.mdc`): Base documentation standards
+- React/Next.js (`development/react-nextjs.mdc`): React component standards
+- TypeScript (`development/typescript.mdc`): Type documentation
+- Testing (`documentation/testing-docs.mdc`): Component testing documentation
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added component documentation standards
+  - Implemented Storybook integration guidelines
+  - Added component testing documentation
+  - Established design system documentation
+
+## Configuration
+```json
+{
+  "component-docs": {
+    "storybook": {
+      "enabled": true,
+      "addons": {
+        "essentials": true,
+        "a11y": true,
+        "controls": true,
+        "docs": true,
+        "viewport": true,
+        "interactions": true
+      },
+      "typescript": {
+        "enabled": true,
+        "checkTypes": true
+      },
+      "mdx": {
+        "enabled": true,
+        "codeBlocks": true
+      }
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": true,
+      "interactions": true,
+      "snapshots": true
+    },
+    "designSystem": {
+      "enabled": true,
+      "tokens": true,
+      "components": true,
+      "patterns": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Component documentation
+- Props documentation
+- Usage examples
+- Design guidelines
+- Accessibility notes
+- Testing guidelines
+- Performance notes
+- Integration guides
+- State management
+- Event handling
+- Styling approach
+- Responsive design
+- Error handling
+- Loading states
+- Animation guides
+- Best practices
+
+## Component Documentation Structure
+1. Component Overview
+   - Purpose and use cases
+   - Key features
+   - Dependencies
+   - Version compatibility
+
+2. Props API
+   ```typescript
+   interface ComponentProps {
+     /** Description of the prop */
+     propName: PropType;
+   }
+   ```
+
+3. Component Lifecycle
+   - Initialization
+   - Update triggers
+   - Cleanup
+   - Performance considerations
+
+4. Accessibility Features
+   - ARIA roles
+   - Keyboard navigation
+   - Screen reader support
+   - Color contrast requirements
+
+5. State Management
+   - Internal state
+   - External state integration
+   - Side effects
+   - Error boundaries
+
+6. Examples
+   ```tsx
+   // Basic Usage
+   <Component prop="value" />
+
+   // Advanced Usage
+   <Component
+     prop="value"
+     onEvent={handleEvent}
+     customization={options}
+   />
+   ```
+
+7. Testing Guidelines
+   - Unit test requirements
+   - Integration test scenarios
+   - Accessibility tests
+   - Performance benchmarks
+
+8. Known Issues and Limitations
+   - Browser compatibility
+   - Performance constraints
+   - Feature limitations
+   - Planned improvements
+
+## Storybook Integration
+```typescript
+// Component Story Pattern
+import type { Meta, StoryObj } from '@storybook/react';
+import { Component } from './Component';
+
+const meta: Meta<typeof Component> = {
+  title: 'Components/Component',
+  component: Component,
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component: 'Component description'
+      }
+    }
+  },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary'],
+      description: 'The visual style variant'
+    }
+  }
+};
+
+export default meta;
+type Story = StoryObj<typeof Component>;
+
+export const Default: Story = {
+  args: {
+    variant: 'primary'
+  }
+};
+
+export const WithInteraction: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button'));
+  }
+};
+```
+
+## Integration Standards
+- IDE integration:
+  - Documentation preview
+  - Props validation
+  - Type checking
+  - Story preview
+- Build integration:
+  - Documentation build
+  - Story compilation
+  - Asset handling
+  - Type generation
+- Testing integration:
+  - Component tests
+  - Story tests
+  - Visual regression
+  - Accessibility tests
+- Design integration:
+  - Design tokens
+  - Theme system
+  - Style guide
+  - Asset management
+
+## Security Considerations
+- Input validation
+- Output sanitization
+- XSS prevention
+- CSRF protection
+- Access control
+- Data handling
+- Error exposure
+- Security testing
+
+## Testing Requirements
+- Component tests
+- Story tests
+- Visual tests
+- Accessibility tests
+- Integration tests
+- Performance tests
+- Security tests
+- Documentation tests
+
+## Maintenance
+- Regular updates
+- Version tracking
+- Breaking changes
+- Migration guides
+- Deprecation notes
+- Documentation review
+- Example updates
+- Test updates
+
+## Compatibility Matrix
+| Feature | React | Next.js | Storybook |
+|---------|-------|---------|-----------|
+| MDX | ✅ | ✅ | ✅ |
+| TypeScript | ✅ | ✅ | ✅ |
+| Testing | ✅ | ✅ | ✅ |
+| Hot Reload | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | React | TypeScript | Storybook |
+|---------|-------|------------|-----------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0 | ≥7.0.0 |

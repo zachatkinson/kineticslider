@@ -1,0 +1,249 @@
+---
+description: Base Documentation Standards and Requirements for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.md", "**/*.mdx", "**/docs/**/*", "**/README.md", "**/CONTRIBUTING.md", "**/CHANGELOG.md"]
+alwaysApply: true
+extends:
+  - core/code-style.mdc
+tags:
+  - documentation
+  - standards
+  - guidelines
+  - markdown
+---
+
+# Base Documentation Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Code documentation standards
+- Testing Docs (`documentation/testing-docs.mdc`): Test documentation patterns
+- TypeScript (`development/typescript.mdc`): Type documentation
+- API Docs (`development/server-components.mdc`): API documentation
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added base documentation standards
+  - Implemented markdown guidelines
+  - Added API documentation requirements
+  - Established contribution guidelines
+
+## Configuration
+```json
+{
+  "documentation": {
+    "markdown": {
+      "format": "mdx",
+      "linting": true,
+      "spellcheck": true,
+      "linkCheck": true,
+      "imageCheck": true
+    },
+    "api": {
+      "format": "openapi",
+      "version": "3.0.0",
+      "validate": true,
+      "examples": true
+    },
+    "code": {
+      "jsdoc": true,
+      "typescript": true,
+      "examples": true,
+      "testing": true
+    },
+    "generation": {
+      "api": true,
+      "types": true,
+      "components": true,
+      "hooks": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Project overview
+- Installation guide
+- Usage examples
+- API documentation
+- Type documentation
+- Component docs
+- Hook documentation
+- Testing guide
+- Contributing guide
+- Code of conduct
+- Security policy
+- License info
+- Changelog
+- Architecture docs
+- Performance docs
+- Security docs
+
+## JSDoc Standards
+- All public functions, classes, and interfaces must have JSDoc comments
+- Use TypeScript type annotations instead of JSDoc types where possible
+- Required JSDoc tags:
+  - @param for function parameters
+  - @returns for return values
+  - @throws for expected errors
+  - @example for usage examples
+  - @deprecated for deprecated features
+
+## Markdown Formatting
+- Use ATX-style headers (# H1, ## H2)
+- Code blocks must specify language
+- Tables must have headers
+- Links must use reference-style format
+- Images must include alt text
+
+## Component Documentation
+- Document props using TypeScript interfaces
+- Include accessibility considerations
+- Provide usage examples
+- List known limitations
+
+## Example Standards
+```typescript
+/**
+ * Calculates the sum of two numbers.
+ * 
+ * @param a - First number
+ * @param b - Second number
+ * @returns The sum of a and b
+ * @example
+ * ```ts
+ * add(1, 2) // Returns: 3
+ * ```
+ */
+function add(a: number, b: number): number {
+  return a + b;
+}
+```
+
+## Integration with Testing
+- Link to relevant test files
+- Document test coverage requirements
+- Specify test data requirements
+
+## Patterns and Examples
+```markdown
+# Component Name
+
+## Overview
+Brief description of the component's purpose and main features.
+
+## Installation
+```bash
+npm install @scope/component
+```
+
+## Usage
+```tsx
+import { Component } from '@scope/component';
+
+function Example() {
+  return <Component prop="value" />;
+}
+```
+
+## Props
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| prop | string | undefined | Description |
+
+## Examples
+### Basic Usage
+```tsx
+<Component prop="basic" />
+```
+
+### Advanced Usage
+```tsx
+<Component
+  prop="advanced"
+  options={{
+    feature: true
+  }}
+/>
+```
+
+## API Reference
+### Methods
+#### `method(param: Type): ReturnType`
+Description of the method.
+
+### Events
+#### `onChange(value: string): void`
+Fired when the value changes.
+
+## Notes
+Additional information about edge cases, limitations, or considerations.
+
+## See Also
+- [Related Component]
+- [External Resource]
+```
+
+## Integration Standards
+- IDE integration:
+  - Markdown preview
+  - Link validation
+  - Spell checking
+  - Code highlighting
+- Build integration:
+  - Doc generation
+  - API docs
+  - Type docs
+  - Site generation
+- Testing integration:
+  - Example validation
+  - Link checking
+  - Type checking
+  - Code testing
+- Monitoring integration:
+  - Coverage tracking
+  - Link health
+  - Version tracking
+  - Usage analytics
+
+## Security Considerations
+- Sensitive data
+- API credentials
+- Environment vars
+- Security policies
+- Access control
+- Authentication
+- Authorization
+- Data privacy
+
+## Documentation Requirements
+- Project docs
+- API docs
+- Type docs
+- Test docs
+- Security docs
+- Deploy docs
+- Usage docs
+- Dev docs
+
+## Maintenance
+- Regular updates
+- Version tracking
+- Link validation
+- Content review
+- Format updates
+- Tool updates
+- Example updates
+- API updates
+
+## Compatibility Matrix
+| Feature | Markdown | MDX | OpenAPI |
+|---------|----------|-----|---------|
+| Preview | ✅ | ✅ | ✅ |
+| Linting | ✅ | ✅ | ✅ |
+| Examples | ✅ | ✅ | ✅ |
+| Types | ❌ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥16.0.0 | ≥5.0.0 | ≥0.34.0 |

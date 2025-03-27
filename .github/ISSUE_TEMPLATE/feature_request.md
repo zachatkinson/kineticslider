@@ -16,15 +16,23 @@ A clear and concise description of what you want to happen.
 **Describe alternatives you've considered**
 A clear and concise description of any alternative solutions or features you've considered.
 
+**Example Implementation**
+```tsx
+// Example of how the feature could be implemented
+<KineticSlider
+  items={items}
+  options={{
+    // new feature options
+  }}
+/>
+```
+
 **Additional context**
 Add any other context or screenshots about the feature request here.
 
-**Implementation ideas**
-If you have any ideas about how this feature could be implemented, please share them here.
-
 **Checklist:**
-- [ ] I have searched for similar feature requests before submitting
+- [ ] I have searched the existing issues
 - [ ] I have provided a clear description of the problem
-- [ ] I have provided a clear description of the desired solution
-- [ ] I have considered alternative solutions
-- [ ] I have provided any relevant context or examples 
+- [ ] I have provided a clear description of the solution
+- [ ] I have provided an example implementation
+- [ ] I have considered alternatives 

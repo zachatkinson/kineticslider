@@ -1,143 +1,48 @@
 # Contributing to KineticSlider
 
-Thank you for your interest in contributing to KineticSlider! This document provides guidelines and steps for contributing.
+We love your input! We want to make contributing to KineticSlider as easy and transparent as possible, whether it's:
 
-## Code of Conduct
+- Reporting a bug
+- Discussing the current state of the code
+- Submitting a fix
+- Proposing new features
+- Becoming a maintainer
 
-By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md).
+## We Develop with Github
+We use GitHub to host code, to track issues and feature requests, as well as accept pull requests.
 
-## Development Process
+## We Use [Github Flow](https://guides.github.com/introduction/flow/index.html)
+Pull requests are the best way to propose changes to the codebase. We actively welcome your pull requests:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests (`npm test`)
-5. Commit your changes using conventional commits
-6. Push to your branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+1. Fork the repo and create your branch from `main`.
+2. If you've added code that should be tested, add tests.
+3. If you've changed APIs, update the documentation.
+4. Ensure the test suite passes.
+5. Make sure your code lints.
+6. Issue that pull request!
 
-## Pull Request Process
+## Any contributions you make will be under the MIT Software License
+In short, when you submit code changes, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
 
-1. Update the README.md with details of changes if needed
-2. Update the CHANGELOG.md with a note describing your changes
-3. Ensure all tests pass
-4. Request review from maintainers
+## Report bugs using Github's [issue tracker](https://github.com/zach/kineticslider/issues)
+We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/zach/kineticslider/issues/new); it's that easy!
 
-## Coding Standards
+## Write bug reports with detail, background, and sample code
 
-### TypeScript
-- Use TypeScript for all new code
-- Maintain strict type checking
-- Document complex types with JSDoc comments
-- Use interfaces for object shapes
-- Use type guards when necessary
+**Great Bug Reports** tend to have:
 
-### React
-- Use functional components with hooks
-- Follow React best practices
-- Maintain prop types documentation
-- Use React.memo() for performance optimization when needed
+- A quick summary and/or background
+- Steps to reproduce
+  - Be specific!
+  - Give sample code if you can.
+- What you expected would happen
+- What actually happens
+- Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
-### Performance
-- Optimize WebGL operations
-- Use texture atlases for multiple images
-- Implement proper cleanup in useEffect
-- Monitor memory usage
-- Profile performance impact of changes
+## Use a Consistent Coding Style
 
-### Testing
-- Write unit tests for new features
-- Include integration tests for complex interactions
-- Maintain test coverage above 80%
-- Use meaningful test descriptions
-
-## Commit Message Guidelines
-
-We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
-
-```bash
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### Types
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes
-- `refactor`: Code refactoring
-- `perf`: Performance improvements
-- `test`: Adding or modifying tests
-- `chore`: Maintenance tasks
-
-### Examples
-```bash
-feat: add new bloom filter effect
-fix: resolve memory leak in texture atlas
-docs: update README with new filter options
-```
-
-## Development Setup
-
-1. Clone the repository
-```bash
-git clone https://github.com/zachatkinson/kineticslider.git
-cd kineticslider
-```
-
-2. Install dependencies
-```bash
-npm run dev:install
-```
-
-3. Start development server
-```bash
-npm run dev
-```
-
-4. Run tests
-```bash
-npm test
-```
-
-5. Build the project
-```bash
-npm run build
-```
-
-## Project Structure
-
-```
-kineticslider/
-├── src/
-│   ├── components/     # React components
-│   ├── filters/        # WebGL filters
-│   ├── hooks/          # Custom React hooks
-│   ├── managers/       # Resource and state managers
-│   ├── types/          # TypeScript type definitions
-│   └── utils/          # Utility functions
-├── tests/              # Test files
-├── examples/           # Example implementations
-└── docs/              # Documentation
-```
-
-## Getting Help
-
-- Open an issue for bug reports
-- Use discussions for questions
-- Join our community chat
-- Check existing issues and PRs
-
-## Release Process
-
-1. Version bumping is handled automatically by semantic-release
-2. Changelog is generated from commit messages
-3. Releases are created on GitHub
-4. Package is published to npm
+* 2 spaces for indentation rather than tabs
+* You can try running `npm run lint` for style unification
 
 ## License
-
-By contributing, you agree that your contributions will be licensed under the project's Apache 2.0 License. 
+By contributing, you agree that your contributions will be licensed under its MIT License. 

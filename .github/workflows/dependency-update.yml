@@ -1,0 +1,55 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Update dependencies
+        run: npm update
+        
+      - name: Check for updates
+        id: check-updates
+        run: |
+          if git diff --exit-code package.json package-lock.json; then
+            echo "No updates available"
+            exit 0
+          else
+            echo "Updates available"
+            exit 1
+          fi
+          
+      - name: Create Pull Request
+        if: failure()
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: update dependencies'
+          title: 'chore: update dependencies'
+          body: |
+            Automated dependency update
+            
+            This PR updates dependencies to their latest versions.
+            
+            Please review the changes and ensure they don't break anything.
+            
+            - [ ] Tests pass
+            - [ ] Build succeeds
+            - [ ] No breaking changes
+          branch: chore/update-dependencies
+          delete-branch: true
+          labels: |
+            dependencies
+            automated pr 

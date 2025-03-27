@@ -1,0 +1,446 @@
+---
+description: Core Error Handling Standards and Patterns for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{ts,tsx,js,jsx}", "**/error.{ts,tsx}", "**/error-boundary.{ts,tsx}"]
+alwaysApply: true
+extends:
+  - core/code-style.mdc
+  - core/performance.mdc
+tags:
+  - error-handling
+  - reliability
+  - monitoring
+  - logging
+---
+
+# Core Error Handling Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Base coding standards
+- Performance (`core/performance.mdc`): Performance monitoring standards
+- TypeScript (`development/typescript.mdc`): Type safety standards
+- Testing (`tooling/testing/base-testing.mdc`): Error testing standards
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added base error boundary patterns
+  - Implemented error response standards
+  - Added logging and monitoring patterns
+  - Established error recovery strategies
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Core Error Handling Standards and Patterns for Modern Web Applications"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "errorRate": 0.01,
+        "responseTime": 1000,
+        "resourceUsage": 0.8,
+        "retryAttempts": 3,
+        "backoffMs": 1000,
+        "timeout": 5000
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "error-boundary",
+        "error-response",
+        "error-handler",
+        "retry-pattern",
+        "circuit-breaker"
+      ],
+      "forbidden": [
+        "throw-raw-error",
+        "catch-all-errors",
+        "console-error-logging"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "error-boundary-detection",
+          "error-handling-linting",
+          "type-safety-checks"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "error-pattern-validation",
+          "type-checking"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "error-boundary-testing",
+          "error-handling-coverage",
+          "retry-logic-testing"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "error-rate-tracking",
+          "performance-monitoring",
+          "resource-usage-alerts"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "sensitive-data-protection",
+        "error-message-sanitization"
+      ],
+      "validations": [
+        "stack-trace-exposure",
+        "error-information-disclosure"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 95,
+      "requirements": [
+        "error-boundary-tests",
+        "error-handler-tests",
+        "retry-logic-tests",
+        "recovery-strategy-tests"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "typescript": ">=4.0.0",
+        "react": ">=16.8.0",
+        "node": ">=14.0.0"
+      },
+      "optional": {
+        "nextjs": ">=12.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Implement proper error boundaries
+- Handle async errors
+- Manage error recovery
+- Implement logging
+- Monitor error rates
+- Handle rate limiting
+- Protect sensitive data
+- Implement proper fallbacks
+- Manage error context
+- Handle cleanup
+
+## Base Error Patterns
+
+### Error Boundary Pattern
+```typescript
+interface ErrorBoundaryProps {
+  fallback: React.ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    this.props.onError?.(error, errorInfo);
+  }
+
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+### Error Response Pattern
+```typescript
+interface ErrorResponse {
+  code: string;
+  message: string;
+  details?: unknown;
+  timestamp: string;
+  requestId?: string;
+}
+
+export class StandardError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+    public readonly details?: unknown
+  ) {
+    super(message);
+    this.name = 'StandardError';
+  }
+
+  toResponse(): ErrorResponse {
+    return {
+      code: this.code,
+      message: this.message,
+      details: this.details,
+      timestamp: new Date().toISOString(),
+      requestId: getCurrentRequestId()
+    };
+  }
+
+  static fromResponse(response: ErrorResponse): StandardError {
+    return new StandardError(
+      response.code,
+      response.message,
+      response.details
+    );
+  }
+}
+```
+
+### Error Handler Pattern
+```typescript
+export class ErrorHandler {
+  constructor(
+    private readonly logger: Logger,
+    private readonly monitor: Monitor
+  ) {}
+
+  async handle<T>(
+    operation: () => Promise<T>,
+    context: Record<string, unknown>
+  ): Promise<T> {
+    try {
+      return await operation();
+    } catch (error) {
+      await this.processError(error, context);
+      throw error;
+    }
+  }
+
+  private async processError(
+    error: Error,
+    context: Record<string, unknown>
+  ): Promise<void> {
+    // Log error with context
+    await this.logger.error(error, {
+      ...context,
+      timestamp: new Date().toISOString(),
+      requestId: getCurrentRequestId()
+    });
+
+    // Monitor error metrics
+    await this.monitor.recordError(error, context);
+  }
+}
+```
+
+### Retry Pattern
+```typescript
+interface RetryOptions {
+  maxAttempts: number;
+  backoffMs: number;
+  timeout: number;
+}
+
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  options: RetryOptions
+): Promise<T> {
+  let lastError: Error;
+  
+  for (let attempt = 1; attempt <= options.maxAttempts; attempt++) {
+    try {
+      return await Promise.race([
+        operation(),
+        new Promise((_, reject) => 
+          setTimeout(
+            () => reject(new Error('Operation timeout')),
+            options.timeout
+          )
+        )
+      ]);
+    } catch (error) {
+      lastError = error;
+      if (attempt < options.maxAttempts) {
+        await new Promise(resolve => 
+          setTimeout(
+            resolve,
+            options.backoffMs * Math.pow(2, attempt - 1)
+          )
+        );
+      }
+    }
+  }
+  
+  throw lastError;
+}
+```
+
+## Error Categories
+- Runtime Errors
+  - Type errors
+  - Reference errors
+  - Range errors
+  - Syntax errors
+- Network Errors
+  - Timeout errors
+  - Connection errors
+  - API errors
+  - DNS errors
+- Resource Errors
+  - Memory errors
+  - CPU errors
+  - Disk errors
+  - Quota errors
+- Security Errors
+  - Authentication errors
+  - Authorization errors
+  - Validation errors
+  - Rate limit errors
+- Business Logic Errors
+  - Validation errors
+  - State errors
+  - Constraint errors
+  - Domain errors
+
+## Error Recovery Strategies
+- Retry with backoff
+- Circuit breaking
+- Fallback responses
+- Graceful degradation
+- State recovery
+- Cache invalidation
+- Connection reset
+- Resource cleanup
+- Session recovery
+- Data reconciliation
+
+## Monitoring and Alerting
+- Error rate tracking
+- Pattern detection
+- Threshold alerts
+- Trend analysis
+- Impact assessment
+- User impact tracking
+- Resource monitoring
+- Performance impact
+- Recovery metrics
+- Business impact
+
+## Security Considerations
+- Error message sanitization
+- Stack trace protection
+- Sensitive data handling
+- Rate limiting
+- Authentication errors
+- Authorization errors
+- Input validation
+- Output encoding
+- Error aggregation
+- Audit logging
+
+## Integration Standards
+- IDE integration:
+  - Error highlighting
+  - Quick fixes
+  - Code actions
+  - Diagnostic reporting
+- Build integration:
+  - Error checking
+  - Type validation
+  - Bundle analysis
+  - Source maps
+- Testing integration:
+  - Error simulation
+  - Boundary testing
+  - Recovery testing
+  - Performance impact
+- Monitoring integration:
+  - Error tracking
+  - Performance monitoring
+  - Usage analytics
+  - Alert systems
+
+## Testing Requirements
+- Error simulation
+- Recovery testing
+- Performance impact
+- Security validation
+- Integration testing
+- Load testing
+- Chaos testing
+- Failover testing
+- Recovery validation
+- Monitoring verification
+
+## Maintenance
+- Error pattern review
+- Recovery optimization
+- Monitor tuning
+- Alert refinement
+- Documentation updates
+- Pattern updates
+- Security updates
+- Integration updates
+- Performance tuning
+- Capacity planning
+
+## Compatibility Matrix
+| Feature | Edge Runtime | Server Components | API Routes |
+|---------|--------------|-------------------|------------|
+| Error Boundary | ✅ | ✅ | ❌ |
+| Retry Pattern | ✅ | ✅ | ✅ |
+| Error Response | ✅ | ✅ | ✅ |
+| Monitoring | ✅ | ✅ | ✅ |
+| Rate Limiting | ✅ | ❌ | ✅ |
+| Recovery | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | React | Next.js |
+|---------|---------|-------|---------|
+| 1.0.0   | ≥18.0.0 | ≥18.0.0 | ≥13.0.0 |
+
+## Migration Guide
+### From Custom Error Handling
+1. Replace custom error boundaries with standardized ErrorBoundary
+2. Migrate error responses to StandardError format
+3. Implement ErrorHandler for consistent processing
+4. Update retry logic to use withRetry pattern
+5. Configure monitoring and logging integration
+6. Update tests to use new patterns
+7. Verify error recovery strategies
+8. Update documentation references 

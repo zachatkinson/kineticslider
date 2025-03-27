@@ -1,0 +1,368 @@
+---
+description: Container Configuration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/Dockerfile", "**/docker-compose*.yml", "**/.dockerignore", "**/kubernetes/**/*.{yml,yaml}"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/security.mdc
+tags:
+  - containers
+  - docker
+  - kubernetes
+  - orchestration
+---
+
+# Container Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Container performance standards
+- Security (`core/security.mdc`): Container security guidelines
+- Development (`tooling/environments/development.mdc`): Development containers
+- Production (`tooling/environments/production.mdc`): Production containers
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added container standards
+  - Implemented Docker best practices
+  - Added Kubernetes guidelines
+  - Established orchestration patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Container Configuration Standards and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "buildTime": 300000,
+        "startupTime": 30000,
+        "resourceUsage": {
+          "cpu": 1000,
+          "memory": 1024,
+          "storage": 10240
+        },
+        "healthCheck": {
+          "interval": 30000,
+          "timeout": 10000,
+          "retries": 3
+        },
+        "performance": {
+          "requestLatency": 100,
+          "throughput": 1000,
+          "errorRate": 0.01
+        }
+      },
+      "patterns": {
+        "required": [
+          "multi-stage-builds",
+          "layer-optimization",
+          "health-checks",
+          "resource-limits",
+          "logging-setup",
+          "monitoring",
+          "network-policies"
+        ],
+        "forbidden": [
+          "root-user",
+          "privileged-mode",
+          "host-network",
+          "unsafe-mounts"
+        ],
+        "docker": {
+          "buildKit": true,
+          "multiStage": true,
+          "caching": true,
+          "compression": true,
+          "security": {
+            "rootless": true,
+            "noRoot": true,
+            "seccomp": true,
+            "apparmor": true
+          }
+        },
+        "compose": {
+          "version": "3.9",
+          "healthChecks": true,
+          "logging": true,
+          "monitoring": true
+        }
+      },
+      "integrations": {
+        "ide": {
+          "containerCommands": true,
+          "errorReporting": true,
+          "debugSupport": true,
+          "logViewer": true
+        },
+        "build": {
+          "cicd": true,
+          "registry": true,
+          "scanning": true,
+          "signing": true
+        },
+        "test": {
+          "integration": true,
+          "security": true,
+          "performance": true,
+          "e2e": true
+        },
+        "monitor": {
+          "metrics": true,
+          "logging": true,
+          "tracing": true,
+          "alerts": true
+        }
+      },
+      "security": {
+        "rootless": true,
+        "seccomp": true,
+        "apparmor": true,
+        "selinux": true,
+        "capabilities": true,
+        "networkPolicies": true,
+        "secretsManagement": true,
+        "vulnerabilityScanning": true
+      },
+      "testing": {
+        "securityTestRequired": true,
+        "performanceTestRequired": true,
+        "integrationTestRequired": true,
+        "e2eTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "weekly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "docker": ">=20.10.0",
+        "compose": ">=2.0.0",
+        "kubernetes": ">=1.24.0",
+        "containerd": ">=1.6.0",
+        "buildkit": ">=0.10.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Multi-stage builds
+- Layer optimization
+- Security hardening
+- Health checks
+- Resource limits
+- Logging setup
+- Monitoring
+- Network policies
+- Volume management
+- Secret handling
+- Configuration
+- Orchestration
+- CI/CD integration
+- Registry setup
+- Backup strategy
+- Disaster recovery
+
+## Patterns and Examples
+```dockerfile
+# Multi-stage Build Pattern
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"]
+```
+
+```yaml
+# Docker Compose Pattern
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+```
+
+```yaml
+# Kubernetes Deployment Pattern
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app: app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+      - name: app
+        image: app:latest
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+```
+
+## Integration Standards
+- CI/CD integration:
+  - Build pipeline
+  - Test automation
+  - Security scanning
+  - Deployment automation
+- Registry integration:
+  - Image scanning
+  - Vulnerability checks
+  - Tag management
+  - Access control
+- Monitoring integration:
+  - Container metrics
+  - Log aggregation
+  - Trace collection
+  - Alert management
+- Security integration:
+  - Vulnerability scanning
+  - Compliance checking
+  - Secret management
+  - Access control
+
+## Security Considerations
+- Root access
+- Privilege escalation
+- Network policies
+- Secret management
+- Image scanning
+- Runtime security
+- Access control
+- Audit logging
+- RBAC setup
+- Policy enforcement
+- Vulnerability scanning
+- Compliance checking
+- Security contexts
+- Network isolation
+- Resource isolation
+- Data protection
+
+## Testing Requirements
+- Container tests
+- Integration tests
+- Security tests
+- Performance tests
+- Load tests
+- Network tests
+- Resource tests
+- Backup tests
+- Recovery tests
+- Scaling tests
+
+## Maintenance
+- Regular updates
+- Security patches
+- Performance tuning
+- Log rotation
+- Backup verification
+- Image cleanup
+- Network maintenance
+- Resource optimization
+- Configuration review
+- Compliance audits
+
+## Compatibility Matrix
+| Feature | Docker | Kubernetes | Compose |
+|---------|--------|------------|---------|
+| Multi-stage | ✅ | ✅ | ✅ |
+| Health Checks | ✅ | ✅ | ✅ |
+| Resource Limits | ✅ | ✅ | ✅ |
+| Security | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Docker | Kubernetes | Compose |
+|---------|--------|------------|---------|
+| 1.0.0   | ≥20.10.0 | ≥1.24.0 | ≥2.17.0 | 

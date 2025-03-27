@@ -1,0 +1,299 @@
+---
+description: Cursor Rules Index and Organization Standards
+version: 1.0.0
+globs: ["**/*.{ts,tsx,js,jsx,md,mdx}"]
+alwaysApply: true
+tags:
+  - index
+  - standards
+  - organization
+  - documentation
+---
+
+# Cursor Rules Index
+
+## Configuration
+```json
+{
+  "rules": {
+    "metadata": {
+      "requireDescription": true,
+      "requireVersion": true,
+      "requireGlobs": true,
+      "requireAlwaysApply": true
+    },
+    "inheritance": {
+      "validateExtends": true,
+      "checkCircularDependencies": true,
+      "enforceOrder": true
+    },
+    "validation": {
+      "lintMarkdown": true,
+      "checkLinks": true,
+      "validateExamples": true,
+      "enforceStructure": true
+    }
+  }
+}
+```
+
+## Metadata Standards
+All rules must include:
+```yaml
+---
+description: Clear description of the rule's purpose
+globs: Array of file patterns this rule applies to
+alwaysApply: Whether rule should always be applied
+---
+```
+
+## File Pattern Standards
+- TypeScript/React: `src/**/*.{ts,tsx}`
+- Documentation: `**/*.md`
+- Configuration: `*.config.{js,ts}`
+- Test files: `**/*.{test,spec}.{ts,tsx}`
+- Style files: `**/*.{css,scss}`
+
+## Directory Structure
+```
+.cursor/rules/
+├── core/
+│   ├── accessibility.mdc
+│   ├── analysis-process.mdc
+│   ├── code-style.mdc
+│   ├── error-handling.mdc
+│   └── performance.mdc
+├── development/
+│   ├── edge-computing.mdc
+│   ├── react-nextjs.mdc
+│   ├── server-components.mdc
+│   ├── typescript.mdc
+│   ├── virtual-dom.mdc
+│   └── web-assembly.mdc
+├── documentation/
+│   ├── base-documentation.mdc
+│   ├── component-driven/
+│   │   ├── index.mdc
+│   │   ├── chromatic.mdc
+│   │   └── storybook.mdc
+│   ├── examples/
+│   │   ├── index.mdc
+│   │   ├── patterns.mdc
+│   │   └── antipatterns.mdc
+│   └── testing-docs.mdc
+├── integrations/
+│   ├── ai/
+│   │   └── index.mdc
+│   └── analytics/
+│       └── index.mdc
+├── packages/
+│   ├── astro.mdc
+│   ├── base-performance.mdc
+│   ├── documentation.mdc
+│   ├── gsap.mdc
+│   └── pixi.mdc
+├── tooling/
+│   ├── build/
+│   │   └── build-tools.mdc
+│   ├── containers/
+│   │   └── index.mdc
+│   ├── environments/
+│   │   ├── development.mdc
+│   │   ├── production.mdc
+│   │   ├── staging.mdc
+│   │   └── testing.mdc
+│   ├── linting/
+│   │   ├── eslint.mdc
+│   │   └── prettier.mdc
+│   ├── package-management.mdc
+│   └── testing/
+│       └── base-testing.mdc
+└── _index.mdc
+```
+
+## Rule Categories
+
+### Core Rules
+- `core/accessibility.mdc`: Accessibility standards and WCAG compliance
+- `core/analysis-process.mdc`: Code review and quality assessment standards
+- `core/code-style.mdc`: Code style and formatting standards
+- `core/error-handling.mdc`: Error handling standards and patterns
+- `core/performance.mdc`: Performance optimization and monitoring
+
+### Development Rules
+- `development/edge-computing.mdc`: Edge computing standards and patterns
+- `development/react-nextjs.mdc`: React and Next.js patterns and best practices
+- `development/server-components.mdc`: Server Components patterns and best practices
+- `development/typescript.mdc`: TypeScript configuration and type safety
+- `development/virtual-dom.mdc`: Virtual DOM and React performance optimization
+- `development/web-assembly.mdc`: WebAssembly integration standards and patterns
+
+### Documentation Rules
+- `documentation/base-documentation.mdc`: Base documentation standards
+- `documentation/component-driven/index.mdc`: Component-driven documentation standards
+- `documentation/component-driven/chromatic.mdc`: Chromatic visual testing standards
+- `documentation/component-driven/storybook.mdc`: Storybook configuration standards
+- `documentation/examples/index.mdc`: Documentation examples and patterns
+- `documentation/examples/patterns.mdc`: Documentation patterns and best practices
+- `documentation/examples/antipatterns.mdc`: Documentation anti-patterns to avoid
+- `documentation/testing-docs.mdc`: Testing documentation standards
+
+### Integration Rules
+- `integrations/ai/index.mdc`: AI integration standards and patterns
+- `integrations/analytics/index.mdc`: Analytics integration standards
+
+### Package-Specific Rules
+- `packages/astro.mdc`: Astro framework configuration and patterns
+- `packages/base-performance.mdc`: Base performance and resource management
+- `packages/documentation.mdc`: Documentation standards and JSDoc rules
+- `packages/gsap.mdc`: GSAP animation standards and optimization
+- `packages/pixi.mdc`: Pixi.js rendering and performance standards
+
+### Tooling Rules
+- `tooling/build/build-tools.mdc`: Build configuration and optimization
+- `tooling/containers/index.mdc`: Container configuration standards
+- `tooling/environments/development.mdc`: Development environment configuration
+- `tooling/environments/production.mdc`: Production environment configuration
+- `tooling/environments/staging.mdc`: Staging environment configuration
+- `tooling/environments/testing.mdc`: Testing environment configuration
+- `tooling/linting/eslint.mdc`: ESLint configuration and code quality
+- `tooling/linting/prettier.mdc`: Prettier configuration and formatting
+- `tooling/package-management.mdc`: Dependency and version management
+- `tooling/testing/base-testing.mdc`: Testing standards and practices
+
+## Rule Application Order
+
+1. Core Rules (Foundation)
+   - code-style.mdc → Base coding standards
+   - accessibility.mdc → A11y requirements
+   - error-handling.mdc → Error handling patterns
+   - performance.mdc → Performance baselines
+   - analysis-process.mdc → Quality standards
+
+2. Development Rules (Implementation)
+   - typescript.mdc → Type system
+   - react-nextjs.mdc → Framework patterns
+   - server-components.mdc → Server-side patterns
+   - virtual-dom.mdc → Performance optimization
+   - edge-computing.mdc → Edge runtime patterns
+   - web-assembly.mdc → WASM integration
+
+3. Tooling Rules (Quality & Process)
+   - eslint.mdc → Code quality
+   - prettier.mdc → Formatting
+   - build-tools.mdc → Build process
+   - package-management.mdc → Dependencies
+   - base-testing.mdc → Testing standards
+
+4. Package Rules (Specific Implementation)
+   - Applied contextually based on file type
+   - Order: astro → gsap → pixi
+
+5. Documentation Rules (Documentation)
+   - base-documentation.mdc → Documentation standards
+   - testing-docs.mdc → Test documentation
+
+## Rule Inheritance
+
+### Core Inheritance
+- All rules inherit from `core/code-style.mdc`
+- UI rules inherit from `core/accessibility.mdc`
+- Performance-critical rules inherit from `core/performance.mdc`
+- Quality rules inherit from `core/analysis-process.mdc`
+- Error handling rules inherit from `core/error-handling.mdc`
+
+### Development Inheritance
+- Framework rules inherit from `development/typescript.mdc`
+- Component rules inherit from `development/react-nextjs.mdc`
+- Animation rules inherit from `development/virtual-dom.mdc`
+- Server-side rules inherit from `development/server-components.mdc`
+- Edge rules inherit from `development/edge-computing.mdc`
+- WASM rules inherit from `development/web-assembly.mdc`
+
+### Documentation Inheritance
+- All documentation inherits from `documentation/base-documentation.mdc`
+- Test documentation inherits from both `documentation/base-documentation.mdc` and `tooling/testing/base-testing.mdc`
+
+## Integration Standards
+
+### IDE Integration
+- VSCode extension support
+- IntelliJ IDEA support
+- Cursor editor integration
+- Language server protocol support
+
+### CI/CD Integration
+- GitHub Actions workflows
+- GitLab CI pipelines
+- Jenkins pipeline support
+- Automated validation
+
+### Tool Integration
+- ESLint plugin support
+- Prettier integration
+- TypeScript compiler integration
+- Test runner integration
+
+## Maintenance Guidelines
+
+### Version Control
+- Semantic versioning (MAJOR.MINOR.PATCH)
+- Breaking changes increment MAJOR
+- New features increment MINOR
+- Bug fixes increment PATCH
+
+### Review Cycle
+- Quarterly review of all rules
+- Monthly review of core rules
+- Weekly review of active development rules
+- Ad-hoc reviews for security updates
+
+### Deprecation Policy
+- Mark rules as deprecated before removal
+- 2 cycles notice before removal
+- Migration guides required
+- Archive deprecated rules
+
+### Documentation Requirements
+- All changes must be documented
+- Version history maintained
+- Migration guides for breaking changes
+- Updated examples required
+
+## Version History
+
+### 1.0.0
+- Initial consolidated release
+- Merged rules.mdc and _index.mdc
+- Standardized directory structure
+- Established inheritance patterns
+- Defined application order
+- Created maintenance guidelines 
+
+## Security Considerations
+- Access control for rules
+- Validation of rule content
+- Protection of sensitive patterns
+- Secure inheritance chains
+- Safe example validation
+- Protected configuration
+- Controlled rule updates
+- Secure documentation
+
+## Testing Requirements
+- Rule validation tests
+- Inheritance chain tests
+- Configuration validation
+- Example code testing
+- Documentation accuracy
+- Link validation
+- Structure verification
+- Integration testing
+
+## Compatibility Matrix
+| Feature | Rules v1.0 | Rules v0.9 | Rules v0.8 |
+|---------|------------|------------|------------|
+| Inheritance | ✅ | ✅ | ❌ |
+| Validation | ✅ | ❌ | ❌ |
+| Integration | ✅ | ❌ | ❌ |
+| Examples | ✅ | ✅ | ✅ | 

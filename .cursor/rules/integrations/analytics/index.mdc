@@ -1,0 +1,296 @@
+---
+description: Analytics Integration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/analytics/**/*.{ts,tsx}", "**/tracking/**/*.{ts,tsx}", "**/metrics/**/*.{ts,tsx}"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/security.mdc
+tags:
+  - analytics
+  - tracking
+  - metrics
+  - monitoring
+---
+
+# Analytics Integration Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Performance impact standards
+- Security (`core/security.mdc`): Data security guidelines
+- Error Handling (`core/error-handling.mdc`): Error tracking patterns
+- TypeScript (`development/typescript.mdc`): Type patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added analytics standards
+  - Implemented tracking patterns
+  - Added privacy guidelines
+  - Established metrics collection
+
+## Configuration
+```json
+{
+  "analytics": {
+    "tracking": {
+      "enabled": true,
+      "pageViews": true,
+      "events": true,
+      "performance": true,
+      "errors": true
+    },
+    "privacy": {
+      "gdpr": true,
+      "ccpa": true,
+      "consent": true,
+      "anonymization": true
+    },
+    "providers": {
+      "googleAnalytics": {
+        "enabled": true,
+        "id": "G-XXXXXXXXXX"
+      },
+      "mixpanel": {
+        "enabled": true,
+        "token": "XXXXXXXXXX"
+      },
+      "custom": {
+        "enabled": true,
+        "endpoint": "/api/analytics"
+      }
+    },
+    "monitoring": {
+      "realTime": true,
+      "batching": true,
+      "sampling": true,
+      "retention": "1y"
+    }
+  }
+}
+```
+
+## Core Requirements
+- Event tracking
+- Page tracking
+- User tracking
+- Error tracking
+- Performance tracking
+- Privacy compliance
+- Data collection
+- Data processing
+- Data storage
+- Data analysis
+- Reporting
+- Visualization
+- Integration
+- Security
+- Privacy
+- Compliance
+
+## Patterns and Examples
+```typescript
+// Analytics Provider Pattern
+interface AnalyticsProvider {
+  initialize(config: AnalyticsConfig): Promise<void>;
+  trackPage(data: PageData): Promise<void>;
+  trackEvent(data: EventData): Promise<void>;
+  trackError(data: ErrorData): Promise<void>;
+  trackPerformance(data: PerformanceData): Promise<void>;
+}
+
+// Analytics Service Pattern
+class AnalyticsService {
+  private providers: Map<string, AnalyticsProvider>;
+  private config: AnalyticsConfig;
+  private queue: AnalyticsEvent[];
+  private consent: ConsentManager;
+
+  constructor(config: AnalyticsConfig) {
+    this.providers = new Map();
+    this.config = config;
+    this.queue = [];
+    this.consent = new ConsentManager();
+  }
+
+  async initialize(): Promise<void> {
+    // Initialize consent management
+    await this.consent.initialize();
+
+    // Initialize providers
+    for (const [name, provider] of Object.entries(this.config.providers)) {
+      if (provider.enabled) {
+        const instance = this.createProvider(name);
+        await instance.initialize(provider);
+        this.providers.set(name, instance);
+      }
+    }
+
+    // Process queued events
+    await this.processQueue();
+  }
+
+  async trackPage(data: PageData): Promise<void> {
+    if (!this.consent.hasConsent('analytics')) {
+      return;
+    }
+
+    const event = {
+      type: 'page',
+      timestamp: new Date().toISOString(),
+      data: this.sanitizeData(data)
+    };
+
+    await this.processEvent(event);
+  }
+
+  async trackEvent(data: EventData): Promise<void> {
+    if (!this.consent.hasConsent('analytics')) {
+      return;
+    }
+
+    const event = {
+      type: 'event',
+      timestamp: new Date().toISOString(),
+      data: this.sanitizeData(data)
+    };
+
+    await this.processEvent(event);
+  }
+
+  private async processEvent(event: AnalyticsEvent): Promise<void> {
+    if (!this.isInitialized()) {
+      this.queue.push(event);
+      return;
+    }
+
+    for (const provider of this.providers.values()) {
+      try {
+        switch (event.type) {
+          case 'page':
+            await provider.trackPage(event.data);
+            break;
+          case 'event':
+            await provider.trackEvent(event.data);
+            break;
+          case 'error':
+            await provider.trackError(event.data);
+            break;
+          case 'performance':
+            await provider.trackPerformance(event.data);
+            break;
+        }
+      } catch (error) {
+        console.error(`Analytics error: ${error.message}`);
+      }
+    }
+  }
+
+  private sanitizeData<T>(data: T): T {
+    // Remove PII and sensitive data
+    return this.config.privacy.anonymization
+      ? this.anonymize(data)
+      : data;
+  }
+}
+
+// React Hook Pattern
+function useAnalytics() {
+  const analytics = useContext(AnalyticsContext);
+
+  const trackPage = useCallback((data: PageData) => {
+    analytics.trackPage({
+      ...data,
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      referrer: document.referrer
+    });
+  }, [analytics]);
+
+  const trackEvent = useCallback((data: EventData) => {
+    analytics.trackEvent({
+      ...data,
+      timestamp: new Date().toISOString(),
+      sessionId: getSessionId()
+    });
+  }, [analytics]);
+
+  return { trackPage, trackEvent };
+}
+```
+
+## Integration Standards
+- Provider integration:
+  - Google Analytics
+  - Mixpanel
+  - Custom analytics
+  - Error tracking
+- Framework integration:
+  - React integration
+  - Next.js integration
+  - Server components
+  - Client components
+- Privacy integration:
+  - Consent management
+  - Data anonymization
+  - Cookie handling
+  - Privacy policies
+- Monitoring integration:
+  - Real-time tracking
+  - Batch processing
+  - Error handling
+  - Performance impact
+
+## Security Considerations
+- Data encryption
+- PII handling
+- Data retention
+- Access control
+- Audit logging
+- Data privacy
+- GDPR compliance
+- CCPA compliance
+- Cookie consent
+- Data minimization
+- Data protection
+- Security headers
+- XSS prevention
+- CSRF protection
+- API security
+- Storage security
+
+## Testing Requirements
+- Unit tests
+- Integration tests
+- Privacy tests
+- Security tests
+- Performance tests
+- Load tests
+- Consent tests
+- Provider tests
+- Data tests
+- API tests
+
+## Maintenance
+- Regular updates
+- Provider updates
+- Privacy updates
+- Security updates
+- Performance monitoring
+- Data cleanup
+- Log rotation
+- Configuration review
+- Compliance audits
+- Documentation
+
+## Compatibility Matrix
+| Feature | Browser | Server | Mobile |
+|---------|---------|--------|---------|
+| Page Tracking | ✅ | ✅ | ✅ |
+| Event Tracking | ✅ | ✅ | ✅ |
+| Error Tracking | ✅ | ✅ | ✅ |
+| Performance | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | Browser | Framework |
+|---------|---------|---------|-----------|
+| 1.0.0   | ≥18.0.0 | Modern  | ≥0.34.0  | 

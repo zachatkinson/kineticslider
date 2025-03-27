@@ -1,0 +1,47 @@
+# TypeScript Configuration Rules
+
+## Base Configuration
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+## Type Checking
+- Enable strict mode
+- Use appropriate type checking
+- Implement proper type inference
+- Use appropriate type assertions
+- Handle type errors properly
+
+## Module Resolution
+- Use appropriate module resolution
+- Implement proper path aliases
+- Handle module imports properly
+- Use appropriate module formats
+- Implement proper module boundaries
+
+## Type Definitions
+- Use appropriate type definitions
+- Implement proper interfaces
+- Use appropriate type guards
+- Handle type narrowing properly
+- Use appropriate type utilities
+
+## Project Structure
+- Organize types appropriately
+- Use appropriate file extensions
+- Implement proper module boundaries
+- Use appropriate type exports
+- Handle type dependencies properly 

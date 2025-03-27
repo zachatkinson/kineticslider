@@ -1,0 +1,403 @@
+---
+description: Staging Environment Configuration Standards and Best Practices
+version: 1.0.0
+globs: ["**/staging/**/*", "**/.env.staging", "**/docker-compose.staging.yml"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/security.mdc
+  - tooling/environments/development.mdc
+tags:
+  - staging
+  - environment
+  - testing
+  - deployment
+---
+
+# Staging Environment Standards
+
+## Related Rules
+- Development (`tooling/environments/development.mdc`): Development environment patterns
+- Performance (`core/performance.mdc`): Staging performance standards
+- Security (`core/security.mdc`): Security guidelines for staging
+- Testing (`tooling/testing/base-testing.mdc`): Testing environment setup
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added staging environment standards
+  - Implemented testing configurations
+  - Added monitoring guidelines
+  - Established deployment patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Staging Environment Configuration Standards and Best Practices"
+  },
+  "options": {
+    "metrics": {
+      "availability": 99.9,
+      "latency": {
+        "p95": 300,
+        "p99": 800
+      },
+      "errorRate": {
+        "critical": 0.01,
+        "warning": 0.05
+      },
+      "resourceUsage": {
+        "cpu": {
+          "target": 70,
+          "limit": 85
+        },
+        "memory": {
+          "target": 75,
+          "limit": 90
+        },
+        "storage": {
+          "warning": 85,
+          "critical": 95
+        }
+      }
+    },
+    "patterns": {
+      "required": [
+        "deployment-automation",
+        "health-monitoring",
+        "load-balancing",
+        "auto-scaling",
+        "ssl-tls",
+        "authentication",
+        "data-seeding"
+      ],
+      "forbidden": [
+        "production-data",
+        "production-services",
+        "customer-data",
+        "billing-features"
+      ],
+      "deployment": {
+        "strategy": "blue-green",
+        "autoScaling": true,
+        "minInstances": 2,
+        "maxInstances": 4,
+        "healthCheck": {
+          "enabled": true,
+          "path": "/health",
+          "interval": "30s"
+        }
+      }
+    },
+    "integrations": {
+      "monitoring": {
+        "metrics": true,
+        "logging": true,
+        "tracing": true,
+        "alerting": {
+          "enabled": true,
+          "threshold": "warning"
+        }
+      },
+      "testing": {
+        "automation": true,
+        "smoke": true,
+        "performance": true,
+        "security": true
+      },
+      "data": {
+        "seeding": true,
+        "anonymization": true,
+        "backup": {
+          "enabled": true,
+          "frequency": "daily"
+        }
+      },
+      "ci": {
+        "automated": true,
+        "gated": true,
+        "reporting": true,
+        "notifications": true
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "ssl-tls",
+        "authentication",
+        "rate-limiting",
+        "ddos-protection",
+        "data-anonymization",
+        "access-control"
+      ],
+      "validations": [
+        "security-scanning",
+        "penetration-testing",
+        "access-control-testing"
+      ]
+    },
+    "testing": {
+      "configValidation": true,
+      "unitTestRequired": true,
+      "integrationTestRequired": true,
+      "e2eTestRequired": true
+    },
+    "maintenance": {
+      "updateFrequency": "weekly",
+      "deprecationPolicy": "semver",
+      "backwardCompatibility": "major"
+    },
+    "compatibility": {
+      "required": {
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0",
+        "os": {
+          "linux": ["ubuntu-20.04", "debian-11"],
+          "container": ["alpine-3.16"]
+        }
+      },
+      "optional": {
+        "cloud": {
+          "aws": ">=2.0.0",
+          "gcp": ">=2.0.0",
+          "azure": ">=2.0.0"
+        }
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Deployment automation
+- Health monitoring
+- Load balancing
+- Auto-scaling
+- SSL/TLS setup
+- Authentication
+- Authorization
+- Data seeding
+- Backup strategy
+- Monitoring setup
+- Logging system
+- Error tracking
+- Performance monitoring
+- Security scanning
+- Integration testing
+- Smoke testing
+
+## Patterns and Examples
+```typescript
+// Staging Deployment Pattern
+interface DeploymentConfig {
+  version: string;
+  environment: 'staging';
+  instances: number;
+  healthCheck: HealthCheckConfig;
+}
+
+class StagingDeployment {
+  private config: DeploymentConfig;
+  private services: Map<string, Service>;
+  private monitoring: MonitoringService;
+
+  constructor(config: DeploymentConfig) {
+    this.config = config;
+    this.services = new Map();
+    this.monitoring = new MonitoringService();
+  }
+
+  async deploy() {
+    // Validate deployment config
+    await this.validateConfig();
+    
+    // Start blue-green deployment
+    const deployment = await this.startBlueGreenDeployment();
+    
+    // Run smoke tests
+    await this.runSmokeTests(deployment);
+    
+    // Switch traffic if tests pass
+    if (deployment.smokeTests.success) {
+      await this.switchTraffic(deployment);
+    } else {
+      await this.rollback(deployment);
+    }
+  }
+
+  private async validateConfig() {
+    const validator = new ConfigValidator();
+    const result = await validator.validate(this.config);
+    
+    if (!result.valid) {
+      throw new Error(`Invalid config: ${result.errors.join(', ')}`);
+    }
+  }
+
+  private async startBlueGreenDeployment() {
+    const blueGreen = new BlueGreenDeployment({
+      version: this.config.version,
+      instances: this.config.instances,
+      healthCheck: this.config.healthCheck
+    });
+    
+    return await blueGreen.start();
+  }
+
+  private async runSmokeTests(deployment: Deployment) {
+    const smokeTest = new SmokeTestRunner();
+    deployment.smokeTests = await smokeTest.run({
+      url: deployment.url,
+      tests: ['health', 'critical-path', 'auth']
+    });
+  }
+
+  private async switchTraffic(deployment: Deployment) {
+    const loadBalancer = await LoadBalancer.getInstance();
+    await loadBalancer.switchTraffic({
+      from: deployment.currentVersion,
+      to: deployment.newVersion,
+      strategy: 'gradual'
+    });
+  }
+
+  private async rollback(deployment: Deployment) {
+    await deployment.rollback();
+    this.monitoring.alert({
+      level: 'error',
+      message: 'Deployment rollback due to failed smoke tests',
+      deployment: deployment.id
+    });
+  }
+}
+
+// Monitoring Pattern
+class StagingMonitoring {
+  private config: MonitoringConfig;
+  private metrics: MetricsService;
+  private logger: LoggingService;
+  private tracer: TracingService;
+
+  constructor(config: MonitoringConfig) {
+    this.config = config;
+    this.setupServices();
+  }
+
+  private setupServices() {
+    this.metrics = new MetricsService({
+      endpoint: this.config.metrics.endpoint,
+      interval: this.config.metrics.interval
+    });
+
+    this.logger = new LoggingService({
+      level: this.config.logging.level,
+      destination: this.config.logging.destination
+    });
+
+    this.tracer = new TracingService({
+      enabled: this.config.tracing.enabled,
+      sampler: this.config.tracing.sampler
+    });
+  }
+
+  async trackDeployment(deployment: Deployment) {
+    // Track deployment metrics
+    this.metrics.recordDeployment({
+      version: deployment.version,
+      timestamp: new Date(),
+      status: deployment.status
+    });
+
+    // Log deployment events
+    this.logger.info('Deployment started', {
+      deploymentId: deployment.id,
+      version: deployment.version
+    });
+
+    // Trace deployment process
+    const span = this.tracer.startSpan('deployment');
+    try {
+      await deployment.execute();
+      span.setStatus('success');
+    } catch (error) {
+      span.setStatus('error');
+      span.recordException(error);
+      throw error;
+    } finally {
+      span.end();
+    }
+  }
+}
+```
+
+## Integration Standards
+- CI/CD integration:
+  - Deployment pipeline
+  - Test automation
+  - Environment promotion
+  - Rollback procedures
+- Monitoring integration:
+  - Metrics collection
+  - Log aggregation
+  - Trace collection
+  - Alert management
+- Security integration:
+  - Vulnerability scanning
+  - Compliance checking
+  - Access control
+  - Audit logging
+- Testing integration:
+  - Automated testing
+  - Performance testing
+  - Security testing
+  - Integration testing
+
+## Security Considerations
+- SSL/TLS configuration
+- Authentication setup
+- Authorization rules
+- Data protection
+- Network security
+- Access control
+- Audit logging
+- Vulnerability scanning
+- DDoS protection
+- Rate limiting
+- Security headers
+- CORS policies
+
+## Testing Requirements
+- Smoke tests
+- Integration tests
+- Performance tests
+- Security tests
+- Load tests
+- API tests
+- E2E tests
+- Chaos tests
+
+## Maintenance
+- Regular updates
+- Security patches
+- Performance tuning
+- Log rotation
+- Backup verification
+- Certificate renewal
+- Dependency updates
+- Configuration review
+
+## Compatibility Matrix
+| Feature | Cloud | Container | Serverless |
+|---------|-------|-----------|------------|
+| Auto-scaling | ✅ | ✅ | ✅ |
+| Blue-Green | ✅ | ✅ | ✅ |
+| Monitoring | ✅ | ✅ | ✅ |
+| SSL/TLS | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0 | ≥0.34.0 | 

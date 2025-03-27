@@ -1,0 +1,294 @@
+---
+description: Code Style and Formatting Standards for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{ts,tsx,js,jsx,css,scss}", "**/.*rc", "**/.*config.{js,ts}"]
+alwaysApply: true
+extends: []
+tags:
+  - code-style
+  - formatting
+  - linting
+  - conventions
+---
+
+# Code Style Standards
+
+## Related Rules
+- TypeScript (`development/typescript.mdc`): Type system standards
+- ESLint (`tooling/linting/eslint.mdc`): Linting configuration
+- Prettier (`tooling/linting/prettier.mdc`): Formatting rules
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added TypeScript style guide
+  - Implemented naming conventions
+  - Added formatting standards
+  - Established file organization
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Code Style and Formatting Standards for Modern Web Applications"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "maxLineLength": 80,
+        "maxFileLength": 500,
+        "maxFunctionLength": 50,
+        "maxComplexity": 10,
+        "maxNesting": 3
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "named-exports",
+        "type-annotations",
+        "error-handling",
+        "async-await",
+        "proper-imports"
+      ],
+      "forbidden": [
+        "var-keyword",
+        "any-type",
+        "default-exports",
+        "nested-ternaries"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "format-on-save",
+          "lint-on-save",
+          "type-checking"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "eslint-check",
+          "prettier-check",
+          "type-check"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "style-validation",
+          "type-validation",
+          "import-validation"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "style-violations",
+          "complexity-metrics",
+          "type-errors"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "type-safety",
+        "input-validation",
+        "output-encoding"
+      ],
+      "validations": [
+        "no-eval",
+        "no-implied-eval",
+        "no-unsafe-assignment"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 90,
+      "requirements": [
+        "style-compliance",
+        "type-safety",
+        "import-organization"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "typescript": ">=4.0.0",
+        "eslint": ">=8.0.0",
+        "prettier": ">=2.0.0"
+      },
+      "optional": {
+        "stylelint": ">=14.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Follow naming conventions
+- Maintain consistent formatting
+- Organize imports properly
+- Use proper whitespace
+- Follow file structure
+- Implement comments
+- Use type annotations
+- Handle error cases
+- Document interfaces
+- Organize exports
+- Follow patterns
+- Use constants
+- Handle async
+- Manage state
+- Error handling
+
+## Patterns and Examples
+```typescript
+// File Organization Pattern
+import { type FC } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+import { type User } from '@/types';
+import { fetchUser } from '@/api';
+import { ErrorBoundary } from '@/components/error';
+
+// Constants
+const USER_QUERY_KEY = ['user'] as const;
+const RETRY_COUNT = 3;
+
+// Types
+interface Props {
+  userId: string;
+  onError?: (error: Error) => void;
+}
+
+// Component
+export const UserProfile: FC<Props> = ({ userId, onError }) => {
+  const { data: user, error } = useQuery<User>({
+    queryKey: USER_QUERY_KEY,
+    queryFn: () => fetchUser(userId),
+    retry: RETRY_COUNT,
+    onError
+  });
+
+  if (error) {
+    return <ErrorBoundary error={error} />;
+  }
+
+  return user ? <UserDetails user={user} /> : null;
+};
+
+// Utility Functions Pattern
+export function formatCurrency(
+  amount: number,
+  currency: string = 'USD'
+): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency
+  }).format(amount);
+}
+
+// Error Handling Pattern
+export async function safeJsonParse<T>(
+  json: string,
+  fallback: T
+): Promise<T> {
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+// Type Definition Pattern
+export interface ApiResponse<T> {
+  data: T;
+  meta: {
+    timestamp: string;
+    requestId: string;
+  };
+}
+
+export type ApiError = {
+  code: string;
+  message: string;
+  details?: unknown;
+};
+```
+
+## Integration Standards
+- IDE integration:
+  - Code formatting
+  - Syntax highlighting
+  - Error detection
+  - Type checking
+- Build integration:
+  - Linting rules
+  - Format checking
+  - Type checking
+  - Error detection
+- Testing integration:
+  - Code coverage
+  - Style checking
+  - Type validation
+  - Error handling
+- Monitoring integration:
+  - Error tracking
+  - Performance metrics
+  - Style violations
+  - Type errors
+
+## Security Considerations
+- Input validation
+- Output encoding
+- Type safety
+- Error handling
+- Data sanitization
+- Access control
+- Code injection
+- Secure defaults
+
+## Testing Requirements
+- Style compliance
+- Format validation
+- Type checking
+- Error handling
+- Pattern usage
+- Naming conventions
+- Import organization
+- Export validation
+
+## Maintenance
+- Regular audits
+- Style updates
+- Pattern reviews
+- Tool updates
+- Documentation
+- Training
+- Monitoring
+- Feedback
+
+## Compatibility Matrix
+| Feature | TypeScript | JavaScript | CSS |
+|---------|------------|------------|-----|
+| Formatting | ✅ | ✅ | ✅ |
+| Linting | ✅ | ✅ | ✅ |
+| Types | ✅ | ❌ | ❌ |
+| Patterns | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | TypeScript | ESLint | Prettier |
+|---------|------------|--------|----------|
+| 1.0.0   | ≥4.5.0    | ≥8.0.0 | ≥2.0.0  |

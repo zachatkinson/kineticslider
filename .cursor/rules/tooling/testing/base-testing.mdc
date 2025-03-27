@@ -1,0 +1,298 @@
+---
+description: Base Testing Standards and Requirements for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/vitest.config.ts", "**/jest.config.{js,ts}"]
+alwaysApply: true
+extends:
+  - core/error-handling.mdc
+  - documentation/testing-docs.mdc
+  - tooling/environments/testing.mdc
+tags:
+  - testing
+  - quality
+  - coverage
+  - automation
+---
+
+# Base Testing Standards
+
+## Related Rules
+- Error Handling (`core/error-handling.mdc`): Error handling patterns
+- Testing Docs (`documentation/testing-docs.mdc`): Testing documentation
+- Testing Environment (`tooling/environments/testing.mdc`): Environment setup
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added testing standards
+  - Implemented test patterns
+  - Added coverage requirements
+  - Established automation guidelines
+
+## Configuration
+```json
+{
+  "testing": {
+    "framework": "vitest",
+    "runner": {
+      "config": "vitest.config.ts",
+      "environment": "jsdom",
+      "setupFiles": ["src/test/setup.ts"],
+      "include": ["**/*.{test,spec}.{ts,tsx}"],
+      "exclude": ["**/node_modules/**", "**/dist/**"],
+      "coverage": {
+        "provider": "v8",
+        "reporter": ["text", "json", "html"],
+        "exclude": [
+          "**/*.d.ts",
+          "**/*.config.ts",
+          "**/index.ts"
+        ],
+        "thresholds": {
+          "branches": 80,
+          "functions": 80,
+          "lines": 80,
+          "statements": 80
+        }
+      }
+    },
+    "tools": {
+      "assertions": "@testing-library/jest-dom",
+      "rendering": "@testing-library/react",
+      "interaction": "@testing-library/user-event",
+      "mocking": "vitest",
+      "snapshot": "vitest"
+    },
+    "patterns": {
+      "naming": {
+        "test": "*.test.{ts,tsx}",
+        "spec": "*.spec.{ts,tsx}",
+        "fixture": "*.fixture.{ts,tsx}",
+        "mock": "__mocks__/*.{ts,tsx}"
+      },
+      "organization": {
+        "unit": "**/*.test.{ts,tsx}",
+        "integration": "**/*.spec.{ts,tsx}",
+        "e2e": "e2e/**/*.test.{ts,tsx}"
+      }
+    },
+    "ci": {
+      "enabled": true,
+      "command": "vitest run",
+      "coverage": true,
+      "artifact": true,
+      "parallel": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Unit testing
+- Integration testing
+- E2E testing
+- Component testing
+- API testing
+- Performance testing
+- Security testing
+- Accessibility testing
+- Coverage requirements
+- CI/CD integration
+
+## Testing Patterns
+```typescript
+// Component Test Pattern
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { expect, describe, it, vi } from 'vitest';
+import { MyComponent } from './MyComponent';
+
+describe('MyComponent', () => {
+  it('renders with default props', () => {
+    render(<MyComponent />);
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+
+  it('handles user interaction', async () => {
+    const user = userEvent.setup();
+    const onClickMock = vi.fn();
+
+    render(<MyComponent onClick={onClickMock} />);
+    const button = screen.getByRole('button');
+
+    await user.click(button);
+    expect(onClickMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('matches snapshot', () => {
+    const { container } = render(<MyComponent />);
+    expect(container).toMatchSnapshot();
+  });
+});
+
+// Hook Test Pattern
+import { renderHook, act } from '@testing-library/react';
+import { useCounter } from './useCounter';
+
+describe('useCounter', () => {
+  it('increments counter', () => {
+    const { result } = renderHook(() => useCounter());
+
+    act(() => {
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(1);
+  });
+});
+
+// API Test Pattern
+import { describe, it, expect, vi } from 'vitest';
+import { fetchData } from './api';
+
+vi.mock('./api', () => ({
+  fetchData: vi.fn()
+}));
+
+describe('API', () => {
+  it('handles successful response', async () => {
+    const mockData = { id: 1, name: 'Test' };
+    vi.mocked(fetchData).mockResolvedValueOnce(mockData);
+
+    const result = await fetchData(1);
+    expect(result).toEqual(mockData);
+  });
+
+  it('handles error response', async () => {
+    const error = new Error('API Error');
+    vi.mocked(fetchData).mockRejectedValueOnce(error);
+
+    await expect(fetchData(1)).rejects.toThrow('API Error');
+  });
+});
+
+// Integration Test Pattern
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { DataList } from './DataList';
+import { fetchData } from './api';
+
+vi.mock('./api');
+
+describe('DataList Integration', () => {
+  it('loads and displays data', async () => {
+    const mockData = [
+      { id: 1, name: 'Item 1' },
+      { id: 2, name: 'Item 2' }
+    ];
+    vi.mocked(fetchData).mockResolvedValueOnce(mockData);
+
+    render(<DataList />);
+    
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    
+    await waitFor(() => {
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.getByText('Item 2')).toBeInTheDocument();
+    });
+  });
+
+  it('handles error state', async () => {
+    vi.mocked(fetchData).mockRejectedValueOnce(new Error('Failed to fetch'));
+
+    render(<DataList />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Error: Failed to fetch')).toBeInTheDocument();
+    });
+  });
+});
+
+// E2E Test Pattern
+import { test, expect } from '@playwright/test';
+
+test('user flow', async ({ page }) => {
+  await page.goto('/');
+  
+  // Login
+  await page.fill('[name="email"]', 'user@example.com');
+  await page.fill('[name="password"]', 'password');
+  await page.click('button[type="submit"]');
+  
+  // Navigate
+  await page.click('nav >> text=Dashboard');
+  await expect(page).toHaveURL('/dashboard');
+  
+  // Interact
+  await page.click('button >> text=Create');
+  await page.fill('[name="title"]', 'New Item');
+  await page.click('button >> text=Save');
+  
+  // Verify
+  await expect(page.locator('text=New Item')).toBeVisible();
+});
+```
+
+## Integration Standards
+- IDE integration:
+  - Test runner
+  - Coverage view
+  - Debug support
+  - Quick fixes
+- Build integration:
+  - Pre-commit hooks
+  - CI/CD pipeline
+  - Coverage reports
+  - Test artifacts
+- Testing integration:
+  - Component testing
+  - API testing
+  - E2E testing
+  - Performance testing
+- Monitoring integration:
+  - Test metrics
+  - Coverage tracking
+  - Performance monitoring
+  - Error tracking
+
+## Security Considerations
+- Test data
+- Credentials
+- API keys
+- Environment vars
+- Sensitive info
+- Access control
+- Authentication
+- Authorization
+
+## Testing Requirements
+- Unit tests
+- Integration tests
+- E2E tests
+- Component tests
+- API tests
+- Performance tests
+- Security tests
+- Coverage tests
+
+## Maintenance
+- Regular updates
+- Test review
+- Coverage review
+- Performance review
+- Documentation
+- Training
+- Migration
+- Versioning
+
+## Compatibility Matrix
+| Feature | Vitest | Jest | Playwright |
+|---------|--------|------|------------|
+| Unit | ✅ | ✅ | ❌ |
+| Integration | ✅ | ✅ | ✅ |
+| E2E | ❌ | ❌ | ✅ |
+| Coverage | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | Vitest | TypeScript |
+|---------|---------|--------|------------|
+| 1.0.0   | ≥18.0.0 | ≥1.0.0 | ≥5.0.0 | 

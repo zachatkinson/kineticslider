@@ -1,0 +1,123 @@
+---
+description: Template for Cursor Rules
+version: 1.0.0
+globs: []
+alwaysApply: false
+extends: []
+tags: []
+---
+
+# Rule Title
+
+## Related Rules
+- List related rules with explanations
+
+## Version History
+- 1.0.0: Initial version
+  - Key changes
+  - Features added
+  - Standards implemented
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Rule description"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {}
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [],
+      "forbidden": []
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": []
+      },
+      "build": {
+        "enabled": true,
+        "features": []
+      },
+      "test": {
+        "enabled": true,
+        "features": []
+      },
+      "monitor": {
+        "enabled": true,
+        "features": []
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [],
+      "validations": []
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 80,
+      "requirements": []
+    },
+    "maintenance": {
+      "reviewPeriod": "quarterly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {},
+      "optional": {}
+    }
+  }
+}
+```
+
+## Core Requirements
+- List core requirements
+- Implementation standards
+- Required patterns
+
+## Patterns and Examples
+```typescript
+// Example patterns
+```
+
+## Integration Standards
+- IDE integration
+- Build integration
+- Testing integration
+- Monitoring integration
+
+## Security Considerations
+- Security requirements
+- Data handling
+- Access control
+- Validation
+
+## Testing Requirements
+- Unit testing
+- Integration testing
+- Performance testing
+- Security testing
+
+## Maintenance
+- Update procedures
+- Review requirements
+- Deprecation process
+- Migration guides
+
+## Compatibility Matrix
+| Feature | Component A | Component B | Component C |
+|---------|------------|-------------|-------------|
+| Feature 1 | ✅ | ✅ | ❌ |
+
+## Version Compatibility
+| Version | Dependency A | Dependency B | Dependency C |
+|---------|-------------|--------------|--------------|
+| 1.0.0   | ≥18.0.0    | ≥18.0.0     | ≥13.0.0     | 

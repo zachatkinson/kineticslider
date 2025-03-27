@@ -1,0 +1,370 @@
+---
+description: GSAP Animation Configuration Rules and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{ts,tsx,js,jsx}", "**/animations/**/*", "**/gsap/**/*", "**/motion/**/*"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - packages/base-performance.mdc
+tags:
+  - gsap
+  - animation
+  - motion
+  - performance
+---
+
+# GSAP Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Base performance standards
+- Base Performance (`packages/base-performance.mdc`): Core performance patterns
+- Pixi.js (`packages/pixi.mdc`): Canvas animation integration
+- Virtual DOM (`development/virtual-dom.mdc`): React animation patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added GSAP configuration standards
+  - Implemented animation optimization patterns
+  - Added timeline management guidelines
+  - Established performance best practices
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "GSAP Animation Configuration Rules and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "performance": {
+          "fps": {
+            "target": 60,
+            "minimum": 30
+          },
+          "memory": {
+            "heapLimit": 256,
+            "gcThreshold": 0.8
+          },
+          "animation": {
+            "duration": 500,
+            "batchSize": 250,
+            "sleepThreshold": 120
+          }
+        },
+        "timing": {
+          "tweenDuration": 500,
+          "staggerDelay": 50,
+          "scrollDebounce": 100
+        }
+      },
+      "patterns": {
+        "required": [
+          "timeline-management",
+          "tween-optimization",
+          "scroll-triggers",
+          "motion-paths",
+          "easing-functions",
+          "event-handling"
+        ],
+        "forbidden": [
+          "sync-animations",
+          "heavy-calculations",
+          "memory-leaks",
+          "forced-reflows"
+        ],
+        "defaults": {
+          "ease": "power2.out",
+          "duration": 0.5,
+          "overwrite": "auto",
+          "lazy": true
+        },
+        "optimization": {
+          "force3D": true,
+          "fastMode": true,
+          "batchMax": 250,
+          "autoSleep": 120
+        }
+      },
+      "integrations": {
+        "performance": {
+          "clearProps": true,
+          "autoRound": true,
+          "smoothOrigin": true,
+          "autoKill": true
+        },
+        "monitoring": {
+          "fps": true,
+          "memory": true,
+          "timeline": true,
+          "profiling": true
+        },
+        "plugins": {
+          "scrollTrigger": true,
+          "motionPath": true,
+          "morphSVG": true,
+          "drawSVG": true
+        },
+        "frameworks": {
+          "react": true,
+          "vue": true,
+          "svelte": true,
+          "webComponents": true
+        }
+      },
+      "security": {
+        "sanitization": true,
+        "xssProtection": true,
+        "cssValidation": true,
+        "transformValidation": true,
+        "eventSafety": true,
+        "memoryProtection": true,
+        "domSafety": true,
+        "svgSafety": true
+      },
+      "testing": {
+        "animationTestRequired": true,
+        "performanceTestRequired": true,
+        "timelineTestRequired": true,
+        "scrollTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "weekly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "gsap": ">=3.12.0",
+        "scrollTrigger": ">=3.12.0",
+        "browsers": {
+          "chrome": ">=90",
+          "firefox": ">=90",
+          "safari": ">=15",
+          "edge": ">=90"
+        },
+        "frameworks": {
+          "react": ">=18.0.0",
+          "vue": ">=3.0.0",
+          "svelte": ">=4.0.0"
+        }
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Timeline management
+- Tween optimization
+- Animation sequencing
+- Scroll triggers
+- Motion paths
+- Easing functions
+- Plugin system
+- Event handling
+- Memory management
+- Performance monitoring
+- State management
+- Error handling
+- Type safety
+- Best practices
+- Documentation
+
+## Patterns and Examples
+```typescript
+// Animation Controller Pattern
+interface AnimationConfig {
+  target: string | Element;
+  duration: number;
+  ease: string;
+  delay?: number;
+}
+
+class AnimationController {
+  private timelines: Map<string, gsap.core.Timeline>;
+  private defaults: gsap.TweenVars;
+
+  constructor(defaults: gsap.TweenVars = {}) {
+    this.timelines = new Map();
+    this.defaults = {
+      ease: 'power2.out',
+      duration: 0.5,
+      ...defaults
+    };
+  }
+
+  createTimeline(id: string): gsap.core.Timeline {
+    const timeline = gsap.timeline({
+      paused: true,
+      smoothChildTiming: true,
+      autoRemoveChildren: true
+    });
+    this.timelines.set(id, timeline);
+    return timeline;
+  }
+
+  animate(config: AnimationConfig): gsap.core.Tween {
+    return gsap.to(config.target, {
+      ...this.defaults,
+      ...config,
+      onComplete: () => {
+        gsap.set(config.target, { clearProps: 'all' });
+      }
+    });
+  }
+
+  killAnimation(id: string): void {
+    const timeline = this.timelines.get(id);
+    if (timeline) {
+      timeline.kill();
+      this.timelines.delete(id);
+    }
+  }
+}
+
+// Scroll Trigger Pattern
+class ScrollAnimationManager {
+  private triggers: Map<string, ScrollTrigger> = new Map();
+
+  createTrigger(
+    id: string,
+    element: string | Element,
+    animation: gsap.core.Animation
+  ): ScrollTrigger {
+    const trigger = ScrollTrigger.create({
+      trigger: element,
+      animation,
+      start: 'top center',
+      end: 'bottom center',
+      toggleActions: 'play pause resume reset'
+    });
+    
+    this.triggers.set(id, trigger);
+    return trigger;
+  }
+
+  updateTrigger(
+    id: string,
+    config: Partial<ScrollTrigger.Vars>
+  ): void {
+    const trigger = this.triggers.get(id);
+    if (trigger) {
+      trigger.vars = { ...trigger.vars, ...config };
+      trigger.refresh();
+    }
+  }
+
+  killTrigger(id: string): void {
+    const trigger = this.triggers.get(id);
+    if (trigger) {
+      trigger.kill();
+      this.triggers.delete(id);
+    }
+  }
+}
+
+// Performance Optimization Pattern
+class AnimationOptimizer {
+  private batchSize: number;
+  private queue: Array<() => void>;
+  private isProcessing: boolean;
+
+  constructor(batchSize: number = 100) {
+    this.batchSize = batchSize;
+    this.queue = [];
+    this.isProcessing = false;
+  }
+
+  addToQueue(animation: () => void): void {
+    this.queue.push(animation);
+    if (!this.isProcessing) {
+      this.processQueue();
+    }
+  }
+
+  private async processQueue(): Promise<void> {
+    this.isProcessing = true;
+    
+    while (this.queue.length > 0) {
+      const batch = this.queue.splice(0, this.batchSize);
+      await new Promise(resolve => {
+        gsap.to({}, {
+          duration: 0,
+          onComplete: () => {
+            batch.forEach(animation => animation());
+            resolve(undefined);
+          }
+        });
+      });
+    }
+    
+    this.isProcessing = false;
+  }
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - Timeline preview
+  - Animation debugging
+  - Performance profiling
+  - Memory monitoring
+- Build integration:
+  - Tree shaking
+  - Plugin loading
+  - Bundle analysis
+  - Code splitting
+- Testing integration:
+  - Visual regression
+  - Performance tests
+  - Memory tests
+  - Timeline tests
+- Monitoring integration:
+  - FPS tracking
+  - Memory usage
+  - Timeline stats
+  - Event tracking
+
+## Security Considerations
+- DOM sanitization
+- Event validation
+- Memory limits
+- Input handling
+- Plugin safety
+- Cross-origin
+- Script loading
+- Error handling
+
+## Testing Requirements
+- Visual tests
+- Performance tests
+- Memory tests
+- Timeline tests
+- Event tests
+- Plugin tests
+- Integration tests
+- Regression tests
+
+## Maintenance
+- Regular updates
+- Performance monitoring
+- Memory profiling
+- Timeline optimization
+- Documentation
+- Training
+- Reviews
+- Optimization
+
+## Compatibility Matrix
+| Feature | Modern | Legacy | Mobile |
+|---------|---------|---------|---------|
+| Transform | ✅ | ✅ | ✅ |
+| SVG | ✅ | ✅ | ✅ |
+| 3D | ✅ | ❌ | ✅ |
+| ScrollTrigger | ✅ | ❌ | ✅ |
+
+## Version Compatibility
+| Version | GSAP | ScrollTrigger | Browser |
+|---------|------|---------------|---------|
+| 1.0.0   | ≥3.12.0 | ≥3.12.0 | Modern | 

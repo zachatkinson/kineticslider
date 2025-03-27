@@ -1,0 +1,397 @@
+---
+description: React Server Components patterns and best practices for modern web applications
+version: 1.0.0
+globs: ["**/app/**/*.{tsx,jsx}", "**/components/**/*.server.{tsx,jsx}"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/error-handling.mdc
+  - development/typescript.mdc
+  - development/react-nextjs.mdc
+tags:
+  - react
+  - server-components
+  - performance
+  - streaming
+---
+
+# React Server Components Standards
+
+## Related Rules
+- Error Handling (`core/error-handling.mdc`): Base error patterns and monitoring
+- Performance (`core/performance.mdc`): Performance optimization standards
+- React/Next.js (`development/react-nextjs.mdc`): Framework integration
+- Edge Computing (`development/edge-computing.mdc`): Edge runtime patterns
+- TypeScript (`development/typescript.mdc`): Type safety standards
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added Server Components patterns
+  - Integrated streaming strategies
+  - Added data fetching standards
+  - Implemented error handling patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "React Server Components patterns and best practices for modern web applications",
+    "options": {
+      "metrics": {
+        "streamingLatency": 100,
+        "suspenseTimeout": 3000,
+        "revalidateInterval": 3600,
+        "bufferSize": 16384,
+        "bundleSize": {
+          "server": 100000,
+          "client": 50000
+        },
+        "coverage": {
+          "server": 90,
+          "client": 85,
+          "integration": 80
+        }
+      },
+      "patterns": {
+        "required": [
+          "server-first",
+          "streaming-support",
+          "suspense-boundaries",
+          "error-boundaries",
+          "proper-hydration",
+          "state-transitions"
+        ],
+        "forbidden": [
+          "client-only-default",
+          "direct-dom-manipulation",
+          "client-side-routing",
+          "unsafe-hydration"
+        ],
+        "streaming": {
+          "enabled": true,
+          "bufferSize": "16kb",
+          "suspenseTimeout": 3000,
+          "errorBoundary": {
+            "extends": "core/error-handling.mdc#ErrorBoundary",
+            "streaming": true
+          }
+        },
+        "caching": {
+          "revalidate": 3600,
+          "tags": true,
+          "staleWhileRevalidate": true,
+          "edge": {
+            "extends": "development/edge-computing.mdc#caching"
+          }
+        },
+        "bundling": {
+          "serverOnly": true,
+          "clientBoundary": "use client",
+          "serverBoundary": "use server"
+        }
+      },
+      "integrations": {
+        "ide": {
+          "serverBoundaryDetection": true,
+          "clientBoundaryDetection": true,
+          "streamingSupport": true,
+          "suspenseHints": true
+        },
+        "build": {
+          "serverBundling": true,
+          "clientBundling": true,
+          "treeSplitting": true,
+          "edgeOptimization": true
+        },
+        "test": {
+          "serverTests": true,
+          "clientTests": true,
+          "streamingTests": true,
+          "hydrationTests": true
+        },
+        "monitor": {
+          "streamingMetrics": true,
+          "suspenseMetrics": true,
+          "hydrationMetrics": true,
+          "errorTracking": true
+        }
+      },
+      "security": {
+        "xssProtection": true,
+        "csrfPrevention": true,
+        "inputSanitization": true,
+        "outputEncoding": true,
+        "serverActionValidation": true
+      },
+      "testing": {
+        "serverTestRequired": true,
+        "clientTestRequired": true,
+        "streamingTestRequired": true,
+        "hydrationTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "monthly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "react": ">=18.0.0",
+        "nextjs": ">=14.0.0",
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Use Server Components by default
+- Implement proper streaming
+- Handle Suspense boundaries
+- Manage data fetching
+- Handle error scenarios
+- Implement proper caching
+- Manage client boundaries
+- Handle server actions
+- Implement proper hydration
+- Manage state transitions
+
+## Component Patterns
+```typescript
+// Server Component Pattern
+async function ServerComponent({ id }: { id: string }) {
+  const errorHandler = new ErrorHandler(logger, monitor);
+  
+  const data = await errorHandler.handle(
+    () => fetchData(id),
+    { componentId: id }
+  );
+  
+  return (
+    <ErrorBoundary
+      fallback={<ErrorFallback />}
+      onError={(error) => logger.error(error)}
+    >
+      <Suspense fallback={<Loading />}>
+        <ClientComponent data={data} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+// Client Component Pattern
+'use client';
+
+function ClientComponent({ data }: { data: Data }) {
+  const [state, setState] = useState(data);
+  
+  return (
+    // Interactive UI elements
+  );
+}
+
+// Server Action Pattern
+async function submitAction(formData: FormData) {
+  'use server';
+  
+  const errorHandler = new ErrorHandler(logger, monitor);
+  
+  return errorHandler.handle(
+    () => processData(formData),
+    { action: 'submit' }
+  );
+}
+```
+
+## Streaming Strategies
+```typescript
+// Streaming Component Pattern
+async function StreamingComponent() {
+  const errorHandler = new ErrorHandler(logger, monitor);
+  
+  return (
+    <Suspense fallback={<Loading />}>
+      {await errorHandler.handle(
+        async () => {
+          const data = await fetchWithTimeout();
+          return <DataDisplay data={data} />;
+        },
+        { component: 'StreamingComponent' }
+      )}
+    </Suspense>
+  );
+}
+
+// Progressive Loading Pattern
+function ProgressiveComponent() {
+  return (
+    <>
+      <Suspense fallback={<HeaderSkeleton />}>
+        <Header />
+      </Suspense>
+      <Suspense fallback={<ContentSkeleton />}>
+        <MainContent />
+      </Suspense>
+      <Suspense fallback={<FooterSkeleton />}>
+        <Footer />
+      </Suspense>
+    </>
+  );
+}
+```
+
+## Data Fetching Patterns
+```typescript
+// Parallel Data Fetching
+async function ParallelFetch() {
+  const errorHandler = new ErrorHandler(logger, monitor);
+  
+  const [users, posts] = await Promise.all([
+    errorHandler.handle(
+      () => getUsers(),
+      { fetch: 'users' }
+    ),
+    errorHandler.handle(
+      () => getPosts(),
+      { fetch: 'posts' }
+    )
+  ]);
+
+  return (
+    <>
+      <UserList users={users} />
+      <PostList posts={posts} />
+    </>
+  );
+}
+
+// Sequential Data Fetching
+async function SequentialFetch() {
+  const errorHandler = new ErrorHandler(logger, monitor);
+  
+  const user = await errorHandler.handle(
+    () => getUser(),
+    { fetch: 'user' }
+  );
+  
+  const posts = await errorHandler.handle(
+    () => getUserPosts(user.id),
+    { fetch: 'userPosts', userId: user.id }
+  );
+
+  return (
+    <UserPosts user={user} posts={posts} />
+  );
+}
+
+// Streaming Data Fetching
+async function StreamingFetch() {
+  const promise = withRetry(
+    () => getSlowData(),
+    {
+      maxAttempts: 3,
+      backoffMs: 1000,
+      timeout: 5000
+    }
+  );
+
+  return (
+    <Suspense fallback={<Loading />}>
+      <AsyncComponent promise={promise} />
+    </Suspense>
+  );
+}
+```
+
+## Performance Optimization
+- Use proper streaming
+- Implement caching
+- Handle revalidation
+- Manage bundle size
+- Control hydration
+- Implement prefetching
+- Handle code splitting
+- Manage resource loading
+- Control render timing
+- Implement preloading
+
+## Integration Standards
+- IDE integration:
+  - Component highlighting
+  - Server/client boundary detection
+  - Code actions for server components
+  - Streaming diagnostics
+- Build integration:
+  - Server component bundling
+  - Client component chunking
+  - Tree shaking optimization
+  - Source map generation
+- Testing integration:
+  - Server component testing
+  - Streaming simulation
+  - Error boundary testing
+  - Performance benchmarking
+- Monitoring integration:
+  - Server timing metrics
+  - Client hydration tracking
+  - Error monitoring
+  - Performance analytics
+
+## Security Considerations
+- Data sanitization
+- Input validation
+- Access control
+- Rate limiting
+- Error handling
+- Sensitive data
+- Authentication
+- Authorization
+
+## Testing Requirements
+- Server component tests
+- Client component tests
+- Integration tests
+- Streaming tests
+- Error boundary tests
+- Performance tests
+- Security tests
+- E2E tests
+
+## Maintenance
+- Regular updates
+- Performance monitoring
+- Security patches
+- Dependency updates
+- Documentation updates
+- Pattern updates
+- Migration guides
+- Version compatibility
+
+## Compatibility Matrix
+| Feature | Server Components | Client Components | Edge Runtime |
+|---------|------------------|-------------------|--------------|
+| Streaming | ✅ | ❌ | ✅ |
+| Data Fetch | ✅ | ✅ | ✅ |
+| State | ❌ | ✅ | ❌ |
+| Effects | ❌ | ✅ | ❌ |
+| Actions | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | React | Next.js |
+|---------|---------|-------|---------|
+| 1.0.0   | ≥18.0.0 | ≥18.0.0 | ≥13.0.0 |
+
+## Migration Guide
+### From Client Components
+1. Convert components to Server Components
+2. Implement proper data fetching
+3. Add streaming support
+4. Configure error handling
+5. Implement caching
+6. Update client boundaries
+7. Add server actions
+8. Verify performance 

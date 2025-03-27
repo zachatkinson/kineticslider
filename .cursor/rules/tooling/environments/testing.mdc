@@ -1,0 +1,464 @@
+---
+description: Testing Environment Configuration Standards and Best Practices
+version: 1.0.0
+globs: ["**/test/**/*", "**/.env.test", "**/docker-compose.test.yml"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/security.mdc
+  - tooling/testing/base-testing.mdc
+tags:
+  - testing
+  - environment
+  - quality
+  - automation
+---
+
+# Testing Environment Standards
+
+## Related Rules
+- Base Testing (`tooling/testing/base-testing.mdc`): Base testing standards
+- Performance (`core/performance.mdc`): Testing performance standards
+- Security (`core/security.mdc`): Security guidelines for testing
+- Development (`tooling/environments/development.mdc`): Development environment setup
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added testing environment standards
+  - Implemented test automation configurations
+  - Added test data management guidelines
+  - Established test coverage requirements
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Testing Environment Configuration Standards and Best Practices",
+    "options": {
+      "metrics": {
+        "coverage": {
+          "statements": 80,
+          "branches": 75,
+          "functions": 80,
+          "lines": 80
+        },
+        "performance": {
+          "testTimeout": 30000,
+          "setupTime": 5000,
+          "teardownTime": 3000
+        },
+        "reliability": {
+          "flakeRate": 0.01,
+          "retryLimit": 2,
+          "successRate": 0.99
+        },
+        "resourceUsage": {
+          "maxWorkers": 4,
+          "memoryLimit": 2048,
+          "diskSpace": 5120
+        }
+      },
+      "patterns": {
+        "required": [
+          "test-isolation",
+          "data-cleanup",
+          "error-handling",
+          "mock-services",
+          "coverage-reporting",
+          "performance-monitoring"
+        ],
+        "forbidden": [
+          "shared-state",
+          "production-services",
+          "real-apis",
+          "persistent-data"
+        ],
+        "automation": {
+          "enabled": true,
+          "parallel": true,
+          "maxWorkers": 4,
+          "retries": 2,
+          "timeout": "30s",
+          "watch": true
+        }
+      },
+      "integrations": {
+        "environments": {
+          "unit": {
+            "type": "isolated",
+            "mocks": true,
+            "coverage": true
+          },
+          "integration": {
+            "type": "containerized",
+            "services": ["database", "cache", "queue"],
+            "networkIsolation": true
+          },
+          "e2e": {
+            "type": "ephemeral",
+            "browser": true,
+            "api": true,
+            "cleanup": true
+          }
+        },
+        "data": {
+          "seeding": {
+            "enabled": true,
+            "strategy": "factory",
+            "cleanup": true
+          },
+          "mocking": {
+            "enabled": true,
+            "type": "typescript",
+            "strict": true
+          },
+          "fixtures": {
+            "enabled": true,
+            "format": "json",
+            "versioning": true
+          }
+        },
+        "reporting": {
+          "formats": ["html", "json", "junit"],
+          "artifacts": {
+            "screenshots": true,
+            "video": true,
+            "console": true
+          }
+        },
+        "ci": {
+          "enabled": true,
+          "caching": true,
+          "artifacts": true,
+          "matrix": {
+            "os": ["ubuntu-latest", "macos-latest"],
+            "node": ["18.x", "20.x"]
+          }
+        }
+      },
+      "security": {
+        "dataIsolation": true,
+        "networkIsolation": true,
+        "secretsHandling": true,
+        "sanitization": true,
+        "accessControl": true
+      },
+      "testing": {
+        "unitTestRequired": true,
+        "integrationTestRequired": true,
+        "e2eTestRequired": true,
+        "coverageRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "weekly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "node": ">=18.0.0",
+        "typescript": ">=5.0.0",
+        "jest": ">=29.0.0",
+        "cypress": ">=12.0.0",
+        "playwright": ">=1.30.0",
+        "docker": ">=20.10.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Automated testing setup
+- Test environment isolation
+- Test data management
+- Mock data handling
+- Coverage reporting
+- Performance testing
+- Security testing
+- Integration testing
+- E2E testing
+- CI/CD integration
+- Test reporting
+- Test monitoring
+- Error tracking
+- Test debugging
+- Test maintenance
+
+## Patterns and Examples
+```typescript
+// Test Environment Pattern
+interface TestEnvironmentConfig {
+  type: 'unit' | 'integration' | 'e2e';
+  options: TestOptions;
+  coverage: CoverageConfig;
+}
+
+class TestEnvironment {
+  private config: TestEnvironmentConfig;
+  private services: Map<string, TestService>;
+  private coverage: CoverageReporter;
+
+  constructor(config: TestEnvironmentConfig) {
+    this.config = config;
+    this.services = new Map();
+    this.coverage = new CoverageReporter(config.coverage);
+  }
+
+  async setup() {
+    // Set up test environment
+    await this.setupEnvironment();
+    
+    // Initialize test services
+    await this.initializeServices();
+    
+    // Set up test data
+    await this.setupTestData();
+    
+    // Start coverage tracking
+    await this.coverage.start();
+  }
+
+  private async setupEnvironment() {
+    const env = new TestEnvironmentSetup(this.config);
+    await env.initialize();
+
+    if (this.config.type === 'integration') {
+      await this.setupContainers();
+    } else if (this.config.type === 'e2e') {
+      await this.setupBrowser();
+    }
+  }
+
+  private async setupContainers() {
+    const docker = new DockerCompose();
+    await docker.up({
+      file: 'docker-compose.test.yml',
+      services: ['database', 'cache', 'queue'],
+      waitFor: {
+        database: 'ready',
+        cache: 'accepting_connections'
+      }
+    });
+  }
+
+  private async setupBrowser() {
+    const browser = new TestBrowser();
+    await browser.launch({
+      headless: true,
+      screenshots: true,
+      video: true
+    });
+  }
+
+  private async initializeServices() {
+    // Initialize test database
+    this.services.set('database', new TestDatabase({
+      type: 'postgres',
+      migrations: true,
+      seeds: true
+    }));
+
+    // Initialize test cache
+    this.services.set('cache', new TestCache({
+      type: 'redis',
+      flushOnStart: true
+    }));
+
+    // Initialize test queue
+    this.services.set('queue', new TestQueue({
+      type: 'rabbitmq',
+      purgeOnStart: true
+    }));
+  }
+
+  private async setupTestData() {
+    const dataManager = new TestDataManager();
+    
+    // Load fixtures
+    await dataManager.loadFixtures({
+      path: './test/fixtures',
+      format: 'json'
+    });
+
+    // Set up factories
+    await dataManager.setupFactories({
+      path: './test/factories',
+      type: 'typescript'
+    });
+  }
+
+  async teardown() {
+    // Generate coverage report
+    await this.coverage.generateReport();
+
+    // Clean up test data
+    await this.cleanupTestData();
+
+    // Stop services
+    await this.stopServices();
+
+    // Clean up environment
+    await this.cleanupEnvironment();
+  }
+
+  private async cleanupTestData() {
+    const cleanup = new TestCleanup();
+    await cleanup.run({
+      database: true,
+      cache: true,
+      queue: true,
+      files: true
+    });
+  }
+
+  private async stopServices() {
+    for (const [name, service] of this.services) {
+      await service.stop();
+    }
+  }
+
+  private async cleanupEnvironment() {
+    if (this.config.type === 'integration') {
+      await this.cleanupContainers();
+    } else if (this.config.type === 'e2e') {
+      await this.cleanupBrowser();
+    }
+  }
+}
+
+// Test Data Management Pattern
+class TestDataManager {
+  private factories: Map<string, DataFactory>;
+  private fixtures: Map<string, any>;
+
+  constructor() {
+    this.factories = new Map();
+    this.fixtures = new Map();
+  }
+
+  async createFactory<T>(name: string, factory: Factory<T>) {
+    this.factories.set(name, new DataFactory(factory));
+  }
+
+  async create<T>(factoryName: string, overrides?: Partial<T>): Promise<T> {
+    const factory = this.factories.get(factoryName);
+    if (!factory) {
+      throw new Error(`Factory ${factoryName} not found`);
+    }
+    return factory.create(overrides);
+  }
+
+  async createMany<T>(
+    factoryName: string,
+    count: number,
+    overrides?: Partial<T>
+  ): Promise<T[]> {
+    const factory = this.factories.get(factoryName);
+    if (!factory) {
+      throw new Error(`Factory ${factoryName} not found`);
+    }
+    return factory.createMany(count, overrides);
+  }
+
+  async loadFixture(name: string, data: any) {
+    this.fixtures.set(name, data);
+    await this.persistFixture(name, data);
+  }
+
+  private async persistFixture(name: string, data: any) {
+    const persister = new FixturePersister();
+    await persister.persist(name, data);
+  }
+
+  async cleanup() {
+    // Clean up created data
+    await this.cleanupFactoryData();
+    
+    // Clean up fixtures
+    await this.cleanupFixtures();
+  }
+
+  private async cleanupFactoryData() {
+    for (const factory of this.factories.values()) {
+      await factory.cleanup();
+    }
+  }
+
+  private async cleanupFixtures() {
+    const persister = new FixturePersister();
+    await persister.cleanup();
+  }
+}
+```
+
+## Integration Standards
+- CI/CD integration:
+  - Test automation
+  - Test parallelization
+  - Test reporting
+  - Coverage reporting
+- Monitoring integration:
+  - Test metrics
+  - Performance metrics
+  - Coverage metrics
+  - Error tracking
+- Development integration:
+  - IDE integration
+  - Debug support
+  - Watch mode
+  - Hot reload
+- Infrastructure integration:
+  - Container orchestration
+  - Database management
+  - Cache management
+  - Queue management
+
+## Security Considerations
+- Test data security
+- Credential management
+- Environment isolation
+- Network security
+- Access control
+- Secrets handling
+- Vulnerability testing
+- Security scanning
+- Compliance testing
+
+## Testing Requirements
+- Unit tests
+- Integration tests
+- E2E tests
+- Performance tests
+- Security tests
+- API tests
+- UI tests
+- Snapshot tests
+- Coverage tests
+- Smoke tests
+
+## Maintenance
+- Regular updates
+- Test cleanup
+- Data cleanup
+- Environment cleanup
+- Dependency updates
+- Configuration review
+- Coverage monitoring
+- Performance monitoring
+- Error monitoring
+
+## Compatibility Matrix
+| Feature | Unit | Integration | E2E |
+|---------|------|-------------|-----|
+| Isolation | ✅ | ✅ | ✅ |
+| Mocking | ✅ | ⚠️ | ❌ |
+| Coverage | ✅ | ✅ | ⚠️ |
+| Parallel | ✅ | ✅ | ⚠️ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0 | ≥0.34.0 | 

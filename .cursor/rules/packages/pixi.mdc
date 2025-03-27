@@ -1,0 +1,338 @@
+---
+description: Pixi.js Configuration Rules and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{ts,tsx}", "**/pixi/**/*", "**/graphics/**/*", "**/game/**/*"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - packages/base-performance.mdc
+tags:
+  - pixi
+  - graphics
+  - webgl
+  - canvas
+---
+
+# Pixi.js Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Core performance patterns
+- Base Performance (`packages/base-performance.mdc`): Base performance patterns
+- TypeScript (`development/typescript.mdc`): Type patterns
+- WebAssembly (`development/web-assembly.mdc`): WASM integration
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added Pixi.js standards
+  - Implemented graphics patterns
+  - Added optimization guidelines
+  - Established rendering patterns
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "Pixi.js Configuration Rules and Best Practices for Modern Web Applications",
+    "options": {
+      "metrics": {
+        "performance": {
+          "fps": {
+            "target": 60,
+            "minimum": 30
+          },
+          "memory": {
+            "heapLimit": 512,
+            "textureLimit": 2048
+          },
+          "rendering": {
+            "drawCalls": 100,
+            "sprites": 1000,
+            "particles": 5000
+          }
+        },
+        "assets": {
+          "loadTime": 5000,
+          "textureSize": 2048,
+          "batchSize": 100,
+          "cacheSize": 256
+        }
+      },
+      "patterns": {
+        "required": [
+          "webgl-rendering",
+          "sprite-management",
+          "texture-management",
+          "batch-rendering",
+          "asset-loading",
+          "event-handling"
+        ],
+        "forbidden": [
+          "canvas-fallback",
+          "memory-leaks",
+          "sync-loading",
+          "unbatched-sprites"
+        ],
+        "renderer": {
+          "type": "webgl",
+          "antialias": true,
+          "transparent": false,
+          "resolution": 1
+        },
+        "optimization": {
+          "batchRendering": true,
+          "cacheAsBitmap": true,
+          "culling": true,
+          "compression": true
+        }
+      },
+      "integrations": {
+        "assets": {
+          "preload": true,
+          "caching": true,
+          "compression": true,
+          "streaming": true
+        },
+        "performance": {
+          "monitoring": true,
+          "profiling": true,
+          "debugging": true,
+          "stats": true
+        },
+        "frameworks": {
+          "react": true,
+          "vue": true,
+          "svelte": true,
+          "webComponents": true
+        },
+        "tools": {
+          "webpack": true,
+          "vite": true,
+          "typescript": true,
+          "webgl": true
+        }
+      },
+      "security": {
+        "contentValidation": true,
+        "assetSafety": true,
+        "memoryProtection": true,
+        "webglSafety": true,
+        "inputValidation": true,
+        "eventSafety": true,
+        "shaderSafety": true,
+        "contextSafety": true
+      },
+      "testing": {
+        "renderTestRequired": true,
+        "performanceTestRequired": true,
+        "memoryTestRequired": true,
+        "assetTestRequired": true
+      },
+      "maintenance": {
+        "updateFrequency": "weekly",
+        "deprecationPolicy": "minor-version",
+        "backwardCompatibility": "patch-version"
+      },
+      "compatibility": {
+        "pixi": ">=7.0.0",
+        "webgl": ">=2.0.0",
+        "browsers": {
+          "chrome": ">=90",
+          "firefox": ">=90",
+          "safari": ">=15",
+          "edge": ">=90"
+        },
+        "frameworks": {
+          "react": ">=18.0.0",
+          "vue": ">=3.0.0",
+          "svelte": ">=4.0.0"
+        }
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- WebGL rendering
+- Canvas fallback
+- Sprite management
+- Texture management
+- Asset loading
+- Animation system
+- Event handling
+- Scene graph
+- Batch rendering
+- Memory management
+- Performance
+- Optimization
+- Debugging
+- Profiling
+- Testing
+- Documentation
+
+## Patterns and Examples
+```typescript
+// Application Pattern
+class PixiApp {
+  private app: PIXI.Application;
+  private assets: Map<string, PIXI.Texture>;
+  private scenes: Map<string, PIXI.Container>;
+  
+  constructor(options: PIXI.IApplicationOptions) {
+    this.app = new PIXI.Application(options);
+    this.assets = new Map();
+    this.scenes = new Map();
+    
+    this.init();
+  }
+  
+  private async init() {
+    await this.loadAssets();
+    this.setupScenes();
+    this.startRendering();
+  }
+  
+  private async loadAssets() {
+    const loader = new PIXI.Loader();
+    
+    loader.add('sprite', 'sprite.png')
+          .add('texture', 'texture.png');
+    
+    await new Promise(resolve => loader.load(resolve));
+    
+    loader.resources.forEach((resource, name) => {
+      if (resource.texture) {
+        this.assets.set(name, resource.texture);
+      }
+    });
+  }
+  
+  private setupScenes() {
+    const mainScene = new PIXI.Container();
+    this.scenes.set('main', mainScene);
+    
+    const sprite = new PIXI.Sprite(
+      this.assets.get('sprite')
+    );
+    
+    sprite.anchor.set(0.5);
+    sprite.position.set(
+      this.app.screen.width / 2,
+      this.app.screen.height / 2
+    );
+    
+    mainScene.addChild(sprite);
+    this.app.stage.addChild(mainScene);
+  }
+  
+  private startRendering() {
+    this.app.ticker.add(() => {
+      this.update();
+      this.render();
+    });
+  }
+  
+  private update() {
+    // Update game logic
+  }
+  
+  private render() {
+    // Custom render logic
+  }
+}
+
+// Sprite Management Pattern
+class SpriteManager {
+  private sprites: Map<string, PIXI.Sprite>;
+  private container: PIXI.Container;
+  
+  constructor(container: PIXI.Container) {
+    this.sprites = new Map();
+    this.container = container;
+  }
+  
+  create(id: string, texture: PIXI.Texture): PIXI.Sprite {
+    const sprite = new PIXI.Sprite(texture);
+    this.sprites.set(id, sprite);
+    this.container.addChild(sprite);
+    return sprite;
+  }
+  
+  remove(id: string): void {
+    const sprite = this.sprites.get(id);
+    if (sprite) {
+      this.container.removeChild(sprite);
+      sprite.destroy();
+      this.sprites.delete(id);
+    }
+  }
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - Type checking
+  - Debug support
+  - Performance hints
+  - Asset preview
+- Build integration:
+  - Asset bundling
+  - Code splitting
+  - Optimization
+  - Source maps
+- Testing integration:
+  - Unit tests
+  - Visual tests
+  - Performance tests
+  - Memory tests
+- Monitoring integration:
+  - FPS metrics
+  - Memory usage
+  - Error tracking
+  - Asset loading
+
+## Security Considerations
+- Asset validation
+- Input validation
+- Memory limits
+- Error handling
+- Cross-origin
+- Content policy
+- Asset loading
+- WebGL context
+
+## Performance Requirements
+- FPS target
+- Memory usage
+- Asset size
+- Load time
+- Draw calls
+- Batch size
+- Texture size
+- Particle count
+
+## Maintenance
+- Regular updates
+- Asset management
+- Performance monitoring
+- Memory profiling
+- Error tracking
+- Documentation
+- Training
+- Reviews
+
+## Compatibility Matrix
+| Feature | WebGL 2 | WebGL 1 | Canvas |
+|---------|---------|---------|---------|
+| Batching | ✅ | ✅ | ✅ |
+| Shaders | ✅ | ✅ | ❌ |
+| Filters | ✅ | ✅ | ❌ |
+| Particles | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Pixi.js |
+|---------|---------|------------|---------|
+| 1.0.0   | ≥16.0.0 | ≥5.0.0 | ≥7.0.0 | 

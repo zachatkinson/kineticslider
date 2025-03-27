@@ -1,0 +1,184 @@
+---
+description: Chromatic Visual Testing Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.stories.[tj]sx?"]
+alwaysApply: true
+extends: ["documentation/component-driven/storybook"]
+tags: ["documentation", "component-driven", "visual-testing", "chromatic"]
+---
+
+# Chromatic Visual Testing Standards
+
+## Related Rules
+- documentation/component-driven/storybook: Storybook configuration standards
+- documentation/component-driven/index: Base component documentation standards
+- documentation/examples/patterns: Common documentation patterns
+- tooling/testing/base-testing: Base testing requirements
+
+## Version History
+- 1.0.0: Initial version
+  - Established core Chromatic configuration standards
+  - Defined visual regression testing requirements
+  - Implemented snapshot comparison thresholds
+  - Added CI/CD integration guidelines
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Enforces Chromatic visual testing standards and best practices"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "visualCoverage": 95,
+        "snapshotAccuracy": 99.9,
+        "buildTime": 600
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "*.stories.[tj]sx?",
+        "chromatic.config.{js,ts}"
+      ],
+      "forbidden": [
+        "*.skip.stories.[tj]sx?"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "snapshot-preview",
+          "diff-viewer",
+          "test-status"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "automated-snapshots",
+          "baseline-management",
+          "turbosnap"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "visual-regression",
+          "cross-browser-testing",
+          "viewport-testing"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "build-performance",
+          "test-coverage",
+          "failure-alerts"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "secure-token-storage",
+        "authenticated-access",
+        "audit-logging"
+      ],
+      "validations": [
+        "token-validation",
+        "access-control",
+        "data-privacy"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 95,
+      "requirements": [
+        "viewport-variations",
+        "browser-variations",
+        "theme-variations"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "weekly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "chromatic": "^7.0.0",
+        "storybook": "^7.0.0",
+        "node": "^18.0.0"
+      },
+      "optional": {
+        "playwright": "^1.0.0",
+        "jest": "^29.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- All stories must have visual regression tests
+- Baseline snapshots must be maintained for all components
+- Visual tests must run on every pull request
+- Cross-browser testing must be configured
+- Viewport testing must be implemented
+
+## Patterns and Examples
+```typescript
+// Chromatic Configuration
+module.exports = {
+  projectToken: process.env.CHROMATIC_PROJECT_TOKEN,
+  buildScriptName: 'build-storybook',
+  exitZeroOnChanges: false,
+  diffThreshold: 0.1,
+  viewports: [320, 768, 1024, 1440],
+  browsers: ['chrome', 'firefox', 'safari'],
+};
+```
+
+## Integration Standards
+- IDE must show visual test results
+- Build process must include Chromatic deployment
+- Testing must cover all viewports and browsers
+- Monitoring must track visual changes and regressions
+
+## Security Considerations
+- Project tokens must be securely stored
+- Access control for baseline management
+- Audit logging for snapshot approvals
+- Data privacy for captured snapshots
+
+## Testing Requirements
+- Visual regression tests for all components
+- Cross-browser compatibility testing
+- Responsive design testing
+- Theme variation testing
+
+## Maintenance
+- Weekly review of visual changes
+- Regular baseline updates
+- Automated dependency updates
+- Migration guides for major versions
+
+## Compatibility Matrix
+| Feature | Chrome | Firefox | Safari |
+|---------|--------|---------|--------|
+| Snapshots | ✅ | ✅ | ✅ |
+| Interactions | ✅ | ✅ | ✅ |
+| Animations | ✅ | ✅ | ✅ |
+| WebGL | ✅ | ✅ | ⚠️ |
+
+## Version Compatibility
+| Version | Chromatic | Storybook | Node |
+|---------|-----------|-----------|------|
+| 1.0.0   | ≥7.0.0   | ≥7.0.0   | ≥18.0.0 | 

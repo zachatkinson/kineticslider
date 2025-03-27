@@ -1,0 +1,280 @@
+---
+description: AI Integration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/ai/**/*.{ts,tsx}", "**/ml/**/*.{ts,tsx}", "**/models/**/*.{ts,tsx}"]
+alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/security.mdc
+tags:
+  - ai
+  - ml
+  - models
+  - inference
+---
+
+# AI Integration Standards
+
+## Related Rules
+- Performance (`core/performance.mdc`): Performance impact standards
+- Security (`core/security.mdc`): Model security guidelines
+- Error Handling (`core/error-handling.mdc`): Inference error patterns
+- TypeScript (`development/typescript.mdc`): Type patterns
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added AI integration standards
+  - Implemented model loading patterns
+  - Added inference guidelines
+  - Established monitoring patterns
+
+## Configuration
+```json
+{
+  "ai": {
+    "models": {
+      "loading": {
+        "lazy": true,
+        "caching": true,
+        "versioning": true,
+        "fallback": true
+      },
+      "inference": {
+        "batching": true,
+        "streaming": true,
+        "timeout": "30s",
+        "retries": 3
+      },
+      "optimization": {
+        "quantization": true,
+        "pruning": true,
+        "compression": true,
+        "caching": true
+      }
+    },
+    "providers": {
+      "openai": {
+        "enabled": true,
+        "models": ["gpt-4", "gpt-3.5-turbo"],
+        "streaming": true
+      },
+      "huggingface": {
+        "enabled": true,
+        "endpoint": "https://api-inference.huggingface.co/models"
+      },
+      "local": {
+        "enabled": true,
+        "path": "./models"
+      }
+    },
+    "monitoring": {
+      "latency": true,
+      "throughput": true,
+      "errors": true,
+      "costs": true
+    },
+    "security": {
+      "inputValidation": true,
+      "outputSanitization": true,
+      "rateLimit": true,
+      "authentication": true
+    }
+  }
+}
+```
+
+## Core Requirements
+- Model management
+- Inference handling
+- Error handling
+- Performance optimization
+- Security measures
+- Cost monitoring
+- Resource management
+- API integration
+- Caching strategy
+- Fallback handling
+- Version control
+- Documentation
+- Testing
+- Monitoring
+- Maintenance
+- Compliance
+
+## Patterns and Examples
+```typescript
+// AI Service Pattern
+interface AIService {
+  initialize(config: AIConfig): Promise<void>;
+  infer(input: InferenceInput): Promise<InferenceOutput>;
+  stream(input: InferenceInput): AsyncIterableIterator<InferenceOutput>;
+  batch(inputs: InferenceInput[]): Promise<InferenceOutput[]>;
+}
+
+// Model Manager Pattern
+class ModelManager {
+  private models: Map<string, Model>;
+  private config: ModelConfig;
+  private cache: Cache;
+
+  constructor(config: ModelConfig) {
+    this.models = new Map();
+    this.config = config;
+    this.cache = new Cache();
+  }
+
+  async loadModel(id: string): Promise<Model> {
+    if (this.cache.has(id)) {
+      return this.cache.get(id);
+    }
+
+    const model = await this.fetchModel(id);
+    this.cache.set(id, model);
+    return model;
+  }
+
+  async infer(input: InferenceInput): Promise<InferenceOutput> {
+    const model = await this.loadModel(input.modelId);
+    
+    try {
+      return await model.infer(input.data);
+    } catch (error) {
+      if (this.shouldRetry(error)) {
+        return await this.retryInference(input);
+      }
+      throw error;
+    }
+  }
+
+  private async retryInference(
+    input: InferenceInput,
+    attempts: number = 0
+  ): Promise<InferenceOutput> {
+    if (attempts >= this.config.inference.retries) {
+      throw new Error('Max retry attempts reached');
+    }
+
+    await this.delay(this.getBackoffTime(attempts));
+    return this.infer(input);
+  }
+}
+
+// Streaming Pattern
+async function* streamInference(
+  input: InferenceInput,
+  options: StreamOptions
+): AsyncIterableIterator<InferenceOutput> {
+  const model = await loadModel(input.modelId);
+  const stream = model.createStream(input.data);
+
+  try {
+    for await (const chunk of stream) {
+      yield chunk;
+    }
+  } catch (error) {
+    handleStreamError(error);
+  } finally {
+    await stream.close();
+  }
+}
+
+// React Hook Pattern
+function useAI() {
+  const ai = useContext(AIContext);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const infer = useCallback(async (input: InferenceInput) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      return await ai.infer(input);
+    } catch (error) {
+      setError(error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [ai]);
+
+  return { infer, loading, error };
+}
+```
+
+## Integration Standards
+- Provider integration:
+  - OpenAI
+  - Hugging Face
+  - Local models
+  - Custom providers
+- Framework integration:
+  - React integration
+  - Next.js integration
+  - Server components
+  - Edge runtime
+- Performance integration:
+  - Model optimization
+  - Inference caching
+  - Request batching
+  - Load balancing
+- Monitoring integration:
+  - Latency tracking
+  - Error monitoring
+  - Cost tracking
+  - Usage analytics
+
+## Security Considerations
+- Input validation
+- Output sanitization
+- Rate limiting
+- Authentication
+- Authorization
+- Data privacy
+- Model security
+- API security
+- Token management
+- Cost control
+- Access logging
+- Audit trails
+- Compliance
+- PII handling
+- Content filtering
+- Version control
+
+## Testing Requirements
+- Unit tests
+- Integration tests
+- Performance tests
+- Security tests
+- Load tests
+- Stress tests
+- Compliance tests
+- Model tests
+- API tests
+- E2E tests
+
+## Maintenance
+- Regular updates
+- Model updates
+- Security patches
+- Performance tuning
+- Cost optimization
+- Cache management
+- Log rotation
+- Configuration review
+- Compliance audits
+- Documentation
+
+## Compatibility Matrix
+| Feature | Edge | Server | Browser |
+|---------|------|--------|---------|
+| Inference | ✅ | ✅ | ✅ |
+| Streaming | ✅ | ✅ | ✅ |
+| Batching | ✅ | ✅ | ❌ |
+| Caching | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | TypeScript | Framework |
+|---------|---------|------------|-----------|
+| 1.0.0   | ≥18.0.0 | ≥5.0.0    | ≥0.34.0  | 

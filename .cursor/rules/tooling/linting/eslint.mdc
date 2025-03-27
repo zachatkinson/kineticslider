@@ -1,0 +1,274 @@
+---
+description: ESLint Configuration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
+globs: ["**/*.{ts,tsx,js,jsx}", "**/.eslintrc.*"]
+alwaysApply: true
+extends:
+  - core/code-style.mdc
+  - development/typescript.mdc
+  - tooling/linting/prettier.mdc
+tags:
+  - linting
+  - eslint
+  - typescript
+  - code-quality
+---
+
+# ESLint Configuration Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Base code style patterns
+- TypeScript (`development/typescript.mdc`): TypeScript configuration
+- Prettier (`tooling/linting/prettier.mdc`): Code formatting
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added ESLint configuration standards
+  - Implemented TypeScript integration
+  - Added React/Next.js rules
+  - Established security rules
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": true,
+    "description": "ESLint Configuration Standards and Best Practices for Modern Web Applications"
+  },
+  "options": {
+    "metrics": {
+      "complexity": {
+        "cyclomatic": 10,
+        "cognitive": 15
+      },
+      "length": {
+        "file": 400,
+        "function": 50,
+        "line": 100
+      },
+      "coverage": {
+        "rules": 100,
+        "fixes": 80
+      },
+      "performance": {
+        "parseTime": 1000,
+        "fixTime": 2000
+      }
+    },
+    "patterns": {
+      "required": [
+        "typescript-rules",
+        "react-rules",
+        "security-rules",
+        "import-rules",
+        "a11y-rules",
+        "best-practices"
+      ],
+      "forbidden": [
+        "any-type",
+        "unsafe-rules",
+        "deprecated-apis",
+        "console-logs"
+      ],
+      "parser": {
+        "parser": "@typescript-eslint/parser",
+        "parserOptions": {
+          "ecmaVersion": 2022,
+          "sourceType": "module",
+          "ecmaFeatures": {
+            "jsx": true
+          },
+          "project": "./tsconfig.json"
+        }
+      },
+      "env": {
+        "browser": true,
+        "node": true,
+        "es2022": true
+      }
+    },
+    "integrations": {
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:jsx-a11y/recommended",
+        "plugin:import/recommended",
+        "plugin:import/typescript",
+        "plugin:security/recommended",
+        "plugin:prettier/recommended"
+      ],
+      "plugins": [
+        "@typescript-eslint",
+        "react",
+        "react-hooks",
+        "jsx-a11y",
+        "import",
+        "security",
+        "prettier"
+      ],
+      "settings": {
+        "react": {
+          "version": "detect"
+        },
+        "import/resolver": {
+          "typescript": {
+            "alwaysTryTypes": true,
+            "project": "./tsconfig.json"
+          }
+        }
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "typescript-security",
+        "react-security",
+        "import-security"
+      ],
+      "validations": [
+        "no-unsafe-rules",
+        "no-deprecated-apis",
+        "no-vulnerable-dependencies"
+      ]
+    },
+    "testing": {
+      "configValidation": true,
+      "unitTestRequired": true,
+      "integrationTestRequired": true,
+      "e2eTestRequired": false
+    },
+    "maintenance": {
+      "updateFrequency": "weekly",
+      "deprecationPolicy": "semver",
+      "backwardCompatibility": "major"
+    },
+    "compatibility": {
+      "required": {
+        "node": ">=16",
+        "typescript": ">=4.5",
+        "eslint": ">=8.0"
+      },
+      "optional": {
+        "node": ">=18",
+        "typescript": ">=5.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- TypeScript integration
+- React/Next.js rules
+- Import management
+- Security rules
+- Accessibility rules
+- Code style rules
+- Testing rules
+- Performance rules
+- Error handling
+- Best practices
+
+## Rule Categories
+- TypeScript Rules:
+  - Type checking
+  - Return types
+  - Member access
+  - Promise handling
+  - Error handling
+- React Rules:
+  - Component patterns
+  - Hook usage
+  - JSX patterns
+  - Props handling
+  - State management
+- Import Rules:
+  - Path resolution
+  - Circular deps
+  - Order management
+  - Type imports
+  - Path segments
+- Security Rules:
+  - Injection prevention
+  - Regex safety
+  - Buffer handling
+  - Eval prevention
+  - CSRF protection
+- Accessibility Rules:
+  - ARIA support
+  - Keyboard events
+  - Role validation
+  - Link handling
+  - Interactive elements
+
+## Integration Standards
+- IDE integration:
+  - ESLint plugin
+  - Auto-fix support
+  - Error reporting
+  - Quick fixes
+- Build integration:
+  - Pre-commit hooks
+  - CI/CD checks
+  - Build validation
+  - Error reporting
+- Testing integration:
+  - Test file rules
+  - Coverage rules
+  - Mock handling
+  - Error patterns
+- Monitoring integration:
+  - Error tracking
+  - Rule coverage
+  - Fix metrics
+  - Performance
+
+## Security Considerations
+- Code injection
+- Unsafe patterns
+- Buffer handling
+- Eval prevention
+- CSRF protection
+- Timing attacks
+- Regex safety
+- Process spawning
+- Template escaping
+- Method overrides
+
+## Testing Requirements
+- Rule tests
+- Config tests
+- Override tests
+- Plugin tests
+- Integration tests
+- Security tests
+- Performance tests
+- Coverage tests
+
+## Maintenance
+- Regular updates
+- Rule reviews
+- Plugin updates
+- Config updates
+- Documentation
+- Testing
+- Migration
+- Versioning
+
+## Compatibility Matrix
+| Feature | ESLint 8.0+ | TypeScript 5.0+ | React 18.0+ |
+|---------|-------------|-----------------|-------------|
+| Rules | ✅ | ✅ | ✅ |
+| Plugins | ✅ | ✅ | ✅ |
+| Fixes | ✅ | ✅ | ✅ |
+| Config | ✅ | ✅ | ✅ |
+
+## Version Compatibility
+| Version | Node.js | ESLint | TypeScript |
+|---------|---------|--------|------------|
+| 1.0.0   | ≥18.0.0 | ≥8.0.0 | ≥5.0.0 |
