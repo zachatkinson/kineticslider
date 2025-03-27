@@ -3,27 +3,39 @@
   "version": "0.1.0",
   "private": false,
   "description": "A modern, accessible, and performant slider component",
+  "author": "Zach",
+  "license": "MIT",
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
+    "start": "npm run dev",
     "clean": "rimraf dist coverage .jest-cache",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --reporters=default --reporters=jest-sonar-reporter",
+    "test:e2e": "jest --config jest.config.e2e.js",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
     "typecheck": "tsc --noEmit",
+    "validate": "npm run typecheck && npm run lint && npm run test",
     "prepare": "husky install",
-    "prepublishOnly": "npm run clean && npm run typecheck && npm test && npm run lint",
-    "analyze": "rollup -c --configPlugin @rollup/plugin-visualizer"
+    "prepublishOnly": "npm run clean && npm run validate",
+    "postpublish": "git push --follow-tags",
+    "analyze": "rollup -c --configPlugin @rollup/plugin-visualizer",
+    "size": "size-limit",
+    "audit": "npm audit fix",
+    "docs": "typedoc src/index.ts"
   },
   "keywords": [
     "react",
@@ -32,10 +44,9 @@
     "accessible",
     "component"
   ],
-  "author": "Zach",
-  "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "repository": {
     "type": "git",
@@ -99,7 +110,10 @@
     "rimraf": "^5.0.5",
     "rollup": "^4.12.0",
     "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@size-limit/preset-small-lib": "^11.0.0",
+    "size-limit": "^11.0.0",
+    "typedoc": "^0.25.0"
   },
   "dependencies": {
     "gsap": "^3.12.5",
@@ -115,8 +129,20 @@
     ]
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
   },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "10 kb"
+    },
+    {
+      "path": "dist/index.esm.js",
+      "limit": "10 kb"
+    }
+  ],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -124,7 +150,8 @@
       "import": "./dist/index.esm.js",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
@@ -132,6 +159,15 @@
         "./dist/index.d.ts"
       ]
     }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ],
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/zach"
   },
   "resolutions": {
     "@babel/traverse": "^7.23.2"
