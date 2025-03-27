@@ -80,10 +80,10 @@ jobs:
         
         # Generate type compatibility report
         echo "## Type Compatibility Changes" >> update-report.md
-        echo "- Before: ${{ env.TYPE_ERRORS_BEFORE }} type errors" >> update-report.md
-        echo "- After: ${{ env.TYPE_ERRORS_AFTER }} type errors" >> update-report.md
+        echo "- Before: ${TYPE_ERRORS_BEFORE} type errors" >> update-report.md
+        echo "- After: ${TYPE_ERRORS_AFTER} type errors" >> update-report.md
         
-        if [ "${{ env.TYPE_ERRORS_AFTER }}" -gt "${{ env.TYPE_ERRORS_BEFORE }}" ]; then
+        if [ "${TYPE_ERRORS_AFTER}" -gt "${TYPE_ERRORS_BEFORE }}" ]; then
           echo "⚠️ New type errors introduced" >> update-report.md
           echo "### New Type Errors" >> update-report.md
           echo "\`\`\`" >> update-report.md
@@ -117,8 +117,8 @@ jobs:
       run: |
         # Add bundle size comparison
         echo "## Bundle Size Impact" >> update-report.md
-        echo "- Before: $(numfmt --to=iec ${{ env.BUNDLE_SIZE_BEFORE }})" >> update-report.md
-        echo "- After: $(numfmt --to=iec ${{ env.BUNDLE_SIZE_AFTER }})" >> update-report.md
+        echo "- Before: $(numfmt --to=iec ${BUNDLE_SIZE_BEFORE })" >> update-report.md
+        echo "- After: $(numfmt --to=iec ${BUNDLE_SIZE_AFTER })" >> update-report.md
         
         # Add performance report
         echo "## Performance Impact" >> update-report.md
