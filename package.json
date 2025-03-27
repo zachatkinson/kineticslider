@@ -119,15 +119,6 @@
     "gsap": "^3.12.7",
     "pixi.js": "^8.9.0"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,css,scss,md}": [
-      "prettier --write"
-    ]
-  },
   "workspaces": {
     "packages": [
       "packages/*"

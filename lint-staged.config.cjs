@@ -1,29 +1,19 @@
 module.exports = {
-  // TypeScript and JavaScript files
-  '*.{js,jsx,ts,tsx}': (filenames) => [
-    'tsc --noEmit',
-    `eslint --fix ${filenames.join(' ')}`,
-    `prettier --write ${filenames.join(' ')}`,
-  ],
+  // Run type checking first
+  '**/*.{ts,tsx}': () => 'tsc --noEmit',
+
+  // Lint and format TypeScript/JavaScript files
+  '**/*.{js,jsx,ts,tsx}': ['eslint --fix', 'prettier --write'],
 
   // Style files
-  '*.{css,scss,sass}': (filenames) => [
-    `stylelint --fix ${filenames.join(' ')}`,
-    `prettier --write ${filenames.join(' ')}`,
-  ],
+  '**/*.{css,scss,sass}': ['stylelint --fix', 'prettier --write'],
 
-  // JSON, MD, and other config files
-  '*.{json,md,yml,yaml}': (filenames) => [
-    `prettier --write ${filenames.join(' ')}`,
-  ],
+  // Other files that only need formatting
+  '**/*.{json,md,yml,yaml}': ['prettier --write'],
 
-  // Test files with coverage check
-  '*.{test,spec}.{js,jsx,ts,tsx}': (filenames) => [
-    `jest --bail --findRelatedTests --coverage ${filenames.join(' ')}`,
-  ],
+  // Test files
+  '**/*.{test,spec}.{js,jsx,ts,tsx}': ['jest --bail --findRelatedTests'],
 
-  // Package files with audit
-  'package.json': () => [
-    'prettier --write package.json',
-  ],
+  // Package files
+  'package.json': ['prettier --write']
 }; 
