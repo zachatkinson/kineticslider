@@ -7,13 +7,29 @@ indent_size = 2
 indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
+max_line_length = 80
 
 [*.{ts,tsx,js,jsx,json}]
 quote_type = single
+curly_bracket_next_line = false
+spaces_around_operators = true
+spaces_around_brackets = inside
+indent_brace_style = K&R
+
+[*.{css,scss,less}]
+indent_size = 2
+quote_type = double
 
 [*.md]
 trim_trailing_whitespace = false
 max_line_length = off
 
 [*.{yml,yaml}]
-indent_size = 2 
+indent_size = 2
+
+[*.html]
+indent_size = 2
+quote_type = double
+
+[Makefile]
+indent_style = tab 
