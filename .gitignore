@@ -2,22 +2,36 @@
 node_modules/
 /.pnp
 .pnp.js
+.pnpm-store/
+.npm
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 # Testing
 /coverage
 .nyc_output
+*.lcov
+.test/
+.next-test/
 
 # Production
 /build
 /dist
 /lib
+/.next/
+/out/
+*.tsbuildinfo
 
 # Development
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*
+!.env.example
+*.env.local.*
+.env.*.local
+*.local
 
 # Logs
 logs
@@ -26,40 +40,60 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
 # Editor directories and files
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 *.swp
 *.swo
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
-# Cache
+# Cache and temporary files
 .cache/
 .eslintcache
 .stylelintcache
-.npm
-.yarn-integrity
-
-# Temporary files
+.rollup.cache/
+.temp/
+.tmp/
 *.tmp
 *.temp
-.temp/
+.turbo
+.swc/
+.yarn/cache
 
-# Storybook
+# Build outputs
 storybook-static/
+.vercel
+.netlify
+.serverless/
+.fusebox/
+.dynamodb/
+.webpack/
+.docusaurus
 
-# Misc
+# Package manager specific
+.npmrc
+.yarnrc
+.yarnrc.yml
+.yarn-integrity
+
+# System files
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local 
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/ 
