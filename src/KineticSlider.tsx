@@ -3,34 +3,24 @@ import debounce from 'lodash/debounce';
 import React, {
   Children,
   Component,
-  ErrorInfo,
-  ReactNode,
+  type ErrorInfo,
+  type ReactNode,
   Suspense,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
 
-import {
-  DragEventHandler,
-  DragEventType,
-  DragState,
-  ExtendedPerformanceMetrics,
-  GsapInstance,
-  KineticSliderProps,
-  NormalizedPointerEvent,
-  SliderAnalyticsData,
-  SliderAnalyticsEvent,
-  SliderErrorInfo,
-  SliderErrorType,
-  WindowWithAnalytics,
-} from './types';
-
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAnimation } from './hooks/useAnimation';
+import type {
+  KineticSliderProps,
+  SliderErrorInfo,
+  WindowWithAnalytics,
+} from './types';
+import { SliderErrorType } from './types';
 
 /**
  * Error boundary component for handling slider-specific errors
@@ -268,66 +258,6 @@ export class SliderErrorBoundary extends Component<
 }
 
 /**
- * Validates slider props and throws errors for invalid values
- */
-const validateProps = (props: KineticSliderProps): void => {
-  const { children, initialIndex = 0, duration, ease } = props;
-  const slideCount = Children.count(children);
-
-  if (slideCount === 0) {
-    throw new Error('KineticSlider requires at least one child element');
-  }
-
-  if (initialIndex < 0 || initialIndex >= slideCount) {
-    throw new Error(
-      `Invalid initialIndex: ${initialIndex}. Must be between 0 and ${slideCount - 1}`
-    );
-  }
-
-  if (duration !== undefined && (duration <= 0 || !Number.isFinite(duration))) {
-    throw new Error(
-      `Invalid duration: ${duration}. Must be a positive finite number`
-    );
-  }
-
-  if (ease && typeof ease !== 'string') {
-    throw new Error('Invalid ease: Must be a string');
-  }
-};
-
-/**
- * Normalizes touch and mouse events to a common interface
- */
-const normalizeEvent = (event: DragEventType): NormalizedPointerEvent => {
-  if (!event) {
-    throw new Error('Event object is undefined');
-  }
-
-  if ('touches' in event && event.touches && event.touches.length > 0) {
-    const touch = event.touches[0];
-    if (!touch) {
-      throw new Error('Touch event has no touch points');
-    }
-    return {
-      clientX: touch.clientX ?? 0,
-      clientY: touch.clientY ?? 0,
-      type: 'touch',
-      target: event.target,
-      preventDefault: () => event.preventDefault(),
-    };
-  }
-
-  const mouseEvent = event as MouseEvent;
-  return {
-    clientX: mouseEvent.clientX ?? 0,
-    clientY: mouseEvent.clientY ?? 0,
-    type: 'mouse',
-    target: mouseEvent.target,
-    preventDefault: () => mouseEvent.preventDefault(),
-  };
-};
-
-/**
  * A high-performance kinetic slider component with smooth animations and gesture support.
  *
  * @component
@@ -355,190 +285,74 @@ const normalizeEvent = (event: DragEventType): NormalizedPointerEvent => {
  * - Maintains focus management
  * - Implements ARIA attributes
  */
-export const KineticSlider = React.memo<KineticSliderProps>((props) => {
-  const {
-    children,
-    className = '',
-    style = {},
-    infinite = false,
-    enableGestures = true,
-    enableKeyboard = true,
-    onChange,
-    lazyLoad = false,
-    duration = 0.8,
-    ease = 'power3.out',
-    initialIndex = 0,
-    onMetrics,
-  } = props;
-
-  // Validate props on mount and when they change
-  useEffect(() => {
-    validateProps(props);
-  }, [props]);
-
+export const KineticSlider: React.FC<KineticSliderProps> = ({
+  children,
+  className = '',
+  style = {},
+  duration = 0.5,
+  ease = 'power2.out',
+  enableGestures = true,
+  enableKeyboard = true,
+  onChange,
+  initialIndex = 0,
+  infinite = true,
+  lazyLoad = false,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const slidesRef = useRef<HTMLDivElement>(null);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
-  const dragRef = useRef<DragState | null>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [_isDragging, setIsDragging] = useState(false);
   const slideCount = Children.count(children);
   const slides = Children.toArray(children);
 
-  // Animation hook
   const {
-    isAnimating: isAnimatingHook,
     animateToSlide,
     setupContainer,
     setupSlides,
-    cleanupAnimations,
+    handleDragStart,
+    handleDragMove,
+    handleDragEnd,
     handleResize: handleAnimationResize,
-    getPosition,
-    handleDragStart: handleAnimationDragStart,
-    handleDragMove: handleAnimationDragMove,
-    handleDragEnd: handleAnimationDragEnd,
-    getVelocity,
   } = useAnimation({
     duration,
     ease,
     infinite,
-    onAnimationStart: () => setIsAnimating(true),
+    onAnimationStart: () => setIsDragging(true),
     onAnimationComplete: (index) => {
-      setIsAnimating(false);
       setCurrentIndex(index);
+      setIsDragging(false);
       onChange?.(index);
     },
   });
 
-  // Replace the existing metricsRef with the extended version
-  const metricsRef = useRef<ExtendedPerformanceMetrics>({
-    initialRenderTime: 0,
-    averageFrameTime: 0,
-    droppedFrames: 0,
-    memoryUsage: 0,
-    gestureProcessingTime: 0,
-    FCP: 0,
-    LCP: 0,
-    FID: 0,
-    CLS: 0,
-    TTI: 0,
-    TBT: 0,
-  });
-
-  /**
-   * Tracks analytics events
-   */
-  const trackAnalytics = useCallback((data: SliderAnalyticsData) => {
-    if (typeof window !== 'undefined' && 'analytics' in window) {
-      (window as unknown as WindowWithAnalytics).analytics.track(
-        'KineticSlider',
-        {
-          ...data,
-          component: 'KineticSlider',
-          version: '1.0.0',
-        }
-      );
-    }
-  }, []);
-
-  // Debounced resize handler with increased delay for better performance
-  const debouncedResize = useMemo(
-    () =>
-      debounce(() => {
-        handleAnimationResize();
-      }, 150),
+  const _handleResize = useCallback(
+    debounce(() => {
+      if (!containerRef.current || !slidesRef.current) return;
+      handleAnimationResize();
+    }, 32),
     [handleAnimationResize]
   );
 
-  // Initialize ResizeObserver
-  useEffect(() => {
-    if (!containerRef.current) return;
+  const _handleGesture = useCallback(
+    (e: PointerEvent) => {
+      if (!enableGestures || !containerRef.current) return;
 
-    resizeObserverRef.current = new ResizeObserver(debouncedResize);
-    resizeObserverRef.current.observe(containerRef.current);
-
-    return () => {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
+      switch (e.type) {
+        case 'pointerdown':
+          handleDragStart(e.clientX);
+          break;
+        case 'pointermove':
+          handleDragMove(e.clientX);
+          break;
+        case 'pointerup':
+        case 'pointercancel':
+          handleDragEnd();
+          break;
       }
-      debouncedResize.cancel();
-    };
-  }, [debouncedResize]);
-
-  // Use layout effect for smoother animations
-  useLayoutEffect(() => {
-    if (!containerRef.current || !slidesRef.current || slideCount === 0) return;
-
-    setupContainer(containerRef.current);
-    setupSlides(Array.from(slidesRef.current.children) as HTMLElement[]);
-  }, [slideCount, setupContainer, setupSlides]);
-
-  // Frame throttling for smoother animations
-  const throttleFrame = useCallback((callback: () => void) => {
-    let ticking = false;
-    return () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(() => {
-          callback();
-          ticking = false;
-        });
-      }
-    };
-  }, []);
-
-  // Handle drag with optimized performance and memory management
-  const handleDrag = useCallback(
-    (event: TouchEvent | MouseEvent) => {
-      const startTime = performance.now();
-      if (!enableGestures || !isDragging || isAnimatingHook) return;
-
-      const normalizedEvent = normalizeEvent(event);
-      handleAnimationDragMove(normalizedEvent.clientX);
-
-      metricsRef.current.gestureProcessingTime = performance.now() - startTime;
-      onMetrics?.(metricsRef.current);
     },
-    [enableGestures, isDragging, isAnimatingHook, handleAnimationDragMove, onMetrics]
+    [enableGestures, handleDragStart, handleDragMove, handleDragEnd]
   );
 
-  // Handle drag start with optimized settings
-  const handleDragStart = useCallback(
-    (event: DragEventType) => {
-      event.preventDefault();
-      const normalizedEvent = normalizeEvent(event);
-      if (!enableGestures || isAnimatingHook) return;
-
-      // Track analytics
-      const gestureType = normalizedEvent.type === 'touch' ? 'touch' : 'mouse';
-      trackAnalytics({
-        eventType: SliderAnalyticsEvent.GESTURE_START,
-        timestamp: new Date().toISOString(),
-        gestureType,
-      });
-
-      handleAnimationDragStart(normalizedEvent.clientX);
-      setIsDragging(true);
-    },
-    [enableGestures, isAnimatingHook, trackAnalytics, handleAnimationDragStart]
-  );
-
-  const threshold = useMemo(() => {
-    if (!containerRef.current) return 0;
-    return containerRef.current.offsetWidth * 0.2; // 20% of container width
-  }, []);
-
-  const handleGestureEnd = useCallback(() => {
-    handleAnimationDragEnd();
-    setIsDragging(false);
-  }, [handleAnimationDragEnd]);
-
-  /**
-   * Handles keyboard navigation events.
-   * Supports arrow keys and tab navigation.
-   * @param e - The keyboard event
-   */
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!enableKeyboard) return;
@@ -561,6 +375,40 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
+
+  // Initialize container and slides with gesture handling
+  useEffect(() => {
+    if (!containerRef.current || !slidesRef.current) return undefined;
+
+    setupContainer(containerRef.current);
+    setupSlides(Array.from(slidesRef.current.children) as HTMLElement[]);
+
+    // Setup gesture handling
+    if (enableGestures) {
+      const container = containerRef.current;
+      container.addEventListener('pointerdown', _handleGesture);
+      container.addEventListener('pointermove', _handleGesture);
+      container.addEventListener('pointerup', _handleGesture);
+      container.addEventListener('pointercancel', _handleGesture);
+
+      return () => {
+        container.removeEventListener('pointerdown', _handleGesture);
+        container.removeEventListener('pointermove', _handleGesture);
+        container.removeEventListener('pointerup', _handleGesture);
+        container.removeEventListener('pointercancel', _handleGesture);
+      };
+    }
+    return undefined;
+  }, [setupContainer, setupSlides, enableGestures, _handleGesture]);
+
+  // Setup resize observer
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(_handleResize);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    return () => resizeObserver.disconnect();
+  }, [_handleResize]);
 
   // Virtualization window calculation
   const visibleSlides = useMemo(() => {
@@ -681,7 +529,7 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
       </div>
     </ErrorBoundary>
   );
-});
+};
 
 // Default export with display name for better debugging
 KineticSlider.displayName = 'KineticSlider';
