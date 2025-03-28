@@ -1,4 +1,5 @@
-module.exports = {
+/** @type {import('lint-staged').Configuration} */
+export default {
   // Run type checking first
   '**/*.{ts,tsx}': () => 'tsc --noEmit',
 
@@ -15,5 +16,5 @@ module.exports = {
   '**/*.{test,spec}.{js,jsx,ts,tsx}': ['jest --bail --findRelatedTests'],
 
   // Package files
-  'package.json': ['prettier --write']
-}; 
+  'package.json': ['prettier --write'],
+};
