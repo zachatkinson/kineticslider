@@ -1,10 +1,9 @@
-import gsap from 'gsap';
+import { gsap } from 'gsap';
 import debounce from 'lodash/debounce';
 
 import React, {
   Children,
   Component,
-  CSSProperties,
   ErrorInfo,
   ReactNode,
   Suspense,
@@ -16,35 +15,20 @@ import React, {
   useState,
 } from 'react';
 
-/**
- * Custom error for slider-specific validation
- */
-class SliderError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SliderError';
-  }
-}
-
-/**
- * Error types that can occur in the slider
- */
-enum SliderErrorType {
-  VALIDATION = 'validation',
-  ANIMATION = 'animation',
-  GESTURE = 'gesture',
-  RENDER = 'render',
-  MEMORY = 'memory',
-}
-
-/**
- * Extended error information for better error handling
- */
-interface SliderErrorInfo extends Omit<ErrorInfo, 'componentStack'> {
-  errorType?: SliderErrorType;
-  componentStack?: string | undefined;
-  additionalData?: Record<string, unknown>;
-}
+import {
+  DragEventHandler,
+  DragEventType,
+  DragState,
+  ExtendedPerformanceMetrics,
+  GsapInstance,
+  KineticSliderProps,
+  NormalizedPointerEvent,
+  SliderAnalyticsData,
+  SliderAnalyticsEvent,
+  SliderErrorInfo,
+  SliderErrorType,
+  WindowWithAnalytics,
+} from './types';
 
 /**
  * Error boundary component for handling slider-specific errors
@@ -106,16 +90,13 @@ export class SliderErrorBoundary extends Component<
    * Determines the type of error that occurred
    */
   private determineErrorType(error: Error): SliderErrorType {
-    if (error instanceof SliderError) {
+    if (error.message.includes('validation')) {
       return SliderErrorType.VALIDATION;
-    }
-    if (error.message.includes('animation') || error.message.includes('gsap')) {
+    } else if (error.message.includes('animation')) {
       return SliderErrorType.ANIMATION;
-    }
-    if (error.message.includes('gesture') || error.message.includes('event')) {
+    } else if (error.message.includes('gesture')) {
       return SliderErrorType.GESTURE;
-    }
-    if (error.message.includes('memory') || error.message.includes('heap')) {
+    } else if (error.message.includes('memory')) {
       return SliderErrorType.MEMORY;
     }
     return SliderErrorType.RENDER;
@@ -284,150 +265,6 @@ export class SliderErrorBoundary extends Component<
   }
 }
 
-type GsapQuickSetter = ReturnType<typeof gsap.quickSetter>;
-
-interface GsapEventCallback {
-  (type: string, callback: () => void): GsapTimeline;
-}
-
-interface GsapTimelineDefaults {
-  duration?: number;
-  ease?: string;
-  force3D?: boolean;
-  lazy?: boolean;
-  clearProps?: string;
-  overwrite?: boolean | 'auto';
-  immediateRender?: boolean;
-  onComplete?: () => void;
-}
-
-interface GsapTimeline {
-  to: (
-    target: HTMLElement | string,
-    vars: Record<string, unknown>
-  ) => GsapTimeline;
-  fromTo: (
-    target: HTMLElement | string,
-    fromVars: Record<string, unknown>,
-    toVars: Record<string, unknown>
-  ) => GsapTimeline;
-  kill: () => void;
-  progress: (value: number) => GsapTimeline;
-  pause: () => GsapTimeline;
-  resume: () => GsapTimeline;
-  eventCallback: GsapEventCallback;
-  defaults: GsapTimelineDefaults;
-}
-
-interface DragState {
-  startX: number;
-  currentX: number;
-  quickSetter?: GsapQuickSetter;
-  timeline?: GsapTimeline | null;
-}
-
-/**
- * Performance metrics for monitoring slider behavior
- */
-interface PerformanceMetrics {
-  /** Time taken for initial render */
-  initialRenderTime: number;
-  /** Average frame time during animations */
-  averageFrameTime: number;
-  /** Number of frames dropped during animations */
-  droppedFrames: number;
-  /** Memory usage during animations */
-  memoryUsage: number;
-  /** Time taken for gesture processing */
-  gestureProcessingTime: number;
-}
-
-// Add type declaration for performance.memory
-declare global {
-  interface Performance {
-    memory?: {
-      usedJSHeapSize: number;
-      totalJSHeapSize: number;
-      jsHeapSizeLimit: number;
-    };
-  }
-}
-
-/**
- * Analytics event types for slider interactions
- */
-enum SliderAnalyticsEvent {
-  SLIDE_CHANGE = 'slide_change',
-  GESTURE_START = 'gesture_start',
-  GESTURE_END = 'gesture_end',
-  ERROR = 'error',
-  PERFORMANCE = 'performance',
-}
-
-/**
- * Analytics data structure for slider events
- */
-interface SliderAnalyticsData {
-  eventType: SliderAnalyticsEvent;
-  timestamp: string;
-  slideIndex?: number;
-  gestureType?: 'touch' | 'mouse' | 'keyboard';
-  error?: {
-    type: SliderErrorType;
-    message: string;
-    stack?: string | undefined;
-  };
-  performance?: PerformanceMetrics;
-}
-
-/**
- * Extended performance metrics
- */
-interface ExtendedPerformanceMetrics extends PerformanceMetrics {
-  /** Time to First Contentful Paint */
-  FCP?: number;
-  /** Largest Contentful Paint */
-  LCP?: number;
-  /** First Input Delay */
-  FID?: number;
-  /** Cumulative Layout Shift */
-  CLS?: number;
-  /** Time to Interactive */
-  TTI?: number;
-  /** Total Blocking Time */
-  TBT?: number;
-}
-
-/**
- * Props for the KineticSlider component.
- */
-interface KineticSliderProps {
-  /** Array of React nodes or a single node to be rendered as slides */
-  children: ReactNode[] | ReactNode;
-  /** Optional CSS class name for the slider container */
-  className?: string;
-  /** Optional inline styles for the slider container */
-  style?: CSSProperties;
-  /** Whether the slider should loop infinitely */
-  infinite?: boolean;
-  /** Whether touch and mouse gestures are enabled */
-  enableGestures?: boolean;
-  /** Whether keyboard navigation is enabled */
-  enableKeyboard?: boolean;
-  /** Callback fired when the active slide changes */
-  onChange?: (index: number) => void;
-  /** Whether to lazy load slide content */
-  lazyLoad?: boolean;
-  /** Duration of slide transitions in seconds */
-  duration?: number;
-  /** GSAP easing function for animations */
-  ease?: string;
-  /** Initial active slide index */
-  initialIndex?: number;
-  /** Optional callback for performance metrics */
-  onMetrics?: (metrics: PerformanceMetrics) => void;
-}
-
 /**
  * Validates slider props and throws errors for invalid values
  */
@@ -436,60 +273,57 @@ const validateProps = (props: KineticSliderProps): void => {
   const slideCount = Children.count(children);
 
   if (slideCount === 0) {
-    throw new SliderError('KineticSlider requires at least one child element');
+    throw new Error('KineticSlider requires at least one child element');
   }
 
   if (initialIndex < 0 || initialIndex >= slideCount) {
-    throw new SliderError(
+    throw new Error(
       `Invalid initialIndex: ${initialIndex}. Must be between 0 and ${slideCount - 1}`
     );
   }
 
   if (duration !== undefined && (duration <= 0 || !Number.isFinite(duration))) {
-    throw new SliderError(
+    throw new Error(
       `Invalid duration: ${duration}. Must be a positive finite number`
     );
   }
 
   if (ease && typeof ease !== 'string') {
-    throw new SliderError('Invalid ease: Must be a string');
+    throw new Error('Invalid ease: Must be a string');
   }
 };
 
-interface WindowWithAnalytics extends Window {
-  analytics: {
-    track: (event: string, data: Record<string, unknown>) => void;
-  };
-  errorTracker: {
-    captureError: (error: Error, context: Record<string, unknown>) => void;
-  };
-  webVitals: {
-    getFCP: (callback: (metric: { value: number }) => void) => void;
-    getLCP: (callback: (metric: { value: number }) => void) => void;
-    getFID: (callback: (metric: { value: number }) => void) => void;
-    getCLS: (callback: (metric: { value: number }) => void) => void;
-    getTTI: (callback: (metric: { value: number }) => void) => void;
-    getTBT: (callback: (metric: { value: number }) => void) => void;
-  };
-}
+/**
+ * Normalizes touch and mouse events to a common interface
+ */
+const normalizeEvent = (event: DragEventType): NormalizedPointerEvent => {
+  if (!event) {
+    throw new Error('Event object is undefined');
+  }
 
-interface GsapInstance {
-  globalTimeline?: {
-    clear: () => void;
-  };
-  ticker?: {
-    remove: (fn: () => void) => void;
-  };
-  updateRoot?: () => void;
-}
+  if ('touches' in event && event.touches && event.touches.length > 0) {
+    const touch = event.touches[0];
+    if (!touch) {
+      throw new Error('Touch event has no touch points');
+    }
+    return {
+      clientX: touch.clientX ?? 0,
+      clientY: touch.clientY ?? 0,
+      type: 'touch',
+      target: event.target,
+      preventDefault: () => event.preventDefault(),
+    };
+  }
 
-type DragEvent = (TouchEvent | MouseEvent) & {
-  touches?: TouchList;
-  clientX: number;
+  const mouseEvent = event as MouseEvent;
+  return {
+    clientX: mouseEvent.clientX ?? 0,
+    clientY: mouseEvent.clientY ?? 0,
+    type: 'mouse',
+    target: mouseEvent.target,
+    preventDefault: () => mouseEvent.preventDefault(),
+  };
 };
-
-type DragEventType = TouchEvent | MouseEvent;
-type DragEventHandler = (event: DragEventType) => void;
 
 /**
  * A high-performance kinetic slider component with smooth animations and gesture support.
@@ -519,7 +353,7 @@ type DragEventHandler = (event: DragEventType) => void;
  * - Maintains focus management
  * - Implements ARIA attributes
  */
-export const KineticSlider: React.FC<KineticSliderProps> = (props) => {
+export const KineticSlider = React.memo<KineticSliderProps>((props) => {
   const {
     children,
     className = '',
@@ -966,7 +800,7 @@ export const KineticSlider: React.FC<KineticSliderProps> = (props) => {
 
   // Handle drag with optimized performance and memory management
   const handleDrag = useCallback(
-    (event: DragEvent) => {
+    (event: TouchEvent | MouseEvent) => {
       const startTime = performance.now();
       const dragState = dragRef.current;
       const container = containerRef.current;
@@ -978,8 +812,8 @@ export const KineticSlider: React.FC<KineticSliderProps> = (props) => {
       )
         return;
 
-      const clientX = event.touches?.[0]?.clientX ?? event.clientX;
-      const deltaX = clientX - (dragState?.currentX || 0);
+      const normalizedEvent = normalizeEvent(event);
+      const deltaX = normalizedEvent.clientX - (dragState?.currentX || 0);
 
       // Update velocity with optimized smoothing
       velocityRef.current = deltaX * 0.4 + (velocityRef.current || 0) * 0.6;
@@ -995,7 +829,7 @@ export const KineticSlider: React.FC<KineticSliderProps> = (props) => {
       // Use RAF for smoother performance
       if (dragState) {
         rafDragHandler(newPos, dragState);
-        dragState.currentX = clientX;
+        dragState.currentX = normalizedEvent.clientX;
       }
 
       // Create or update timeline for drag animation with minimal properties
@@ -1047,15 +881,16 @@ export const KineticSlider: React.FC<KineticSliderProps> = (props) => {
 
   // Handle drag start with optimized settings
   const handleDragStart = useCallback(
-    (event: DragEvent) => {
+    (event: DragEventType) => {
+      event.preventDefault();
+      const normalizedEvent = normalizeEvent(event);
       if (!enableGestures || isAnimating) return;
 
-      const clientX = event.touches?.[0]?.clientX ?? event.clientX;
       const container = containerRef.current;
       if (!container) return;
 
       // Track analytics
-      const gestureType = event.touches ? 'touch' : 'mouse';
+      const gestureType = normalizedEvent.type === 'touch' ? 'touch' : 'mouse';
       trackAnalytics({
         eventType: SliderAnalyticsEvent.GESTURE_START,
         timestamp: new Date().toISOString(),
@@ -1064,8 +899,8 @@ export const KineticSlider: React.FC<KineticSliderProps> = (props) => {
 
       // Create new drag state with optimized settings
       const newDragState: DragState = {
-        startX: clientX,
-        currentX: clientX,
+        startX: normalizedEvent.clientX,
+        currentX: normalizedEvent.clientX,
         quickSetter: gsap.quickSetter(container, 'x', 'px'),
         timeline: null,
       };
@@ -1207,14 +1042,14 @@ export const KineticSlider: React.FC<KineticSliderProps> = (props) => {
     const throttledDrag: DragEventHandler = (e) => {
       const now = performance.now();
       if (now - lastDragTime >= THROTTLE_MS) {
-        handleDrag(e as DragEvent);
+        handleDrag(e as TouchEvent | MouseEvent);
         lastDragTime = now;
       }
     };
 
     const handlers = {
-      touchStart: (e: TouchEvent) => handleDragStart(e as DragEvent),
-      mouseDown: (e: MouseEvent) => handleDragStart(e as DragEvent),
+      touchStart: (e: TouchEvent) => handleDragStart(e as TouchEvent),
+      mouseDown: (e: MouseEvent) => handleDragStart(e as MouseEvent),
       touchMove: throttledDrag,
       mouseMove: throttledDrag,
       touchEnd: () => handleGestureEnd(),
@@ -1430,7 +1265,7 @@ export const KineticSlider: React.FC<KineticSliderProps> = (props) => {
       </div>
     </SliderErrorBoundary>
   );
-};
+});
 
 // Default export with display name for better debugging
 KineticSlider.displayName = 'KineticSlider';
