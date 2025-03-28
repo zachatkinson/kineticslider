@@ -2,6 +2,8 @@
  * Browser support utilities for KineticSlider
  */
 
+import { NormalizedPointerEvent } from '../types';
+
 // Type definitions
 declare type AddEventListenerOptions = {
   passive?: boolean;
@@ -175,14 +177,6 @@ export const getResizeObserver = (callback: ResizeObserverCallback): ResizeObser
 };
 
 // Touch event normalization
-export interface NormalizedPointerEvent {
-  clientX: number;
-  clientY: number;
-  type: string;
-  target: EventTarget | null;
-  preventDefault: () => void;
-}
-
 export const normalizePointerEvent = (
   event: TouchEvent | MouseEvent | PointerEvent
 ): NormalizedPointerEvent => {

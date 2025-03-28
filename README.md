@@ -15,6 +15,7 @@ A high-performance, accessible React slider component with smooth GSAP animation
 - 🛡️ Advanced error handling with circuit breaker pattern
 - 📊 Comprehensive performance monitoring
 - 🧪 Extensive test coverage with analytics integration
+- 🎬 Modular animation system with useAnimation hook
 
 ## Installation
 
@@ -88,6 +89,34 @@ function App() {
 
 ## Advanced Features
 
+### Animation System
+The component uses a modular animation system through the `useAnimation` hook:
+- Encapsulated GSAP animations with proper cleanup
+- Momentum-based animations with velocity tracking
+- Hardware-accelerated transforms with force3D
+- Efficient drag gesture handling
+- Automatic timeline management
+- Proper memory cleanup
+
+```typescript
+// Example usage of useAnimation hook
+const {
+  isAnimating,
+  animateToSlide,
+  setupContainer,
+  setupSlides,
+  handleDragStart,
+  handleDragMove,
+  handleDragEnd
+} = useAnimation({
+  duration: 0.8,
+  ease: 'power3.out',
+  infinite: true,
+  onAnimationStart: () => console.log('Animation started'),
+  onAnimationComplete: (index) => console.log(`Animated to slide ${index}`)
+});
+```
+
 ### Circuit Breaker Pattern
 The component implements an advanced circuit breaker pattern for robust error handling:
 - Exponential backoff with configurable thresholds
@@ -144,6 +173,31 @@ The component is optimized for performance:
 ## Types and Interfaces
 
 The component uses TypeScript with strict type checking. Types are organized across the following files:
+
+### Animation Types (`hooks/useAnimation.ts`)
+```typescript
+interface UseAnimationConfig {
+  duration?: number;
+  ease?: string;
+  infinite?: boolean;
+  onAnimationStart?: () => void;
+  onAnimationComplete?: (index: number) => void;
+}
+
+interface UseAnimationReturn {
+  isAnimating: boolean;
+  animateToSlide: (targetIndex: number, speed?: number) => void;
+  setupContainer: (container: HTMLElement) => void;
+  setupSlides: (slides: HTMLElement[]) => void;
+  cleanupAnimations: () => void;
+  handleResize: () => void;
+  getPosition: () => number;
+  handleDragStart: (x: number) => void;
+  handleDragMove: (x: number) => void;
+  handleDragEnd: () => void;
+  getVelocity: () => number;
+}
+```
 
 ### Core Types (`types.ts`)
 ```typescript
@@ -228,29 +282,67 @@ All types are properly exported and imported where needed, ensuring type safety 
 
 ## Error Handling
 
-The component includes robust error handling:
+The component implements a robust error handling system through a dedicated `ErrorBoundary` component:
 
-- Advanced error handling system:
-  - Custom `SliderError` class for type-safe error handling
-  - Enumerated error types for precise error categorization
-  - Detailed error context with component stack traces
-  - Automatic error reporting to analytics services
+### Error Boundary Features
+- Dedicated `ErrorBoundary` component with configurable props:
+  ```typescript
+  interface ErrorBoundaryProps {
+    children: ReactNode;
+    className?: string;
+    onError?: (error: Error, errorInfo: SliderErrorInfo) => void;
+  }
+  ```
+- Enhanced error recovery with exponential backoff:
+  - Smart retry mechanism with configurable attempts
+  - Backoff time increases exponentially (1s, 2s, 4s, etc.)
+  - Maximum backoff time of 5 seconds
+  - Maximum of 3 retry attempts
+
+### Error Context and Monitoring
+- Comprehensive error context gathering:
+  - Error type and message
+  - Component stack traces
+  - Timestamp and user agent
+  - Memory usage metrics
+  - Viewport dimensions
+  - Current URL
+  - Error count and retry attempts
+- Automatic error reporting to analytics services
+- Parent component notification through `onError` prop
+
+### Error Recovery System
 - Circuit breaker pattern implementation:
-  - Exponential backoff with configurable thresholds
-  - State transitions: closed -> half-open -> open
-  - Automatic recovery with analytics tracking
-- Cascading error recovery system:
-  - Progressive error handling with fallbacks
-  - Multiple recovery paths with state tracking
-  - Detailed error analytics and monitoring
+  - State management: closed -> half-open -> open
+  - Automatic state transitions based on error frequency
+  - Configurable thresholds and timeouts
 - Graceful degradation strategy:
-  - Multiple animation fallback levels
-  - Progressive enhancement based on capabilities
-  - Performance-based feature adjustment
-- Comprehensive error tracking:
-  - Detailed error context and stack traces
-  - Recovery attempt tracking
-  - Analytics integration for monitoring
+  - User-friendly error messages
+  - Retry and reset options
+  - Page refresh for unrecoverable errors
+  - Development mode stack traces
+- Error type categorization:
+  ```typescript
+  enum SliderErrorType {
+    VALIDATION = 'validation',
+    ANIMATION = 'animation',
+    GESTURE = 'gesture',
+    RENDER = 'render',
+    MEMORY = 'memory'
+  }
+  ```
+
+### Usage Example
+```tsx
+<KineticSlider
+  onError={(error, errorInfo) => {
+    console.error('Slider error:', error);
+    // Custom error handling logic
+  }}
+>
+  {/* Slider content */}
+</KineticSlider>
+```
 
 ## Performance Monitoring
 

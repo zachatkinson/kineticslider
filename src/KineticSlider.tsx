@@ -1,4 +1,3 @@
-import { gsap } from 'gsap';
 import debounce from 'lodash/debounce';
 
 import React, {
@@ -29,6 +28,9 @@ import {
   SliderErrorType,
   WindowWithAnalytics,
 } from './types';
+
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { useAnimation } from './hooks/useAnimation';
 
 /**
  * Error boundary component for handling slider-specific errors
@@ -376,25 +378,38 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const slidesRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<gsap.core.Timeline | null>(null);
-  const rafRef = useRef<number>(0);
-  const velocityRef = useRef<number>(0);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const slideCount = Children.count(children);
   const slides = Children.toArray(children);
 
-  // Prevent multiple onChange calls during rapid navigation
-  const onChangeRef = useRef(onChange);
-  const isAnimatingRef = useRef(isAnimating);
-
-  useEffect(() => {
-    onChangeRef.current = onChange;
-    isAnimatingRef.current = isAnimating;
-  }, [onChange, isAnimating]);
+  // Animation hook
+  const {
+    isAnimating: isAnimatingHook,
+    animateToSlide,
+    setupContainer,
+    setupSlides,
+    cleanupAnimations,
+    handleResize: handleAnimationResize,
+    getPosition,
+    handleDragStart: handleAnimationDragStart,
+    handleDragMove: handleAnimationDragMove,
+    handleDragEnd: handleAnimationDragEnd,
+    getVelocity,
+  } = useAnimation({
+    duration,
+    ease,
+    infinite,
+    onAnimationStart: () => setIsAnimating(true),
+    onAnimationComplete: (index) => {
+      setIsAnimating(false);
+      setCurrentIndex(index);
+      onChange?.(index);
+    },
+  });
 
   // Replace the existing metricsRef with the extended version
   const metricsRef = useRef<ExtendedPerformanceMetrics>({
@@ -427,195 +442,13 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
     }
   }, []);
 
-  /**
-   * Tracks web vitals metrics
-   */
-  const trackWebVitals = useCallback(() => {
-    if (typeof window === 'undefined') return;
-
-    if ('webVitals' in window) {
-      const { getFCP, getLCP, getFID, getCLS, getTTI, getTBT } = (
-        window as unknown as WindowWithAnalytics
-      ).webVitals;
-
-      getFCP((metric: { value: number }) => {
-        metricsRef.current.FCP = metric.value;
-        onMetrics?.(metricsRef.current);
-      });
-
-      getLCP((metric: { value: number }) => {
-        metricsRef.current.LCP = metric.value;
-        onMetrics?.(metricsRef.current);
-      });
-
-      getFID((metric: { value: number }) => {
-        metricsRef.current.FID = metric.value;
-        onMetrics?.(metricsRef.current);
-      });
-
-      getCLS((metric: { value: number }) => {
-        metricsRef.current.CLS = metric.value;
-        onMetrics?.(metricsRef.current);
-      });
-
-      getTTI((metric: { value: number }) => {
-        metricsRef.current.TTI = metric.value;
-        onMetrics?.(metricsRef.current);
-      });
-
-      getTBT((metric: { value: number }) => {
-        metricsRef.current.TBT = metric.value;
-        onMetrics?.(metricsRef.current);
-      });
-    }
-  }, [onMetrics]);
-
-  // Initialize web vitals tracking
-  useEffect(() => {
-    trackWebVitals();
-  }, [trackWebVitals]);
-
-  // Track performance metrics periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      trackAnalytics({
-        eventType: SliderAnalyticsEvent.PERFORMANCE,
-        timestamp: new Date().toISOString(),
-        performance: metricsRef.current,
-      });
-    }, 60000); // Report every minute
-
-    return () => clearInterval(interval);
-  }, [trackAnalytics]);
-
-  /**
-   * Updates the current slide index and triggers the onChange callback.
-   * Prevents multiple calls during rapid navigation.
-   * @param newIndex - The new slide index to set
-   */
-  const handleStateUpdate = useCallback(
-    (newIndex: number) => {
-      if (newIndex === currentIndex) return;
-      setCurrentIndex(newIndex);
-      onChangeRef.current?.(newIndex);
-
-      // Track analytics
-      trackAnalytics({
-        eventType: SliderAnalyticsEvent.SLIDE_CHANGE,
-        timestamp: new Date().toISOString(),
-        slideIndex: newIndex,
-      });
-    },
-    [currentIndex, trackAnalytics]
-  );
-
-  // Initialize GSAP timeline with optimized settings
-  useEffect(() => {
-    if (containerRef.current) {
-      // Kill any existing animations
-      if (timelineRef.current) {
-        timelineRef.current.kill();
-        timelineRef.current = null;
-      }
-
-      // Create new timeline with optimized settings
-      const timeline = gsap.timeline({
-        defaults: {
-          duration: 0.8,
-          ease: 'power3.out',
-          force3D: true,
-          lazy: false,
-          clearProps: 'transform',
-          overwrite: true,
-          immediateRender: true,
-        },
-        onComplete: () => {
-          handleStateUpdate(currentIndex);
-          // Clean up memory
-          if (timelineRef.current) {
-            timelineRef.current.kill();
-            timelineRef.current = null;
-          }
-        },
-      });
-
-      // Optimize animation by using transform3d
-      if (containerRef.current) {
-        const container = containerRef.current as HTMLDivElement;
-        timeline.to(container, {
-          x: -currentIndex * container.offsetWidth,
-          transformPerspective: 1000,
-          backfaceVisibility: 'hidden',
-          willChange: 'transform',
-        });
-      }
-
-      timelineRef.current = timeline;
-    }
-
-    // Cleanup function
-    return () => {
-      if (timelineRef.current) {
-        timelineRef.current.kill();
-        timelineRef.current = null;
-      }
-    };
-  }, [currentIndex, handleStateUpdate]);
-
-  /**
-   * Handles window resize events and updates slide positions.
-   * Uses GSAP quickSetter for optimized performance.
-   * Debounced to prevent excessive updates.
-   */
-  const handleResize = useCallback(() => {
-    if (!containerRef.current || !slidesRef.current || slideCount === 0) return;
-
-    const containerWidth = containerRef.current.offsetWidth;
-
-    // Update slide positions using quickSetter for better performance
-    const slides = slidesRef.current.children;
-    gsap.set(slides, {
-      width: containerWidth,
-      left: (i) => `${i * 100}%`,
-      force3D: true,
-      lazy: true,
-    });
-
-    // Update container position using quickSetter
-    if (timelineRef.current) {
-      timelineRef.current.kill();
-      timelineRef.current = gsap.timeline({
-        defaults: {
-          duration: 0.8,
-          ease: 'power3.out',
-        },
-        onComplete: () => {
-          handleStateUpdate(currentIndex);
-          // Clean up memory
-          if (timelineRef.current) {
-            timelineRef.current.kill();
-            timelineRef.current = null;
-          }
-        },
-      });
-      if (containerRef.current) {
-        const container = containerRef.current as HTMLDivElement;
-        timelineRef.current?.to(container, {
-          x: -currentIndex * container.offsetWidth,
-          force3D: true,
-          lazy: true,
-          clearProps: 'transform',
-          overwrite: true,
-          immediateRender: true,
-        });
-      }
-    }
-  }, [currentIndex, slideCount, handleStateUpdate]);
-
   // Debounced resize handler with increased delay for better performance
   const debouncedResize = useMemo(
-    () => debounce(handleResize, 32),
-    [handleResize]
+    () =>
+      debounce(() => {
+        handleAnimationResize();
+      }, 150),
+    [handleAnimationResize]
   );
 
   // Initialize ResizeObserver
@@ -637,114 +470,9 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
   useLayoutEffect(() => {
     if (!containerRef.current || !slidesRef.current || slideCount === 0) return;
 
-    // Position all slides with hardware acceleration
-    const slides = slidesRef.current.children;
-    gsap.set(slides, {
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      top: 0,
-      left: (i) => `${i * 100}%`,
-      force3D: true,
-      backfaceVisibility: 'hidden',
-      perspective: 1000,
-    });
-
-    // Position the container using quickSetter
-    if (timelineRef.current) {
-      timelineRef.current.kill();
-      timelineRef.current = gsap.timeline({
-        defaults: {
-          duration: 0.8,
-          ease: 'power3.out',
-          force3D: true,
-          lazy: true,
-          clearProps: 'transform',
-          overwrite: true,
-          immediateRender: true,
-        },
-        onComplete: () => {
-          handleStateUpdate(currentIndex);
-          // Clean up memory
-          if (timelineRef.current) {
-            timelineRef.current.kill();
-            timelineRef.current = null;
-          }
-        },
-      });
-
-      if (containerRef.current) {
-        const container = containerRef.current as HTMLDivElement;
-        timelineRef.current?.to(container, {
-          x: -currentIndex * container.offsetWidth,
-          force3D: true,
-          transformPerspective: 1000,
-          backfaceVisibility: 'hidden',
-          willChange: 'transform',
-        });
-      }
-    }
-
-    return () => {
-      gsap.killTweensOf(slides);
-      gsap.killTweensOf(slidesRef.current);
-    };
-  }, [slideCount, currentIndex, handleStateUpdate]);
-
-  /**
-   * Animates the slider to a specific slide index.
-   * @param targetIndex - The target slide index
-   * @param speed - Optional speed multiplier for animation
-   */
-  const animateToSlide = useCallback(
-    (targetIndex: number, speed: number = 1) => {
-      if (!containerRef.current || isAnimating) return;
-
-      let finalIndex = targetIndex;
-      if (infinite) {
-        // Handle infinite scrolling
-        if (targetIndex < 0) {
-          finalIndex = slideCount - 1;
-        } else if (targetIndex >= slideCount) {
-          finalIndex = 0;
-        }
-      } else {
-        // Clamp index within bounds
-        finalIndex = Math.max(0, Math.min(targetIndex, slideCount - 1));
-      }
-
-      const container = containerRef.current;
-      const targetX = -finalIndex * container.offsetWidth;
-
-      if (timelineRef.current) {
-        timelineRef.current.kill();
-      }
-
-      timelineRef.current = gsap.timeline({
-        defaults: {
-          duration: duration * speed,
-          ease,
-        },
-        onComplete: () => {
-          handleStateUpdate(finalIndex);
-          if (timelineRef.current) {
-            timelineRef.current.kill();
-            timelineRef.current = null;
-          }
-        },
-      });
-
-      timelineRef.current.to(container, {
-        x: targetX,
-        force3D: true,
-        lazy: true,
-        clearProps: 'transform',
-        overwrite: true,
-        immediateRender: true,
-      });
-    },
-    [duration, ease, handleStateUpdate, infinite, slideCount, isAnimating]
-  );
+    setupContainer(containerRef.current);
+    setupSlides(Array.from(slidesRef.current.children) as HTMLElement[]);
+  }, [slideCount, setupContainer, setupSlides]);
 
   // Frame throttling for smoother animations
   const throttleFrame = useCallback((callback: () => void) => {
@@ -760,123 +488,19 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
     };
   }, []);
 
-  // Optimized RAF handler with throttling and memory management
-  const rafDragHandler = useCallback(
-    (newPos: number, dragState: DragState) => {
-      if (!dragState.quickSetter) return;
-
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = 0;
-      }
-
-      // Batch DOM reads and writes with minimal reflows
-      const updateTransform = throttleFrame(() => {
-        if (!dragState.quickSetter) return;
-
-        // Read phase - batch all DOM reads
-        const container = containerRef.current;
-        if (!container) return;
-
-        // Write phase - batch all DOM writes
-        dragState.quickSetter(newPos);
-
-        // Use minimal transform properties
-        gsap.set(container, {
-          x: newPos,
-          force3D: true,
-          transformPerspective: 1000,
-          backfaceVisibility: 'hidden',
-          willChange: 'transform',
-          overwrite: 'auto',
-          immediateRender: true,
-        });
-      });
-
-      rafRef.current = requestAnimationFrame(updateTransform);
-    },
-    [throttleFrame]
-  );
-
   // Handle drag with optimized performance and memory management
   const handleDrag = useCallback(
     (event: TouchEvent | MouseEvent) => {
       const startTime = performance.now();
-      const dragState = dragRef.current;
-      const container = containerRef.current;
-      if (
-        !enableGestures ||
-        !isDragging ||
-        !container ||
-        !dragState?.quickSetter
-      )
-        return;
+      if (!enableGestures || !isDragging || isAnimatingHook) return;
 
       const normalizedEvent = normalizeEvent(event);
-      const deltaX = normalizedEvent.clientX - (dragState?.currentX || 0);
-
-      // Update velocity with optimized smoothing
-      velocityRef.current = deltaX * 0.4 + (velocityRef.current || 0) * 0.6;
-
-      // Calculate new position with bounds checking
-      const containerWidth = container.offsetWidth;
-      const currentPos = -currentIndex * containerWidth;
-      const newPos = Math.max(
-        Math.min(currentPos + deltaX, 0),
-        -(slideCount - 1) * containerWidth
-      );
-
-      // Use RAF for smoother performance
-      if (dragState) {
-        rafDragHandler(newPos, dragState);
-        dragState.currentX = normalizedEvent.clientX;
-      }
-
-      // Create or update timeline for drag animation with minimal properties
-      if (!timelineRef.current) {
-        const timeline = gsap.timeline({
-          defaults: {
-            duration: 0.1,
-            ease: 'none',
-            force3D: true,
-            lazy: true,
-            clearProps: 'transform',
-            overwrite: 'auto',
-            immediateRender: true,
-          },
-          paused: true,
-          onComplete: () => {
-            if (timelineRef.current) {
-              timelineRef.current.kill();
-              timelineRef.current = null;
-            }
-          },
-        });
-
-        timeline.to(container, {
-          x: newPos,
-          force3D: true,
-          transformPerspective: 1000,
-          backfaceVisibility: 'hidden',
-          willChange: 'transform',
-          immediateRender: true,
-        });
-
-        timelineRef.current = timeline;
-        timeline.play();
-      }
+      handleAnimationDragMove(normalizedEvent.clientX);
 
       metricsRef.current.gestureProcessingTime = performance.now() - startTime;
       onMetrics?.(metricsRef.current);
     },
-    [
-      enableGestures,
-      isDragging,
-      currentIndex,
-      slideCount,
-      rafDragHandler,
-      onMetrics,
-    ]
+    [enableGestures, isDragging, isAnimatingHook, handleAnimationDragMove, onMetrics]
   );
 
   // Handle drag start with optimized settings
@@ -884,10 +508,7 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
     (event: DragEventType) => {
       event.preventDefault();
       const normalizedEvent = normalizeEvent(event);
-      if (!enableGestures || isAnimating) return;
-
-      const container = containerRef.current;
-      if (!container) return;
+      if (!enableGestures || isAnimatingHook) return;
 
       // Track analytics
       const gestureType = normalizedEvent.type === 'touch' ? 'touch' : 'mouse';
@@ -897,68 +518,21 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
         gestureType,
       });
 
-      // Create new drag state with optimized settings
-      const newDragState: DragState = {
-        startX: normalizedEvent.clientX,
-        currentX: normalizedEvent.clientX,
-        quickSetter: gsap.quickSetter(container, 'x', 'px'),
-        timeline: null,
-      };
-      dragRef.current = newDragState;
-
+      handleAnimationDragStart(normalizedEvent.clientX);
       setIsDragging(true);
-      velocityRef.current = 0;
-
-      // Kill any existing animations
-      if (timelineRef.current) {
-        timelineRef.current.kill();
-        timelineRef.current = null;
-      }
-
-      // Optimize container for animations
-      gsap.set(container, {
-        force3D: true,
-        transformPerspective: 1000,
-        backfaceVisibility: 'hidden',
-        willChange: 'transform',
-      });
     },
-    [enableGestures, isAnimating, trackAnalytics]
+    [enableGestures, isAnimatingHook, trackAnalytics, handleAnimationDragStart]
   );
-
-  // Gesture handling utilities
-  const getPosition = useCallback(() => {
-    if (!containerRef.current) return 0;
-    const transform = window.getComputedStyle(containerRef.current).transform;
-    const matrix = new DOMMatrix(transform);
-    return matrix.m41; // Get X translation
-  }, []);
 
   const threshold = useMemo(() => {
     if (!containerRef.current) return 0;
     return containerRef.current.offsetWidth * 0.2; // 20% of container width
   }, []);
 
-  const resetPosition = useCallback(() => {
-    if (!containerRef.current || !timelineRef.current) return;
-    timelineRef.current.kill();
-    gsap.set(containerRef.current, { clearProps: 'transform' });
-  }, []);
-
   const handleGestureEnd = useCallback(() => {
-    const currentPos = getPosition();
-    const direction = currentPos > 0 ? -1 : 1;
-    if (Math.abs(currentPos) > threshold) {
-      animateToSlide(
-        currentIndex + direction,
-        Math.abs(currentPos / threshold)
-      );
-    } else {
-      // Reset to original position if threshold not met
-      animateToSlide(currentIndex, 1);
-    }
-    resetPosition();
-  }, [getPosition, threshold, currentIndex, animateToSlide, resetPosition]);
+    handleAnimationDragEnd();
+    setIsDragging(false);
+  }, [handleAnimationDragEnd]);
 
   /**
    * Handles keyboard navigation events.
@@ -999,165 +573,8 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
     return Children.toArray(children).slice(start, end + 1);
   }, [children, currentIndex, lazyLoad, slideCount]);
 
-  // Memory cleanup on unmount with optimized cleanup
-  useEffect(() => {
-    return () => {
-      // Clean up container
-      if (containerRef.current) {
-        gsap.killTweensOf(containerRef.current);
-        gsap.set(containerRef.current, { clearProps: 'all' });
-        containerRef.current = null;
-      }
-      slidesRef.current = null;
-
-      // Clean up resize observer
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-        resizeObserverRef.current = null;
-      }
-
-      // Clean up GSAP memory safely
-      const gsapInstance = gsap as unknown as GsapInstance;
-      if (gsapInstance.globalTimeline?.clear) {
-        gsapInstance.globalTimeline.clear();
-      }
-      if (gsapInstance.ticker?.remove && gsapInstance.updateRoot) {
-        gsapInstance.ticker.remove(gsapInstance.updateRoot);
-      }
-    };
-  }, []);
-
-  // Optimize event listeners with cleanup and throttle drag events
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    let lastDragTime = 0;
-    const THROTTLE_MS = 16; // ~60fps
-
-    /**
-     * Throttled drag handler for smooth gesture interactions.
-     * Uses requestAnimationFrame for optimal performance.
-     */
-    const throttledDrag: DragEventHandler = (e) => {
-      const now = performance.now();
-      if (now - lastDragTime >= THROTTLE_MS) {
-        handleDrag(e as TouchEvent | MouseEvent);
-        lastDragTime = now;
-      }
-    };
-
-    const handlers = {
-      touchStart: (e: TouchEvent) => handleDragStart(e as TouchEvent),
-      mouseDown: (e: MouseEvent) => handleDragStart(e as MouseEvent),
-      touchMove: throttledDrag,
-      mouseMove: throttledDrag,
-      touchEnd: () => handleGestureEnd(),
-      mouseUp: () => handleGestureEnd(),
-    };
-
-    // Add event listeners with passive option for better performance
-    container.addEventListener('touchstart', handlers.touchStart, {
-      passive: true,
-    });
-    container.addEventListener('mousedown', handlers.mouseDown);
-    window.addEventListener('touchmove', handlers.touchMove, { passive: true });
-    window.addEventListener('mousemove', handlers.mouseMove);
-    window.addEventListener('touchend', handlers.touchEnd);
-    window.addEventListener('mouseup', handlers.mouseUp);
-
-    return () => {
-      // Remove event listeners
-      container.removeEventListener('touchstart', handlers.touchStart);
-      container.removeEventListener('mousedown', handlers.mouseDown);
-      window.removeEventListener('touchmove', handlers.touchMove);
-      window.removeEventListener('mousemove', handlers.mouseMove);
-      window.removeEventListener('touchend', handlers.touchEnd);
-      window.removeEventListener('mouseup', handlers.mouseUp);
-    };
-  }, [handleDragStart, handleDrag, handleGestureEnd]);
-
-  const frameTimesRef = useRef<number[]>([]);
-  const lastFrameTimeRef = useRef<number>(performance.now());
-
-  /**
-   * Updates performance metrics during animations
-   */
-  const updateMetrics = useCallback(() => {
-    const currentTime = performance.now();
-    const frameTime = currentTime - lastFrameTimeRef.current;
-
-    // Track frame times for average calculation
-    frameTimesRef.current.push(frameTime);
-    if (frameTimesRef.current.length > 60) {
-      // Keep last 60 frames
-      frameTimesRef.current.shift();
-    }
-
-    // Calculate average frame time
-    const averageFrameTime =
-      frameTimesRef.current.reduce((a, b) => a + b, 0) /
-      frameTimesRef.current.length;
-
-    // Count dropped frames (frames taking longer than 16.67ms)
-    const droppedFrames = frameTimesRef.current.filter(
-      (time) => time > 16.67
-    ).length;
-
-    // Update metrics
-    metricsRef.current = {
-      ...metricsRef.current,
-      averageFrameTime,
-      droppedFrames,
-      memoryUsage: performance.memory?.usedJSHeapSize ?? 0,
-    };
-
-    // Report metrics if callback provided
-    onMetrics?.(metricsRef.current);
-
-    lastFrameTimeRef.current = currentTime;
-  }, [onMetrics]);
-
-  // Track initial render time
-  useEffect(() => {
-    const renderStart = performance.now();
-
-    return () => {
-      metricsRef.current.initialRenderTime = performance.now() - renderStart;
-      onMetrics?.(metricsRef.current);
-    };
-  }, [onMetrics]);
-
-  // Update metrics during animations
-  useEffect(() => {
-    if (!isAnimating) return;
-
-    const rafCallback = () => {
-      updateMetrics();
-      rafRef.current = requestAnimationFrame(rafCallback);
-    };
-
-    rafRef.current = requestAnimationFrame(rafCallback);
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = 0;
-      }
-    };
-  }, [isAnimating, updateMetrics]);
-
-  useEffect(() => {
-    if (timelineRef.current) {
-      timelineRef.current.eventCallback('onStart', () => setIsAnimating(true));
-      timelineRef.current.eventCallback('onComplete', () =>
-        setIsAnimating(false)
-      );
-    }
-  }, [timelineRef]);
-
   return (
-    <SliderErrorBoundary>
+    <ErrorBoundary>
       <div
         ref={containerRef}
         className={`kinetic-slider ${className}`}
@@ -1181,7 +598,6 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
             position: 'relative',
             width: '100%',
             height: '100%',
-            willChange: 'transform',
           }}
         >
           {visibleSlides.map((slide, index) => (
@@ -1263,7 +679,7 @@ export const KineticSlider = React.memo<KineticSliderProps>((props) => {
           ))}
         </div>
       </div>
-    </SliderErrorBoundary>
+    </ErrorBoundary>
   );
 });
 
