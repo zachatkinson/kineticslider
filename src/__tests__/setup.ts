@@ -1,3 +1,9 @@
+// Types for test environment
+interface GlobalWithMocks {
+  gsapMock: MockGsap;
+  timelineMock: MockTimeline;
+}
+
 class MockResizeObserver {
   observe() {}
   unobserve() {}
@@ -13,7 +19,7 @@ interface MockTimelineVars {
 }
 
 interface MockTimeline {
-  to: jest.Mock<MockTimeline, [any, MockTimelineVars]>;
+  to: jest.Mock<MockTimeline>;
   from: jest.Mock<MockTimeline>;
   fromTo: jest.Mock<MockTimeline>;
   set: jest.Mock<MockTimeline>;
@@ -21,27 +27,12 @@ interface MockTimeline {
   pause: jest.Mock<MockTimeline>;
   progress: jest.Mock<MockTimeline>;
   kill: jest.Mock<MockTimeline>;
+  eventCallback: jest.Mock<MockTimeline>;
+  defaults?: MockTimelineVars;
 }
 
-// Mock GSAP
-const mockTimeline: MockTimeline = {
-  to: jest.fn((_target, vars) => {
-    if (vars.onComplete) {
-      setTimeout(vars.onComplete, 0);
-    }
-    return mockTimeline;
-  }),
-  from: jest.fn().mockReturnThis(),
-  fromTo: jest.fn().mockReturnThis(),
-  set: jest.fn().mockReturnThis(),
-  play: jest.fn().mockReturnThis(),
-  pause: jest.fn().mockReturnThis(),
-  progress: jest.fn().mockReturnThis(),
-  kill: jest.fn().mockReturnThis(),
-};
-
 interface MockGsap {
-  timeline: jest.Mock<MockTimeline, [{ defaults?: MockTimelineVars; onComplete?: () => void }]>;
+  timeline: jest.Mock<MockTimeline>;
   to: jest.Mock<MockTimeline>;
   from: jest.Mock<MockTimeline>;
   set: jest.Mock<MockTimeline>;
@@ -51,41 +42,48 @@ interface MockGsap {
   quickSetter: jest.Mock;
 }
 
-const mockGsap: MockGsap = {
-  timeline: jest.fn(({ defaults, onComplete }) => {
-    mockTimeline.to = jest.fn((_target, vars) => {
-      if (onComplete) {
-        setTimeout(onComplete, 0);
-      }
-      return mockTimeline;
-    });
-    return mockTimeline;
-  }),
+// Create GSAP mock
+const mockTimeline: MockTimeline = {
   to: jest.fn().mockReturnThis(),
   from: jest.fn().mockReturnThis(),
+  fromTo: jest.fn().mockReturnThis(),
   set: jest.fn().mockReturnThis(),
-  registerPlugin: jest.fn(),
-  killTweensOf: jest.fn(),
-  getProperty: jest.fn().mockReturnValue(0),
-  quickSetter: jest.fn().mockReturnValue(jest.fn()),
+  play: jest.fn().mockReturnThis(),
+  pause: jest.fn().mockReturnThis(),
+  progress: jest.fn().mockReturnThis(),
+  kill: jest.fn().mockReturnThis(),
+  eventCallback: jest.fn().mockReturnThis(),
 };
 
-// Add mocks to global scope
-(global as any).gsapMock = mockGsap;
-(global as any).timelineMock = mockTimeline;
+const mockGSAP: MockGsap = {
+  timeline: jest.fn().mockReturnValue(mockTimeline),
+  to: jest.fn().mockReturnValue(mockTimeline),
+  from: jest.fn().mockReturnValue(mockTimeline),
+  set: jest.fn().mockReturnValue(mockTimeline),
+  registerPlugin: jest.fn(),
+  killTweensOf: jest.fn(),
+  getProperty: jest.fn(),
+  quickSetter: jest.fn().mockReturnValue((x: number) => x),
+};
 
-// Mock the actual GSAP module
-jest.mock('gsap', () => mockGsap);
+// Mock the GSAP module
+jest.mock('gsap', () => mockGSAP);
+
+// Add mocks to global scope
+Object.assign(global, {
+  gsapMock: mockGSAP,
+  timelineMock: mockTimeline,
+} as GlobalWithMocks);
 
 describe('Test Environment Setup', () => {
   it('should have proper test environment configuration', () => {
     expect(true).toBe(true);
-    expect((global as any).gsapMock).toBeDefined();
-    expect((global as any).timelineMock).toBeDefined();
+    expect((global as unknown as GlobalWithMocks).gsapMock).toBeDefined();
+    expect((global as unknown as GlobalWithMocks).timelineMock).toBeDefined();
   });
 });
 
 // Clear all mocks after each test
 afterEach(() => {
   jest.clearAllMocks();
-}); 
+});
