@@ -75,9 +75,9 @@ class ResizeObserverMock {
   }
   
   unobserve(target) {
-    this.#callbacks.forEach((entry, index) => {
-      if (entry.target === target) {
-        this.#callbacks.delete(entry);
+    this.#callbacks.forEach((_entry, _index) => {
+      if (_entry.target === target) {
+        this.#callbacks.delete(_entry);
       }
     });
   }
@@ -114,14 +114,18 @@ class IntersectionObserverMock {
       boundingClientRect: target.getBoundingClientRect(),
       intersectionRatio: 1,
       intersectionRect: target.getBoundingClientRect(),
-      rootBounds: null,
+      rootBounds: this.#options.root?.getBoundingClientRect() || null,
       time: Date.now(),
     };
     this.#callbacks.forEach(callback => callback([entry], this));
   }
   
   unobserve(target) {
-    // Implementation remains the same
+    this.#callbacks.forEach((_entry, _index) => {
+      if (_entry.target === target) {
+        this.#callbacks.delete(_entry);
+      }
+    });
   }
   
   disconnect() {
@@ -167,6 +171,58 @@ const createFilteredConsole = (original, filterPatterns) => (...args) => {
     
   original.call(console, prefix, ...args);
 };
+
+// Mock GSAP
+const timelineMock = {
+  to: jest.fn().mockReturnThis(),
+  from: jest.fn().mockReturnThis(),
+  fromTo: jest.fn().mockReturnThis(),
+  set: jest.fn().mockReturnThis(),
+  kill: jest.fn().mockReturnThis(),
+  pause: jest.fn().mockReturnThis(),
+  resume: jest.fn().mockReturnThis(),
+  progress: jest.fn().mockReturnThis(),
+  play: jest.fn().mockReturnThis(),
+  reverse: jest.fn().mockReturnThis(),
+};
+
+const gsapMock = {
+  to: jest.fn().mockReturnValue(timelineMock),
+  from: jest.fn().mockReturnValue(timelineMock),
+  fromTo: jest.fn().mockReturnValue(timelineMock),
+  set: jest.fn().mockReturnValue(timelineMock),
+  timeline: jest.fn().mockReturnValue(timelineMock),
+  killTweensOf: jest.fn(),
+  core: {
+    Timeline: jest.fn().mockImplementation(() => timelineMock),
+  },
+};
+
+// Mock GSAP module
+jest.mock('gsap', () => ({
+  __esModule: true,
+  default: gsapMock,
+  ...gsapMock,
+}));
+
+// Make the mock available globally for tests
+global.gsapMock = gsapMock;
+global.timelineMock = timelineMock;
+
+// Clear all mocks before each test
+beforeEach(() => {
+  jest.clearAllMocks();
+  Object.values(timelineMock).forEach(mock => {
+    if (jest.isMockFunction(mock)) {
+      mock.mockClear();
+    }
+  });
+  Object.values(gsapMock).forEach(mock => {
+    if (jest.isMockFunction(mock)) {
+      mock.mockClear();
+    }
+  });
+});
 
 beforeAll(() => {
   const filterPatterns = [
@@ -265,63 +321,6 @@ jest.mock('pixi.js', () => ({
   DisplacementFilter: jest.fn().mockImplementation(() => ({
     scale: { x: 0, y: 0 },
   })),
-}));
-
-// Modern GSAP mock with better type support and async handling
-jest.mock('gsap', () => ({
-  to: jest.fn().mockImplementation(() => ({
-    play: jest.fn(),
-    pause: jest.fn(),
-    restart: jest.fn(),
-    reverse: jest.fn(),
-    kill: jest.fn(),
-  })),
-  from: jest.fn().mockImplementation(() => ({
-    play: jest.fn(),
-    pause: jest.fn(),
-    restart: jest.fn(),
-    reverse: jest.fn(),
-    kill: jest.fn(),
-  })),
-  fromTo: jest.fn().mockImplementation(() => ({
-    play: jest.fn(),
-    pause: jest.fn(),
-    restart: jest.fn(),
-    reverse: jest.fn(),
-    kill: jest.fn(),
-  })),
-  timeline: jest.fn().mockImplementation(() => ({
-    to: jest.fn(),
-    from: jest.fn(),
-    fromTo: jest.fn(),
-    play: jest.fn(),
-    pause: jest.fn(),
-    restart: jest.fn(),
-    reverse: jest.fn(),
-    kill: jest.fn(),
-    progress: jest.fn(),
-    add: jest.fn().mockReturnThis(),
-  })),
-  set: jest.fn(),
-  getProperty: jest.fn(),
-  setProperty: jest.fn(),
-  registerPlugin: jest.fn(),
-  Power2: {
-    easeInOut: 'ease-in-out',
-    easeOut: 'ease-out',
-    easeIn: 'ease-in',
-  },
-  config: {
-    autoSleep: 60,
-    force3D: false,
-    nullTargetWarn: true,
-    units: {
-      lineHeight: '',
-      rotation: 'deg',
-      xPercent: '%',
-      yPercent: '%',
-    },
-  },
 }));
 
 // Modern environment setup

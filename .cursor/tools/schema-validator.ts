@@ -90,7 +90,7 @@ const ConfigFileSchema = z.object({
 });
 
 export class SchemaValidator {
-  private static async readConfigFile(filePath: string): Promise<any> {
+  private static async readConfigFile(filePath: string): Promise<z.infer<typeof ConfigFileSchema>> {
     const content = await fs.readFile(filePath, 'utf-8');
     const parts = content.split('---');
     if (parts.length >= 3) {

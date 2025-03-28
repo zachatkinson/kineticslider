@@ -143,7 +143,7 @@ const validateConfig = (config) => {
       jsonConfig = JSON.parse(configSection);
     }
   } catch (error) {
-    return { valid: false, error: 'Invalid JSON in Configuration section' };
+    return { valid: false, error: `Error parsing Configuration section: ${error.message}` };
   }
   
   // Validate either the direct rule or the one in the JSON configuration
@@ -184,13 +184,13 @@ async function validateFile(filePath) {
         const jsonConfig = JSON.parse(configMatch[1]);
         config.Configuration = jsonConfig;
       } catch (error) {
-        return { valid: false, error: 'Invalid JSON in Configuration section' };
+        return { valid: false, error: `Invalid JSON in Configuration section: ${error.message}` };
       }
     }
     
     return validateConfig(config);
   } catch (error) {
-    return { valid: false, error: error.message };
+    return { valid: false, error: `Error validating file: ${error.message}` };
   }
 }
 
@@ -240,7 +240,7 @@ if (require.main === module) {
         process.exit(result.valid ? 0 : 1);
       }
     } catch (error) {
-      console.error('Validation failed:', error);
+      console.error('Validation failed:', error.message);
       process.exit(1);
     }
   })();

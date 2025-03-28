@@ -9,7 +9,11 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "vite build",
     "dev": "vite",
@@ -34,7 +38,13 @@
     "docs": "typedoc src/index.ts",
     "prepare": "husky && husky install"
   },
-  "keywords": ["react", "slider", "typescript", "accessible", "component"],
+  "keywords": [
+    "react",
+    "slider",
+    "typescript",
+    "accessible",
+    "component"
+  ],
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
@@ -77,6 +87,8 @@
     "@testing-library/user-event": "^14.6.1",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/jest": "^29.5.14",
+    "@types/js-yaml": "4.0.9",
+    "@types/lodash": "4.17.16",
     "@types/node": "^22.13.14",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
@@ -87,6 +99,7 @@
     "core-js": "^3.41.0",
     "eslint": "9.23.0",
     "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-jest": "28.11.0",
     "eslint-plugin-jsdoc": "^50.6.9",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.4",
@@ -98,19 +111,23 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-sonar-reporter": "^2.0.0",
     "jest-watch-typeahead": "^2.2.2",
+    "js-yaml": "4.1.0",
     "lint-staged": "^15.5.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "rimraf": "^6.0.1",
     "size-limit": "^11.2.0",
+    "ts-jest": "29.3.0",
     "typedoc": "^0.28.1",
     "typescript": "^5.8.2",
     "vite": "^6.2.3",
     "vite-plugin-compression": "^0.5.1",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "zod": "3.24.2"
   },
   "dependencies": {
     "gsap": "^3.12.7",
+    "lodash": "4.17.21",
     "pixi.js": "^8.9.0"
   },
   "publishConfig": {
@@ -139,10 +156,16 @@
   },
   "typesVersions": {
     "*": {
-      "*": ["./dist/index.d.ts"]
+      "*": [
+        "./dist/index.d.ts"
+      ]
     }
   },
-  "browserslist": [">0.2%", "not dead", "not op_mini all"],
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ],
   "funding": {
     "type": "github",
     "url": "https://github.com/sponsors/zach"

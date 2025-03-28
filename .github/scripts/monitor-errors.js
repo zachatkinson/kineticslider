@@ -8,9 +8,9 @@ const CPU_THRESHOLD_PERCENT = 80; // 80% CPU threshold
 
 // Paths to check for errors
 const ERROR_PATHS = {
-  next: './.next/error.log',
-  test: './coverage/coverage-final.json',
-  build: './logs/build-errors.log'
+  next: path.resolve('./.next/error.log'),
+  test: path.resolve('./coverage/coverage-final.json'),
+  build: path.resolve('./logs/build-errors.log')
 };
 
 // Helper function to check if file exists

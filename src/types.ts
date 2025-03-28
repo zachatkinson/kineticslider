@@ -50,4 +50,9 @@ export interface KineticSliderProps {
    * @default true
    */
   infinite?: boolean;
+  
+  /**
+   * Enable lazy loading of slides
+   */
+  lazyLoad?: boolean;
 } 
