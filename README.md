@@ -60,14 +60,54 @@ function App() {
 | children | ReactNode[] \| ReactNode | required | The slides to be rendered in the slider |
 | className | string | '' | Custom class name for the slider container |
 | style | CSSProperties | {} | Custom inline styles for the slider container |
-| duration | number | 0.8 | Animation duration in seconds (must be positive) |
-| ease | string | 'power3.out' | GSAP easing function |
+| duration | number | 0.5 | Animation duration in seconds (must be positive) |
+| ease | string | 'power2.out' | GSAP easing function |
 | enableGestures | boolean | true | Enable touch/swipe gestures |
 | enableKeyboard | boolean | true | Enable keyboard navigation |
 | onChange | (index: number) => void | undefined | Callback fired when the active slide changes |
 | initialIndex | number | 0 | Initial active slide index (must be valid) |
-| infinite | boolean | false | Enable infinite looping |
+| infinite | boolean | true | Enable infinite looping |
 | lazyLoad | boolean | false | Enable lazy loading of slides |
+
+## Dependencies
+
+- React ≥18.0.0
+- GSAP ≥3.12.0
+- Modern browser support (see Browser Support section)
+
+## Browser Support
+
+| Browser | Minimum Version |
+|---------|----------------|
+| Chrome  | ≥90 |
+| Firefox | ≥88 |
+| Safari  | ≥14 |
+| Edge    | ≥90 |
+| iOS Safari | ≥14 |
+| Chrome Android | ≥90 |
+
+## Advanced Features
+
+### Circuit Breaker Pattern
+The component implements an advanced circuit breaker pattern for robust error handling:
+- Exponential backoff with configurable thresholds
+- State transitions: closed -> half-open -> open
+- Automatic recovery with analytics tracking
+
+### Performance Monitoring
+Built-in performance tracking capabilities:
+- Real-time FPS tracking during animations
+- Frame time distribution analysis
+- Memory usage monitoring
+- CPU utilization tracking
+- Dropped frame detection
+
+### Error Recovery
+Comprehensive error handling system:
+- Progressive error handling with fallbacks
+- Multiple recovery paths with state tracking
+- Detailed error analytics and monitoring
+- Graceful degradation strategies
 
 ## Accessibility
 
@@ -190,15 +230,6 @@ The component includes comprehensive tests with analytics integration:
   - Accessibility compliance
 
 See our [Test Documentation](src/__tests__/README.md) for detailed information about test patterns and assertions.
-
-## Browser Support
-
-| Browser | Version |
-|---------|---------|
-| Chrome | ≥90 |
-| Firefox | ≥88 |
-| Safari | ≥14 |
-| Edge | ≥90 |
 
 ## Development
 
