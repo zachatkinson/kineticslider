@@ -1,25 +1,48 @@
+import type { Mock } from 'vitest';
+
 interface TimelineMock {
-  to: jest.Mock;
-  from: jest.Mock;
-  fromTo: jest.Mock;
-  set: jest.Mock;
-  play: jest.Mock;
-  pause: jest.Mock;
-  progress: jest.Mock;
-  kill: jest.Mock;
+  to: Mock;
+  from: Mock;
+  fromTo: Mock;
+  set: Mock;
+  play: Mock;
+  pause: Mock;
+  progress: Mock;
+  kill: Mock;
 }
 
 interface GsapMock {
-  timeline: jest.Mock;
-  to: jest.Mock;
-  from: jest.Mock;
-  set: jest.Mock;
-  registerPlugin: jest.Mock;
+  timeline: Mock;
+  to: Mock;
+  from: Mock;
+  set: Mock;
+  registerPlugin: Mock;
 }
 
 declare global {
   var gsapMock: GsapMock;
   var timelineMock: TimelineMock;
+}
+
+declare module 'gsap' {
+  interface TweenVars {
+    to: Mock;
+    from: Mock;
+    fromTo: Mock;
+    set: Mock;
+    play: Mock;
+    pause: Mock;
+    progress: Mock;
+    kill: Mock;
+  }
+
+  interface GSAPStatic {
+    timeline: Mock;
+    to: Mock;
+    from: Mock;
+    set: Mock;
+    registerPlugin: Mock;
+  }
 }
 
 export {}; 

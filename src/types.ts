@@ -1,75 +1,45 @@
-import { gsap } from 'gsap';
-
-import { CSSProperties, ErrorInfo, ReactNode } from 'react';
+import type { CSSProperties, ReactNode, ErrorInfo } from 'react';
+import type { gsap } from 'gsap';
 
 // Component Props Types
-export interface KineticSliderProps {
-  /**
-   * The slides to be rendered in the slider
-   */
-  children: ReactNode;
-
-  /**
-   * Custom class name for the slider container
-   */
-  className?: string;
-
-  /**
-   * Custom inline styles for the slider container
-   */
+export interface SlideProps {
+  id: string;
+  content: ReactNode;
   style?: CSSProperties;
-
-  /**
-   * Animation duration in seconds
-   * @default 0.5
-   */
-  duration?: number;
-
-  /**
-   * Animation easing function
-   * @default "power2.out"
-   */
-  ease?: string;
-
-  /**
-   * Whether to enable touch/swipe gestures
-   * @default true
-   */
-  enableGestures?: boolean;
-
-  /**
-   * Whether to enable keyboard navigation
-   * @default true
-   */
-  enableKeyboard?: boolean;
-
-  /**
-   * Callback fired when the active slide changes
-   */
-  onChange?: (index: number) => void;
-
-  /**
-   * Initial active slide index
-   * @default 0
-   */
-  initialIndex?: number;
-
-  /**
-   * Whether to enable infinite looping
-   * @default true
-   */
-  infinite?: boolean;
-
-  /**
-   * Enable lazy loading of slides
-   */
-  lazyLoad?: boolean;
-
-  /**
-   * Optional callback for performance metrics
-   */
-  onMetrics?: (metrics: PerformanceMetrics) => void;
+  image?: string;
+  title?: string;
 }
+
+export interface SliderMetrics {
+  currentIndex: number;
+  totalSlides: number;
+  progress: number;
+  direction: 'forward' | 'backward';
+  isAnimating: boolean;
+}
+
+export interface Slide {
+  id: string;
+  content: string;
+}
+
+export interface KineticSliderProps {
+  slides: SlideProps[];
+  onSlideChange?: (currentIndex: number) => void;
+  onAnimationComplete?: () => void;
+  onError?: (error: Error) => void;
+  className?: string;
+  style?: CSSProperties;
+  enableKeyboard?: boolean;
+  enableGestures?: boolean;
+  initialSlide?: number;
+  duration?: number;
+  ease?: string;
+  lazyLoad?: boolean;
+}
+
+// GSAP Types
+export type GsapTimeline = ReturnType<typeof gsap.timeline>;
 
 // Error Types
 /**
@@ -86,20 +56,19 @@ export class SliderError extends Error {
  * Error types that can occur in the slider
  */
 export enum SliderErrorType {
-  VALIDATION = 'validation',
-  ANIMATION = 'animation',
-  GESTURE = 'gesture',
   RENDER = 'render',
-  MEMORY = 'memory',
+  ANIMATION = 'animation',
+  VALIDATION = 'validation',
 }
 
 /**
  * Extended error information for better error handling
  */
-export interface SliderErrorInfo extends Omit<ErrorInfo, 'componentStack'> {
-  errorType?: SliderErrorType;
-  componentStack?: string | undefined;
-  additionalData?: Record<string, unknown>;
+export interface SliderErrorInfo {
+  componentStack: string;
+  message: string;
+  name: string;
+  stack?: string | null;
 }
 
 // Performance Types
@@ -123,18 +92,17 @@ export interface PerformanceMetrics {
  * Extended performance metrics including web vitals
  */
 export interface ExtendedPerformanceMetrics extends PerformanceMetrics {
-  /** Time to First Contentful Paint */
-  FCP?: number;
-  /** Largest Contentful Paint */
-  LCP?: number;
-  /** First Input Delay */
-  FID?: number;
-  /** Cumulative Layout Shift */
-  CLS?: number;
-  /** Time to Interactive */
-  TTI?: number;
-  /** Total Blocking Time */
-  TBT?: number;
+  initialRenderTime: number;
+  averageFrameTime: number;
+  droppedFrames: number;
+  memoryUsage: number;
+  gestureProcessingTime: number;
+  FCP?: number;  // First Contentful Paint
+  LCP?: number;  // Largest Contentful Paint
+  FID?: number;  // First Input Delay
+  CLS?: number;  // Cumulative Layout Shift
+  TTI?: number;  // Time to Interactive
+  TBT?: number;  // Total Blocking Time
 }
 
 // Analytics Types
@@ -143,10 +111,10 @@ export interface ExtendedPerformanceMetrics extends PerformanceMetrics {
  */
 export enum SliderAnalyticsEvent {
   SLIDE_CHANGE = 'slide_change',
-  GESTURE_START = 'gesture_start',
-  GESTURE_END = 'gesture_end',
+  ANIMATION_COMPLETE = 'animation_complete',
   ERROR = 'error',
-  PERFORMANCE = 'performance',
+  GESTURE_START = 'gesture_start',
+  GESTURE_END = 'gesture_end'
 }
 
 /**
@@ -155,14 +123,9 @@ export enum SliderAnalyticsEvent {
 export interface SliderAnalyticsData {
   eventType: SliderAnalyticsEvent;
   timestamp: string;
-  slideIndex?: number;
-  gestureType?: 'touch' | 'mouse' | 'keyboard';
-  error?: {
-    type: SliderErrorType;
-    message: string;
-    stack?: string | undefined;
-  };
-  performance?: PerformanceMetrics;
+  gestureType?: string;
+  error?: Error;
+  index?: number;
 }
 
 // GSAP Animation Types
@@ -181,24 +144,6 @@ export interface GsapTimelineDefaults {
   overwrite?: boolean | 'auto';
   immediateRender?: boolean;
   onComplete?: () => void;
-}
-
-export interface GsapTimeline {
-  to: (
-    target: HTMLElement | string,
-    vars: Record<string, unknown>
-  ) => GsapTimeline;
-  fromTo: (
-    target: HTMLElement | string,
-    fromVars: Record<string, unknown>,
-    toVars: Record<string, unknown>
-  ) => GsapTimeline;
-  kill: () => void;
-  progress: (value: number) => GsapTimeline;
-  pause: () => GsapTimeline;
-  resume: () => GsapTimeline;
-  eventCallback: GsapEventCallback;
-  defaults: GsapTimelineDefaults;
 }
 
 export interface GsapInstance {
@@ -235,11 +180,11 @@ export interface NormalizedPointerEvent {
 
 // Window Extensions
 export interface WindowWithAnalytics extends Window {
-  analytics: {
+  analytics?: {
     track: (event: string, data: unknown) => void;
   };
-  errorTracker: {
-    captureError: (error: Error, context: unknown) => void;
+  errorTracker?: {
+    captureError: (error: Error | null, context: unknown) => void;
   };
   webVitals: {
     getFCP: (cb: (metric: { value: number }) => void) => void;
@@ -272,3 +217,9 @@ export interface DragState {
 
 export type DragEventType = TouchEvent | MouseEvent;
 export type DragEventHandler = (event: DragEventType) => void;
+
+export interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+}

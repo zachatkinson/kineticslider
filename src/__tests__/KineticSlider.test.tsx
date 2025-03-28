@@ -1,159 +1,105 @@
-/* eslint-env jest */
-import '@testing-library/jest-dom';
+/* eslint-env vitest */
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import { act, fireEvent, render } from '@testing-library/react';
-import gsap from 'gsap';
-
-import React from 'react';
-
-import { KineticSlider } from '../KineticSlider';
-
-// Extend Window interface
-declare global {
-  interface Window {
-    analytics: {
-      track: (event: string, data: Record<string, unknown>) => void;
-    };
-    errorTracker: {
-      captureError: (
-        error: Error | null,
-        context: Record<string, unknown>
-      ) => void;
-    };
-  }
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace NodeJS {
-    interface Global {
-      gsap: typeof gsap;
-    }
-  }
-}
+import { gsapMock, completeAnimation, startAnimation } from './mocks/gsap.mock';
+import { KineticSlider } from '../components/KineticSlider';
+import { Slide } from '../types';
+import './types/globals.d';
 
 // Mock GSAP
-jest.mock('gsap', () => {
-  const mockTimeline = {
-    to: jest.fn().mockReturnThis(),
-    kill: jest.fn(),
-    eventCallback: jest.fn((event, callback) => {
-      if (event === 'onComplete' && callback) {
-        // Store the callback to call it later
-        mockTimeline.onComplete = callback;
-      }
-      return mockTimeline;
-    }),
-    play: jest.fn(),
-    onComplete: null as null | (() => void),
-  };
-
-  const mockGsap = {
-    timeline: jest.fn(({ onComplete }) => {
-      // Store the onComplete callback from timeline creation
-      if (onComplete) {
-        mockTimeline.onComplete = onComplete;
-      }
-      return mockTimeline;
-    }),
-    to: jest.fn(),
-    set: jest.fn(),
-    killTweensOf: jest.fn(),
-  };
-
-  return mockGsap;
-});
+vi.mock('gsap', () => ({
+  gsap: gsapMock.gsap
+}));
 
 // Mock error tracker
 const mockErrorTracker = {
-  captureError: jest.fn(),
+  captureError: vi.fn((_error: Error, _context: Record<string, unknown>) => {}),
 };
 
 // Mock analytics
 const mockAnalytics = {
-  track: jest.fn(),
+  track: vi.fn((_event: string, _data: Record<string, unknown>) => {}),
 };
 
 // Test data
-const mockSlides = [
-  <div key="1" data-testid="slide-1">
-    Slide 1
-  </div>,
-  <div key="2" data-testid="slide-2">
-    Slide 2
-  </div>,
-  <div key="3" data-testid="slide-3">
-    Slide 3
-  </div>,
+const mockSlides: Slide[] = [
+  {
+    id: '1',
+    content: 'Slide 1'
+  },
+  {
+    id: '2',
+    content: 'Slide 2'
+  },
+  {
+    id: '3',
+    content: 'Slide 3'
+  }
 ];
 
 // Mock window.gsap
 beforeAll(() => {
-  global.gsap = gsap;
+  window.gsap = gsapMock.gsap;
   window.analytics = mockAnalytics;
   window.errorTracker = mockErrorTracker;
 });
 
 describe('KineticSlider', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should render slides correctly', () => {
-    const { getByTestId } = render(<KineticSlider>{mockSlides}</KineticSlider>);
+    const slides = [
+      { id: '1', content: <div>Slide 1</div> },
+      { id: '2', content: <div>Slide 2</div> },
+      { id: '3', content: <div>Slide 3</div> }
+    ];
 
-    // Verify that slides are rendered
-    mockSlides.forEach((_, index) => {
-      expect(getByTestId(`slide-${index + 1}`)).toBeInTheDocument();
-    });
+    const { container } = render(<KineticSlider slides={slides} />);
+    const slideElements = container.querySelectorAll('[aria-roledescription="slide"]');
+    expect(slideElements).toHaveLength(3);
+    expect(slideElements[0]).toHaveAttribute('aria-current', 'true');
+    expect(slideElements[1]).toHaveAttribute('aria-current', 'false');
+    expect(slideElements[2]).toHaveAttribute('aria-current', 'false');
   });
 
   it('handles keyboard navigation correctly', async () => {
-    const { container } = render(
-      <KineticSlider>
-        <div>Slide 1</div>
-        <div>Slide 2</div>
-        <div>Slide 3</div>
-      </KineticSlider>
-    );
+    const slides = [
+      { id: '1', content: <div>Slide 1</div> },
+      { id: '2', content: <div>Slide 2</div> },
+      { id: '3', content: <div>Slide 3</div> }
+    ];
 
-    // Get the first slide
-    const firstSlide = container.querySelector(
-      '[aria-roledescription="slide"]'
-    );
-    expect(firstSlide).toHaveAttribute('aria-current', 'true');
+    const { container } = render(<KineticSlider slides={slides} />);
+    const slider = container.querySelector('.kinetic-slider-container');
+    expect(slider).toBeDefined();
 
-    // Press right arrow key
-    fireEvent.keyDown(firstSlide!, { key: 'ArrowRight' });
+    // Initial state check
+    let allSlides = container.querySelectorAll('[aria-roledescription="slide"]');
+    expect(allSlides[0]).toHaveAttribute('aria-current', 'true');
+    expect(allSlides[1]).toHaveAttribute('aria-current', 'false');
 
-    // Run requestAnimationFrame
+    // Navigate to next slide
     await act(async () => {
-      jest.runOnlyPendingTimers();
-      // Wait for React to process state updates
-      await Promise.resolve();
+      fireEvent.keyDown(slider!, { key: 'ArrowRight' });
+      startAnimation();
     });
 
-    // Get the GSAP timeline mock
-    const timelineMock = (gsap.timeline as jest.Mock).mock.results[0].value;
+    // During animation, no slide should be current
+    allSlides = container.querySelectorAll('[aria-roledescription="slide"]');
+    expect(allSlides[0]).toHaveAttribute('aria-current', 'false');
+    expect(allSlides[1]).toHaveAttribute('aria-current', 'false');
 
-    // Run the animation completion callback
+    // Complete animation
     await act(async () => {
-      if (timelineMock.onComplete) {
-        timelineMock.onComplete();
-      }
-      // Wait for React to process state updates
-      await Promise.resolve();
-      // Run any pending timers
-      jest.runOnlyPendingTimers();
+      completeAnimation();
     });
 
-    // After animation completes and state updates, verify the second slide is active
-    const slides = container.querySelectorAll('[aria-roledescription="slide"]');
-    expect(slides[0]).toHaveAttribute('aria-current', 'false');
-    expect(slides[1]).toHaveAttribute('aria-current', 'true');
-    expect(slides[2]).toHaveAttribute('aria-current', 'false');
+    // After animation, second slide should be current
+    allSlides = container.querySelectorAll('[aria-roledescription="slide"]');
+    expect(allSlides[0]).toHaveAttribute('aria-current', 'false');
+    expect(allSlides[1]).toHaveAttribute('aria-current', 'true');
   });
 });
-
-// ... rest of the file ...

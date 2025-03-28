@@ -13,7 +13,7 @@ export default {
   '**/*.{json,md,yml,yaml}': ['prettier --write'],
 
   // Test files
-  '**/*.{test,spec}.{js,jsx,ts,tsx}': ['jest --bail --findRelatedTests'],
+  '**/*.{test,spec}.{js,jsx,ts,tsx}': ['vitest related --bail'],
 
   // Package files
   'package.json': ['prettier --write'],

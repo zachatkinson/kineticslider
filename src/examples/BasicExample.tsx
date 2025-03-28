@@ -1,29 +1,15 @@
-import { KineticSlider } from '../KineticSlider';
+import { KineticSlider } from '../components/KineticSlider';
+import type { SlideProps } from '../types';
 
 export const BasicExample = () => {
   const handleSlideChange = (index: number) => {
     console.log(`Slide changed to index: ${index}`);
   };
 
-  return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <h1>KineticSlider Basic Example</h1>
-      
-      {/* 
-        KineticSlider with default settings:
-        - Smooth GSAP animations
-        - Touch/mouse gesture support
-        - Keyboard navigation (arrow keys)
-        - Infinite looping
-        - Accessible navigation buttons
-      */}
-      <KineticSlider
-        duration={0.5}
-        ease="power2.out"
-        enableGestures={true}
-        onChange={handleSlideChange}
-        infinite={true}
-      >
+  const slides: SlideProps[] = [
+    {
+      id: '1',
+      content: (
         <div
           style={{
             height: '300px',
@@ -37,6 +23,11 @@ export const BasicExample = () => {
         >
           Slide 1
         </div>
+      )
+    },
+    {
+      id: '2',
+      content: (
         <div
           style={{
             height: '300px',
@@ -50,6 +41,11 @@ export const BasicExample = () => {
         >
           Slide 2
         </div>
+      )
+    },
+    {
+      id: '3',
+      content: (
         <div
           style={{
             height: '300px',
@@ -63,7 +59,28 @@ export const BasicExample = () => {
         >
           Slide 3
         </div>
-      </KineticSlider>
+      )
+    }
+  ];
+
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+      <h1>KineticSlider Basic Example</h1>
+      
+      {/* 
+        KineticSlider with default settings:
+        - Smooth GSAP animations
+        - Touch/mouse gesture support
+        - Keyboard navigation (arrow keys)
+        - Accessible navigation buttons
+      */}
+      <KineticSlider
+        slides={slides}
+        duration={0.5}
+        ease="power2.out"
+        enableGestures={true}
+        onSlideChange={handleSlideChange}
+      />
     </div>
   );
 };

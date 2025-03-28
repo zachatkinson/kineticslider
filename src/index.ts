@@ -1,2 +1,2 @@
-export { KineticSlider } from './KineticSlider';
-export type { KineticSliderProps } from './types'; 
+export { KineticSlider } from '@components/KineticSlider';
+export type { KineticSliderProps } from '@/types'; 

@@ -8,7 +8,6 @@ node_modules
 
 # Testing and Coverage
 coverage
-.jest-cache
 **/__tests__/__snapshots__/
 **/*.test.js.snap
 

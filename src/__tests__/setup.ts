@@ -1,89 +1,109 @@
-// Types for test environment
-interface GlobalWithMocks {
-  gsapMock: MockGsap;
-  timelineMock: MockTimeline;
-}
+import '@testing-library/jest-dom/vitest';
+import { vi, expect, afterEach } from 'vitest';
+import { customMatchers, MockIntersectionObserver, mockMatchMedia } from './utils/test-utils';
+import { gsapMock } from './mocks/gsap';
 
-class MockResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
+// Mock GSAP
+vi.mock('gsap', () => ({
+  gsap: gsapMock.gsap
+}));
 
-global.ResizeObserver = MockResizeObserver;
+// Setup custom matchers
+expect.extend(customMatchers);
 
-interface MockTimelineVars {
-  duration?: number;
-  ease?: string;
-  onComplete?: () => void;
-}
+// Mock window.matchMedia
+mockMatchMedia(true);
 
-interface MockTimeline {
-  to: jest.Mock<MockTimeline>;
-  from: jest.Mock<MockTimeline>;
-  fromTo: jest.Mock<MockTimeline>;
-  set: jest.Mock<MockTimeline>;
-  play: jest.Mock<MockTimeline>;
-  pause: jest.Mock<MockTimeline>;
-  progress: jest.Mock<MockTimeline>;
-  kill: jest.Mock<MockTimeline>;
-  eventCallback: jest.Mock<MockTimeline>;
-  defaults?: MockTimelineVars;
-}
+// Mock IntersectionObserver
+window.IntersectionObserver = MockIntersectionObserver;
 
-interface MockGsap {
-  timeline: jest.Mock<MockTimeline>;
-  to: jest.Mock<MockTimeline>;
-  from: jest.Mock<MockTimeline>;
-  set: jest.Mock<MockTimeline>;
-  registerPlugin: jest.Mock;
-  killTweensOf: jest.Mock;
-  getProperty: jest.Mock;
-  quickSetter: jest.Mock;
-}
-
-// Create GSAP mock
-const mockTimeline: MockTimeline = {
-  to: jest.fn().mockReturnThis(),
-  from: jest.fn().mockReturnThis(),
-  fromTo: jest.fn().mockReturnThis(),
-  set: jest.fn().mockReturnThis(),
-  play: jest.fn().mockReturnThis(),
-  pause: jest.fn().mockReturnThis(),
-  progress: jest.fn().mockReturnThis(),
-  kill: jest.fn().mockReturnThis(),
-  eventCallback: jest.fn().mockReturnThis(),
+// Mock requestAnimationFrame
+const mockRequestAnimationFrame = (callback: (timestamp: number) => void): number => {
+  return setTimeout(() => callback(Date.now()), 0) as unknown as number;
 };
 
-const mockGSAP: MockGsap = {
-  timeline: jest.fn().mockReturnValue(mockTimeline),
-  to: jest.fn().mockReturnValue(mockTimeline),
-  from: jest.fn().mockReturnValue(mockTimeline),
-  set: jest.fn().mockReturnValue(mockTimeline),
-  registerPlugin: jest.fn(),
-  killTweensOf: jest.fn(),
-  getProperty: jest.fn(),
-  quickSetter: jest.fn().mockReturnValue((x: number) => x),
+const mockCancelAnimationFrame = (handle: number): void => {
+  clearTimeout(handle);
 };
 
-// Mock the GSAP module
-jest.mock('gsap', () => mockGSAP);
+global.requestAnimationFrame = mockRequestAnimationFrame;
+global.cancelAnimationFrame = mockCancelAnimationFrame;
 
-// Add mocks to global scope
-Object.assign(global, {
-  gsapMock: mockGSAP,
-  timelineMock: mockTimeline,
-} as GlobalWithMocks);
+// Mock Touch API
+interface TouchInit {
+  identifier: number;
+  target: EventTarget;
+  clientX?: number;
+  clientY?: number;
+  screenX?: number;
+  screenY?: number;
+  pageX?: number;
+  pageY?: number;
+  radiusX?: number;
+  radiusY?: number;
+  rotationAngle?: number;
+  force?: number;
+}
 
-describe('Test Environment Setup', () => {
-  it('should have proper test environment configuration', () => {
-    expect(true).toBe(true);
-    expect((global as unknown as GlobalWithMocks).gsapMock).toBeDefined();
-    expect((global as unknown as GlobalWithMocks).timelineMock).toBeDefined();
-  });
+class Touch {
+  identifier: number;
+  target: EventTarget;
+  clientX: number;
+  clientY: number;
+  screenX: number;
+  screenY: number;
+  pageX: number;
+  pageY: number;
+  radiusX: number;
+  radiusY: number;
+  rotationAngle: number;
+  force: number;
+
+  constructor(init: TouchInit) {
+    this.identifier = init.identifier;
+    this.target = init.target;
+    this.clientX = init.clientX || 0;
+    this.clientY = init.clientY || 0;
+    this.screenX = init.screenX || 0;
+    this.screenY = init.screenY || 0;
+    this.pageX = init.pageX || 0;
+    this.pageY = init.pageY || 0;
+    this.radiusX = init.radiusX || 0;
+    this.radiusY = init.radiusY || 0;
+    this.rotationAngle = init.rotationAngle || 0;
+    this.force = init.force || 0;
+  }
+}
+
+// Add Touch to global
+(global as { Touch?: typeof Touch }).Touch = Touch;
+
+// Mock ResizeObserver
+class ResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+
+global.ResizeObserver = ResizeObserver;
+
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
 });
 
-// Clear all mocks after each test
+// Reset all mocks after each test
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
 });
