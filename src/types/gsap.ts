@@ -1,14 +1,6 @@
 /**
- * Main types export file
+ * GSAP animation types and interfaces
  */
-
-export * from './slider';
-export * from './performance';
-export * from './gsap';
-export * from './events';
-
-// Re-export global augmentations
-export * from './global.d';
 
 export interface GsapTicker {
   add: (fn: () => void) => void;
@@ -25,6 +17,21 @@ export interface GsapTimeline {
     duration: number;
     ease: string;
   };
+}
+
+export interface GsapTimelineDefaults {
+  duration?: number;
+  ease?: string;
+  force3D?: boolean;
+  lazy?: boolean;
+  clearProps?: string;
+  overwrite?: boolean | 'auto';
+  immediateRender?: boolean;
+  onComplete?: () => void;
+}
+
+export interface GsapEventCallback {
+  (type: string, callback: () => void): GsapTimeline;
 }
 
 export interface GsapInstance {
@@ -86,12 +93,4 @@ export interface GsapInstance {
     property: string,
     unit?: string
   ) => (value: any) => void;
-}
-
-export interface Slide {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  alt: string;
-}
+} 

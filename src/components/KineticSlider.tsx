@@ -1,14 +1,17 @@
+import { gsap } from 'gsap';
+
 import React, {
+  useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
-  useCallback,
-  useLayoutEffect,
 } from 'react';
-import { gsap } from 'gsap';
+
 import type { KineticSliderProps } from '@/types';
-import { ErrorBoundary } from './ErrorBoundary';
+
 import { useGestures } from '../hooks/useGestures';
+import { ErrorBoundary } from './ErrorBoundary';
 
 /**
  * A high-performance kinetic slider component with smooth animations and gesture support.
@@ -51,10 +54,19 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
   onAnimationComplete,
   onError,
 }) => {
-  // Handle empty slides array
+  // State and refs
+  const [currentSlide, setCurrentSlide] = useState(initialSlide);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [targetSlide, setTargetSlide] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Early validation - moved after hooks
   if (!slides.length) {
     const error = new Error('No slides provided');
-    onError?.(error);
+    if (onError) {
+      onError(error);
+    }
     return null;
   }
 
@@ -62,21 +74,25 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
   const isSingleSlide = slides.length === 1;
 
   // Handle reduced motion preference
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
   const animationDuration = prefersReducedMotion ? 0.1 : duration;
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [targetSlide, setTargetSlide] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const slideWidth = 100 / slides.length;
-
-  const navigateToSlide = useCallback((index: number) => {
-    if (isAnimating || index === currentSlide || index < 0 || index >= slides.length) return;
-    setIsAnimating(true);
-    setTargetSlide(index);
-  }, [currentSlide, isAnimating, slides.length]);
+  const navigateToSlide = useCallback(
+    (index: number) => {
+      if (
+        isAnimating ||
+        index === currentSlide ||
+        index < 0 ||
+        index >= slides.length
+      )
+        return;
+      setIsAnimating(true);
+      setTargetSlide(index);
+    },
+    [currentSlide, isAnimating, slides.length]
+  );
 
   // Use layout effect to ensure state updates happen synchronously
   useLayoutEffect(() => {
@@ -91,37 +107,49 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
           setTargetSlide(null);
           onSlideChange?.(targetSlide);
           onAnimationComplete?.();
-        }
+        },
       });
 
       return () => {
         animation.kill();
       };
     }
-  }, [targetSlide, isAnimating, animationDuration, ease, onSlideChange, onAnimationComplete]);
+
+    return undefined;
+  }, [
+    targetSlide,
+    isAnimating,
+    animationDuration,
+    ease,
+    onSlideChange,
+    onAnimationComplete,
+  ]);
 
   // Effect to handle aria-current during animation
   useEffect(() => {
     if (isAnimating) {
       const slides = containerRef.current?.querySelectorAll('[role="group"]');
-      slides?.forEach(slide => {
+      slides?.forEach((slide) => {
         slide.setAttribute('aria-current', 'false');
       });
     }
   }, [isAnimating]);
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    switch (event.key) {
-      case 'ArrowLeft':
-        event.preventDefault();
-        navigateToSlide(currentSlide - 1);
-        break;
-      case 'ArrowRight':
-        event.preventDefault();
-        navigateToSlide(currentSlide + 1);
-        break;
-    }
-  }, [currentSlide, navigateToSlide]);
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault();
+          navigateToSlide(currentSlide - 1);
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          navigateToSlide(currentSlide + 1);
+          break;
+      }
+    },
+    [currentSlide, navigateToSlide]
+  );
 
   const { attach } = useGestures({
     enabled: enableGestures && !isSingleSlide,
@@ -131,13 +159,13 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
       } else {
         navigateToSlide(currentSlide - 1);
       }
-    }
+    },
   });
 
   useEffect(() => {
     const element = containerRef.current;
     if (!element) return;
-    
+
     const cleanup = attach(element);
     return cleanup;
   }, [attach]);
@@ -168,12 +196,16 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
 
   // Add cleanup effect
   useEffect(() => {
+    const currentRef = sliderRef.current;
     return () => {
-      if (sliderRef.current) {
-        gsap.killTweensOf(sliderRef.current);
+      if (currentRef) {
+        gsap.killTweensOf(currentRef);
       }
     };
   }, []);
+
+  // When no slides, return null (validation was moved after hooks)
+  if (!slides.length) return null;
 
   return (
     <ErrorBoundary>
@@ -184,7 +216,7 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
           position: 'relative',
           overflow: 'hidden',
           width: '100%',
-          ...style
+          ...style,
         }}
         role="region"
         aria-label="Image slider"
@@ -199,7 +231,7 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
           tabIndex={0}
           style={{
             display: 'flex',
-            transform: `translateX(-${currentSlide * 100}%)`
+            transform: `translateX(-${currentSlide * 100}%)`,
           }}
         >
           {slides.map((slide, index) => (
@@ -210,7 +242,13 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
               role="group"
               aria-roledescription="slide"
               aria-label={`Slide ${index + 1} of ${slides.length}`}
-              aria-current={isAnimating ? 'false' : currentSlide === index ? 'true' : 'false'}
+              aria-current={
+                isAnimating
+                  ? 'false'
+                  : currentSlide === index
+                    ? 'true'
+                    : 'false'
+              }
               data-slide-index={index}
               data-is-animating={isAnimating}
             >
@@ -218,7 +256,7 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
             </div>
           ))}
         </div>
-        
+
         {!isSingleSlide && (
           <div className="kinetic-slider-controls">
             <button

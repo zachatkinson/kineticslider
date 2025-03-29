@@ -1,11 +1,17 @@
-import '@testing-library/jest-dom/vitest';
-import { vi, expect, afterEach } from 'vitest';
-import { customMatchers, MockIntersectionObserver, mockMatchMedia } from './utils/test-utils';
-import { gsapMock } from './mocks/gsap';
+/* eslint-env vitest */
+import '@testing-library/jest-dom';
+import { afterEach, expect, vi } from 'vitest';
+
+import { gsapMock } from './mocks/gsap.mock';
+import {
+  customMatchers,
+  MockIntersectionObserver,
+  mockMatchMedia,
+} from './utils/test-utils';
 
 // Mock GSAP
 vi.mock('gsap', () => ({
-  gsap: gsapMock.gsap
+  gsap: gsapMock.gsap,
 }));
 
 // Setup custom matchers
@@ -18,7 +24,9 @@ mockMatchMedia(true);
 window.IntersectionObserver = MockIntersectionObserver;
 
 // Mock requestAnimationFrame
-const mockRequestAnimationFrame = (callback: (timestamp: number) => void): number => {
+const mockRequestAnimationFrame = (
+  callback: (timestamp: number) => void
+): number => {
   return setTimeout(() => callback(Date.now()), 0) as unknown as number;
 };
 

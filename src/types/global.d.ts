@@ -1,47 +1,13 @@
-import type { Mock } from 'vitest';
+/**
+ * Global type augmentations
+ */
 
-interface TimelineMock {
-  to: Mock;
-  from: Mock;
-  fromTo: Mock;
-  set: Mock;
-  play: Mock;
-  pause: Mock;
-  progress: Mock;
-  kill: Mock;
-}
-
-interface GsapMock {
-  timeline: Mock;
-  to: Mock;
-  from: Mock;
-  set: Mock;
-  registerPlugin: Mock;
-}
+import type { GsapInstance } from './gsap';
+import type { WindowWithAnalytics } from './performance';
 
 declare global {
-  var gsapMock: GsapMock;
-  var timelineMock: TimelineMock;
-}
-
-declare module 'gsap' {
-  interface TweenVars {
-    to: Mock;
-    from: Mock;
-    fromTo: Mock;
-    set: Mock;
-    play: Mock;
-    pause: Mock;
-    progress: Mock;
-    kill: Mock;
-  }
-
-  interface GSAPStatic {
-    timeline: Mock;
-    to: Mock;
-    from: Mock;
-    set: Mock;
-    registerPlugin: Mock;
+  interface Window extends WindowWithAnalytics {
+    gsap: GsapInstance;
   }
 }
 

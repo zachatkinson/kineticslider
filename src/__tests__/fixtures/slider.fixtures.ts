@@ -1,31 +1,29 @@
-import { SlideProps } from '../../types';
+import type { Slide } from '@/types';
+import type { GestureEvent } from '@/types/gestures';
 
-export const mockSlides: SlideProps[] = [
+export const mockSlides: Slide[] = [
   {
-    id: 'slide-1',
-    content: 'First Slide Content',
+    id: '1',
+    title: 'Slide 1',
+    description: 'Description for slide 1',
     image: '/images/slide1.jpg',
-    title: 'Slide One'
+    alt: 'Slide 1 image'
   },
   {
-    id: 'slide-2',
-    content: 'Second Slide Content',
+    id: '2',
+    title: 'Slide 2',
+    description: 'Description for slide 2',
     image: '/images/slide2.jpg',
-    title: 'Slide Two'
+    alt: 'Slide 2 image'
   },
   {
-    id: 'slide-3',
-    content: 'Third Slide Content',
+    id: '3',
+    title: 'Slide 3',
+    description: 'Description for slide 3',
     image: '/images/slide3.jpg',
-    title: 'Slide Three'
+    alt: 'Slide 3 image'
   }
 ];
-
-export interface GestureEvent extends Event {
-  clientX: number;
-  clientY: number;
-  touches?: Touch[];
-}
 
 export const mockGestureEvents = {
   touchStart: new TouchEvent('touchstart', {
