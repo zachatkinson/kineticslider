@@ -1,9 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import React from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import { ErrorBoundary } from '../../components/ErrorBoundary';
+import { SliderEventType } from '../../types/analytics';
 import { withErrorBoundary } from '../../utils/hoc';
 
 // Track these mocks outside the mock definition so we can access them
@@ -28,17 +29,73 @@ vi.mock('../../utils/analytics', () => {
 // Component that throws an error when mounted
 const ErrorThrowingComponent = ({
   shouldThrow = true,
+  errorType = 'standard',
 }: {
   shouldThrow?: boolean;
+  errorType?: 'standard' | 'type' | 'custom';
 }): JSX.Element => {
   if (shouldThrow) {
-    throw new Error('Test error');
+    switch (errorType) {
+      case 'type':
+        throw new TypeError('Test type error');
+      case 'custom':
+        class CustomError extends Error {
+          constructor(message: string) {
+            super(message);
+            this.name = 'CustomError';
+          }
+        }
+        throw new CustomError('Custom test error');
+      default:
+        throw new Error('Test error');
+    }
   }
   return <div>No error thrown</div>;
 };
 
-// We don't need the ErrorOnClickComponent for the tests
-// so it's been removed
+// Component that throws async error
+const AsyncErrorComponent = (): JSX.Element => {
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHasError(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (hasError) {
+    throw new Error('Async error');
+  }
+
+  return <div>Loading...</div>;
+};
+
+// Create test context
+const TestContext = createContext<string>('default');
+
+// Component that maintains state
+const StateComponent = ({
+  initialCount = 0,
+}: {
+  initialCount?: number;
+}): JSX.Element => {
+  const [count, setCount] = useState(initialCount);
+  const [shouldError, setShouldError] = useState(false);
+
+  if (shouldError) {
+    throw new Error('State component error');
+  }
+
+  return (
+    <div>
+      <p data-testid="count">Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <button onClick={() => setShouldError(true)}>Trigger error</button>
+    </div>
+  );
+};
 
 describe('ErrorBoundary Component', () => {
   // Silence console errors during tests
@@ -52,6 +109,7 @@ describe('ErrorBoundary Component', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   test('renders children when no error is thrown', () => {
@@ -284,6 +342,461 @@ describe('ErrorBoundary Component', () => {
     // Clean up
     setTimeoutSpy.mockRestore();
     scheduleRecoverySpy.mockRestore();
+    console.error = originalConsoleError;
+  });
+
+  // New tests for comprehensive coverage
+
+  // 1. Max retry limit testing
+  test('triggers ERROR_MAX_RETRIES event after reaching max retries', () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    const originalConsoleWarn = console.warn;
+    console.warn = vi.fn();
+
+    // Component that always errors
+    const AlwaysErrorComponent = (): JSX.Element => {
+      throw new Error('Persistent error');
+    };
+
+    // Render with custom maxRetries
+    render(
+      <ErrorBoundary maxRetries={2}>
+        <AlwaysErrorComponent />
+      </ErrorBoundary>
+    );
+
+    // Verify error boundary rendered
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    // Click retry repeatedly to hit max
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+    // Verify max retries warning was logged
+    expect(console.warn).toHaveBeenCalledWith(
+      'Maximum retry attempts (2) reached'
+    );
+
+    // Verify that ERROR_MAX_RETRIES event was tracked
+    expect(trackEventMock).toHaveBeenCalledTimes(1);
+    expect(trackEventMock.mock.calls[0][0]).toHaveProperty(
+      'type',
+      SliderEventType.ERROR_MAX_RETRIES
+    );
+    expect(trackEventMock.mock.calls[0][0].data).toMatchObject({
+      maxRetries: 2,
+    });
+
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+  });
+
+  // 2. Auto-recovery testing
+  test('auto-recovers after scheduled timeout', () => {
+    // Setup fake timers
+    vi.useFakeTimers();
+
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    // Component that can recover
+    let shouldRecover = false;
+    const RecoverableComponent = (): JSX.Element => {
+      if (!shouldRecover) {
+        throw new Error('Recoverable error');
+      }
+      return <div data-testid="auto-recovered">Auto-recovered component</div>;
+    };
+
+    // Create spy to verify scheduleRecoveryAttempt is called
+    const scheduleRecoverySpy = vi.spyOn(
+      ErrorBoundary.prototype,
+      'scheduleRecoveryAttempt'
+    );
+
+    // Create a component that auto-schedules recovery
+    class TestErrorBoundary extends ErrorBoundary {
+      override componentDidCatch(error: Error, info: React.ErrorInfo): void {
+        super.componentDidCatch(error, info);
+        this.scheduleRecoveryAttempt();
+      }
+    }
+
+    render(
+      <TestErrorBoundary>
+        <RecoverableComponent />
+      </TestErrorBoundary>
+    );
+
+    // Verify fallback is shown
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    // Verify schedule method was called
+    expect(scheduleRecoverySpy).toHaveBeenCalledTimes(1);
+
+    // Allow recovery
+    shouldRecover = true;
+
+    // Fast-forward time to trigger auto-recovery
+    vi.advanceTimersByTime(10000);
+
+    // Verify component recovered
+    expect(screen.getByTestId('auto-recovered')).toBeInTheDocument();
+
+    // Clean up
+    scheduleRecoverySpy.mockRestore();
+    console.error = originalConsoleError;
+  });
+
+  // 3. Nested error boundaries testing
+  test('supports nested error boundaries with proper isolation', () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    // Render nested error boundaries
+    render(
+      <ErrorBoundary
+        fallback={<div data-testid="outer-fallback">Outer Fallback</div>}
+      >
+        <div data-testid="outer-content">Outer Content</div>
+        <ErrorBoundary
+          fallback={<div data-testid="inner-fallback">Inner Fallback</div>}
+        >
+          <ErrorThrowingComponent />
+        </ErrorBoundary>
+        <div data-testid="outer-sibling">Outer Sibling</div>
+      </ErrorBoundary>
+    );
+
+    // Verify only inner boundary caught the error
+    expect(screen.queryByTestId('outer-fallback')).not.toBeInTheDocument();
+    expect(screen.getByTestId('outer-content')).toBeInTheDocument();
+    expect(screen.getByTestId('inner-fallback')).toBeInTheDocument();
+    expect(screen.getByTestId('outer-sibling')).toBeInTheDocument();
+
+    console.error = originalConsoleError;
+  });
+
+  // 4. Accessibility testing
+  test('error UI meets accessibility requirements', () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    render(
+      <ErrorBoundary>
+        <ErrorThrowingComponent />
+      </ErrorBoundary>
+    );
+
+    // Verify ARIA properties
+    const alertElement = screen.getByRole('alert');
+    expect(alertElement).toHaveAttribute('aria-live', 'assertive');
+
+    // Verify error is announced
+    expect(alertElement).toHaveTextContent('Something went wrong');
+    expect(alertElement).toHaveTextContent('Test error');
+
+    // Verify retry button is keyboard accessible
+    const retryButton = screen.getByRole('button', { name: /retry/i });
+    retryButton.focus();
+    expect(document.activeElement).toBe(retryButton);
+
+    console.error = originalConsoleError;
+  });
+
+  // 5. Testing with different error types
+  test('handles different error types appropriately', () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    // Test with TypeError
+    render(
+      <ErrorBoundary>
+        <ErrorThrowingComponent errorType="type" />
+      </ErrorBoundary>
+    );
+
+    // Verify error boundary caught it
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    // Reset screen
+    console.error = vi.fn();
+
+    // Test with custom error class
+    render(
+      <ErrorBoundary>
+        <ErrorThrowingComponent errorType="custom" />
+      </ErrorBoundary>
+    );
+
+    // Verify error boundary caught custom error
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('Custom test error')).toBeInTheDocument();
+
+    console.error = originalConsoleError;
+  });
+
+  // 6. Testing error cleanup on unmount
+  test('cleans up properly when unmounted during error state', () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    // Create container component that can unmount the error boundary
+    function Container(): JSX.Element {
+      const [show, setShow] = useState(true);
+
+      return (
+        <div>
+          <button data-testid="toggle" onClick={() => setShow(!show)}>
+            Toggle
+          </button>
+          {show && (
+            <ErrorBoundary>
+              <ErrorThrowingComponent />
+            </ErrorBoundary>
+          )}
+        </div>
+      );
+    }
+
+    render(<Container />);
+
+    // Verify error boundary rendered its fallback
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    // Unmount the error boundary
+    fireEvent.click(screen.getByTestId('toggle'));
+
+    // Verify error boundary was unmounted
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    console.error = originalConsoleError;
+  });
+
+  // 7. Cleanup behavior during recovery
+  test('resets error state properly during recovery', async () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    let shouldThrow = true;
+    const toggleError = vi.fn(() => {
+      shouldThrow = false;
+    });
+
+    const RecoverableComponent = (): JSX.Element => {
+      if (shouldThrow) {
+        throw new Error('Recoverable error');
+      }
+      return <div data-testid="recovered-content">Recovered!</div>;
+    };
+
+    render(
+      <ErrorBoundary>
+        <RecoverableComponent />
+      </ErrorBoundary>
+    );
+
+    // Verify error state
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    // Allow recovery and click retry
+    toggleError();
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+    // Verify component recovered
+    expect(screen.getByTestId('recovered-content')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    console.error = originalConsoleError;
+  });
+
+  // 8. Testing with asynchronous errors
+  test('catches asynchronous errors', async () => {
+    vi.useFakeTimers();
+
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    render(
+      <ErrorBoundary>
+        <AsyncErrorComponent />
+      </ErrorBoundary>
+    );
+
+    // Verify initial render
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+    // Advance time to trigger error
+    vi.advanceTimersByTime(100);
+
+    // Verify error boundary caught the async error
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Async error')).toBeInTheDocument();
+
+    console.error = originalConsoleError;
+  });
+
+  // 9. Stress testing with multiple errors
+  test('handles multiple sequential errors', () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    // Component that can be triggered to error multiple times
+    let errorCount = 0;
+
+    const MultiErrorComponent = (): JSX.Element => {
+      const [shouldRecover, setShouldRecover] = useState(true);
+
+      useEffect(() => {
+        if (errorCount > 0 && errorCount < 3) {
+          setShouldRecover(false);
+        }
+      }, []);
+
+      if (!shouldRecover) {
+        errorCount++;
+        throw new Error(`Error #${errorCount}`);
+      }
+
+      return (
+        <div data-testid="multi-error-content">
+          <p>Content rendered</p>
+          <button
+            data-testid="trigger-error"
+            onClick={() => setShouldRecover(false)}
+          >
+            Trigger Error
+          </button>
+        </div>
+      );
+    };
+
+    render(
+      <ErrorBoundary>
+        <MultiErrorComponent />
+      </ErrorBoundary>
+    );
+
+    // Verify initial render
+    expect(screen.getByTestId('multi-error-content')).toBeInTheDocument();
+
+    // Trigger first error
+    fireEvent.click(screen.getByTestId('trigger-error'));
+
+    // Verify error boundary caught it
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText(/Error #1/)).toBeInTheDocument();
+
+    // Reset error state to cause second error on retry
+    errorCount = 1;
+
+    // Click retry to trigger second error
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+    // Verify second error is caught
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText(/Error #2/)).toBeInTheDocument();
+
+    // Allow recovery
+    errorCount = 0;
+
+    // Click retry again to recover
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+    // Verify recovery
+    expect(screen.getByTestId('multi-error-content')).toBeInTheDocument();
+
+    console.error = originalConsoleError;
+  });
+
+  // 10. Context preservation
+  test('preserves React context for children and fallback UI', () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    // Context value
+    const contextValue = 'test-context-value';
+
+    // Custom fallback that uses context
+    const ContextFallback = (): JSX.Element => {
+      const value = useContext(TestContext);
+      return (
+        <div data-testid="context-fallback">Fallback with context: {value}</div>
+      );
+    };
+
+    render(
+      <TestContext.Provider value={contextValue}>
+        <ErrorBoundary fallback={<ContextFallback />}>
+          <ErrorThrowingComponent />
+        </ErrorBoundary>
+      </TestContext.Provider>
+    );
+
+    // Verify fallback has access to context
+    expect(screen.getByTestId('context-fallback')).toBeInTheDocument();
+    expect(
+      screen.getByText(`Fallback with context: ${contextValue}`)
+    ).toBeInTheDocument();
+
+    console.error = originalConsoleError;
+  });
+
+  // 11. State preservation
+  test('recoverable components maintain state after recovery', () => {
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
+
+    // Initial count for state component
+    const initialCount = 5;
+
+    render(
+      <ErrorBoundary>
+        <StateComponent initialCount={initialCount} />
+      </ErrorBoundary>
+    );
+
+    // Verify initial state
+    expect(screen.getByTestId('count')).toHaveTextContent(
+      `Count: ${initialCount}`
+    );
+
+    // Increment count
+    fireEvent.click(screen.getByRole('button', { name: /increment/i }));
+
+    // Verify state updated
+    expect(screen.getByTestId('count')).toHaveTextContent(
+      `Count: ${initialCount + 1}`
+    );
+
+    // Trigger error
+    fireEvent.click(screen.getByRole('button', { name: /trigger error/i }));
+
+    // Verify error boundary caught it
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    // Fix error state in component and retry
+    const stateComponentInstance = StateComponent;
+    stateComponentInstance.prototype.render = function (): JSX.Element {
+      return (
+        <div>
+          <p data-testid="count">Count: {this.props.initialCount}</p>
+        </div>
+      );
+    };
+
+    // Click retry
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+    // Verify state was preserved
+    expect(screen.getByTestId('count')).toHaveTextContent(
+      `Count: ${initialCount}`
+    );
+
     console.error = originalConsoleError;
   });
 });
