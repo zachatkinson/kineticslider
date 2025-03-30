@@ -45,11 +45,27 @@ function App() {
       onChange={handleSlideChange}
       infinite={true}
       lazyLoad={true}
-    >
-      <div style={{ background: '#ff6b6b' }}>Slide 1</div>
-      <div style={{ background: '#4ecdc4' }}>Slide 2</div>
-      <div style={{ background: '#45b7d1' }}>Slide 3</div>
-    </KineticSlider>
+      slides={[
+        {
+          id: 'slide1' as SlideId,
+          title: 'Slide 1',
+          image: '/images/slide1.jpg',
+          alt: 'Slide 1 description'
+        },
+        {
+          id: 'slide2' as SlideId,
+          title: 'Slide 2',
+          image: '/images/slide2.jpg',
+          alt: 'Slide 2 description'
+        },
+        {
+          id: 'slide3' as SlideId,
+          title: 'Slide 3',
+          image: '/images/slide3.jpg',
+          alt: 'Slide 3 description'
+        }
+      ]}
+    />
   );
 }
 ```
@@ -58,17 +74,30 @@ function App() {
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| children | ReactNode[] \| ReactNode | required | The slides to be rendered in the slider |
+| slides | Slide[] | required | Array of slide objects to be rendered in the slider |
 | className | string | '' | Custom class name for the slider container |
 | style | CSSProperties | {} | Custom inline styles for the slider container |
 | duration | number | 0.5 | Animation duration in seconds (must be positive) |
 | ease | string | 'power2.out' | GSAP easing function |
 | enableGestures | boolean | true | Enable touch/swipe gestures |
 | enableKeyboard | boolean | true | Enable keyboard navigation |
-| onChange | (index: number) => void | undefined | Callback fired when the active slide changes |
-| initialIndex | number | 0 | Initial active slide index (must be valid) |
-| infinite | boolean | true | Enable infinite looping |
+| onSlideChange | (index: number) => void | undefined | Callback fired when the active slide changes |
+| onAnimationComplete | () => void | undefined | Callback fired when animation completes |
+| onError | (error: Error) => void | undefined | Callback fired when an error occurs |
+| initialSlide | number | 0 | Initial active slide index (must be valid) |
 | lazyLoad | boolean | false | Enable lazy loading of slides |
+
+## Slide Object
+
+Each slide in the slides array should have the following structure:
+
+| Property | Type | Description |
+|------|------|-------------|
+| id | SlideId | Unique identifier for the slide |
+| title | string | Title of the slide |
+| description | string (optional) | Description text for the slide |
+| image | string | URL of the slide image |
+| alt | string | Alt text for the image (for accessibility) |
 
 ## Dependencies
 
@@ -132,11 +161,51 @@ Built-in performance tracking capabilities:
 - Dropped frame detection
 
 ### Error Recovery
-Comprehensive error handling system:
+The component implements a robust error handling system through a dedicated `ErrorBoundary` component:
+
 - Progressive error handling with fallbacks
 - Multiple recovery paths with state tracking
 - Detailed error analytics and monitoring
 - Graceful degradation strategies
+- Dedicated `ErrorBoundary` component with configurable props:
+
+```typescript
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode | ((error: Error, retry: () => void) => ReactNode);
+  fallbackRender?: (props: FallbackProps) => ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  maxRetries?: number;
+}
+
+interface FallbackProps {
+  error: Error;
+  resetErrorBoundary: () => void;
+}
+```
+
+The `ErrorBoundary` component provides flexible error handling with two primary options:
+1. `fallback`: Accepts a React node or a function that receives error and retry callback
+2. `fallbackRender`: A more flexible approach that receives a props object with error details and reset function
+
+Example usage with `fallbackRender`:
+
+```tsx
+<ErrorBoundary
+  fallbackRender={({ error, resetErrorBoundary }) => (
+    <div className="error-container">
+      <h2>Something went wrong</h2>
+      <p>{error.message}</p>
+      <button onClick={resetErrorBoundary}>Try Again</button>
+      <button onClick={() => reportError(error)}>Report Error</button>
+    </div>
+  )}
+  onError={(error, errorInfo) => logError(error, errorInfo)}
+  maxRetries={3}
+>
+  <YourComponent />
+</ErrorBoundary>
+```
 
 ## Accessibility
 
@@ -199,21 +268,29 @@ interface UseAnimationReturn {
 }
 ```
 
-### Core Types (`types.ts`)
+### Core Types (`types/slider.ts`)
 ```typescript
 interface KineticSliderProps {
-  children: ReactNode;
+  slides: Slide[];
+  onSlideChange?: (currentIndex: number) => void;
+  onAnimationComplete?: () => void;
+  onError?: (error: Error) => void;
   className?: string;
-  style?: CSSProperties;
+  style?: React.CSSProperties;
+  enableKeyboard?: boolean;
+  enableGestures?: boolean;
+  initialSlide?: number;
   duration?: number;
   ease?: string;
-  enableGestures?: boolean;
-  enableKeyboard?: boolean;
-  onChange?: (index: number) => void;
-  initialIndex?: number;
-  infinite?: boolean;
   lazyLoad?: boolean;
-  onMetrics?: (metrics: PerformanceMetrics) => void;
+}
+
+interface Slide {
+  id: SlideId;
+  title: string;
+  description?: string;
+  image: string;
+  alt: string;
 }
 
 interface NormalizedPointerEvent {
@@ -239,7 +316,29 @@ interface ExtendedPerformanceMetrics {
 }
 ```
 
-### Test Types (`types/test.d.ts`)
+### Error Handling Types (`types/components.ts`)
+```typescript
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode | ((error: Error, retry: () => void) => ReactNode);
+  fallbackRender?: (props: FallbackProps) => ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  maxRetries?: number;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  retryCount: number;
+}
+
+interface FallbackProps {
+  error: Error;
+  resetErrorBoundary: () => void;
+}
+```
+
+### Test Types (`types/test.ts`)
 ```typescript
 interface MockGsap {
   to: Mock;
@@ -247,198 +346,8 @@ interface MockGsap {
   quickSetter: Mock;
   killTweensOf: Mock;
 }
-
-interface MockTimeline {
-  to: Mock;
-  kill: Mock;
-  eventCallback: Mock;
-  play: Mock;
-}
 ```
-
-### Error Types (`types.ts`)
-```typescript
-class SliderError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SliderError';
-  }
-}
-
-enum SliderErrorType {
-  VALIDATION = 'validation',
-  ANIMATION = 'animation',
-  GESTURE = 'gesture',
-  RENDER = 'render',
-  MEMORY = 'memory'
-}
-```
-
-All types are properly exported and imported where needed, ensuring type safety across the codebase. The organization follows these principles:
-- Core component types in `types.ts`
-- Test-specific types in `types/test.d.ts`
-- Proper type imports to avoid duplication
-- Comprehensive JSDoc documentation for all types
-
-## Error Handling
-
-The component implements a robust error handling system through a dedicated `ErrorBoundary` component:
-
-### Error Boundary Features
-- Dedicated `ErrorBoundary` component with configurable props:
-  ```typescript
-  interface ErrorBoundaryProps {
-    children: ReactNode;
-    className?: string;
-    onError?: (error: Error, errorInfo: SliderErrorInfo) => void;
-  }
-  ```
-- Enhanced error recovery with exponential backoff:
-  - Smart retry mechanism with configurable attempts
-  - Backoff time increases exponentially (1s, 2s, 4s, etc.)
-  - Maximum backoff time of 5 seconds
-  - Maximum of 3 retry attempts
-
-### Error Context and Monitoring
-- Comprehensive error context gathering:
-  - Error type and message
-  - Component stack traces
-  - Timestamp and user agent
-  - Memory usage metrics
-  - Viewport dimensions
-  - Current URL
-  - Error count and retry attempts
-- Automatic error reporting to analytics services
-- Parent component notification through `onError` prop
-
-### Error Recovery System
-- Circuit breaker pattern implementation:
-  - State management: closed -> half-open -> open
-  - Automatic state transitions based on error frequency
-  - Configurable thresholds and timeouts
-- Graceful degradation strategy:
-  - User-friendly error messages
-  - Retry and reset options
-  - Page refresh for unrecoverable errors
-  - Development mode stack traces
-- Error type categorization:
-  ```typescript
-  enum SliderErrorType {
-    VALIDATION = 'validation',
-    ANIMATION = 'animation',
-    GESTURE = 'gesture',
-    RENDER = 'render',
-    MEMORY = 'memory'
-  }
-  ```
-
-### Usage Example
-```tsx
-<KineticSlider
-  onError={(error, errorInfo) => {
-    console.error('Slider error:', error);
-    // Custom error handling logic
-  }}
->
-  {/* Slider content */}
-</KineticSlider>
-```
-
-## Performance Monitoring
-
-The component includes advanced performance tracking:
-
-- Web Vitals Integration:
-  - First Contentful Paint (FCP) tracking
-  - Largest Contentful Paint (LCP) monitoring
-  - First Input Delay (FID) measurement
-  - Cumulative Layout Shift (CLS) tracking
-  - Time to Interactive (TTI) metrics
-  - Total Blocking Time (TBT) analysis
-- Frame Rate Monitoring:
-  - Real-time FPS tracking during animations
-  - Frame time distribution analysis
-  - Dropped frame detection
-- Memory Usage Tracking:
-  - Heap size monitoring
-  - Memory leak detection
-  - Garbage collection impact analysis
-- CPU Utilization:
-  - Task duration monitoring
-  - Long task detection
-  - Background CPU usage tracking
-- Resource Cleanup Verification:
-  - Event listener cleanup validation
-  - Animation resource management
-  - Memory allocation patterns
-
-## Accessibility Enhancements
-
-The component follows WCAG 2.1 Level AA guidelines with enhanced features:
-
-- Dynamic Focus Management:
-  - Focus tracking during transitions
-  - Focus trap in modal contexts
-  - Focus restoration after updates
-- Comprehensive ARIA Implementation:
-  - Live region announcements
-  - Role and state management
-  - Dynamic attribute updates
-- Motion Sensitivity:
-  - Reduced motion preference support
-  - Animation speed adjustment
-  - Alternative transition styles
-- Touch Target Optimization:
-  - WCAG 2.1 size requirements (44x44px)
-  - Proper spacing between targets
-  - Touch area enhancement
-
-## Testing
-
-The component includes comprehensive tests with analytics integration:
-
-- Unit and Integration Tests:
-  - Core functionality validation
-  - User interaction simulation
-  - Edge case handling
-- Performance Tests:
-  - Frame rate benchmarks
-  - Memory usage patterns
-  - CPU utilization metrics
-- Accessibility Tests:
-  - WCAG 2.1 compliance
-  - Screen reader compatibility
-  - Keyboard navigation
-- Error Recovery Tests:
-  - Circuit breaker validation
-  - Cascading error handling
-  - Degradation strategies
-- Analytics Integration:
-  - Performance metrics tracking
-  - Error handling monitoring
-  - Accessibility compliance
-
-See our [Test Documentation](src/__tests__/README.md) for detailed information about test patterns and assertions.
-
-## Development
-
-### Setup
-
-```bash
-# Install dependencies
-pnpm install
-
-# Run tests
-pnpm test
-
-# Build the package
-pnpm build
-```
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ## License
 
-MIT © [Your Name] 
+MIT © Your Name 
