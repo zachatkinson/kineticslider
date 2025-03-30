@@ -2,17 +2,41 @@
  * GSAP animation types and interfaces
  */
 
+export interface GsapTween {
+  kill: () => GsapTween;
+  pause: () => GsapTween;
+  play: () => GsapTween;
+  progress: (value?: number) => number | GsapTween;
+  restart: () => GsapTween;
+  reverse: () => GsapTween;
+  timeScale: (value?: number) => number | GsapTween;
+}
+
+export interface GsapVars {
+  duration?: number;
+  delay?: number;
+  ease?: string | ((t: number) => number);
+  onComplete?: () => void;
+  onStart?: () => void;
+  onUpdate?: () => void;
+  [key: string]: unknown;
+}
+
 export interface GsapTicker {
   add: (fn: () => void) => void;
   remove: (fn: () => void) => void;
 }
 
-export interface GsapTimeline {
-  to: (target: Element, vars: any) => GsapTimeline;
-  from: (target: Element, vars: any) => GsapTimeline;
-  fromTo: (target: Element, vars: any) => GsapTimeline;
-  set: (target: Element, vars: any) => GsapTimeline;
-  add: (child: any) => GsapTimeline;
+export interface GsapTimeline extends GsapTween {
+  to: (target: Element | string | object, vars: GsapVars) => GsapTimeline;
+  from: (target: Element | string | object, vars: GsapVars) => GsapTimeline;
+  fromTo: (
+    target: Element | string | object,
+    fromVars: GsapVars,
+    toVars: GsapVars
+  ) => GsapTimeline;
+  set: (target: Element | string | object, vars: GsapVars) => GsapTimeline;
+  add: (child: GsapTimeline | GsapTween) => GsapTimeline;
   defaults: {
     duration: number;
     ease: string;
@@ -35,21 +59,25 @@ export interface GsapEventCallback {
 }
 
 export interface GsapInstance {
-  to: (target: Element, vars: any) => any;
-  from: (target: Element, vars: any) => any;
-  fromTo: (target: Element, fromVars: any, toVars: any) => any;
-  set: (target: Element, vars: any) => any;
-  timeline: (vars?: any) => GsapTimeline;
+  to: (target: Element | string | object, vars: GsapVars) => GsapTween;
+  from: (target: Element | string | object, vars: GsapVars) => GsapTween;
+  fromTo: (
+    target: Element | string | object,
+    fromVars: GsapVars,
+    toVars: GsapVars
+  ) => GsapTween;
+  set: (target: Element | string | object, vars: GsapVars) => void;
+  timeline: (vars?: GsapTimelineDefaults) => GsapTimeline;
   isAnimating: () => boolean;
   core: {
-    Animation: any;
-    Timeline: any;
-    Tween: any;
+    Animation: unknown;
+    Timeline: unknown;
+    Tween: unknown;
   };
-  plugins: any;
+  plugins: Record<string, unknown>;
   utils: {
-    toArray: (value: any) => any[];
-    selector: (value: any) => any;
+    toArray: <T>(value: T | T[] | NodeList | HTMLCollection) => T[];
+    selector: (value: string) => Element | null;
     mapRange: (
       inMin: number,
       inMax: number,
@@ -60,37 +88,48 @@ export interface GsapInstance {
     clamp: (min: number, max: number, value: number) => number;
     getUnit: (value: string) => string;
   };
-  config: any;
+  config: Record<string, unknown>;
   version: string;
   ticker: GsapTicker;
-  registerPlugin: (...args: any[]) => void;
-  install: (...args: any[]) => void;
-  effects: any;
+  registerPlugin: (...args: unknown[]) => void;
+  install: (...args: unknown[]) => void;
+  effects: Record<string, unknown>;
   globalTimeline: {
     clear: () => void;
   };
   context: (func: () => void) => void;
-  exportRoot: () => any;
-  getById: (id: string) => any;
-  getProperty: (target: Element, property: string) => any;
-  getTweensOf: (target: Element) => any[];
-  killTweensOf: (target: Element) => void;
-  parseEase: (ease: string) => any;
-  quickTo: (target: Element, property: string, vars?: any) => any;
-  registerEffect: (effect: any) => void;
-  matchMedia: (mediaQuery: string) => any;
+  exportRoot: () => GsapTimeline;
+  getById: (id: string) => GsapTween | null;
+  getProperty: (target: Element | string, property: string) => string | number;
+  getTweensOf: (target: Element | string) => GsapTween[];
+  killTweensOf: (target: Element | string) => void;
+  parseEase: (ease: string) => (progress: number) => number;
+  quickTo: (
+    target: Element | string,
+    property: string,
+    vars?: GsapVars
+  ) => (value: number) => void;
+  registerEffect: (effectConfig: Record<string, unknown>) => void;
+  matchMedia: (mediaQuery: string) => {
+    add: (callback: () => void) => void;
+    remove: (callback: () => void) => void;
+  };
   matchMediaRefresh: () => void;
-  registerEase: (name: string, ease: any) => void;
+  registerEase: (name: string, ease: (progress: number) => number) => void;
   updateRoot: () => void;
   defaults: {
     duration: number;
     ease: string;
   };
-  delayedCall: (delay: number, callback: () => void, params?: any[]) => any;
-  isTweening: (target: Element) => boolean;
+  delayedCall: (
+    delay: number,
+    callback: () => void,
+    params?: unknown[]
+  ) => GsapTween;
+  isTweening: (target: Element | string) => boolean;
   quickSetter: (
-    target: Element,
+    target: Element | string,
     property: string,
     unit?: string
-  ) => (value: any) => void;
-} 
+  ) => (value: number | string) => void;
+}

@@ -1,6 +1,7 @@
 /**
  * Core slider types and interfaces
  */
+import { SlideId } from './branded';
 
 export interface SliderMetrics {
   currentIndex: number;
@@ -11,9 +12,9 @@ export interface SliderMetrics {
 }
 
 export interface Slide {
-  id: string;
+  id: SlideId;
   title: string;
-  description: string;
+  description?: string;
   image: string;
   alt: string;
 }
@@ -34,6 +35,34 @@ export interface KineticSliderProps {
 }
 
 /**
+ * Props for the useKineticSlider hook
+ */
+export interface UseKineticSliderProps {
+  slides: Slide[];
+  duration?: number;
+  ease?: string;
+  onSlideChange?: ((index: number) => void) | undefined;
+  onAnimationComplete?: (() => void) | undefined;
+  initialSlide?: number;
+}
+
+/**
+ * Return type for the useKineticSlider hook
+ */
+export interface UseKineticSliderReturn {
+  currentSlide: number;
+  isAnimating: boolean;
+  next: () => void;
+  prev: () => void;
+  handleGesture: (event: {
+    clientX: number;
+    clientY: number;
+    type: string;
+  }) => void;
+  sliderRef: React.RefObject<HTMLDivElement>;
+}
+
+/**
  * Extended error information for better error handling
  */
 export interface SliderErrorInfo {
@@ -49,7 +78,7 @@ export interface SliderErrorInfo {
 /**
  * Analytics data structure for slider events
  */
-export type SliderAnalyticsEvent = 
+export type SliderAnalyticsEvent =
   | 'slide_change'
   | 'animation_complete'
   | 'error'
@@ -61,4 +90,4 @@ export interface SliderAnalyticsData {
   gestureType?: string;
   error?: Error;
   index?: number;
-} 
+}

@@ -2,10 +2,14 @@ import { vi } from 'vitest';
 
 import type {
   AnimationState,
-  GsapMock,
   GsapMockInstance,
   MockAnimation,
-} from '../types/gsap-mock';
+} from '../unit/types/gsap-mock';
+
+// Define our local extension of GsapMock since the imported one doesn't match our usage
+interface LocalGsapMock {
+  gsap: GsapMockInstance;
+}
 
 // Create a state object to track animation status
 const animationState: AnimationState = {
@@ -93,6 +97,11 @@ const gsapMockImplementation = {
   // Add kill tweens method
   killTweensOf: vi.fn(),
 
+  // Add missing methods from GsapMockInstance interface
+  set: vi.fn(),
+  getById: vi.fn(() => null),
+  getTweensOf: vi.fn(() => []),
+
   // Add minimal required methods
   registerPlugin: vi.fn(),
   ticker: {
@@ -105,8 +114,8 @@ const gsapMockImplementation = {
 };
 
 // Create and export the GSAP mock
-export const gsapMock: GsapMock = {
-  gsap: gsapMockImplementation as GsapMockInstance,
+export const gsapMock: LocalGsapMock = {
+  gsap: gsapMockImplementation as unknown as GsapMockInstance,
 };
 
 // For direct import in tests

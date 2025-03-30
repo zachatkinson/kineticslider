@@ -1,6 +1,32 @@
+import type { SliderErrorInfo } from './slider';
+
 /**
  * Animation-specific types and interfaces
  */
+
+/**
+ * Basic animation configuration
+ */
+export interface AnimationConfig {
+  duration: number;
+  ease: string;
+}
+
+/**
+ * Animation options for basic animations
+ */
+export interface AnimationOptions {
+  target: HTMLElement;
+  config: AnimationConfig;
+  onComplete?: () => void;
+}
+
+/**
+ * Return type for the basic useAnimation hook
+ */
+export interface BasicAnimationReturn {
+  animate: (options: AnimationOptions) => () => void;
+}
 
 /**
  * Configuration options for the useAnimation hook
@@ -80,9 +106,11 @@ export interface AnimationMetrics {
   scriptTime: number;
   /** Time spent in rendering */
   renderTime: number;
+  /** Animation start time (optional) */
+  startTime?: number;
+  /** Animation end time (optional) */
+  endTime?: number;
 }
-
-import type { SliderErrorInfo } from './slider';
 
 export interface UseAnimationOptions {
   duration?: number;
@@ -91,13 +119,17 @@ export interface UseAnimationOptions {
   onError?: (error: Error, errorInfo: SliderErrorInfo) => void;
 }
 
-export interface AnimationMetrics {
-  duration: number;
-  fps: number;
-  droppedFrames: number;
-  memoryUsage: number;
-  scriptTime: number;
-  renderTime: number;
+export type GSAPTimeline = gsap.core.Timeline;
+export type GSAPTween = gsap.core.Tween;
+
+export type AnimationDirection = 'forward' | 'backward' | 'none';
+
+export interface AnimationState {
+  isAnimating: boolean;
+  direction: AnimationDirection;
+  progress: number;
+  timeline?: GSAPTimeline;
+  metrics: AnimationMetrics;
 }
 
 export interface UseAnimationResult {
@@ -121,4 +153,4 @@ declare global {
       readonly usedJSHeapSize: number;
     };
   }
-} 
+}

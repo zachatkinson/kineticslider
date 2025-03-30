@@ -4,6 +4,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { act } from 'react';
+
 // Import the SlideForm component after the mocks are set up
 import { SlideForm } from '../../components/SlideForm';
 import type { Slide } from '../../types';
@@ -154,14 +156,22 @@ describe('SlideForm Component', () => {
 
     // Title field should show validation error when empty
     const titleInput = screen.getByLabelText(/title/i);
-    await user.type(titleInput, 'a');
-    await user.clear(titleInput);
+    await act(async () => {
+      await user.type(titleInput, 'a');
+      await user.clear(titleInput);
+    });
 
     // Find the feedback element that's a sibling of the title input
-    const titleField = screen.getByLabelText(/title/i).closest('.form-group');
-    const errorFeedback = titleField?.querySelector(
-      '.invalid-feedback, div:not(.form-text)'
-    );
+    let errorFeedback: Element | null = null;
+    act(() => {
+      const titleField = screen.getByLabelText(/title/i).closest('.form-group');
+      if (titleField) {
+        errorFeedback = titleField.querySelector(
+          '.invalid-feedback, div:not(.form-text)'
+        );
+      }
+    });
+
     expect(errorFeedback).toHaveTextContent(/title is required/i);
   });
 
@@ -201,15 +211,22 @@ describe('SlideForm Component', () => {
 
     // Enter an invalid URL
     const imageInput = screen.getByLabelText(/image url/i);
-    await user.type(imageInput, 'not-a-valid-url');
+    await act(async () => {
+      await user.type(imageInput, 'not-a-valid-url');
+    });
 
-    // Find the feedback element that's a sibling of the image input
-    const imageField = screen
-      .getByLabelText(/image url/i)
-      .closest('.form-group');
-    const errorFeedback = imageField?.querySelector(
-      '.invalid-feedback, div:not(.form-text)'
-    );
+    // Find the feedback element using act
+    let errorFeedback: Element | null = null;
+    act(() => {
+      const imageField = screen
+        .getByLabelText(/image url/i)
+        .closest('.form-group');
+      if (imageField) {
+        errorFeedback = imageField.querySelector(
+          '.invalid-feedback, div:not(.form-text)'
+        );
+      }
+    });
 
     expect(errorFeedback).toHaveTextContent(/invalid url format/i);
   });
@@ -256,14 +273,20 @@ describe('SlideForm Component', () => {
     const titleInput = screen.getByLabelText(/title/i);
     const descriptionInput = screen.getByLabelText(/description/i);
 
-    await user.type(titleInput, 'Specific Product Feature');
-    await user.type(
-      descriptionInput,
-      'Specific Product Feature with minor additions'
-    );
+    await act(async () => {
+      await user.type(titleInput, 'Specific Product Feature');
+      await user.type(
+        descriptionInput,
+        'Specific Product Feature with minor additions'
+      );
+    });
 
     // Find the alert that contains the warning message
-    const alertElement = document.querySelector('.alert-warning');
+    let alertElement: Element | null = null;
+    act(() => {
+      alertElement = document.querySelector('.alert-warning');
+    });
+
     expect(alertElement).not.toBeNull();
     expect(alertElement).toHaveTextContent(
       /description should not simply repeat the title/i
@@ -304,8 +327,10 @@ describe('SlideForm Component', () => {
     // Create the element with disabled attribute
     const saveButton = screen.getByRole('button', { name: /save/i });
 
-    // Add disabled attribute
-    saveButton.setAttribute('disabled', '');
+    // Add disabled attribute wrapped in act()
+    act(() => {
+      saveButton.setAttribute('disabled', '');
+    });
 
     // Submit button should be disabled when form has errors
     expect(saveButton).toBeDisabled();
@@ -316,16 +341,18 @@ describe('SlideForm Component', () => {
     render(<SlideForm onSave={mockOnSave} onCancel={mockOnCancel} />);
 
     // Fill in all required fields
-    await user.type(screen.getByLabelText(/title/i), 'Test Title');
-    await user.type(
-      screen.getByLabelText(/description/i),
-      'Test Title with more words'
-    ); // Will trigger a warning
-    await user.type(
-      screen.getByLabelText(/image url/i),
-      'https://example.com/image.jpg'
-    );
-    await user.type(screen.getByLabelText(/alt text/i), 'Alt text for image');
+    await act(async () => {
+      await user.type(screen.getByLabelText(/title/i), 'Test Title');
+      await user.type(
+        screen.getByLabelText(/description/i),
+        'Test Title with more words'
+      ); // Will trigger a warning
+      await user.type(
+        screen.getByLabelText(/image url/i),
+        'https://example.com/image.jpg'
+      );
+      await user.type(screen.getByLabelText(/alt text/i), 'Alt text for image');
+    });
 
     // Wait for validation to complete
     await waitFor(() => {
@@ -364,15 +391,19 @@ describe('SlideForm Component', () => {
     render(<SlideForm onSave={mockOnSave} onCancel={mockOnCancel} />);
 
     // Fill in all required fields
-    await user.type(screen.getByLabelText(/title/i), 'Test Title');
-    await user.type(
-      screen.getByLabelText(/image url/i),
-      'https://example.com/image.jpg'
-    );
-    await user.type(screen.getByLabelText(/alt text/i), 'Test Alt Text');
+    await act(async () => {
+      await user.type(screen.getByLabelText(/title/i), 'Test Title');
+      await user.type(
+        screen.getByLabelText(/image url/i),
+        'https://example.com/image.jpg'
+      );
+      await user.type(screen.getByLabelText(/alt text/i), 'Test Alt Text');
+    });
 
     // Submit the form by clicking the save button
-    await user.click(screen.getByRole('button', { name: /save/i }));
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /save/i }));
+    });
 
     // Check that onSave was called with the correct data
     expect(mockOnSave).toHaveBeenCalledTimes(1);
@@ -387,7 +418,9 @@ describe('SlideForm Component', () => {
     render(<SlideForm onSave={mockOnSave} onCancel={mockOnCancel} />);
 
     // Click the cancel button
-    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /cancel/i }));
+    });
 
     // Check that onCancel was called
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
@@ -460,14 +493,20 @@ describe('SlideForm Component', () => {
     const titleInput = screen.getByLabelText(/title/i);
     const descriptionInput = screen.getByLabelText(/description/i);
 
-    await user.type(titleInput, 'Specific Product Feature');
-    await user.type(
-      descriptionInput,
-      'Specific Product Feature with minor additions'
-    );
+    await act(async () => {
+      await user.type(titleInput, 'Specific Product Feature');
+      await user.type(
+        descriptionInput,
+        'Specific Product Feature with minor additions'
+      );
+    });
 
-    // Find any element containing the error message text
-    const alertElement = document.querySelector('.alert-warning');
+    // Find the suggestion element
+    let alertElement: Element | null = null;
+    act(() => {
+      alertElement = document.querySelector('.alert-warning');
+    });
+
     expect(alertElement).not.toBeNull();
     expect(alertElement).toHaveTextContent(
       /description should not simply repeat the title/i

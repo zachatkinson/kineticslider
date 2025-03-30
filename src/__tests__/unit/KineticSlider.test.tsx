@@ -1,10 +1,11 @@
 /* eslint-env vitest */
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { KineticSlider } from '../../components/KineticSlider';
-import type { SlideProps } from '../../types';
+import type { Slide } from '../../types';
+import { createSlideId } from '../../utils/id-helpers';
 // Import the mock which will override the global gsap object
 import './mocks/gsap.mock';
 
@@ -37,28 +38,45 @@ vi.stubGlobal('errorTracker', {
 });
 
 // Define mock slides for testing
-const mockSlides: SlideProps[] = [
+const mockSlides: Slide[] = [
   {
-    id: '1',
-    content: 'Slide 1 content',
-    title: 'Slide 1',
-    image: '/slide1.jpg',
+    id: createSlideId('slide-1'),
+    title: 'Test Slide 1',
+    description: 'Test Description 1',
+    image: '/images/test1.jpg',
+    alt: 'Test Image 1',
   },
   {
-    id: '2',
-    content: 'Slide 2 content',
-    title: 'Slide 2',
-    image: '/slide2.jpg',
+    id: createSlideId('slide-2'),
+    title: 'Test Slide 2',
+    description: 'Test Description 2',
+    image: '/images/test2.jpg',
+    alt: 'Test Image 2',
   },
 ];
 
-describe('KineticSlider Component', () => {
+const mockProps = {
+  slides: mockSlides,
+  onSlideChange: vi.fn(),
+  onAnimationComplete: vi.fn(),
+};
+
+describe('KineticSlider', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders without crashing', () => {
-    // Just verify that no errors are thrown when rendering
-    expect(() => render(<KineticSlider slides={mockSlides} />)).not.toThrow();
+    const { container } = render(<KineticSlider {...mockProps} />);
+    expect(container).toBeTruthy();
   });
+
+  it('renders all slides', () => {
+    render(<KineticSlider {...mockProps} />);
+    mockSlides.forEach((slide) => {
+      expect(screen.getByText(slide.title)).toBeInTheDocument();
+    });
+  });
+
+  // Add more test cases as needed
 });

@@ -1,7 +1,6 @@
 /**
  * Test-specific type definitions
  */
-
 import type { Mock } from 'vitest';
 
 export interface MockTimelineVars {
@@ -74,10 +73,37 @@ export interface MockAnimation {
   getConfig: () => Record<string, any>;
 }
 
+/**
+ * Touch API mock interfaces
+ */
+export interface TouchInit {
+  identifier: number;
+  target: EventTarget;
+  clientX?: number;
+  clientY?: number;
+  screenX?: number;
+  screenY?: number;
+  pageX?: number;
+  pageY?: number;
+  radiusX?: number;
+  radiusY?: number;
+  rotationAngle?: number;
+  force?: number;
+}
+
+/**
+ * Mock function type for custom matchers
+ */
+export type MockFunction = {
+  getMockName(): string;
+  mock: {
+    calls: unknown[][];
+  };
+};
+
 // Extend global for test environment
 declare global {
-  // eslint-disable-next-line no-var
   var gsapMock: MockGsap;
-  // eslint-disable-next-line no-var
+
   var timelineMock: MockTimeline;
-} 
+}

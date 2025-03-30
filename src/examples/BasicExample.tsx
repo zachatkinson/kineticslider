@@ -1,86 +1,60 @@
-import { KineticSlider } from '../components/KineticSlider';
-import type { SlideProps } from '../types';
+import React from 'react';
 
-export const BasicExample = () => {
-  const handleSlideChange = (index: number) => {
-    console.log(`Slide changed to index: ${index}`);
+import { KineticSlider } from '../components/KineticSlider';
+import type { Slide } from '../types';
+import { createSlideId } from '../utils/id-helpers';
+
+const slides: Slide[] = [
+  {
+    id: createSlideId('slide-1'),
+    title: 'Welcome to KineticSlider',
+    description: 'A modern, performant slider component',
+    image: '/images/slide1.jpg',
+    alt: 'Introduction slide',
+  },
+  {
+    id: createSlideId('slide-2'),
+    title: 'Powerful Features',
+    description: 'Built with performance in mind',
+    image: '/images/slide2.jpg',
+    alt: 'Features slide',
+  },
+  {
+    id: createSlideId('slide-3'),
+    title: 'Get Started',
+    description: 'Easy to integrate into your project',
+    image: '/images/slide3.jpg',
+    alt: 'Get started slide',
+  },
+];
+
+const BasicExample: React.FC = () => {
+  const handleSlideChange = (index: number): void => {
+    if (process.env['NODE_ENV'] !== 'production') {
+      document.dispatchEvent(
+        new CustomEvent('slide-change', { detail: { index } })
+      );
+    }
   };
 
-  const slides: SlideProps[] = [
-    {
-      id: '1',
-      content: (
-        <div
-          style={{
-            height: '300px',
-            background: '#e3f2fd',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px',
-            borderRadius: '8px',
-          }}
-        >
-          Slide 1
-        </div>
-      )
-    },
-    {
-      id: '2',
-      content: (
-        <div
-          style={{
-            height: '300px',
-            background: '#bbdefb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px',
-            borderRadius: '8px',
-          }}
-        >
-          Slide 2
-        </div>
-      )
-    },
-    {
-      id: '3',
-      content: (
-        <div
-          style={{
-            height: '300px',
-            background: '#90caf9',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px',
-            borderRadius: '8px',
-          }}
-        >
-          Slide 3
-        </div>
-      )
+  const handleAnimationComplete = (): void => {
+    if (process.env['NODE_ENV'] !== 'production') {
+      document.dispatchEvent(new CustomEvent('animation-complete'));
     }
-  ];
+  };
 
-  return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <h1>KineticSlider Basic Example</h1>
-      
-      {/* 
-        KineticSlider with default settings:
-        - Smooth GSAP animations
-        - Touch/mouse gesture support
-        - Keyboard navigation (arrow keys)
-        - Accessible navigation buttons
-      */}
-      <KineticSlider
-        slides={slides}
-        duration={0.5}
-        ease="power2.out"
-        enableGestures={true}
-        onSlideChange={handleSlideChange}
-      />
-    </div>
-  );
+  const props = {
+    slides,
+    onSlideChange: handleSlideChange,
+    onAnimationComplete: handleAnimationComplete,
+    initialIndex: 0,
+    animationConfig: {
+      duration: 0.5,
+      ease: 'power2.inOut',
+    },
+  };
+
+  return <KineticSlider {...props} />;
 };
+
+export default BasicExample;

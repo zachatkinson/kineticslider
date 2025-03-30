@@ -1,18 +1,14 @@
-import type { SliderErrorInfo } from '../types';
-
 /**
  * Base error class for the kinetic slider
  */
+import { SliderErrorInfo } from '../types/slider';
+
 export class SliderError extends Error {
   public readonly code: string;
   public readonly timestamp: string;
   public readonly details?: unknown;
 
-  constructor(
-    message: string,
-    code: string,
-    details?: unknown
-  ) {
+  constructor(message: string, code: string, details?: unknown) {
     super(message);
     this.name = 'SliderError';
     this.code = code;
@@ -25,10 +21,10 @@ export class SliderError extends Error {
       name: this.name,
       message: this.message,
       componentStack: '',
-      stack: this.stack,
+      stack: this.stack || null,
       code: this.code,
       timestamp: this.timestamp,
-      details: this.details
+      details: this.details ?? null,
     };
   }
 }
@@ -38,7 +34,10 @@ export class SliderError extends Error {
  */
 export class ErrorHandler {
   constructor(
-    private readonly onError?: (error: Error, errorInfo: SliderErrorInfo) => void
+    private readonly onError?: (
+      error: Error,
+      errorInfo: SliderErrorInfo
+    ) => void
   ) {}
 
   /**
@@ -67,11 +66,15 @@ export class ErrorHandler {
     const sliderError = this.normalizeError(error);
     const errorInfo = sliderError.toErrorInfo();
 
-    // Add context to error info
-    errorInfo.details = {
-      ...errorInfo.details,
-      context
-    };
+    // Add context to error info if details is an object
+    if (typeof errorInfo.details === 'object' && errorInfo.details !== null) {
+      errorInfo.details = {
+        ...(errorInfo.details as Record<string, unknown>),
+        context,
+      };
+    } else {
+      errorInfo.details = { context };
+    }
 
     // Report error to analytics if available
     if (typeof window !== 'undefined' && window.errorTracker) {
@@ -91,18 +94,14 @@ export class ErrorHandler {
     }
 
     if (error instanceof Error) {
-      return new SliderError(
-        error.message,
-        'UNKNOWN_ERROR',
-        { originalError: error }
-      );
+      return new SliderError(error.message, 'UNKNOWN_ERROR', {
+        originalError: error,
+      });
     }
 
-    return new SliderError(
-      'An unknown error occurred',
-      'UNKNOWN_ERROR',
-      { originalError: error }
-    );
+    return new SliderError('An unknown error occurred', 'UNKNOWN_ERROR', {
+      originalError: error,
+    });
   }
 }
 
@@ -148,38 +147,49 @@ export async function withRetry<T>(
     timeout?: number;
   } = {}
 ): Promise<T> {
-  const {
-    maxAttempts = 3,
-    backoffMs = 1000,
-    timeout = 5000
-  } = options;
+  const { maxAttempts = 3, backoffMs = 1000, timeout = 5000 } = options;
 
-  let lastError: Error;
-  
+  let lastError: Error = new Error('Operation failed');
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await Promise.race([
         operation(),
-        new Promise<never>((_, reject) => 
+        new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new SliderError('Operation timeout', 'TIMEOUT_ERROR')),
             timeout
           )
-        )
+        ),
       ]);
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       if (attempt < maxAttempts) {
-        await new Promise(resolve => 
-          setTimeout(
-            resolve,
-            backoffMs * Math.pow(2, attempt - 1)
-          )
+        await new Promise((resolve) =>
+          setTimeout(resolve, backoffMs * Math.pow(2, attempt - 1))
         );
       }
     }
   }
-  
+
   throw lastError;
-} 
+}
+
+export function createSliderError(
+  error: Error | unknown,
+  code: string,
+  details?: unknown
+): SliderErrorInfo {
+  const baseError = error instanceof Error ? error : new Error(String(error));
+
+  return {
+    name: baseError.name,
+    message: baseError.message,
+    componentStack: '', // This will be filled by React if it's a component error
+    stack: baseError.stack || null,
+    code,
+    timestamp: new Date().toISOString(),
+    details: details || null,
+  };
+}

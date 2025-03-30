@@ -5,7 +5,7 @@ interface CustomMatchers<R = unknown> {
   toHaveBeenCalledWithDirection(direction: string): R;
 }
 
-declare module "vitest" {
+declare module 'vitest' {
   interface Assertion<T = unknown> extends CustomMatchers<T> {
     toBe(expected: unknown): void;
   }
@@ -22,8 +22,8 @@ declare module "vitest" {
   export const beforeEach: typeof import('vitest').beforeEach;
   export const afterEach: typeof import('vitest').afterEach;
   export const vi: typeof import('vitest').vi;
-  
-  export interface Mock<T = unknown> {
+
+  export interface Mock<_T = unknown> {
     (...args: unknown[]): unknown;
     mockImplementation(fn: (...args: unknown[]) => unknown): this;
     mockReturnThis(): this;
@@ -38,4 +38,4 @@ declare module "vitest" {
       results: { type: string; value: unknown }[];
     };
   }
-} 
+}

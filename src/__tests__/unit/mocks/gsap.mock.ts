@@ -16,11 +16,11 @@ import type {
 let isAnimating = false;
 
 // Helper functions to control animation in tests
-export const startAnimation = () => {
+export const startAnimation = (): void => {
   isAnimating = true;
 };
 
-export const completeAnimation = () => {
+export const completeAnimation = (): void => {
   isAnimating = false;
 
   // If there's a stored callback, execute it
@@ -29,7 +29,7 @@ export const completeAnimation = () => {
   }
 };
 
-export const getIsAnimating = () => isAnimating;
+export const getIsAnimating = (): boolean => isAnimating;
 
 // Store params passed to the mock
 const mockToParams: {
@@ -52,15 +52,17 @@ const mockTween: TweenInstance = {
 };
 
 // Mock GSAP to function
-const mockTo = vi.fn((target: Element | string, vars: ToVars) => {
-  // Store params for later inspection
-  mockToParams.target = target;
-  mockToParams.vars = vars;
+const mockTo = vi.fn(
+  (target: Element | string, vars: ToVars): TweenInstance => {
+    // Store params for later inspection
+    mockToParams.target = target;
+    mockToParams.vars = vars;
 
-  isAnimating = true;
+    isAnimating = true;
 
-  return { ...mockTween };
-});
+    return { ...mockTween };
+  }
+);
 
 // Mock timeline object
 const mockTimeline: TimelineInstance = {
@@ -80,9 +82,9 @@ const mockTimeline: TimelineInstance = {
 // Create GSAP instance
 export const gsap: GsapMockInstance = {
   to: mockTo,
-  timeline: vi.fn(() => ({ ...mockTimeline })),
+  timeline: vi.fn((): TimelineInstance => ({ ...mockTimeline })),
   set: vi.fn(),
-  isAnimating: () => isAnimating,
+  isAnimating: (): boolean => isAnimating,
   getById: vi.fn(() => null),
   getTweensOf: vi.fn(() => []),
   killTweensOf: vi.fn(),
@@ -100,4 +102,10 @@ export const gsap: GsapMockInstance = {
 window.gsap = gsap as any;
 
 // Export mock params for test inspection
-export const getMockToParams = () => mockToParams;
+export const getMockToParams = (): {
+  target?: Element | string;
+  vars?: {
+    onComplete?: () => void;
+    [key: string]: any;
+  };
+} => mockToParams;

@@ -6,21 +6,35 @@ import type { SliderErrorInfo } from './slider';
 export type SwipeDirection = 'left' | 'right';
 
 /**
+ * Basic options for gesture handlers
+ */
+export interface GestureOptions {
+  onSwipe?: (direction: SwipeDirection) => void;
+}
+
+/**
  * Configuration for gesture sensitivity and behavior
  */
 export interface GestureConfig {
   /** Minimum distance in pixels required to trigger a swipe */
   threshold: number;
-  /** Minimum distance in pixels required to trigger a swipe */
-  minDistance: number;
-  /** Maximum velocity (px/ms) required to trigger momentum */
-  maxVelocity: number;
-  /** Minimum velocity (px/ms) required to trigger momentum */
+  /** Minimum velocity required to trigger a swipe */
   minVelocity: number;
+  /** Minimum distance in pixels required to trigger a swipe */
+  minDistance?: number;
+  /** Maximum velocity (px/ms) required to trigger momentum */
+  maxVelocity?: number;
   /** Maximum time in milliseconds allowed for a gesture */
-  maxTime: number;
+  maxTime?: number;
   /** Minimum time in milliseconds allowed for a gesture */
-  minTime: number;
+  minTime?: number;
+}
+
+/**
+ * Return type for the useGestures hook
+ */
+export interface UseGesturesReturn {
+  attach: (element: HTMLElement, options: GestureOptions) => () => void;
 }
 
 /**
@@ -52,7 +66,7 @@ export const DEFAULT_GESTURE_CONFIG: GestureConfig = {
   maxVelocity: 10,
   minVelocity: 0.1,
   maxTime: 1000,
-  minTime: 50
+  minTime: 50,
 };
 
 /**
@@ -113,8 +127,10 @@ export interface GestureEvent extends Event {
  * Type guard to check if an event is a valid PointerEvent
  */
 export const isValidPointerEvent = (event: Event): event is PointerEvent => {
-  return event instanceof PointerEvent &&
+  return (
+    event instanceof PointerEvent &&
     typeof (event as PointerEvent).clientX === 'number' &&
     typeof (event as PointerEvent).clientY === 'number' &&
-    typeof (event as PointerEvent).pointerId === 'number';
-}; 
+    typeof (event as PointerEvent).pointerId === 'number'
+  );
+};

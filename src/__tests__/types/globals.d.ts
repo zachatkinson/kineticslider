@@ -12,8 +12,7 @@ declare global {
       ) => void;
     };
   }
-  
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+
   namespace NodeJS {
     interface Global {
       gsap: typeof gsap;
@@ -21,4 +20,4 @@ declare global {
   }
 }
 
-export {}; 
+export {};

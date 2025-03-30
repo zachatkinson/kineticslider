@@ -1,16 +1,7 @@
-import { gsap } from 'gsap';
+import React, { MouseEvent, TouchEvent } from 'react';
 
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
-
-import type { KineticSliderProps } from '@/types';
-
-import { useGestures } from '../hooks/useGestures';
+import { useKineticSlider } from '../hooks/useKineticSlider';
+import type { KineticSliderProps, Slide } from '../types/slider';
 import { ErrorBoundary } from './ErrorBoundary';
 
 /**
@@ -45,236 +36,118 @@ export const KineticSlider: React.FC<KineticSliderProps> = ({
   slides,
   initialSlide = 0,
   onSlideChange,
-  className = '',
-  style = {},
+  onAnimationComplete,
   duration = 0.5,
   ease = 'power2.out',
-  enableGestures = true,
-  enableKeyboard = true,
-  onAnimationComplete,
-  onError,
 }) => {
-  // State and refs
-  const [currentSlide, setCurrentSlide] = useState(initialSlide);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [targetSlide, setTargetSlide] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const { currentSlide, isAnimating, next, prev, handleGesture, sliderRef } =
+    useKineticSlider({
+      slides,
+      duration,
+      ease,
+      initialSlide,
+      onSlideChange: onSlideChange || undefined,
+      onAnimationComplete: onAnimationComplete || undefined,
+    });
 
-  // Early validation - moved after hooks
-  if (!slides.length) {
-    const error = new Error('No slides provided');
-    if (onError) {
-      onError(error);
+  // Convert DOM events to format expected by handleGesture
+  const handleTouchMove = (e: TouchEvent<HTMLDivElement>): void => {
+    if (e.touches.length > 0) {
+      const touch = e.touches[0];
+      if (touch) {
+        handleGesture({
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          type: 'touchmove',
+        });
+      }
     }
-    return null;
-  }
+  };
 
-  // Handle single slide case
-  const isSingleSlide = slides.length === 1;
+  const handleTouchEnd = (e: TouchEvent<HTMLDivElement>): void => {
+    if (e.changedTouches.length > 0) {
+      const touch = e.changedTouches[0];
+      if (touch) {
+        handleGesture({
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          type: 'touchend',
+        });
+      }
+    }
+  };
 
-  // Handle reduced motion preference
-  const prefersReducedMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)'
-  ).matches;
-  const animationDuration = prefersReducedMotion ? 0.1 : duration;
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>): void => {
+    handleGesture({
+      clientX: e.clientX,
+      clientY: e.clientY,
+      type: 'mousemove',
+    });
+  };
 
-  const navigateToSlide = useCallback(
-    (index: number) => {
-      if (
-        isAnimating ||
-        index === currentSlide ||
-        index < 0 ||
-        index >= slides.length
-      )
-        return;
-      setIsAnimating(true);
-      setTargetSlide(index);
-    },
-    [currentSlide, isAnimating, slides.length]
+  const handleMouseUp = (e: MouseEvent<HTMLDivElement>): void => {
+    handleGesture({
+      clientX: e.clientX,
+      clientY: e.clientY,
+      type: 'mouseup',
+    });
+  };
+
+  const renderSlide = (slide: Slide): JSX.Element => (
+    <div key={slide.id} className="kinetic-slider__slide">
+      <img
+        src={slide.image}
+        alt={slide.alt}
+        className="kinetic-slider__image"
+      />
+      <div className="kinetic-slider__content">
+        <h2 className="kinetic-slider__title">{slide.title}</h2>
+        <p className="kinetic-slider__description">{slide.description}</p>
+      </div>
+    </div>
   );
 
-  // Use layout effect to ensure state updates happen synchronously
-  useLayoutEffect(() => {
-    if (targetSlide !== null && isAnimating) {
-      const animation = gsap.to(sliderRef.current, {
-        x: -targetSlide * 100,
-        duration: animationDuration,
-        ease,
-        onComplete: () => {
-          setCurrentSlide(targetSlide);
-          setIsAnimating(false);
-          setTargetSlide(null);
-          onSlideChange?.(targetSlide);
-          onAnimationComplete?.();
-        },
-      });
-
-      return () => {
-        animation.kill();
-      };
-    }
-
-    return undefined;
-  }, [
-    targetSlide,
-    isAnimating,
-    animationDuration,
-    ease,
-    onSlideChange,
-    onAnimationComplete,
-  ]);
-
-  // Effect to handle aria-current during animation
-  useEffect(() => {
-    if (isAnimating) {
-      const slides = containerRef.current?.querySelectorAll('[role="group"]');
-      slides?.forEach((slide) => {
-        slide.setAttribute('aria-current', 'false');
-      });
-    }
-  }, [isAnimating]);
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      switch (event.key) {
-        case 'ArrowLeft':
-          event.preventDefault();
-          navigateToSlide(currentSlide - 1);
-          break;
-        case 'ArrowRight':
-          event.preventDefault();
-          navigateToSlide(currentSlide + 1);
-          break;
-      }
-    },
-    [currentSlide, navigateToSlide]
-  );
-
-  const { attach } = useGestures({
-    enabled: enableGestures && !isSingleSlide,
-    onSwipe: (direction) => {
-      if (direction === 'left') {
-        navigateToSlide(currentSlide + 1);
-      } else {
-        navigateToSlide(currentSlide - 1);
-      }
-    },
-  });
-
-  useEffect(() => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    const cleanup = attach(element);
-    return cleanup;
-  }, [attach]);
-
-  useEffect(() => {
-    if (!enableKeyboard || isSingleSlide) return;
-
-    let lastEventTime = 0;
-    const minDelay = 50; // Minimum delay between events in ms
-
-    const handleKeyboard = (e: KeyboardEvent) => {
-      const now = performance.now();
-      if (now - lastEventTime < minDelay) return;
-      lastEventTime = now;
-
-      if (e.key === 'ArrowLeft') {
-        navigateToSlide(currentSlide - 1);
-      } else if (e.key === 'ArrowRight') {
-        navigateToSlide(currentSlide + 1);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyboard);
-    return () => {
-      window.removeEventListener('keydown', handleKeyboard);
-    };
-  }, [currentSlide, enableKeyboard, navigateToSlide, isSingleSlide]);
-
-  // Add cleanup effect
-  useEffect(() => {
-    const currentRef = sliderRef.current;
-    return () => {
-      if (currentRef) {
-        gsap.killTweensOf(currentRef);
-      }
-    };
-  }, []);
-
-  // When no slides, return null (validation was moved after hooks)
-  if (!slides.length) return null;
+  if (!slides?.length) return null;
 
   return (
     <ErrorBoundary>
       <div
-        ref={containerRef}
-        className={`kinetic-slider-container ${className}`}
-        style={{
-          position: 'relative',
-          overflow: 'hidden',
-          width: '100%',
-          ...style,
-        }}
+        className="kinetic-slider"
         role="region"
+        aria-roledescription="carousel"
         aria-label="Image slider"
-        tabIndex={0}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
       >
+        <div className="kinetic-slider__controls">
+          <button
+            className="kinetic-slider__control kinetic-slider__control--prev"
+            onClick={prev}
+            disabled={isAnimating || currentSlide <= 0}
+            aria-label="Previous slide"
+          >
+            &lt;
+          </button>
+          <button
+            className="kinetic-slider__control kinetic-slider__control--next"
+            onClick={next}
+            disabled={isAnimating || currentSlide >= slides.length - 1}
+            aria-label="Next slide"
+          >
+            &gt;
+          </button>
+        </div>
         <div
           ref={sliderRef}
-          role="region"
-          aria-label="Image Slider"
-          className="kinetic-slider"
-          onKeyDown={handleKeyDown}
-          tabIndex={0}
+          className="kinetic-slider__container"
           style={{
-            display: 'flex',
             transform: `translateX(-${currentSlide * 100}%)`,
           }}
         >
-          {slides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className="kinetic-slide"
-              style={{ width: '100%', flexShrink: 0 }}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`Slide ${index + 1} of ${slides.length}`}
-              aria-current={
-                isAnimating
-                  ? 'false'
-                  : currentSlide === index
-                    ? 'true'
-                    : 'false'
-              }
-              data-slide-index={index}
-              data-is-animating={isAnimating}
-            >
-              {slide.content}
-            </div>
-          ))}
+          {slides.map(renderSlide)}
         </div>
-
-        {!isSingleSlide && (
-          <div className="kinetic-slider-controls">
-            <button
-              onClick={() => navigateToSlide(currentSlide - 1)}
-              disabled={currentSlide === 0}
-              aria-label="Previous slide"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => navigateToSlide(currentSlide + 1)}
-              disabled={currentSlide === slides.length - 1}
-              aria-label="Next slide"
-            >
-              Next
-            </button>
-          </div>
-        )}
       </div>
     </ErrorBoundary>
   );

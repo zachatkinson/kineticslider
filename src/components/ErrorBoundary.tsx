@@ -1,143 +1,114 @@
-import React, { Component, ErrorInfo } from 'react';
-import type { SliderErrorInfo } from '../types';
-import { ErrorHandler, SliderError } from '../utils/errors';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
-interface Props {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-  onError?: (error: Error, errorInfo: SliderErrorInfo) => void;
-  className?: string;
-}
+import { SliderEventType } from '../types/analytics';
+import { ErrorBoundaryProps, ErrorBoundaryState } from '../types/components';
+import { AnalyticsManager } from '../utils/analytics';
 
-interface State {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: SliderErrorInfo | null;
-  recoveryAttempts: number;
-}
-
-const MAX_RECOVERY_ATTEMPTS = 3;
-const RECOVERY_DELAY_MS = 1000;
-
-/**
- * Enhanced error boundary component for handling slider-specific errors
- * with automatic recovery attempts and detailed error reporting
- */
-export class ErrorBoundary extends Component<Props, State> {
-  private errorHandler: ErrorHandler;
-  private recoveryTimeout: number | null = null;
-
-  constructor(props: Props) {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null,
-      recoveryAttempts: 0
+      retryCount: 0,
     };
-    this.errorHandler = new ErrorHandler(props.onError);
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       hasError: true,
       error,
-      recoveryAttempts: 0
+      retryCount: 0,
     };
   }
 
-  override componentDidCatch(error: Error, info: ErrorInfo): void {
-    const sliderError = error instanceof SliderError ? error : new SliderError(
-      error.message,
-      'COMPONENT_ERROR',
-      { originalError: error }
-    );
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    // Custom error logging
+    console.error('Error caught by ErrorBoundary:', error, errorInfo);
 
-    const errorInfo = {
-      componentStack: info.componentStack,
-      message: sliderError.message,
-      name: sliderError.name,
-      stack: sliderError.stack,
-      code: sliderError.code,
-      timestamp: sliderError.timestamp,
-      details: sliderError.details
-    } as SliderErrorInfo;
-
-    this.setState({ errorInfo });
-    this.errorHandler.handle(
-      () => Promise.resolve(),
-      {
-        componentStack: info.componentStack,
-        recoveryAttempts: this.state.recoveryAttempts
-      }
-    ).catch(() => {
-      // Error already handled by errorHandler
+    // Track error in analytics
+    AnalyticsManager.getInstance().trackError(error, {
+      componentStack: errorInfo.componentStack,
+      retryCount: this.state.retryCount,
     });
 
-    // Attempt recovery if we haven't exceeded max attempts
-    if (this.state.recoveryAttempts < MAX_RECOVERY_ATTEMPTS) {
-      this.scheduleRecovery();
-    }
+    // Call onError prop if provided
+    this.props.onError?.(error, errorInfo);
   }
 
-  private scheduleRecovery = (): void => {
-    if (this.recoveryTimeout !== null) {
-      window.clearTimeout(this.recoveryTimeout);
-    }
+  handleRetry = (): void => {
+    const { maxRetries = 3 } = this.props;
+    const { retryCount } = this.state;
 
-    this.recoveryTimeout = window.setTimeout(() => {
-      this.setState(state => ({
+    if (retryCount < maxRetries) {
+      this.setState((prevState) => ({
         hasError: false,
-        recoveryAttempts: state.recoveryAttempts + 1
+        error: null,
+        retryCount: prevState.retryCount + 1,
       }));
-    }, RECOVERY_DELAY_MS * Math.pow(2, this.state.recoveryAttempts));
+    } else {
+      console.warn(`Maximum retry attempts (${maxRetries}) reached`);
+
+      // Track max retries reached
+      AnalyticsManager.getInstance().trackEvent({
+        type: SliderEventType.ERROR_MAX_RETRIES,
+        data: {
+          error: this.state.error?.message,
+          component: this.constructor.name,
+          maxRetries,
+        },
+      });
+    }
   };
 
-  override componentWillUnmount(): void {
-    if (this.recoveryTimeout !== null) {
-      window.clearTimeout(this.recoveryTimeout);
-    }
+  scheduleRecoveryAttempt(): void {
+    // Auto-recovery attempt after 10 seconds
+    setTimeout(this.handleRetry, 10000);
   }
 
-  override render(): React.ReactNode {
-    const { hasError, error, errorInfo, recoveryAttempts } = this.state;
-    const { fallback, children, className = '' } = this.props;
+  renderFallback(): ReactNode {
+    const { fallback } = this.props;
+    const { error } = this.state;
 
-    if (hasError) {
-      if (fallback) {
-        return fallback;
-      }
+    if (!error) return null;
 
-      return (
-        <div 
-          role="alert" 
-          className={`error-boundary ${className}`.trim()}
-          aria-live="polite"
-        >
-          <h2>Something went wrong</h2>
-          {error && (
-            <details>
-              <summary>Error Details</summary>
-              <pre>{error.toString()}</pre>
-              {errorInfo && (
-                <>
-                  <p>Error Code: {errorInfo.code}</p>
-                  <p>Timestamp: {errorInfo.timestamp}</p>
-                  <pre>{errorInfo.componentStack}</pre>
-                </>
-              )}
-              {recoveryAttempts > 0 && (
-                <p>Recovery attempts: {recoveryAttempts}/{MAX_RECOVERY_ATTEMPTS}</p>
-              )}
-            </details>
-          )}
-          {recoveryAttempts < MAX_RECOVERY_ATTEMPTS && (
-            <p>Attempting to recover...</p>
-          )}
-        </div>
-      );
+    if (typeof fallback === 'function') {
+      return fallback(error, this.handleRetry);
     }
 
-    return children;
+    if (fallback) {
+      return fallback;
+    }
+
+    // Default fallback UI
+    return (
+      <div role="alert" aria-live="assertive" className="error-boundary">
+        <h2>Something went wrong</h2>
+        <p>{error.message}</p>
+        <button onClick={this.handleRetry}>Retry</button>
+      </div>
+    );
   }
+
+  override render(): ReactNode {
+    const { children } = this.props;
+    const { hasError } = this.state;
+
+    return hasError ? this.renderFallback() : children;
+  }
+}
+
+// Function component wrapper for easier usage
+export function withErrorBoundary<P extends object>(
+  Component: React.ComponentType<P>,
+  errorBoundaryProps: Omit<ErrorBoundaryProps, 'children'>
+): React.FC<P> {
+  return (props: P) => (
+    <ErrorBoundary {...errorBoundaryProps}>
+      <Component {...props} />
+    </ErrorBoundary>
+  );
 }

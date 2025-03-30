@@ -96,4 +96,58 @@ declare global {
   }
 }
 
+declare module '../types/gsap-mock' {
+  export interface GsapMock {
+    to: jest.Mock;
+    from: jest.Mock;
+    fromTo: jest.Mock;
+    set: jest.Mock;
+    timeline: jest.Mock;
+    core: {
+      Animation: jest.Mock;
+      Timeline: jest.Mock;
+      Tween: jest.Mock;
+    };
+    utils: {
+      toArray: jest.Mock;
+      selector: jest.Mock;
+      mapRange: jest.Mock;
+      clamp: jest.Mock;
+      getUnit: jest.Mock;
+    };
+    config: Record<string, unknown>;
+    version: string;
+    ticker: {
+      add: jest.Mock;
+      remove: jest.Mock;
+    };
+    registerPlugin: jest.Mock;
+    install: jest.Mock;
+    effects: Record<string, unknown>;
+    globalTimeline: {
+      clear: jest.Mock;
+    };
+    context: jest.Mock;
+    exportRoot: jest.Mock;
+    getById: jest.Mock;
+    getProperty: jest.Mock;
+    getTweensOf: jest.Mock;
+    killTweensOf: jest.Mock;
+    parseEase: jest.Mock;
+    quickTo: jest.Mock;
+    registerEffect: jest.Mock;
+    matchMedia: jest.Mock;
+    matchMediaRefresh: jest.Mock;
+    registerEase: jest.Mock;
+    updateRoot: jest.Mock;
+    defaults: {
+      duration: number;
+      ease: string;
+    };
+    delayedCall: jest.Mock;
+    isTweening: jest.Mock;
+    quickSetter: jest.Mock;
+  }
+}
+
 export {};

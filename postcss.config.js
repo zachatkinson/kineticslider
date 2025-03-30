@@ -1,6 +1,6 @@
-module.exports = {
+export default {
   plugins: {
-    'autoprefixer': {
+    autoprefixer: {
       flexbox: 'no-2009',
       grid: 'autoplace',
     },
@@ -23,16 +23,19 @@ module.exports = {
     'postcss-normalize': {
       forceImport: true,
     },
-    'cssnano': {
-      preset: ['default', {
-        discardComments: {
-          removeAll: true,
+    cssnano: {
+      preset: [
+        'default',
+        {
+          discardComments: {
+            removeAll: true,
+          },
+          normalizeWhitespace: true,
+          minifyFontValues: true,
+          minifyGradients: true,
+          calc: false,
         },
-        normalizeWhitespace: true,
-        minifyFontValues: true,
-        minifyGradients: true,
-        calc: false,
-      }],
+      ],
     },
   },
-}; 
+};

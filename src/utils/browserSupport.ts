@@ -1,19 +1,12 @@
 /**
  * Browser support utilities for KineticSlider
  */
-
-import { NormalizedPointerEvent } from '../types';
-
-// Type definitions
-declare type AddEventListenerOptions = {
-  passive?: boolean;
-  once?: boolean;
-  capture?: boolean;
-};
-
-declare type FrameRequestCallback = (time: number) => void;
-
-declare type ResizeObserverCallback = (entries: ResizeObserverEntry[], observer: ResizeObserver) => void;
+import {
+  AddEventListenerOptions,
+  FrameRequestCallback,
+  NormalizedPointerEvent,
+  ResizeObserverCallback,
+} from '../types/browser';
 
 // Check for ResizeObserver support
 export const hasResizeObserver = typeof ResizeObserver !== 'undefined';
@@ -24,12 +17,12 @@ export const supportsPassiveEvents = (() => {
 
   try {
     // Need to define an empty handler to avoid TypeScript errors
-    const noop = () => {};
+    const noop = (): void => {};
     const options = {
       get passive() {
         passiveSupported = true;
         return false;
-      }
+      },
     } as AddEventListenerOptions;
 
     window.addEventListener('testPassive', noop, options);
@@ -42,7 +35,8 @@ export const supportsPassiveEvents = (() => {
 })();
 
 // Check for touch events support
-export const hasTouchEvents = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+export const hasTouchEvents =
+  'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 // Check for pointer events support
 export const hasPointerEvents = window.PointerEvent !== undefined;
@@ -132,30 +126,41 @@ export class ResizeObserverFallback {
     this.rafId = requestFrame(() => {
       const entries: ResizeObserverEntry[] = [];
 
-      this.elements.forEach(element => {
-        const oldSize = this.sizes.get(element)!;
+      this.elements.forEach((element) => {
+        const oldSize = this.sizes.get(element);
+        if (!oldSize) return;
+
         const newSize = {
           width: element.clientWidth,
           height: element.clientHeight,
         };
 
-        if (oldSize.width !== newSize.width || oldSize.height !== newSize.height) {
+        if (
+          oldSize.width !== newSize.width ||
+          oldSize.height !== newSize.height
+        ) {
           this.sizes.set(element, newSize);
           entries.push({
             target: element,
             contentRect: element.getBoundingClientRect(),
-            borderBoxSize: [{
-              blockSize: newSize.height,
-              inlineSize: newSize.width,
-            }],
-            contentBoxSize: [{
-              blockSize: newSize.height,
-              inlineSize: newSize.width,
-            }],
-            devicePixelContentBoxSize: [{
-              blockSize: newSize.height,
-              inlineSize: newSize.width,
-            }],
+            borderBoxSize: [
+              {
+                blockSize: newSize.height,
+                inlineSize: newSize.width,
+              },
+            ],
+            contentBoxSize: [
+              {
+                blockSize: newSize.height,
+                inlineSize: newSize.width,
+              },
+            ],
+            devicePixelContentBoxSize: [
+              {
+                blockSize: newSize.height,
+                inlineSize: newSize.width,
+              },
+            ],
           } as ResizeObserverEntry);
         }
       });
@@ -170,10 +175,12 @@ export class ResizeObserverFallback {
 }
 
 // Get the appropriate ResizeObserver implementation
-export const getResizeObserver = (callback: ResizeObserverCallback): ResizeObserver => {
+export const getResizeObserver = (
+  callback: ResizeObserverCallback
+): ResizeObserver => {
   return hasResizeObserver
     ? new ResizeObserver(callback)
-    : new ResizeObserverFallback(callback) as unknown as ResizeObserver;
+    : (new ResizeObserverFallback(callback) as unknown as ResizeObserver);
 };
 
 // Touch event normalization
@@ -206,4 +213,4 @@ export const normalizePointerEvent = (
     target: event.target,
     preventDefault: () => event.preventDefault(),
   };
-}; 
+};
