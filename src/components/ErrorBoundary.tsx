@@ -1,7 +1,11 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 
 import { SliderEventType } from '../types/analytics';
-import { ErrorBoundaryProps, ErrorBoundaryState } from '../types/components';
+import {
+  ErrorBoundaryProps,
+  ErrorBoundaryState,
+  FallbackProps,
+} from '../types/components';
 import { AnalyticsManager } from '../utils/analytics';
 
 export class ErrorBoundary extends Component<
@@ -70,11 +74,21 @@ export class ErrorBoundary extends Component<
   }
 
   renderFallback(): ReactNode {
-    const { fallback } = this.props;
+    const { fallback, fallbackRender } = this.props;
     const { error } = this.state;
 
     if (!error) return null;
 
+    // If fallbackRender is provided, use it
+    if (typeof fallbackRender === 'function') {
+      const fallbackProps: FallbackProps = {
+        error,
+        resetErrorBoundary: this.handleRetry,
+      };
+      return fallbackRender(fallbackProps);
+    }
+
+    // Otherwise use the fallback prop
     if (typeof fallback === 'function') {
       return fallback(error, this.handleRetry);
     }
