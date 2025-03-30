@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 
 import { SliderEventType } from '../types/analytics';
 import { ErrorBoundaryProps, ErrorBoundaryState } from '../types/components';
@@ -99,16 +99,4 @@ export class ErrorBoundary extends Component<
 
     return hasError ? this.renderFallback() : children;
   }
-}
-
-// Function component wrapper for easier usage
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  errorBoundaryProps: Omit<ErrorBoundaryProps, 'children'>
-): React.FC<P> {
-  return (props: P) => (
-    <ErrorBoundary {...errorBoundaryProps}>
-      <Component {...props} />
-    </ErrorBoundary>
-  );
 }

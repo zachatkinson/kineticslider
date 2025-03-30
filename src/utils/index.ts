@@ -50,3 +50,6 @@ export * from './browserSupport';
 // Type utilities
 export * from './type-guards';
 export * from './id-helpers';
+
+// Component utilities
+export * from './hoc';
