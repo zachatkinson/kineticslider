@@ -30,10 +30,10 @@ export default {
   },
 
   // Lint and format TypeScript/JavaScript files
-  '**/*.{js,jsx,ts,tsx}': ['eslint --fix', 'prettier --write'],
+  '**/*.{js,jsx,ts,tsx}': ['eslint --config eslint.config.mjs --fix', 'prettier --write'],
 
   // Style files
-  '**/*.{css,scss,sass}': ['stylelint --fix', 'prettier --write'],
+  '**/*.{css,scss,sass}': ['stylelint --config stylelint.config.mjs --fix', 'prettier --write'],
 
   // Other files that only need formatting
   '**/*.{json,md,yml,yaml}': ['prettier --write'],
@@ -45,4 +45,4 @@ export default {
 
   // Package files
   'package.json': ['prettier --write'],
-};
+}; 

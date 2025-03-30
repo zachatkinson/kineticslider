@@ -1,0 +1,608 @@
+---
+description: Git Workflow Standards and Best Practices for Version Control
+version: 1.0.0
+globs: ["**/.git/**", "**/.gitignore", "**/.gitattributes", "**/.github/**", "**/package.json"]
+alwaysApply: true
+extends: []
+tags: ["git", "commit", "hooks", "workflow", "version-control"]
+---
+
+# Git Workflow Standards
+
+## Related Rules
+- Package Management (`tooling/package-management.mdc`): Dependency versioning
+- Code Style (`core/code-style.mdc`): Code formatting standards
+- Testing (`tooling/testing/base-testing.mdc`): Testing standards and validation
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Added git commit standards
+  - Implemented branch naming patterns
+  - Added PR/MR guidelines
+  - Established hooks management
+- 1.1.0: Comprehensive update
+  - Added emoji commit standards
+  - Enhanced branch protection rules
+  - Added tagging and release management
+  - Implemented repository optimization strategies
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Git Workflow Standards and Best Practices for Version Control"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "commitMessageLength": 72,
+        "branchNameLength": 50,
+        "hooksBypassRate": 0
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "conventional-commits",
+        "descriptive-branches",
+        "hook-execution"
+      ],
+      "forbidden": [
+        "no-verify-flag",
+        "non-descriptive-messages",
+        "wip-commits"
+      ],
+      "git": {
+        "commit": {
+          "format": "conventional",
+          "emoji": true,
+          "enforce": true,
+          "maxSubjectLength": 72,
+          "verifyHooks": {
+            "required": true,
+            "bypassForbidden": true
+          }
+        },
+        "branch": {
+          "naming": "feature/{issue-id}-{description}",
+          "maxLength": 50,
+          "protection": {
+            "main": {
+              "requireReview": true,
+              "minReviewers": 1,
+              "preventForcePush": true,
+              "requiredChecks": ["build", "test", "lint"],
+              "requireUpToDate": true
+            }
+          }
+        },
+        "hooks": {
+          "preCommit": ["lint", "format", "type-check"],
+          "preCommitBypassForbidden": true,
+          "prePush": ["test"],
+          "prePushBypassForbidden": true
+        },
+        "pullRequests": {
+          "template": ".github/PULL_REQUEST_TEMPLATE.md",
+          "requireIssueReference": true,
+          "maxChanges": 500
+        },
+        "mergeStrategy": {
+          "default": "rebase",
+          "squash": {
+            "feature": true,
+            "bugfix": true,
+            "docs": false
+          }
+        },
+        "tagging": {
+          "semanticVersioning": true,
+          "prefix": "v",
+          "annotated": true,
+          "gpgSign": true
+        },
+        "lfs": {
+          "enabled": true,
+          "patterns": ["*.png", "*.jpg", "*.pdf", "*.zip"]
+        },
+        "submodules": {
+          "enabled": false,
+          "update": "recursive"
+        },
+        "performance": {
+          "shallowClone": true,
+          "partialClone": true,
+          "sparseCheckout": true
+        }
+      }
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "commit-message-templates",
+          "branch-name-validation",
+          "hook-execution-status",
+          "commit-validation"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "commit-message-validation",
+          "branch-naming-validation",
+          "hook-execution-verification",
+          "changelog-generation"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "hook-testing",
+          "commit-message-testing",
+          "branch-name-testing"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "hook-bypass-detection",
+          "commit-quality-metrics",
+          "branch-naming-compliance"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "credential-scanning",
+        "secret-detection",
+        "signed-commits",
+        "protected-branches"
+      ],
+      "validations": [
+        "pre-commit-validation",
+        "credentials-check",
+        "sensitive-data-check"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 100,
+      "requirements": [
+        "hook-execution-tests",
+        "commit-format-validation",
+        "branch-naming-validation"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "semver",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "git": ">=2.30.0",
+        "node": ">=18.0.0",
+        "husky": ">=8.0.0"
+      },
+      "optional": {
+        "commitlint": ">=17.0.0",
+        "commitizen": ">=4.0.0",
+        "lint-staged": ">=13.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Never bypass git hooks with `--no-verify` or `-n`
+- Follow conventional commit format with corresponding emojis
+- Use descriptive branch names
+- Include issue references
+- Run pre-commit checks
+- Protect main branches from direct pushes
+- Sign commits and tags when possible
+- Use semantic versioning for releases
+
+## Patterns and Examples
+```bash
+# ❌ Bad: Bypassing pre-commit hooks
+git commit -m "fix bug" --no-verify
+git commit -m "fix bug" -n
+
+# ✅ Good: Allowing hooks to run
+git commit -m "fix: 🐛 resolve issue with login form validation"
+```
+
+```bash
+# ❌ Bad: Non-descriptive commit message
+git commit -m "fixes"
+git commit -m "update code"
+git commit -m "WIP"
+
+# ❌ Bad: Missing emoji
+git commit -m "feat: add user authentication flow"
+
+# ✅ Good: Conventional commit format with emojis
+git commit -m "feat: ✨ add user authentication flow"
+git commit -m "fix: 🐛 resolve race condition in data fetching"
+git commit -m "docs: 📝 update API documentation"
+git commit -m "style: 💄 improve button styling"
+git commit -m "refactor: ♻️ simplify error handling logic"
+git commit -m "perf: ⚡️ optimize database queries"
+git commit -m "test: ✅ add unit tests for auth service"
+git commit -m "build: 👷 update build configuration"
+git commit -m "ci: 🔧 fix CI pipeline"
+git commit -m "chore: 🔨 update dependencies"
+git commit -m "revert: ⏪ revert last commit"
+git commit -m "feat: 💥 ✨ add breaking API changes"
+git commit -m "security: 🔒 fix XSS vulnerability"
+git commit -m "deps: ⬆️ update dependencies"
+git commit -m "a11y: ♿ improve screen reader support"
+git commit -m "i18n: 🌐 add Spanish translations"
+git commit -m "config: ⚙️ update webpack configuration"
+git commit -m "init: 🎉 initial commit"
+```
+
+```bash
+# ✅ Good: Using scopes for additional context
+git commit -m "feat(auth): ✨ add user authentication flow"
+git commit -m "fix(api): 🐛 resolve race condition in data fetching"
+git commit -m "style(button): 💄 improve hover state styling"
+git commit -m "perf(db): ⚡️ optimize query performance"
+```
+
+```bash
+# ❌ Bad: Branch naming
+git checkout -b fix
+git checkout -b update-stuff
+
+# ✅ Good: Descriptive branch names
+git checkout -b feature/123-user-authentication
+git checkout -b fix/456-login-validation
+git checkout -b docs/update-api-docs
+```
+
+```bash
+# ✅ Good: Tagging with semantic versioning
+git tag -a v1.0.0 -m "Initial stable release"
+git tag -a v1.1.0 -m "Added new features"
+git tag -a v1.1.1 -m "Fixed bugs in v1.1.0"
+git tag -a v2.0.0 -m "Breaking changes to API"
+```
+
+```bash
+# ✅ Good: Rebase workflow to keep branches updated
+git checkout feature/123-user-authentication
+git fetch origin
+git rebase origin/main
+git push --force-with-lease
+```
+
+```bash
+# ✅ Good: Managing large files with Git LFS
+git lfs track "*.png"
+git lfs track "*.zip"
+git add .gitattributes
+git commit -m "chore: 🔨 configure Git LFS for binary files"
+```
+
+## Commit Types
+| Type | Emoji | Description |
+|---|----|---|
+| feat | ✨ | A new feature |
+| fix | 🐛 | A bug fix |
+| docs | 📝 | Documentation only changes |
+| style | 💄 | Changes that do not affect the meaning of the code (white-space, formatting, etc) |
+| refactor | ♻️ | A code change that neither fixes a bug nor adds a feature |
+| perf | ⚡️ | A code change that improves performance |
+| test | ✅ | Adding missing tests or correcting existing tests |
+| build | 👷 | Changes that affect the build system or external dependencies |
+| ci | 🔧 | Changes to our CI configuration files and scripts |
+| chore | 🔨 | Other changes that don't modify src or test files |
+| revert | ⏪ | Reverts a previous commit |
+| breaking | 💥 | Indicates a breaking change (used with other types) |
+| security | 🔒 | Security-related changes or vulnerability fixes |
+| deps | ⬆️ | Dependency updates or downgrades |
+| a11y | ♿ | Accessibility improvements |
+| i18n | 🌐 | Internationalization and localization changes |
+| config | ⚙️ | Configuration changes |
+| init | 🎉 | Initial commit or project bootstrap |
+
+## Commit Scopes
+
+Scopes can be added in parentheses after the commit type to provide additional context about which part of the codebase is being affected:
+
+```
+feat(auth): ✨ add user authentication flow
+fix(api): 🐛 resolve race condition in data fetching
+```
+
+Common scopes include:
+- Module or feature names (auth, api, dashboard)
+- Component names (button, modal, form)
+- Areas of concern (db, cache, security)
+- Platforms or environments (ios, android, web)
+
+## Branch Protection Rules
+
+Protected branches (main, master, develop) must follow these rules:
+
+- Direct pushes are not allowed
+- Changes must be introduced via pull requests
+- Pull requests require at least one approved review
+- All required CI checks must pass
+- Branch must be up-to-date with base branch
+- Force pushes are prohibited (except for repository administrators in emergency situations)
+- Branch deletion is prohibited
+
+Example GitHub branch protection configuration:
+```yaml
+branches:
+  - name: main
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: true
+      required_status_checks:
+        strict: true
+        contexts: ["build", "test", "lint"]
+      enforce_admins: true
+      restrictions: null
+```
+
+## Pull/Merge Request Guidelines
+
+All PRs/MRs must follow these guidelines:
+
+- Use a descriptive title that summarizes the change
+- Use the provided PR template
+- Reference related issues with "Fixes #123" or "Relates to #123"
+- Keep changes focused and limited in scope (max 500 lines changed when possible)
+- Include tests for new functionality
+- Update documentation as necessary
+- Assign appropriate reviewers
+- Add relevant labels
+
+PR titles should follow conventional commit format:
+```
+feat: add user authentication flow
+fix: resolve race condition in data fetching
+```
+
+## Tagging & Release Management
+
+Tags and releases must follow semantic versioning (MAJOR.MINOR.PATCH):
+
+- MAJOR version: incompatible API changes
+- MINOR version: backwards-compatible functionality
+- PATCH version: backwards-compatible bug fixes
+
+All tags should be:
+- Annotated (`git tag -a`)
+- Signed when possible (`git tag -s`)
+- Include a clear message describing the release
+- Follow the format `vX.Y.Z` (e.g., `v1.2.3`)
+
+Release process:
+1. Update version in appropriate files (package.json, etc.)
+2. Update CHANGELOG.md
+3. Commit changes with `chore(release): 🔨 bump version to X.Y.Z`
+4. Create an annotated tag
+5. Push commits and tags
+6. Create a GitHub/GitLab release with release notes
+
+## Rebase vs. Merge Strategy
+
+The preferred strategy for incorporating changes is rebasing:
+
+- Feature branches should regularly rebase on the latest main branch
+- Use `git rebase` instead of `git merge` to maintain a linear history
+- When pushing after a rebase, use `git push --force-with-lease` to avoid overwriting others' work
+- Squash commits before merging to main when appropriate
+
+When to rebase:
+- Updating feature branches with latest main changes
+- Cleaning up commit history before a PR
+- Resolving conflicts with main branch
+
+When to merge:
+- Merging a completed feature into main (via PR)
+- Merging between long-lived branches
+
+## GitLab/GitHub Specific Workflows
+
+### GitHub Workflow:
+- Use GitHub Flow (feature branches → PRs → main)
+- Configure GitHub Actions for CI/CD
+- Use GitHub Issues for task tracking
+- Enable Dependabot for dependency updates
+- Use GitHub Projects for project management
+
+### GitLab Workflow:
+- Use GitLab Flow (feature branches → MRs → main → production)
+- Configure GitLab CI/CD pipelines
+- Use GitLab Issues for task tracking
+- Enable GitLab Dependency Scanning
+- Use GitLab Boards for project management
+
+## Large File Handling
+
+For binary or large files:
+
+- Use Git LFS for files over 5MB
+- Track binary files patterns in .gitattributes:
+  ```
+  *.png filter=lfs diff=lfs merge=lfs -text
+  *.jpg filter=lfs diff=lfs merge=lfs -text
+  *.pdf filter=lfs diff=lfs merge=lfs -text
+  *.zip filter=lfs diff=lfs merge=lfs -text
+  ```
+- Initialize Git LFS with `git lfs install`
+- Verify with `git lfs status` and `git lfs ls-files`
+- Consider excluding large generated files via .gitignore
+
+## Squashing History
+
+Squash commits in these situations:
+
+- When merging feature branches with multiple work-in-progress commits
+- When many small, related changes were made incrementally
+- When the individual commits don't provide meaningful context
+
+Don't squash:
+- Commits that represent distinct, logical changes
+- Commits from multiple contributors (preserves authorship)
+- Commits on main or other shared branches
+
+Example squash command:
+```bash
+# Squash the last 3 commits
+git reset --soft HEAD~3
+git commit -m "feat: ✨ add complete user authentication flow"
+```
+
+## Git Submodules & Subtrees
+
+When working with external dependencies:
+
+### Submodules:
+- Add with `git submodule add <repository> <path>`
+- Initialize with `git submodule init`
+- Update with `git submodule update --recursive`
+- Include submodules when cloning with `git clone --recursive`
+
+### Subtrees:
+- Add with `git subtree add --prefix=<path> <repository> <ref>`
+- Update with `git subtree pull --prefix=<path> <repository> <ref>`
+- Contribute changes with `git subtree push --prefix=<path> <repository> <branch>`
+
+## Debugging Tools
+
+Use these Git tools for debugging:
+
+- `git bisect`: Binary search to find the commit that introduced a bug
+  ```bash
+  git bisect start
+  git bisect bad # Current commit has the bug
+  git bisect good v1.0.0 # This version didn't have the bug
+  # Git will checkout commits for you to test
+  git bisect good # or git bisect bad after testing
+  git bisect reset # Return to original state
+  ```
+
+- `git blame`: Find who modified a line and in which commit
+  ```bash
+  git blame -L 10,20 file.js # Show who changed lines 10-20
+  ```
+
+- `git reflog`: Recover lost commits or branches
+  ```bash
+  git reflog # See all recent ref updates
+  git checkout HEAD@{2} # Go to specific reflog entry
+  ```
+
+## Performance Considerations
+
+For large repositories:
+
+- Use shallow clones when full history isn't needed:
+  ```bash
+  git clone --depth=1 <repository>
+  ```
+
+- Use partial clones to exclude large objects:
+  ```bash
+  git clone --filter=blob:none <repository>
+  ```
+
+- Use sparse checkout for specific directories:
+  ```bash
+  git clone --sparse <repository>
+  git sparse-checkout set <directory>
+  ```
+
+- Optimize local repository:
+  ```bash
+  git gc --aggressive
+  git prune
+  ```
+
+- Use `--no-merged` to find stale branches:
+  ```bash
+  git branch --no-merged main
+  ```
+
+## Hook Enforcement
+- Pre-commit hooks must always run
+- Pre-push hooks must always run
+- Git hooks should never be bypassed
+- Fix issues instead of bypassing validation
+
+## Integration Standards
+- IDE integration:
+  - Commit message templates
+  - Branch name suggestions
+  - Hook execution visibility
+  - Commit validation
+- CI integration:
+  - Commit message validation
+  - Branch naming validation
+  - Changelog generation
+  - Version management
+- Repository integration:
+  - GitHub/GitLab templates
+  - Issue templates
+  - PR templates
+  - Workflow configurations
+
+## Security Considerations
+- Review code before committing
+- Never commit secrets or credentials
+- Validate dependency updates
+- Sign commits when possible
+- Use protected branches
+- Require code reviews
+- Verify committer identity
+- Enable 2FA for repository accounts
+- Conduct regular security audits
+- Scan for secrets before commits
+
+## Testing Requirements
+- Hook execution testing
+- Commit format validation
+- Branch naming validation
+- Pre-commit validations
+- Security validations
+- Integration tests
+
+## Maintenance
+- Regular hook updates
+- Commit template updates
+- Branch pattern reviews
+- Documentation updates
+- Team training
+- Review processes
+- Clean up stale branches
+- Archive old repositories
+- Monitor repo size
+- Update LFS quota usage
+
+## Compatibility Matrix
+| Feature | Git 2.30+ | Git 2.20+ | Git 2.10+ |
+|---------|-----------|-----------|-----------|
+| Hooks | ✅ | ✅ | ✅ |
+| Branch Protection | ✅ | ✅ | ⚠️ |
+| Signed Commits | ✅ | ✅ | ✅ |
+| Worktrees | ✅ | ⚠️ | ❌ |
+
+## Version Compatibility
+| Version | Git | Node.js | Husky |
+|---------|-----|---------|-------|
+| 1.0.0   | ≥2.30.0 | ≥18.0.0 | ≥8.0.0 |

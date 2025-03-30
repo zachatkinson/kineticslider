@@ -1,0 +1,193 @@
+---
+description: Standards for Cursor Rules Management and Organization
+version: 1.0.0
+globs: ["**/*.mdc", ".cursor/rules/**/*.mdc"]
+alwaysApply: true
+extends: ["_meta/rule-enforcement.mdc"]
+tags:
+  - meta
+  - organization
+  - standards
+  - management
+---
+
+# Cursor Rules Standards
+
+## Related Rules
+- Rule Enforcement (`_meta/rule-enforcement.mdc`): Enforcement policies and exception management
+- Index (`_index.mdc`): Directory structure and organization
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Established cursor rules management standards
+  - Defined file structure and naming conventions
+  - Implemented metadata requirements
+  - Established review and maintenance procedures
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Standards for Cursor Rules Management and Organization"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "fileLength": 500,
+        "metadataCompleteness": 100,
+        "exampleCoverage": 90
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "complete-metadata",
+        "proper-inheritance",
+        "clear-examples",
+        "maintenance-docs"
+      ],
+      "forbidden": [
+        "incomplete-metadata",
+        "circular-dependencies",
+        "duplicated-rules",
+        "missing-examples"
+      ]
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "rule-validation",
+          "metadata-validation",
+          "inheritance-visualization"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "rule-validation",
+          "link-verification",
+          "structure-validation"
+        ]
+      },
+      "test": {
+        "enabled": true,
+        "features": [
+          "metadata-validation",
+          "example-testing",
+          "inheritance-validation"
+        ]
+      },
+      "monitor": {
+        "enabled": true,
+        "features": [
+          "rule-coverage",
+          "rule-compliance",
+          "rule-freshness"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "no-sensitive-data",
+        "secure-examples",
+        "safe-imports"
+      ],
+      "validations": [
+        "content-validation",
+        "example-validation",
+        "dependency-validation"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 100,
+      "requirements": [
+        "metadata-validation",
+        "example-validation",
+        "inheritance-validation"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "strict",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "markdown": ">=1.0.0",
+        "yaml": ">=1.0.0"
+      },
+      "optional": {
+        "mdx": ">=2.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- All rules must include complete metadata
+- All rules must follow the established template
+- All rules must include clear examples
+- All rules must specify related rules and inheritance
+- All rules must include maintenance procedures
+- All rules must use consistent formatting
+- All rules must specify versioning
+- All rules must use proper frontmatter
+- All rules must indicate their scope (globs)
+- All rules must specify if they should always apply
+
+## File Structure Requirements
+- All rule files must use the `.mdc` extension
+- All rule files must be organized in the appropriate directories
+- All rule files must be named according to convention (kebab-case)
+- All top-level categories must have their own directory
+- Related rules should be grouped in subdirectories
+- Meta rules must be in the `_meta` directory
+- Index files must be named `index.mdc`
+- Configuration files must be named with their purpose
+
+## Metadata Requirements
+- All rules must include a description
+- All rules must include a version
+- All rules must include applicable globs
+- All rules must specify if they should always apply
+- All rules must list related rules
+- All rules must include tags for searchability
+- All rules should specify what they extend, if applicable
+
+## Maintenance Procedures
+- All rules must be reviewed monthly
+- All rules must be updated when dependencies change
+- All rules must include migration guides for breaking changes
+- All rules must maintain backward compatibility when possible
+- All rules must be versioned according to semver
+- All rule updates must be documented in version history
+- All rules must have a clear deprecation policy
+
+## Validation Requirements
+- All rules must be validated for metadata completeness
+- All rules must be validated for proper inheritance
+- All examples must be validated for accuracy
+- All links must be verified
+- All structure must be validated against templates
+- All rules must be validated for security considerations
+
+## Compatibility Matrix
+| Feature | MDC | MD | MDX |
+|---|----|-----|---|
+| Frontmatter | ✅ | ✅ | ✅ |
+| Examples | ✅ | ✅ | ✅ |
+| Validation | ✅ | ⚠️ | ✅ |
+| Integration | ✅ | ⚠️ | ✅ |
+
+## Version Compatibility
+| Version | Markdown | MDX | YAML |
+|---|----|-----|---|
+| 1.0.0 | ≥1.0.0 | ≥2.0.0 | ≥1.0.0 |

@@ -1,0 +1,441 @@
+---
+description: Rule Enforcement Standards and Exception Management for Modern Web Applications
+globs: ["**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,mdx,css,scss,html}"]
+alwaysApply: true
+---
+
+# Rule Enforcement Standards
+
+## Related Rules
+- Code Style (`core/code-style.mdc`): Base code style enforcement
+- Error Handling (`core/error-handling.mdc`): Error management patterns
+- TypeScript (`development/typescript.mdc`): Type checking enforcement
+- ESLint (`tooling/linting/eslint.mdc`): Linting rule enforcement
+
+## Version History
+- 1.0.0: Initial standardized version
+  - Established rule enforcement policies
+  - Defined exception request process
+  - Implemented documentation requirements
+  - Created metrics for compliance tracking
+- 1.1.0: Comprehensive update
+  - Enhanced exception management workflow
+  - Added team approval process
+  - Implemented expiration policies
+  - Added enforcement automation guidelines
+
+## Configuration
+```json
+{
+  "rule": {
+    "enabled": true,
+    "severity": "error",
+    "autofix": false,
+    "description": "Rule Enforcement Standards and Exception Management for Modern Web Applications"
+  },
+  "options": {
+    "metrics": {
+      "enabled": true,
+      "thresholds": {
+        "compliance": {
+          "target": 100,
+          "minimum": 95
+        },
+        "exceptions": {
+          "maximum": 5,
+          "maximumPerRule": 2,
+          "reviewFrequency": "quarterly"
+        },
+        "exceptionDuration": {
+          "default": "30d",
+          "maximum": "90d"
+        }
+      }
+    },
+    "patterns": {
+      "enabled": true,
+      "required": [
+        "documented-exceptions",
+        "approved-exceptions",
+        "time-limited-exceptions"
+      ],
+      "forbidden": [
+        "unapproved-disables",
+        "permanent-exceptions",
+        "undocumented-bypasses"
+      ],
+      "enforcement": {
+        "exceptions": {
+          "allowed": true,
+          "requiresApproval": true,
+          "documentationRequired": true,
+          "expirationRequired": true
+        },
+        "process": {
+          "requestTemplate": "templates/rule-exception-request.md",
+          "approvalFlow": "pull-request",
+          "approvalRequired": true,
+          "minApprovers": 2,
+          "approverRoles": ["lead-developer", "tech-lead", "architect"]
+        },
+        "expiration": {
+          "defaultDuration": "30d",
+          "maxDuration": "90d",
+          "renewalProcess": "new-request",
+          "gracePeriod": "7d"
+        }
+      }
+    },
+    "integrations": {
+      "ide": {
+        "enabled": true,
+        "features": [
+          "exception-highlighting",
+          "expiration-warnings",
+          "exception-templates",
+          "approval-status"
+        ]
+      },
+      "build": {
+        "enabled": true,
+        "features": [
+          "exception-validation",
+          "expiration-checking",
+          "compliance-reporting",
+          "metrics-collection"
+        ]
+      },
+      "ci": {
+        "enabled": true,
+        "features": [
+          "exception-reporting",
+          "compliance-gates",
+          "expiration-alerts",
+          "trend-analysis"
+        ]
+      },
+      "review": {
+        "enabled": true,
+        "features": [
+          "exception-review-assignment",
+          "approval-tracking",
+          "expiration-tracking",
+          "compliance-reporting"
+        ]
+      }
+    },
+    "security": {
+      "enabled": true,
+      "requirements": [
+        "exception-audit-logging",
+        "approval-verification",
+        "security-rule-strictness"
+      ],
+      "validations": [
+        "security-exception-scrutiny",
+        "access-control-enforcement",
+        "audit-log-verification"
+      ]
+    },
+    "maintenance": {
+      "reviewPeriod": "monthly",
+      "deprecationPolicy": "strict",
+      "migrationRequired": true
+    },
+    "compatibility": {
+      "required": {
+        "eslint": ">=8.0.0",
+        "typescript": ">=4.0.0",
+        "prettier": ">=2.0.0"
+      },
+      "optional": {
+        "commitlint": ">=17.0.0",
+        "stylelint": ">=14.0.0"
+      }
+    }
+  }
+}
+```
+
+## Core Requirements
+- Never change rule configurations to pass tests/lint
+- Never suppress warnings or errors to bypass validation
+- Always fix errors and warnings instead of ignoring them
+- Document comprehensive justification for any exception
+- Obtain required approvals for all exceptions
+- Set appropriate time limits on exceptions
+- Fix issues properly rather than bypassing detection
+- Review exceptions regularly and remove when no longer needed
+- Track compliance metrics across the codebase
+- Train team members on proper compliance practices
+
+## Exception Process
+
+When a rule exception is genuinely necessary, follow this process:
+
+1. **Document the issue**:
+   - Describe the specific rule causing the issue
+   - Explain why following the rule is problematic
+   - Document all alternatives attempted
+   - Explain why alternatives aren't viable
+
+2. **Request approval**:
+   - Submit formal exception request using template
+   - Include relevant code samples
+   - Detail exact scope and duration of the exception
+   - Specify impact of granting exception
+
+3. **Review process**:
+   - Technical review of exception request
+   - Assessment of alternatives
+   - Exploration of rule modification impact
+   - Decision documentation
+
+4. **Implementation**:
+   - Apply exception with proper documentation
+   - Add expiration date to exception comment
+   - Add tracking information including ticket/PR number
+   - Link to exception approval document
+
+5. **Tracking**:
+   - Record exception in central registry
+   - Set up expiration notification
+   - Include in regular compliance reporting
+   - Schedule for review before expiration
+
+## Exception Patterns and Examples
+
+### Exception Request Template
+```markdown
+# Rule Exception Request
+
+## Rule Information
+- Rule ID: `@typescript-eslint/strict-boolean-expressions`
+- Rule Description: Restricts the types allowed in boolean expressions
+
+## Issue Description
+This rule is causing an issue in our authentication flow where we need to check 
+for the existence of a token before validating it. The token can be `string | null | undefined`
+but the rule only allows explicit boolean checks.
+
+## Alternatives Attempted
+1. Added explicit null/undefined checks:
+   ```typescript
+   if (token !== null && token !== undefined && token !== '') {
+     // logic
+   }
+   ```
+   **Issue**: This creates verbose code and TypeScript still flags it.
+
+2. Used Boolean constructor:
+   ```typescript
+   if (Boolean(token)) {
+     // logic
+   }
+   ```
+   **Issue**: Doesn't properly distinguish empty strings from non-empty strings.
+
+3. Added type assertions:
+   ```typescript
+   if (token as boolean) {
+     // logic
+   }
+   ```
+   **Issue**: TypeScript correctly flags this as an incorrect type assertion.
+
+## Exception Request
+Request to add a specific exception for auth token validation in the 
+`src/auth/token-validator.ts` file for this specific rule.
+
+## Impact Analysis
+- **Scope**: Limited to single file
+- **Duration**: Until we refactor the auth system (next sprint)
+- **Risk**: Low - validation still occurs after this check
+- **Expires**: 2023-12-31
+```
+
+### Exception Implementation Examples
+
+#### ESLint Exception
+```javascript
+// Exception: @typescript-eslint/strict-boolean-expressions
+// Justification: Token can be string|null|undefined and explicit checks are verbose
+// Approved by: @tech-lead in PR #123
+// Expires: 2023-12-31
+// eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+if (token) {
+  // token validation logic
+}
+```
+
+#### TypeScript Exception
+```typescript
+// Exception: @typescript-eslint/no-non-null-assertion
+// Justification: We validate this value earlier in the flow
+// Approved by: @lead-developer in PR #456
+// Expires: 2023-12-31
+const userId = user!.id;
+```
+
+#### StyleLint Exception
+```scss
+/* Exception: max-nesting-depth
+ * Justification: Complex component requiring deeper nesting
+ * Approved by: @ui-lead in PR #789
+ * Expires: 2023-12-31
+ */
+/* stylelint-disable-next-line max-nesting-depth */
+.complex-component {
+  // styles
+}
+```
+
+## Policy Enforcement
+
+### General Rules
+- All rule violations must be addressed
+- No use of disable directives without approval
+- No bypassing type checking without approval
+- No adjusting test configurations to bypass rules
+- No modifying tool configurations to bypass validation
+
+### Exception Management
+- All exceptions must be documented
+- All exceptions must be approved
+- All exceptions must have expiration dates
+- All exceptions must be tracked in the central registry
+- All exceptions must be reviewed regularly
+
+### Specific Tool Policies
+
+#### ESLint
+- No use of `// eslint-disable` without approval
+- No use of `/* eslint-disable */` for entire files
+- No modification of `.eslint.config.mjs` to bypass rules
+- Always use specific rule disables, never blanket disables
+
+#### TypeScript
+- No use of `@ts-ignore` or `@ts-expect-error` without approval
+- No use of `any` type without documentation and approval
+- No adjusting `tsconfig.json` to bypass type checking
+- No use of unsafe type assertions without approval
+
+#### Prettier
+- No bypassing of Prettier formatting
+- No inline `prettier-ignore` without approval
+- No conflicting style rules with base configuration
+
+#### Testing
+- No `test.skip` without documented reason and expiration
+- No disabling of test coverage requirements
+- No modification of test patterns to exclude tests
+
+## Exception Registry
+
+All approved exceptions must be recorded in the central exception registry:
+
+1. **Exception Record Fields**:
+   - Rule ID
+   - File/location
+   - Justification
+   - Alternatives attempted
+   - Approvers
+   - Approval date
+   - Expiration date
+   - Related PR/issue
+   - Impact assessment
+
+2. **Registry Location**:
+   - Primary: `.cursor/rules/_meta/exceptions.json`
+   - Documentation: `.cursor/rules/_meta/exceptions.md`
+
+3. **Registry Format**:
+```json
+{
+  "exceptions": [
+    {
+      "id": "EXC-2023-001",
+      "ruleId": "@typescript-eslint/strict-boolean-expressions",
+      "file": "src/auth/token-validator.ts",
+      "lines": "45-47",
+      "approved": {
+        "by": ["@tech-lead", "@architect"],
+        "date": "2023-09-15",
+        "pr": "#123"
+      },
+      "expires": "2023-12-31",
+      "justification": "Token can be string|null|undefined and explicit checks are verbose",
+      "alternatives": ["explicit-null-checks", "boolean-constructor"],
+      "impact": "low",
+      "status": "active"
+    }
+  ]
+}
+```
+
+## Integration Standards
+- IDE integration:
+  - Exception highlighting
+  - Expiration warnings
+  - Exception templates
+  - Approval status indicators
+- Build integration:
+  - Exception validation
+  - Expiration checking
+  - Compliance reporting
+  - Metrics collection
+- CI integration:
+  - Exception reporting
+  - Compliance gates
+  - Expiration alerts
+  - Trend analysis
+- Review integration:
+  - Exception review assignment
+  - Approval tracking
+  - Expiration tracking
+  - Compliance reporting
+
+## Security Considerations
+- Only allow exceptions with proper security review
+- Apply stricter scrutiny to security-related rule exceptions
+- Require additional approvals for security-sensitive exceptions
+- Audit all exception approvals and implementations
+- Never allow exceptions for critical security rules
+- Track security impact of all exceptions
+- Regular security review of active exceptions
+- Immediate revocation for exceptions with security implications
+
+## Testing Requirements
+- Test all code with exceptions to verify functionality
+- Verify exceptions don't bypass critical validations
+- Test alternative approaches for viability
+- Document test results in exception requests
+- Ensure test coverage remains high despite exceptions
+- Verify exception expiration doesn't break functionality
+- Test for proper exception documentation compliance
+
+## Maintenance
+- Monthly review of active exceptions
+- Quarterly compliance metrics report
+- Exception expiration notifications (7 days prior)
+- Automatic removal of expired exceptions
+- Documentation updates for common exceptions
+- Team training on exception process
+- Feedback collection on rule effectiveness
+- Rule modification proposals based on exception patterns
+
+## Compatibility Matrix
+| Tool | Exceptions Supported | Documentation | Expiration |
+|------|---------------------|---------------|------------|
+| ESLint | ✅ | ✅ | ⚠️ |
+| TypeScript | ✅ | ✅ | ❌ |
+| Prettier | ✅ | ⚠️ | ❌ |
+| Jest | ✅ | ✅ | ⚠️ |
+| Stylelint | ✅ | ✅ | ❌ |
+
+## Version Compatibility
+| Version | ESLint | TypeScript | Prettier | Node.js |
+|---------|--------|------------|----------|---------|
+| 1.0.0   | ≥8.0.0 | ≥4.0.0     | ≥2.0.0   | ≥14.0.0 |
+| 1.1.0   | ≥8.0.0 | ≥5.0.0     | ≥3.0.0   | ≥18.0.0 |
+```

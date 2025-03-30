@@ -57,6 +57,8 @@ alwaysApply: Whether rule should always be applied
 ## Directory Structure
 ```
 .cursor/rules/
+├── _meta/
+│   └── rule-enforcement.mdc
 ├── core/
 │   ├── accessibility.mdc
 │   ├── analysis-process.mdc
@@ -88,10 +90,11 @@ alwaysApply: Whether rule should always be applied
 │       └── index.mdc
 ├── packages/
 │   ├── astro.mdc
-│   ├── base-performance.mdc
+│   ├── base-documentation.mdc
 │   ├── documentation.mdc
 │   ├── gsap.mdc
-│   └── pixi.mdc
+│   ├── pixi.mdc
+│   └── virtual-dom.mdc
 ├── tooling/
 │   ├── build/
 │   │   └── build-tools.mdc
@@ -106,12 +109,17 @@ alwaysApply: Whether rule should always be applied
 │   │   ├── eslint.mdc
 │   │   └── prettier.mdc
 │   ├── package-management.mdc
-│   └── testing/
-│       └── base-testing.mdc
+│   ├── testing/
+│   │   └── base-testing.mdc
+│   └── version-control/
+│       └── git.mdc
 └── _index.mdc
 ```
 
 ## Rule Categories
+
+### Meta Rules
+- `_meta/rule-enforcement.mdc`: Rules for enforcing rules and managing exceptions
 
 ### Core Rules
 - `core/accessibility.mdc`: Accessibility standards and WCAG compliance
@@ -160,17 +168,21 @@ alwaysApply: Whether rule should always be applied
 - `tooling/linting/prettier.mdc`: Prettier configuration and formatting
 - `tooling/package-management.mdc`: Dependency and version management
 - `tooling/testing/base-testing.mdc`: Testing standards and practices
+- `tooling/version-control/git.mdc`: Git workflow and commit standards
 
 ## Rule Application Order
 
-1. Core Rules (Foundation)
+1. Meta Rules (Foundational)
+   - rule-enforcement.mdc → Rule enforcement standards
+
+2. Core Rules (Foundation)
    - code-style.mdc → Base coding standards
    - accessibility.mdc → A11y requirements
    - error-handling.mdc → Error handling patterns
    - performance.mdc → Performance baselines
    - analysis-process.mdc → Quality standards
 
-2. Development Rules (Implementation)
+3. Development Rules (Implementation)
    - typescript.mdc → Type system
    - react-nextjs.mdc → Framework patterns
    - server-components.mdc → Server-side patterns
@@ -178,18 +190,19 @@ alwaysApply: Whether rule should always be applied
    - edge-computing.mdc → Edge runtime patterns
    - web-assembly.mdc → WASM integration
 
-3. Tooling Rules (Quality & Process)
+4. Tooling Rules (Quality & Process)
    - eslint.mdc → Code quality
    - prettier.mdc → Formatting
    - build-tools.mdc → Build process
    - package-management.mdc → Dependencies
+   - version-control/git.mdc → Git workflow
    - base-testing.mdc → Testing standards
 
-4. Package Rules (Specific Implementation)
+5. Package Rules (Specific Implementation)
    - Applied contextually based on file type
    - Order: astro → gsap → pixi
 
-5. Documentation Rules (Documentation)
+6. Documentation Rules (Documentation)
    - base-documentation.mdc → Documentation standards
    - testing-docs.mdc → Test documentation
 

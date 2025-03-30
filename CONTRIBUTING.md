@@ -6,6 +6,7 @@
 ## Table of Contents
 - [Introduction](#introduction)
 - [Code of Conduct](#code-of-conduct)
+- [Cursor Rules Standards](#cursor-rules-standards)
 - [Getting Started](#getting-started)
   - [Development Setup](#development-setup)
   - [Project Structure](#project-structure)
@@ -28,6 +29,35 @@ Thank you for considering contributing to KineticSlider! We love your input and 
 
 This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [project maintainers](mailto:maintainers@kineticslider.dev).
 
+## Cursor Rules Standards
+
+KineticSlider follows a set of standardized development practices defined in our Cursor Rules. These rules provide guidance on best practices and ensure consistency across the codebase.
+
+### Key Cursor Rules
+
+- **TypeScript Configuration**: We follow strict TypeScript rules including branded types, null checking, and explicit function returns.
+- **Package Management**: We use pnpm as our preferred package manager with versioned dependencies.
+- **GSAP Animation Standards**: All animations should use our animation utilities that follow the GSAP optimization patterns.
+- **Testing Requirements**: We maintain 90%+ test coverage and follow performance testing best practices.
+- **Formatting and Linting**: We use ESLint and Prettier with specific configurations that ensure code quality.
+
+### Cursor Rules Management
+
+All cursor rules are governed by our meta-rule for cursor rules management (`.cursor/rules/_meta/cursor-rules.mdc`), which establishes standards for:
+
+1. **File Structure**: All rules must be stored in the `.cursor/rules/` directory and organized by category.
+2. **Template Compliance**: Rules must follow the structure defined in the template file.
+3. **Metadata Requirements**: Rules must include proper YAML frontmatter with version, description, and other required fields.
+4. **Versioning**: Rules follow semantic versioning and must include version history.
+
+When creating or modifying cursor rules:
+- Follow the template at `.cursor/rules/_template.mdc`
+- Place rules in the appropriate category directory
+- Ensure all required metadata is included
+- Update the index file if adding a new rule
+
+For the complete set of Cursor Rules, please refer to the rules documentation in the project root.
+
 ## Getting Started
 
 ### Development Setup
@@ -38,9 +68,9 @@ This project and everyone participating in it is governed by our [Code of Conduc
    git clone https://github.com/YOUR_USERNAME/kineticslider.git
    cd kineticslider
    ```
-3. Install dependencies:
+3. Install dependencies with pnpm:
    ```bash
-   npm install
+   pnpm install
    ```
 4. Create a branch for your changes:
    ```bash
@@ -52,7 +82,11 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ```
 kineticslider/
 ├── src/           # Source code
-├── tests/         # Test files
+│   ├── components/  # React components
+│   ├── hooks/       # React hooks
+│   ├── utils/       # Utility functions including animation.ts
+│   ├── types/       # TypeScript type definitions
+│   └── tests/       # Test files
 ├── docs/          # Documentation
 ├── examples/      # Example implementations
 └── scripts/       # Build and utility scripts
@@ -95,7 +129,7 @@ Types:
 
 1. Update documentation to reflect any changes
 2. Add or update tests as needed
-3. Ensure all tests pass: `npm test`
+3. Ensure all tests pass: `pnpm test`
 4. Update the CHANGELOG.md
 5. Submit the PR with a clear description
 6. Wait for review and address any feedback
@@ -103,13 +137,13 @@ Types:
 ## Testing Guidelines
 
 - Write tests for all new features and bug fixes
-- Maintain or improve code coverage
+- Maintain 90% or better code coverage
 - Run the full test suite before submitting:
   ```bash
-  npm run test
-  npm run test:e2e
-  npm run test:integration
+  pnpm test
+  pnpm test:coverage
   ```
+- Write performance tests for animations and UI components
 
 ## Documentation
 
@@ -121,11 +155,12 @@ Types:
 
 ## Performance Considerations
 
-- Run performance tests: `npm run perf`
+- Use the `AnimationController` class for all GSAP animations
+- Follow the batching patterns for multiple animations
+- Run performance tests: `pnpm run perf`
 - Consider bundle size impact
 - Follow React best practices
-- Optimize animations and transitions
-- Use performance monitoring tools
+- Optimize animations and transitions using GSAP cursor rules
 
 ## Security Guidelines
 

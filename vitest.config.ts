@@ -12,7 +12,7 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         '**/*.d.ts',
         '**/*.config.ts',
@@ -21,17 +21,24 @@ export default defineConfig({
         '**/node_modules/**',
         '**/src/__tests__/'
       ],
-      thresholds: {
-        branches: 80,
-        functions: 80,
-        lines: 80,
-        statements: 80,
-      },
+      lines: 90,
+      functions: 90,
+      branches: 90,
+      statements: 90,
+      all: true,
+      reportOnFailure: true,
     },
+    testTimeout: 10000,
+    retry: 2,
+    isolate: true
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src')
+      '@': resolve(__dirname, './src'),
+      '@components': resolve(__dirname, './src/components'),
+      '@utils': resolve(__dirname, './src/utils'),
+      '@lib': resolve(__dirname, './src/lib'),
+      '@types': resolve(__dirname, './src/types')
     }
   }
 }); 

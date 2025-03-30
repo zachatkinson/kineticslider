@@ -1,7 +1,7 @@
 ---
 description: Code Style and Formatting Standards for Modern Web Applications
-version: 1.0.0
-globs: ["**/*.{ts,tsx,js,jsx,css,scss}", "**/.*rc", "**/.*config.{js,ts}"]
+version: 1.1.0
+globs: ["**/*.{ts,tsx,js,jsx,css,scss,mjs,cjs}", "**/.*rc", "**/.*config.{js,ts}"]
 alwaysApply: true
 extends: []
 tags:
@@ -24,6 +24,11 @@ tags:
   - Implemented naming conventions
   - Added formatting standards
   - Established file organization
+- 1.1.0: Enhanced standards
+  - Updated TypeScript compatibility to v5+
+  - Added ESM module standards
+  - Added React Hooks best practices
+  - Added modern browser API guidelines
 
 ## Configuration
 ```json
@@ -52,13 +57,17 @@ tags:
         "type-annotations",
         "error-handling",
         "async-await",
-        "proper-imports"
+        "proper-imports",
+        "esm-modules",
+        "react-hooks-rules"
       ],
       "forbidden": [
         "var-keyword",
         "any-type",
         "default-exports",
-        "nested-ternaries"
+        "nested-ternaries",
+        "commonjs-in-esm",
+        "hook-rule-violations"
       ]
     },
     "integrations": {
@@ -124,9 +133,9 @@ tags:
     },
     "compatibility": {
       "required": {
-        "typescript": ">=4.0.0",
+        "typescript": ">=5.0.0",
         "eslint": ">=8.0.0",
-        "prettier": ">=2.0.0"
+        "prettier": ">=3.0.0"
       },
       "optional": {
         "stylelint": ">=14.0.0"
@@ -152,6 +161,9 @@ tags:
 - Handle async
 - Manage state
 - Error handling
+- Use ESM modules
+- Follow React hooks rules
+- Utilize modern browser APIs properly
 
 ## Patterns and Examples
 ```typescript
@@ -226,6 +238,196 @@ export type ApiError = {
   message: string;
   details?: unknown;
 };
+
+// ESM Module Pattern
+// file: math.ts
+export const add = (a: number, b: number): number => a + b;
+export const subtract = (a: number, b: number): number => a - b;
+
+// import in another file
+import { add, subtract } from './math.js';
+// Note the .js extension - TypeScript compiles to .js and ESM requires extensions
+
+// React Hooks Pattern
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+
+// State Hook Pattern
+function Counter() {
+  // Initialize state with typed value
+  const [count, setCount] = useState<number>(0);
+  
+  // Increment with functional update
+  const increment = () => setCount(prevCount => prevCount + 1);
+  
+  return (
+    <button onClick={increment}>
+      Count: {count}
+    </button>
+  );
+}
+
+// Effect Hook Pattern
+function DataFetcher({ id }: { id: string }) {
+  const [data, setData] = useState<Data | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Effect should have cleanup function
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const result = await api.getData(id);
+        if (isMounted) {
+          setData(result);
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('Unknown error'));
+          setData(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [id]); // Explicit dependencies array
+  
+  if (loading) return <Loading />;
+  if (error) return <Error error={error} />;
+  return data ? <DataDisplay data={data} /> : null;
+}
+
+// Callback Hook Pattern
+function SearchComponent({ onSearch }: { onSearch: (term: string) => void }) {
+  const [term, setTerm] = useState('');
+  
+  // Memoize callback to prevent unnecessary re-renders
+  const handleSearch = useCallback(() => {
+    onSearch(term);
+  }, [term, onSearch]);
+  
+  return (
+    <>
+      <input 
+        value={term} 
+        onChange={e => setTerm(e.target.value)} 
+      />
+      <button onClick={handleSearch}>Search</button>
+    </>
+  );
+}
+
+// Memo Hook Pattern
+function ExpensiveCalculation({ data }: { data: number[] }) {
+  // Memoize expensive calculations
+  const processedData = useMemo(() => {
+    return data.filter(n => n > 0).map(n => n * 2).reduce((a, b) => a + b, 0);
+  }, [data]);
+  
+  return <div>Result: {processedData}</div>;
+}
+
+// Ref Hook Pattern
+function FocusInput() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  const focus = () => {
+    inputRef.current?.focus();
+  };
+  
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={focus}>Focus Input</button>
+    </>
+  );
+}
+
+// Modern Browser API Pattern
+// Feature detection 
+function saveData(data: object) {
+  // Check if API is available
+  if ('localStorage' in window) {
+    try {
+      localStorage.setItem('data', JSON.stringify(data));
+      return true;
+    } catch (e) {
+      // Handle quota exceeded or private browsing mode
+      console.error('Storage failed:', e);
+      return false;
+    }
+  }
+  // Fallback for older browsers
+  return false;
+}
+
+// Async Browser APIs with error handling
+async function getUserLocation(): Promise<GeolocationPosition> {
+  // Check if API exists
+  if ('geolocation' in navigator) {
+    try {
+      // Convert callback API to Promise
+      return await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          timeout: 5000,
+          maximumAge: 60000,
+          enableHighAccuracy: true
+        });
+      });
+    } catch (error) {
+      // Handle user denied, timeout, etc.
+      console.error('Geolocation error:', error);
+      throw error;
+    }
+  }
+  
+  throw new Error('Geolocation not supported');
+}
+
+// Progressive enhancement with modern APIs
+function setupNotifications() {
+  // Feature detection
+  if (!('Notification' in window)) {
+    return { supported: false };
+  }
+  
+  // Permission handling
+  const requestPermission = async () => {
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+    
+    if (Notification.permission !== 'denied') {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+    
+    return false;
+  };
+  
+  return {
+    supported: true,
+    requestPermission,
+    notify: (title: string, options?: NotificationOptions) => {
+      if (Notification.permission === 'granted') {
+        return new Notification(title, options);
+      }
+      return null;
+    }
+  };
+}
 ```
 
 ## Integration Standards
@@ -280,9 +482,41 @@ export type ApiError = {
 - Monitoring
 - Feedback
 
+## ESM Module Standards
+- Use ESM modules (`import`/`export`) as the default
+- Explicitly include file extensions in import paths (`.js`, not `.ts`)
+- Use named exports over default exports
+- Group and organize imports by source (external, internal, local)
+- Export types and interfaces separately from values
+- Use `type` imports for type-only imports
+- Avoid mixing ESM and CommonJS patterns
+
+## React Hooks Best Practices
+- Always follow React Hooks rules:
+  - Only call hooks at the top level
+  - Only call hooks from React functions
+  - Use consistent hook ordering
+- Specify all dependencies in dependency arrays
+- Use functional updates for state based on previous state
+- Always implement cleanup functions in effects
+- Memoize expensive calculations with `useMemo`
+- Memoize callbacks with `useCallback` when passed as props
+- Use `useRef` for values that shouldn't trigger re-renders
+- Create custom hooks for reusable logic
+
+## Modern Browser API Guidelines
+- Always use feature detection before using modern APIs
+- Provide graceful fallbacks for unsupported features
+- Use try/catch when working with browser APIs that might fail
+- Wrap callback-based APIs in promises for better async handling
+- Use progressive enhancement to add features based on capability
+- Follow best practices for performance (e.g., requestAnimationFrame)
+- Consider polyfills for critical functionality
+- Test across multiple browser versions
+
 ## Compatibility Matrix
 | Feature | TypeScript | JavaScript | CSS |
-|---------|------------|------------|-----|
+|---|---|---|-----|
 | Formatting | ✅ | ✅ | ✅ |
 | Linting | ✅ | ✅ | ✅ |
 | Types | ✅ | ❌ | ❌ |
@@ -290,5 +524,6 @@ export type ApiError = {
 
 ## Version Compatibility
 | Version | TypeScript | ESLint | Prettier |
-|---------|------------|--------|----------|
+|---|---|-----|----|
 | 1.0.0   | ≥4.5.0    | ≥8.0.0 | ≥2.0.0  |
+| 1.1.0   | ≥5.0.0    | ≥8.0.0 | ≥3.0.0  |

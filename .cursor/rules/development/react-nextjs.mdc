@@ -1,18 +1,7 @@
 ---
 description: React and Next.js Configuration Standards and Best Practices for Modern Web Applications
-version: 1.0.0
 globs: ["**/*.{tsx,jsx}", "**/next.config.{js,ts}", "**/app/**/*"]
 alwaysApply: true
-extends:
-  - core/performance.mdc
-  - core/accessibility.mdc
-  - development/typescript.mdc
-  - development/server-components.mdc
-tags:
-  - react
-  - nextjs
-  - frontend
-  - framework
 ---
 
 # React and Next.js Standards
@@ -169,6 +158,17 @@ tags:
 - TypeScript
 - Testing
 
+## API Deprecation Avoidance
+- Never use deprecated React methods:
+  - Replace `ReactDOM.render()` with `createRoot().render()`
+  - Replace `componentWillMount()` with `componentDidMount()`
+  - Replace `componentWillReceiveProps()` with `getDerivedStateFromProps()`
+  - Replace `componentWillUpdate()` with `getSnapshotBeforeUpdate()`
+- Use functional components with hooks instead of class components
+- Prefer Server Components for new components when possible
+- Keep dependencies updated and check release notes for deprecation notices
+- Use TypeScript to catch API changes during development
+
 ## Patterns and Examples
 ```tsx
 // App Router Pattern
@@ -315,4 +315,4 @@ export function middleware(request: NextRequest) {
 ## Version Compatibility
 | Version | Node.js | TypeScript | React |
 |---------|---------|------------|-------|
-| 1.0.0   | ≥16.14.0 | ≥5.0.0 | ≥18.2.0 | 
+| 1.0.0   | ≥16.14.0 | ≥5.0.0 | ≥18.2.0 |

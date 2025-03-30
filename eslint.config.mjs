@@ -1,4 +1,4 @@
-// eslint.config.js
+// eslint.config.mjs
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
@@ -92,4 +92,4 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
     },
   }
-);
+); 
