@@ -93,7 +93,7 @@ export class SchemaValidator {
   private static async readConfigFile(filePath: string): Promise<z.infer<typeof ConfigFileSchema>> {
     const content = await fs.readFile(filePath, 'utf-8');
     const parts = content.split('---');
-    if (parts.length >= 3) {
+    if (parts.length >= 3 && parts[1]) {
       const yamlContent = parts[1].trim();
       const loadedContent = yaml.load(yamlContent);
       if (!loadedContent) {

@@ -27,11 +27,7 @@
       "@utils/*": ["src/utils/*"],
       "@types/*": ["src/types/*"]
     },
-    "types": [
-      "vitest/globals",
-      "@testing-library/jest-dom",
-      "node"
-    ],
+    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -54,6 +50,6 @@
     "noUncheckedIndexedAccess": true
   },
   "exclude": ["node_modules", "dist", "vite.config.ts", "vitest.config.ts"],
-  "include": ["src/**/*", "src/types/**/*", "vitest.config.ts", "vite.config.ts", ".cursor/tools/**/*"],
+  "include": ["src/**/*", "src/types/**/*", ".cursor/tools/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
-} 
+}
