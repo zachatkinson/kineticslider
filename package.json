@@ -30,7 +30,6 @@
     "style:fix": "stylelint --config stylelint.config.ts --fix \"**/*.{css,scss}\"",
     "format": "prettier --config prettier.config.ts --write .",
     "validate": "pnpm run lint && pnpm run style && pnpm run test",
-    "prepare": "husky install",
     "commit": "cz",
     "types:check": "tsc --noEmit",
     "docs:generate": "typedoc",
