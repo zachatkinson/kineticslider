@@ -32,6 +32,7 @@ export interface KineticSliderProps {
   duration?: number;
   ease?: string;
   lazyLoad?: boolean;
+  infiniteLoop?: boolean;
 }
 
 /**
@@ -44,6 +45,19 @@ export interface UseKineticSliderProps {
   onSlideChange?: ((index: number) => void) | undefined;
   onAnimationComplete?: (() => void) | undefined;
   initialSlide?: number;
+  infiniteLoop?: boolean;
+}
+
+/**
+ * Extended gesture event for slider interaction
+ */
+export interface SliderGestureEvent {
+  clientX: number;
+  clientY: number;
+  type: string;
+  startX?: number;
+  startY?: number;
+  preventDefault?: () => void;
 }
 
 /**
@@ -54,11 +68,7 @@ export interface UseKineticSliderReturn {
   isAnimating: boolean;
   next: () => void;
   prev: () => void;
-  handleGesture: (event: {
-    clientX: number;
-    clientY: number;
-    type: string;
-  }) => void;
+  handleGesture: (event: SliderGestureEvent) => void;
   sliderRef: React.RefObject<HTMLDivElement>;
 }
 

@@ -13,6 +13,9 @@ export * from './errors';
 // Accessibility utilities
 export * from './a11y';
 
+// Performance utilities
+export * from './performance';
+
 // Validation utilities
 export {
   registerValidator,
