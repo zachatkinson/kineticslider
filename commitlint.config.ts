@@ -1,5 +1,6 @@
-/** @type {import('@commitlint/types').UserConfig} */
-const config = {
+import type { UserConfig } from '@commitlint/types';
+
+const config: UserConfig = {
   extends: [
     '@commitlint/config-conventional',
     '@commitlint/config-lerna-scopes'
@@ -30,9 +31,9 @@ const config = {
         'a11y',     // Accessibility improvements
       ],
     ],
-    'type-case': [2, 'always', 'lower'],
+    'type-case': [2, 'always', 'lowercase'],
     'type-empty': [2, 'never'],
-    'scope-case': [2, 'always', 'lower'],
+    'scope-case': [2, 'always', 'lowercase'],
     'scope-enum': [2, 'always', [
       'core',
       'ui',
@@ -61,7 +62,7 @@ const config = {
     'subject-min-length': [2, 'always', 5],
     'subject-max-length': [2, 'always', 100],
     'header-max-length': [2, 'always', 100],
-    'header-case': [2, 'always', 'lower'],
+    'header-case': [2, 'always', 'lowercase'],
     'body-leading-blank': [2, 'always'],
     'body-max-line-length': [2, 'always', 100],
     'footer-leading-blank': [2, 'always'],

@@ -1,4 +1,6 @@
-export default {
+import type { TransformOptions } from '@babel/core';
+
+const config: TransformOptions = {
   presets: [
     ['@babel/preset-env', {
       targets: {
@@ -88,4 +90,6 @@ export default {
     setClassMethods: true,
     superIsCallableConstructor: true
   }
-}; 
+};
+
+export default config; 

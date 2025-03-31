@@ -1,4 +1,6 @@
-export default {
+import type { Config } from 'postcss-load-config';
+
+const config: Config = {
   plugins: {
     autoprefixer: {
       flexbox: 'no-2009',
@@ -38,4 +40,6 @@ export default {
       ],
     },
   },
-}; 
+};
+
+export default config; 

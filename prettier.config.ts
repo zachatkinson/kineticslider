@@ -1,5 +1,6 @@
-/** @type {import('prettier').Config} */
-export default {
+import type { Config } from 'prettier';
+
+const config: Config = {
   // Core Options
   printWidth: 80,
   tabWidth: 2,
@@ -108,4 +109,6 @@ export default {
     '@trivago/prettier-plugin-sort-imports',
     'prettier-plugin-tailwindcss'
   ],
-}; 
+};
+
+export default config; 

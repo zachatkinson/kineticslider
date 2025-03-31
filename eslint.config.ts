@@ -1,4 +1,4 @@
-// eslint.config.mjs
+// eslint.config.ts
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
@@ -6,7 +6,10 @@ import testingLibraryPlugin from 'eslint-plugin-testing-library';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+// The flat config format returned by tseslint.config is a bit different from traditional ESLint
+// so we're using a specific type annotation for portability
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const config: any = tseslint.config(
   {
     ignores: ['**/dist/**', '**/node_modules/**', 'coverage/**', 'vite.config.ts', 'vitest.config.ts'],
   },
@@ -26,7 +29,7 @@ export default tseslint.config(
         ecmaFeatures: {
           jsx: true,
         },
-        project: './tsconfig.json',
+        project: ['./tsconfig.json', './tsconfig.node.json'],
       },
     },
     linterOptions: {
@@ -93,4 +96,6 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
     },
   }
-); 
+);
+
+export default config; 
