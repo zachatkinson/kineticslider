@@ -1,16 +1,28 @@
 import type { SliderErrorInfo } from './slider';
+import type { AnimationEase } from './common';
 
 /**
  * Animation-specific types and interfaces
  */
 
 /**
- * Basic animation configuration
+ * Configuration for GSAP animations
  */
-export interface AnimationConfig {
-  duration: number;
-  ease: string;
+export interface GSAPAnimationConfig {
+  target: string | Element | Element[];
+  duration?: number;
+  ease?: AnimationEase;
+  delay?: number;
+  clearProps?: boolean | string;
+  autoKill?: boolean;
+  overwrite?: boolean | 'auto';
+  [key: string]: string | number | boolean | Element | Element[] | undefined;
 }
+
+/**
+ * Re-export of GSAPAnimationConfig for consistency
+ */
+export type AnimationConfig = GSAPAnimationConfig;
 
 /**
  * Animation options for basic animations
@@ -142,6 +154,18 @@ export interface UseAnimationResult {
   containerRef: React.RefObject<HTMLElement>;
   isAnimating: boolean;
   metrics: AnimationMetrics;
+}
+
+/**
+ * Timeline Configuration Type for GSAP animations
+ */
+export interface TimelineConfig {
+  paused?: boolean;
+  repeat?: number;
+  yoyo?: boolean;
+  smoothChildTiming?: boolean;
+  autoRemoveChildren?: boolean;
+  [key: string]: string | number | boolean | undefined;
 }
 
 // Extend Performance interface to include memory property

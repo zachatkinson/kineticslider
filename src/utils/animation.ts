@@ -4,28 +4,10 @@
  */
 import gsap from 'gsap';
 import type { AnimationEase } from '../types/common';
+import type { TimelineConfig, GSAPAnimationConfig } from '../types/animation';
 
 // Animation Configuration Type
-export interface AnimationConfig {
-  target: string | Element | Element[];
-  duration?: number;
-  ease?: AnimationEase;
-  delay?: number;
-  clearProps?: boolean | string;
-  autoKill?: boolean;
-  overwrite?: boolean | 'auto';
-  [key: string]: string | number | boolean | Element | Element[] | undefined;
-}
-
-// Timeline Configuration Type
-export interface TimelineConfig {
-  paused?: boolean;
-  repeat?: number;
-  yoyo?: boolean;
-  smoothChildTiming?: boolean;
-  autoRemoveChildren?: boolean;
-  [key: string]: string | number | boolean | undefined;
-}
+export type AnimationConfig = GSAPAnimationConfig;
 
 /**
  * Animation Controller class that follows cursor rules for GSAP

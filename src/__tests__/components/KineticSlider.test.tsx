@@ -1,8 +1,9 @@
 /* eslint-env vitest */
-import '@testing-library/jest-dom';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { axe, toHaveNoViolations } from 'jest-axe';
 
 import { KineticSlider } from '../../components/KineticSlider';
 import type { Slide } from '../../types';
@@ -58,24 +59,21 @@ vi.stubGlobal('errorTracker', {
 const mockSlides: Slide[] = [
   {
     id: createSlideId('slide-1'),
-    title: 'Test Slide 1',
-    description: 'Test Description 1',
-    image: '/images/test1.jpg',
-    alt: 'Test Image 1',
+    title: 'First Slide',
+    image: '/images/slide1.jpg',
+    alt: 'First slide description',
   },
   {
     id: createSlideId('slide-2'),
-    title: 'Test Slide 2',
-    description: 'Test Description 2',
-    image: '/images/test2.jpg',
-    alt: 'Test Image 2',
+    title: 'Second Slide',
+    image: '/images/slide2.jpg',
+    alt: 'Second slide description',
   },
   {
     id: createSlideId('slide-3'),
-    title: 'Test Slide 3',
-    description: 'Test Description 3',
-    image: '/images/test3.jpg',
-    alt: 'Test Image 3',
+    title: 'Third Slide',
+    image: '/images/slide3.jpg',
+    alt: 'Third slide description',
   },
 ];
 
@@ -258,5 +256,109 @@ describe('KineticSlider', () => {
     await waitFor(() => {
       expect(mockProps.onSlideChange).toHaveBeenCalledWith(0);
     });
+  });
+
+  it('should render without accessibility violations', async () => {
+    const { container } = render(
+      <KineticSlider
+        slides={mockSlides}
+        initialSlide={0}
+        enableKeyboard
+        infiniteLoop
+      />
+    );
+    
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+
+  it('should render all slides in correct order', () => {
+    render(
+      <KineticSlider
+        slides={mockSlides}
+        initialSlide={0}
+        enableKeyboard
+        infiniteLoop
+      />
+    );
+
+    const slides = screen.getAllByRole('img');
+    expect(slides).toHaveLength(mockSlides.length);
+    slides.forEach((slide, index) => {
+      expect(slide).toHaveAttribute('alt', mockSlides[index].alt);
+      expect(slide).toHaveAttribute('src', mockSlides[index].image);
+    });
+  });
+
+  it('should navigate to next slide on right arrow press when keyboard navigation is enabled', () => {
+    const onSlideChange = vi.fn();
+    render(
+      <KineticSlider
+        slides={mockSlides}
+        initialSlide={0}
+        enableKeyboard
+        infiniteLoop
+        onSlideChange={onSlideChange}
+      />
+    );
+
+    const slider = screen.getByTestId('kinetic-slider');
+    fireEvent.keyDown(slider, { key: 'ArrowRight' });
+
+    expect(onSlideChange).toHaveBeenCalledWith(1);
+  });
+
+  it('should not navigate on arrow press when keyboard navigation is disabled', () => {
+    const onSlideChange = vi.fn();
+    render(
+      <KineticSlider
+        slides={mockSlides}
+        initialSlide={0}
+        enableKeyboard={false}
+        infiniteLoop
+        onSlideChange={onSlideChange}
+      />
+    );
+
+    const slider = screen.getByTestId('kinetic-slider');
+    fireEvent.keyDown(slider, { key: 'ArrowRight' });
+
+    expect(onSlideChange).not.toHaveBeenCalled();
+  });
+
+  it('should wrap around to first slide when on last slide and infinite loop is enabled', () => {
+    const onSlideChange = vi.fn();
+    render(
+      <KineticSlider
+        slides={mockSlides}
+        initialSlide={mockSlides.length - 1}
+        enableKeyboard
+        infiniteLoop
+        onSlideChange={onSlideChange}
+      />
+    );
+
+    const slider = screen.getByTestId('kinetic-slider');
+    fireEvent.keyDown(slider, { key: 'ArrowRight' });
+
+    expect(onSlideChange).toHaveBeenCalledWith(0);
+  });
+
+  it('should not wrap around when infinite loop is disabled', () => {
+    const onSlideChange = vi.fn();
+    render(
+      <KineticSlider
+        slides={mockSlides}
+        initialSlide={mockSlides.length - 1}
+        enableKeyboard
+        infiniteLoop={false}
+        onSlideChange={onSlideChange}
+      />
+    );
+
+    const slider = screen.getByTestId('kinetic-slider');
+    fireEvent.keyDown(slider, { key: 'ArrowRight' });
+
+    expect(onSlideChange).not.toHaveBeenCalled();
   });
 });

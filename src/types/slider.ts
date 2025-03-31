@@ -70,6 +70,7 @@ export interface UseKineticSliderReturn {
   prev: () => void;
   handleGesture: (event: SliderGestureEvent) => void;
   sliderRef: React.RefObject<HTMLDivElement>;
+  metrics: SliderMetrics;
 }
 
 /**

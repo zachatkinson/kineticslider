@@ -6,34 +6,62 @@
  * Base performance metrics for monitoring slider behavior
  */
 export interface PerformanceMetrics {
-  /** Time taken for initial render */
-  initialRenderTime?: number;
-  /** Time taken for render updates */
-  renderTime?: number;
+  /** First Contentful Paint - time until first content appears */
+  FCP: number[];
+  /** Largest Contentful Paint - time until largest content element appears */
+  LCP: number[];
+  /** First Input Delay - time until first user interaction is processed */
+  FID: number[];
+  /** Cumulative Layout Shift - measure of visual stability */
+  CLS: number[];
+  /** Time to Interactive - time until page becomes fully interactive */
+  TTI: number[];
+  /** Frames per second measurements */
+  fps: number[];
+  /** Memory usage as a fraction of total heap size */
+  memoryUsage: number[];
+  /** CPU usage as a fraction of available processing power */
+  cpuUsage: number[];
+  /** Time taken for initial component render */
+  renderTime: number[];
+  /** Time taken for slide transition animations */
+  transitionTime: number[];
+  /** Time taken to process window resize events */
+  resizeTime: number[];
+  /** Memory freed during cleanup operations */
+  cleanupMemory: number[];
   /** Time taken for interaction processing */
-  interactionTime?: number;
+  interactionTime: number[];
   /** Average frame time during animations */
-  averageFrameTime?: number;
+  averageFrameTime: number[];
   /** Number of frames dropped during animations */
-  droppedFrames?: number;
-  /** Memory usage during animations */
-  memoryUsage?: number | null;
+  droppedFrames: number[];
   /** Time taken for gesture processing */
-  gestureProcessingTime?: number;
-  /** Current frames per second */
-  fps?: number | null;
+  gestureProcessingTime: number[];
 }
 
 /**
- * Extended performance metrics including web vitals
+ * Statistical summary of a performance metric.
+ */
+export interface MetricSummary {
+  /** Average value of the metric */
+  avg: number;
+  /** 95th percentile value */
+  p95: number;
+  /** Maximum recorded value */
+  max: number;
+  /** Minimum recorded value */
+  min: number;
+  /** Number of measurements taken */
+  count: number;
+}
+
+/**
+ * Extended performance metrics including additional web vitals
  */
 export interface ExtendedPerformanceMetrics extends PerformanceMetrics {
-  FCP?: number; // First Contentful Paint
-  LCP?: number; // Largest Contentful Paint
-  FID?: number; // First Input Delay
-  CLS?: number; // Cumulative Layout Shift
-  TTI?: number; // Time to Interactive
-  TBT?: number; // Total Blocking Time
+  /** Total Blocking Time */
+  TBT: number[];
 }
 
 /**

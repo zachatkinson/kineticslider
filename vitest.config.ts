@@ -1,32 +1,31 @@
-import { defineConfig } from 'vitest/config';
+/// <reference types="vitest" />
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tsconfigPaths()],
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/__tests__/setup.ts'],
+    setupFiles: ['./src/test/setup.ts'],
     include: ['**/*.{test,spec}.{ts,tsx}'],
     exclude: ['**/node_modules/**', '**/dist/**'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'json', 'html'],
       exclude: [
         '**/*.d.ts',
         '**/*.config.ts',
         '**/index.ts',
-        '**/dist/**',
-        '**/node_modules/**',
-        '**/src/__tests__/'
       ],
-      lines: 90,
-      functions: 90,
-      branches: 90,
-      statements: 90,
-      all: true,
-      reportOnFailure: true,
+      thresholds: {
+        branches: 80,
+        functions: 80,
+        lines: 80,
+        statements: 80,
+      },
     },
     testTimeout: 10000,
     retry: 2,

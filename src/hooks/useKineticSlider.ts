@@ -1,12 +1,12 @@
 import { gsap } from 'gsap';
-
-import { useCallback, useEffect, useRef, useState } from 'react';
-
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useGestures } from '@/hooks/useGestures';
 import type {
   UseKineticSliderProps,
   UseKineticSliderReturn,
   SliderGestureEvent,
+  SliderMetrics,
+  SliderAnalyticsData,
 } from '@/types/slider';
 import type { SwipeDirection } from '@/types/gestures';
 
@@ -23,7 +23,26 @@ export const useKineticSlider = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
   const gestureCleanupRef = useRef<(() => void) | null>(null);
+  const animationRef = useRef<gsap.core.Tween | null>(null);
   const { attach } = useGestures({ threshold: 50, minVelocity: 0.5 });
+
+  // Memoize slider metrics for performance
+  const metrics = useMemo<SliderMetrics>(() => ({
+    currentIndex: currentSlide,
+    totalSlides: slides.length,
+    progress: currentSlide / (slides.length - 1),
+    direction: 'forward',
+    isAnimating,
+  }), [currentSlide, slides.length, isAnimating]);
+
+  // Cleanup animation on unmount or when animation parameters change
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.kill();
+      }
+    };
+  }, [duration, ease]);
 
   // Attach gesture handling when slider reference is available
   useEffect(() => {
@@ -46,6 +65,30 @@ export const useKineticSlider = ({
     };
   }, [sliderRef, attach]);
 
+  const animateSlide = useCallback((targetSlide: number, options: { immediate?: boolean } = {}) => {
+    if (!sliderRef.current || (isAnimating && !options.immediate)) return;
+
+    // Kill any existing animation
+    if (animationRef.current) {
+      animationRef.current.kill();
+    }
+
+    setIsAnimating(true);
+
+    animationRef.current = gsap.to(sliderRef.current, {
+      x: -targetSlide * 100,
+      duration: options.immediate ? 0 : duration,
+      ease,
+      onComplete: () => {
+        setCurrentSlide(targetSlide);
+        setIsAnimating(false);
+        onSlideChange?.(targetSlide);
+        onAnimationComplete?.();
+        animationRef.current = null;
+      },
+    });
+  }, [duration, ease, isAnimating, onAnimationComplete, onSlideChange]);
+
   const next = useCallback(() => {
     if (isAnimating) return;
     
@@ -53,49 +96,14 @@ export const useKineticSlider = ({
     if (currentSlide >= slides.length - 1) {
       // If infinite loop is enabled, loop to the first slide
       if (infiniteLoop) {
-        setIsAnimating(true);
-        
-        gsap.to(sliderRef.current, {
-          x: -(slides.length) * 100, // Move beyond the last slide
-          duration: duration / 2,
-          ease,
-          onComplete: () => {
-            // Jump to first slide without animation
-            gsap.set(sliderRef.current, { x: 0 });
-            setCurrentSlide(0);
-            setIsAnimating(false);
-            onSlideChange?.(0);
-            onAnimationComplete?.();
-          },
-        });
+        animateSlide(0, { immediate: true });
       }
       // Otherwise, do nothing
       return;
     }
     
-    setIsAnimating(true);
-
-    gsap.to(sliderRef.current, {
-      x: -(currentSlide + 1) * 100,
-      duration,
-      ease,
-      onComplete: () => {
-        setCurrentSlide((prev: number) => prev + 1);
-        setIsAnimating(false);
-        onSlideChange?.(currentSlide + 1);
-        onAnimationComplete?.();
-      },
-    });
-  }, [
-    currentSlide,
-    duration,
-    ease,
-    isAnimating,
-    onAnimationComplete,
-    onSlideChange,
-    slides.length,
-    infiniteLoop,
-  ]);
+    animateSlide(currentSlide + 1);
+  }, [currentSlide, infiniteLoop, slides.length, animateSlide, isAnimating]);
 
   const prev = useCallback(() => {
     if (isAnimating) return;
@@ -104,52 +112,19 @@ export const useKineticSlider = ({
     if (currentSlide <= 0) {
       // If infinite loop is enabled, loop to the last slide
       if (infiniteLoop) {
-        setIsAnimating(true);
-        
-        gsap.to(sliderRef.current, {
-          x: 100, // Move before the first slide
-          duration: duration / 2,
-          ease,
-          onComplete: () => {
-            // Jump to last slide without animation
-            gsap.set(sliderRef.current, { x: -((slides.length - 1) * 100) });
-            setCurrentSlide(slides.length - 1);
-            setIsAnimating(false);
-            onSlideChange?.(slides.length - 1);
-            onAnimationComplete?.();
-          },
-        });
+        animateSlide(slides.length - 1, { immediate: true });
       }
       // Otherwise, do nothing
       return;
     }
     
-    setIsAnimating(true);
-
-    gsap.to(sliderRef.current, {
-      x: -(currentSlide - 1) * 100,
-      duration,
-      ease,
-      onComplete: () => {
-        setCurrentSlide((prev: number) => prev - 1);
-        setIsAnimating(false);
-        onSlideChange?.(currentSlide - 1);
-        onAnimationComplete?.();
-      },
-    });
-  }, [
-    currentSlide,
-    duration,
-    ease,
-    isAnimating,
-    onAnimationComplete,
-    onSlideChange,
-    slides.length,
-    infiniteLoop,
-  ]);
+    animateSlide(currentSlide - 1);
+  }, [currentSlide, infiniteLoop, slides.length, animateSlide, isAnimating]);
 
   const handleGesture = useCallback(
     (event: SliderGestureEvent) => {
+      if (isAnimating) return;
+
       // Manual gesture handling for touch events
       if (event.type === 'touchmove') {
         // Prevent default to avoid page scrolling during swipe
@@ -169,7 +144,7 @@ export const useKineticSlider = ({
         }
       }
     },
-    [next, prev]
+    [next, prev, isAnimating]
   );
 
   return {
@@ -179,5 +154,6 @@ export const useKineticSlider = ({
     prev,
     handleGesture,
     sliderRef,
+    metrics,
   };
 };

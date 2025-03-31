@@ -1,9 +1,17 @@
-import React, { MouseEvent, TouchEvent, memo, useCallback, useEffect, useState } from 'react';
+import React, { MouseEvent, TouchEvent, memo, useCallback, useEffect, useState, Suspense, useRef } from 'react';
+import gsap from 'gsap';
 
 import { useKineticSlider } from '../hooks/useKineticSlider';
-import type { KineticSliderProps, Slide } from '../types/slider';
+import type { KineticSliderProps, Slide, SliderAnalyticsData } from '../types/slider';
 import { ErrorBoundary } from './ErrorBoundary';
 import { debounce } from '../utils/performance';
+import { FocusManager } from './FocusManager';
+
+const Loading = () => (
+  <div role="progressbar" aria-label="Loading slides" className="kinetic-slider-loading">
+    Loading...
+  </div>
+);
 
 /**
  * A high-performance kinetic slider component with smooth animations and gesture support.
@@ -32,6 +40,8 @@ import { debounce } from '../utils/performance';
  * - Supports keyboard navigation
  * - Maintains focus management
  * - Implements ARIA attributes
+ * - Provides live region updates
+ * - Supports screen reader announcements
  */
 export const KineticSlider = memo(
   ({
@@ -47,6 +57,7 @@ export const KineticSlider = memo(
     duration = 0.5,
     ease = 'power2.out',
     infiniteLoop = false,
+    lazyLoad = true,
   }: KineticSliderProps) => {
     const {
       currentSlide,
@@ -58,14 +69,48 @@ export const KineticSlider = memo(
     } = useKineticSlider({
       slides,
       initialSlide,
-      onSlideChange,
-      onAnimationComplete,
+      onSlideChange: (index) => {
+        // Track slide change analytics
+        const analyticsData: SliderAnalyticsData = {
+          eventType: 'slide_change',
+          timestamp: new Date().toISOString(),
+          index
+        };
+        
+        // Call the original onSlideChange if provided
+        onSlideChange?.(index);
+      },
+      onAnimationComplete: () => {
+        const analyticsData: SliderAnalyticsData = {
+          eventType: 'animation_complete',
+          timestamp: new Date().toISOString(),
+          index: currentSlide
+        };
+        console.debug('Animation complete:', analyticsData);
+        onAnimationComplete?.();
+      },
       duration,
       ease,
       infiniteLoop,
     });
 
     const [containerWidth, setContainerWidth] = useState('100%');
+    const [liveRegion, setLiveRegion] = useState('');
+    const previousFocusRef = useRef<HTMLElement | null>(null);
+    const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
+    const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
+
+    // Track user interactions
+    const trackInteraction = useCallback((gestureType: string) => {
+      const analyticsData: SliderAnalyticsData = {
+        eventType: 'gesture_detected',
+        timestamp: new Date().toISOString(),
+        gestureType,
+        index: currentSlide
+      };
+      // You can send this to your analytics service
+      console.debug('Slider interaction:', analyticsData);
+    }, [currentSlide]);
 
     // Handle window resize to maintain slider proportions
     useEffect(() => {
@@ -84,15 +129,38 @@ export const KineticSlider = memo(
       };
     }, [sliderRef]);
 
-    // Setup keyboard navigation
+    // Setup keyboard navigation and focus management
     useEffect(() => {
       if (!enableKeyboard) return undefined;
 
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'ArrowRight') {
-          next();
-        } else if (e.key === 'ArrowLeft') {
-          prev();
+        switch (e.key) {
+          case 'ArrowRight':
+            e.preventDefault();
+            next();
+            setLiveRegion(`Moving to slide ${currentSlide + 2} of ${slides.length}`);
+            break;
+          case 'ArrowLeft':
+            e.preventDefault();
+            prev();
+            setLiveRegion(`Moving to slide ${currentSlide} of ${slides.length}`);
+            break;
+          case 'Home':
+            e.preventDefault();
+            if (currentSlide !== 0) {
+              next();
+              setLiveRegion('Moving to first slide');
+            }
+            break;
+          case 'End':
+            e.preventDefault();
+            if (currentSlide !== slides.length - 1) {
+              prev();
+              setLiveRegion('Moving to last slide');
+            }
+            break;
+          default:
+            break;
         }
       };
 
@@ -101,14 +169,15 @@ export const KineticSlider = memo(
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
       };
-    }, [enableKeyboard, next, prev]);
+    }, [enableKeyboard, next, prev, currentSlide, slides.length]);
 
     // Event handlers for touch and mouse interactions
     const handleTouchStart = useCallback(
-      (e: React.TouchEvent) => {
+      (e: TouchEvent) => {
         if (!enableGestures) return;
         const touch = e.touches[0];
         if (touch) {
+          trackInteraction('touch_start');
           handleGesture({
             clientX: touch.clientX,
             clientY: touch.clientY,
@@ -118,7 +187,7 @@ export const KineticSlider = memo(
           });
         }
       },
-      [enableGestures, handleGesture],
+      [enableGestures, handleGesture, trackInteraction],
     );
 
     const handleTouchMove = useCallback(
@@ -191,73 +260,277 @@ export const KineticSlider = memo(
       [enableGestures, handleGesture],
     );
 
-    // Render slides
+    // Enhanced slide transition effect
+    const animateSlide = useCallback((direction: 'next' | 'prev') => {
+      if (!sliderRef.current) return;
+      
+      const slideElements = Array.from(sliderRef.current.children) as HTMLElement[];
+      const currentSlideEl = slideElements[currentSlide];
+      const nextIndex = (currentSlide + 1) % slideElements.length;
+      const prevIndex = (currentSlide - 1 + slideElements.length) % slideElements.length;
+      const targetSlide = direction === 'next' 
+        ? slideElements[nextIndex]
+        : slideElements[prevIndex];
+
+      if (!currentSlideEl || !targetSlide) return;
+
+      // Reset positions
+      gsap.set(slideElements, { 
+        x: '100%',
+        opacity: 0,
+        scale: 0.8,
+        zIndex: 1
+      });
+
+      gsap.set(currentSlideEl, { 
+        x: '0%',
+        opacity: 1,
+        scale: 1,
+        zIndex: 2
+      });
+
+      // Animate current slide out
+      gsap.to(currentSlideEl, {
+        x: direction === 'next' ? '-100%' : '100%',
+        opacity: 0,
+        scale: 0.8,
+        duration,
+        ease,
+      });
+
+      // Animate target slide in
+      gsap.fromTo(targetSlide,
+        {
+          x: direction === 'next' ? '100%' : '-100%',
+          opacity: 0,
+          scale: 0.8,
+          zIndex: 3
+        },
+        {
+          x: '0%',
+          opacity: 1,
+          scale: 1,
+          duration,
+          ease,
+          onComplete: () => {
+            const analyticsData: SliderAnalyticsData = {
+              eventType: 'animation_complete',
+              timestamp: new Date().toISOString(),
+              index: currentSlide
+            };
+            console.debug('Animation complete:', analyticsData);
+            onAnimationComplete?.();
+          }
+        }
+      );
+    }, [currentSlide, duration, ease, onAnimationComplete]);
+
+    // Update slide transition logic
+    useEffect(() => {
+      if (isAnimating) {
+        const direction = currentSlide > (currentSlide - 1 + slides.length) % slides.length
+          ? 'next'
+          : 'prev';
+        animateSlide(direction);
+      }
+    }, [currentSlide, isAnimating, animateSlide, slides.length]);
+
+    // Preload adjacent images
+    useEffect(() => {
+      const preloadImage = (src: string) => {
+        if (preloadedImages.has(src)) return;
+        
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          setPreloadedImages(prev => new Set([...prev, src]));
+          setLoadingStates(prev => ({ ...prev, [src]: false }));
+        };
+        img.onerror = () => {
+          setLoadingStates(prev => ({ ...prev, [src]: false }));
+          const error = new Error(`Failed to preload image: ${src}`);
+          const analyticsData: SliderAnalyticsData = {
+            eventType: 'error',
+            timestamp: new Date().toISOString(),
+            error,
+            index: slides.findIndex(slide => slide.image === src)
+          };
+          console.error('Preload error:', analyticsData);
+          onError?.(error);
+        };
+        setLoadingStates(prev => ({ ...prev, [src]: true }));
+      };
+
+      // Preload current and adjacent slides
+      const slidesToPreload = [
+        slides[currentSlide]?.image,
+        slides[(currentSlide + 1) % slides.length]?.image,
+        slides[(currentSlide - 1 + slides.length) % slides.length]?.image
+      ].filter(Boolean) as string[];
+
+      slidesToPreload.forEach(preloadImage);
+    }, [currentSlide, slides, preloadedImages, onError]);
+
+    // Loading indicator component
+    const LoadingIndicator = () => (
+      <div 
+        className="kinetic-slider-loading" 
+        role="progressbar" 
+        aria-label="Loading slide"
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 10
+        }}
+      >
+        <div className="kinetic-slider-loading-spinner"></div>
+      </div>
+    );
+
+    // Update renderSlides to include loading states
     const renderSlides = () => {
       return slides.map((slide, index) => (
         <div
           key={slide.id}
           className="kinetic-slider-slide"
+          role="tabpanel"
+          aria-roledescription="slide"
+          aria-label={slide.title}
           aria-hidden={currentSlide !== index}
+          tabIndex={currentSlide === index ? 0 : -1}
           style={{
-            width: containerWidth,
-            opacity: currentSlide === index ? 1 : 0.5,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            opacity: currentSlide === index ? 1 : 0,
           }}
         >
-          <img src={slide.image} alt={slide.alt} draggable={false} />
-          <div className="kinetic-slider-content">
-            <h2>{slide.title}</h2>
-            {slide.description && <p>{slide.description}</p>}
-          </div>
+          {loadingStates[slide.image] && <LoadingIndicator />}
+          <img
+            src={slide.image}
+            alt={slide.alt}
+            loading={lazyLoad && index !== currentSlide ? 'lazy' : 'eager'}
+            onError={() => {
+              const error = new Error(`Failed to load image: ${slide.image}`);
+              const analyticsData: SliderAnalyticsData = {
+                eventType: 'error',
+                timestamp: new Date().toISOString(),
+                error,
+                index
+              };
+              console.error('Slider error:', analyticsData);
+              onError?.(error);
+            }}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: loadingStates[slide.image] ? 0 : 1,
+              transition: 'opacity 0.3s ease'
+            }}
+          />
+          {slide.description && (
+            <div 
+              className="kinetic-slider-description" 
+              aria-hidden="false"
+              style={{
+                opacity: loadingStates[slide.image] ? 0 : 1,
+                transition: 'opacity 0.3s ease'
+              }}
+            >
+              {slide.description}
+            </div>
+          )}
         </div>
       ));
     };
 
-    if (!slides?.length) return null;
-
     return (
-      <ErrorBoundary>
-        <div
-          className={`kinetic-slider ${className}`}
-          role="region"
-          aria-roledescription="carousel"
-          aria-label="Image slider"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
+      <FocusManager
+        trapFocus
+        autoFocus
+        escapeDeactivates={false}
+        onActivate={() => {
+          previousFocusRef.current = document.activeElement as HTMLElement;
+        }}
+        onDeactivate={() => {
+          if (previousFocusRef.current) {
+            previousFocusRef.current.focus();
+          }
+        }}
+      >
+        <ErrorBoundary
+          fallback={<div>Error loading slider. Please try again.</div>}
+          onError={(error: Error, errorInfo: React.ErrorInfo) => {
+            onError?.(error);
+          }}
         >
-          <div className="kinetic-slider__controls">
-            <button
-              className="kinetic-slider__control kinetic-slider__control--prev"
-              onClick={prev}
-              disabled={!infiniteLoop && (isAnimating || currentSlide <= 0)}
-              aria-label="Previous slide"
-            >
-              &lt;
-            </button>
-            <button
-              className="kinetic-slider__control kinetic-slider__control--next"
-              onClick={next}
-              disabled={!infiniteLoop && (isAnimating || currentSlide >= slides.length - 1)}
-              aria-label="Next slide"
-            >
-              &gt;
-            </button>
-          </div>
           <div
-            ref={sliderRef}
-            className="kinetic-slider__container"
-            style={{
-              transform: `translateX(-${currentSlide * 100}%)`,
-              ...style,
-            }}
+            className={`kinetic-slider-container ${className}`}
+            style={{ width: containerWidth, ...style }}
+            role="region"
+            aria-label="Image carousel"
           >
-            {renderSlides()}
+            <div
+              className="kinetic-slider-track"
+              ref={sliderRef}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              role="tablist"
+              aria-orientation="horizontal"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-relevant="additions text"
+            >
+              <Suspense fallback={<Loading />}>
+                {renderSlides()}
+              </Suspense>
+            </div>
+            
+            <div
+              className="kinetic-slider-controls"
+              role="group"
+              aria-label="Carousel controls"
+            >
+              <button
+                type="button"
+                onClick={prev}
+                disabled={!infiniteLoop && currentSlide === 0}
+                aria-label="Previous slide"
+                className="kinetic-slider-prev"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={next}
+                disabled={!infiniteLoop && currentSlide === slides.length - 1}
+                aria-label="Next slide"
+                className="kinetic-slider-next"
+              >
+                Next
+              </button>
+            </div>
+
+            <div
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+              role="status"
+            >
+              {liveRegion}
+            </div>
           </div>
-        </div>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      </FocusManager>
     );
   }
 );

@@ -62,3 +62,19 @@ export interface FocusManagerProps {
    */
   children: React.ReactNode;
 }
+
+/**
+ * Props for slider accessibility hook
+ */
+export interface UseSliderAccessibilityProps {
+  /** Total number of slides */
+  totalSlides: number;
+  /** Current slide index (0-based) */
+  currentIndex: number;
+  /** Function to navigate to next slide */
+  onNext: () => void;
+  /** Function to navigate to previous slide */
+  onPrev: () => void;
+  /** Whether a slide transition is in progress */
+  isAnimating: boolean;
+}

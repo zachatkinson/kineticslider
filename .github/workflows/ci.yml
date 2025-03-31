@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main, develop]
 
 env:
   MAX_MEMORY: 6144MB
@@ -12,37 +12,136 @@ env:
   MAX_RETRIES: 3
 
 jobs:
-  build-and-test:
+  validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Type check
+        run: pnpm run types:check
+      
+      - name: Lint
+        run: pnpm run lint
+      
+      - name: Style check
+        run: pnpm run style
+      
+      - name: Test
+        run: pnpm run test
+      
+      - name: Build
+        run: pnpm run build
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18.x'
-        cache: 'npm'
+  e2e:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps
+      
+      - name: Run E2E tests
+        run: pnpm run test:e2e
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
 
-    - name: Install dependencies
-      uses: nick-fields/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: ${{ env.MAX_RETRIES }}
-        command: npm ci
-        on_retry_command: |
-          npm cache clean --force
-          rm -rf node_modules
-          
-    - name: Type check
-      run: npm run type-check
-      timeout-minutes: 5
-      continue-on-error: false
+  security:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run security scan
+        run: pnpm run security:scan
+      
+      - name: Check bundle size
+        run: pnpm run bundlewatch
 
-    - name: Lint
-      run: npm run lint
-      timeout-minutes: 5
+  visual:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          exitZeroOnChanges: true
+
+  performance:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build
+        run: pnpm run build
+      
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.13.x
+      
+      - name: Run Lighthouse CI
+        run: lhci autorun
 
     - name: Run tests
       uses: nick-fields/retry@v2

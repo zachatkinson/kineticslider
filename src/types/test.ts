@@ -92,6 +92,24 @@ export interface TouchInit {
 }
 
 /**
+ * Touch API mock types
+ */
+export interface TouchOptions {
+  identifier?: number;
+  target?: EventTarget;
+  clientX?: number;
+  clientY?: number;
+  screenX?: number;
+  screenY?: number;
+  pageX?: number;
+  pageY?: number;
+  radiusX?: number;
+  radiusY?: number;
+  rotationAngle?: number;
+  force?: number;
+}
+
+/**
  * Mock function type for custom matchers
  */
 export type MockFunction = {
@@ -106,4 +124,80 @@ declare global {
   var gsapMock: MockGsap;
 
   var timelineMock: MockTimeline;
+}
+
+/**
+ * Mock Pixi.js application interface
+ */
+export interface MockPixiApplication {
+  stage: MockPixiContainer;
+  renderer: {
+    view: HTMLCanvasElement;
+    resize: (width: number, height: number) => void;
+  };
+  destroy: () => void;
+}
+
+/**
+ * Mock Pixi.js container interface
+ */
+export interface MockPixiContainer {
+  addChild: (child: MockPixiSprite) => void;
+  removeChild: (child: MockPixiSprite) => void;
+  children: MockPixiSprite[];
+}
+
+/**
+ * Mock Pixi.js sprite interface
+ */
+export interface MockPixiSprite {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  alpha: number;
+  texture: {
+    baseTexture: {
+      resource: {
+        source: HTMLImageElement;
+      };
+    };
+  };
+}
+
+/**
+ * Mock Pixi.js assets interface
+ */
+export interface MockPixiAssets {
+  load: (url: string) => Promise<any>;
+}
+
+/**
+ * Type for mock function results
+ */
+export type MockResult<T> = {
+  success: boolean;
+  data?: T;
+  error?: Error;
+};
+
+/**
+ * Mock ResizeObserver for testing
+ */
+export interface MockResizeObserver {
+  observe: (target: Element) => void;
+  unobserve: (target: Element) => void;
+  disconnect: () => void;
+}
+
+/**
+ * Mock IntersectionObserver for testing
+ */
+export interface MockIntersectionObserver {
+  observe: (target: Element) => void;
+  unobserve: (target: Element) => void;
+  disconnect: () => void;
+  readonly root: Element | null;
+  readonly rootMargin: string;
+  readonly thresholds: ReadonlyArray<number>;
 }

@@ -11,23 +11,57 @@ export interface FallbackProps {
 }
 
 /**
- * Props for the ErrorBoundary component
+ * Types related to React components
+ */
+
+/**
+ * Props for error boundary components
  */
 export interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode | ((error: Error, retry: () => void) => ReactNode);
-  fallbackRender?: (props: FallbackProps) => ReactNode;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  /** Child components to render */
+  children: React.ReactNode;
+  /** Optional fallback UI to render when an error occurs */
+  fallback?: React.ReactNode;
+  /** Callback fired when an error occurs */
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  /** Maximum number of retry attempts */
   maxRetries?: number;
 }
 
 /**
- * State for the ErrorBoundary component
+ * State for error boundary components
  */
 export interface ErrorBoundaryState {
+  /** Whether an error has occurred */
   hasError: boolean;
+  /** The error that occurred, if any */
   error: Error | null;
+  /** Additional error information */
+  errorInfo: React.ErrorInfo | null;
+  /** Number of retry attempts made */
   retryCount: number;
+}
+
+/**
+ * Props for Pixi-specific error boundary
+ */
+export interface PixiErrorBoundaryProps {
+  /** Child components to render */
+  children: React.ReactNode;
+  /** Optional fallback UI to render when an error occurs */
+  fallback?: React.ReactNode;
+  /** Callback fired when an error occurs */
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+}
+
+/**
+ * State for Pixi-specific error boundary
+ */
+export interface PixiErrorBoundaryState {
+  /** Whether an error has occurred */
+  hasError: boolean;
+  /** The error that occurred, if any */
+  error: Error | null;
 }
 
 /**
