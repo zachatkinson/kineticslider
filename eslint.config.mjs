@@ -8,10 +8,11 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/node_modules/**', 'coverage/**'],
+    ignores: ['**/dist/**', '**/node_modules/**', 'coverage/**', 'vite.config.ts', 'vitest.config.ts'],
   },
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['vite.config.ts', 'vitest.config.ts'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

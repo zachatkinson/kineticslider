@@ -95,7 +95,11 @@ export class SchemaValidator {
     const parts = content.split('---');
     if (parts.length >= 3) {
       const yamlContent = parts[1].trim();
-      return yaml.load(yamlContent);
+      const loadedContent = yaml.load(yamlContent);
+      if (!loadedContent) {
+        throw new Error(`Empty YAML content in file: ${filePath}`);
+      }
+      return loadedContent as z.infer<typeof ConfigFileSchema>;
     }
     throw new Error(`Invalid config file format: ${filePath}`);
   }
@@ -149,16 +153,16 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  (async () => {
+  void (async () => {
     try {
       const stats = await fs.stat(target);
       if (stats.isDirectory()) {
         const result = await SchemaValidator.validateDirectory(target);
-        console.log('Validation Results:', JSON.stringify(result, null, 2));
+        console.error('Validation Results:', JSON.stringify(result, null, 2));
         process.exit(result.valid ? 0 : 1);
       } else {
         const result = await SchemaValidator.validateFile(target);
-        console.log('Validation Result:', JSON.stringify(result, null, 2));
+        console.error('Validation Result:', JSON.stringify(result, null, 2));
         process.exit(result.valid ? 0 : 1);
       }
     } catch (error) {

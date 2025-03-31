@@ -19,7 +19,6 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "src",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -54,7 +53,7 @@
     "alwaysStrict": true,
     "noUncheckedIndexedAccess": true
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*", "src/types/**/*", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "vite.config.ts", "vitest.config.ts"],
+  "include": ["src/**/*", "src/types/**/*", "vitest.config.ts", "vite.config.ts", ".cursor/tools/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 } 

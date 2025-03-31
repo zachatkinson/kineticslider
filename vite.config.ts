@@ -1,9 +1,10 @@
 /// <reference types="vite/client" />
+/// <reference types="vitest" />
 import { defineConfig, UserConfig, ConfigEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'node:path';
-import viteCompression from 'vite-plugin-compression';
+import compression from 'vite-plugin-compression';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 
@@ -11,46 +12,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
+export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => ({
   plugins: [
     react({
-      // Enable Fast Refresh
-      fastRefresh: true,
-      // Enable build-time JSX validation
       jsxRuntime: 'automatic',
-      // Add Babel options for better optimization
       babel: {
         plugins: mode === 'production' ? [
-          ['babel-plugin-transform-react-remove-prop-types', { removeImport: true }]
+          ['babel-plugin-transform-react-remove-prop-types', { removeImport: true }],
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
         ] : []
       }
     }),
-    tsconfigPaths(),
-    viteCompression({
+    compression({
       algorithm: 'gzip',
-      ext: '.gz',
-      // Optimize compression
-      threshold: 1024,
-      deleteOriginFile: false,
-      compressionOptions: {
-        level: 9
-      }
+      ext: '.gz'
     }),
+    tsconfigPaths()
   ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@components': path.resolve(__dirname, './src/components'),
-      '@utils': path.resolve(__dirname, './src/utils'),
-      '@types': path.resolve(__dirname, './src/types'),
-    }
-  },
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'KineticSlider',
-      formats: ['es', 'umd'] as const,
-      fileName: (format: 'es' | 'umd') => `kineticslider.${format}.js`,
+      formats: ['es', 'cjs', 'umd'],
+      fileName: (format) => `kineticslider.${format}.js`
     },
     rollupOptions: {
       external: ['react', 'react-dom', 'gsap', 'pixi.js'],
@@ -59,97 +43,64 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
           react: 'React',
           'react-dom': 'ReactDOM',
           gsap: 'gsap',
-          'pixi.js': 'PIXI',
-        },
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          animations: ['gsap'],
-          graphics: ['pixi.js'],
-        },
-        // Add module format specific options
-        esm: {
-          minifyInternalExports: true
-        },
-        umd: {
-          indent: false,
-          strict: true
+          'pixi.js': 'PIXI'
         }
-      },
+      }
     },
     sourcemap: true,
-    minify: 'esbuild',
-    chunkSizeWarningLimit: 500,
-    cssCodeSplit: true,
     emptyOutDir: true,
-    assetsInlineLimit: 4096,
     reportCompressedSize: true,
-    // Add additional build optimizations
-    target: 'esnext',
+    target: 'es2015',
     cssTarget: 'chrome80',
     modulePreload: {
       polyfill: true
     }
   },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  },
   server: {
     port: 3000,
     open: true,
-    strictPort: true,
-    hmr: {
-      overlay: true,
-      timeout: 1000,
-    },
-    watch: {
-      usePolling: false,
-      interval: 100,
-    },
-    // Add security headers
     headers: {
+      'Access-Control-Allow-Origin': '*',
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp'
-    }
+    },
+    cors: true
   },
   optimizeDeps: {
     include: ['react', 'react-dom'],
-    exclude: [],
+    exclude: ['gsap', 'pixi.js'],
     esbuildOptions: {
       target: 'esnext',
-      // Add support for top-level await
-      supported: {
-        'top-level-await': true
-      },
-      // Improve tree-shaking
-      treeShaking: true,
-      // Improve minification
-      minify: true,
-      // Keep pure annotations
-      keepNames: false
     }
   },
-  // Add preview configuration
   preview: {
-    port: 3001,
-    strictPort: true,
+    port: 8080,
     open: true,
     cors: true
   },
-  // Add test configuration
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./src/setupTests.ts'],
     coverage: {
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
-        'node_modules/',
-        'src/test/setup.ts',
-        '**/*.d.ts',
-        '**/*.test.ts',
-        '**/*.test.tsx',
+        'src/**/*.d.ts',
+        'src/types/**/*',
+        'src/mocks/**/*',
+        'src/**/index.ts',
+        'src/setupTests.ts'
       ],
-      lines: 80,
-      functions: 80,
       branches: 80,
+      functions: 80,
+      lines: 80,
       statements: 80
     }
-  }
+  } as UserConfig['test']
 })); 
