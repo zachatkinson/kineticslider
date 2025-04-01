@@ -1,4 +1,6 @@
 import gsap from 'gsap';
+import type { GsapInstance } from './gsap';
+import type { WindowWithAnalytics } from './performance';
 
 /**
  * Global type declarations for the application
@@ -8,7 +10,7 @@ declare global {
   /**
    * Window interface extensions
    */
-  interface Window {
+  interface Window extends WindowWithAnalytics {
     /**
      * Analytics service
      */
@@ -25,6 +27,22 @@ declare global {
         context: Record<string, unknown>
       ) => void;
     };
+
+    /**
+     * GSAP instance
+     */
+    gsap: GsapInstance;
+
+    /**
+     * Extended Performance interface with memory metrics
+     */
+    performance: Performance & {
+      memory?: {
+        usedJSHeapSize: number;
+        totalJSHeapSize: number;
+        jsHeapSizeLimit: number;
+      };
+    };
   }
 
   /**
@@ -34,17 +52,6 @@ declare global {
     interface Global {
       gsap: typeof gsap;
     }
-  }
-
-  /**
-   * Performance interface extensions
-   */
-  interface Performance {
-    readonly memory: {
-      readonly jsHeapSizeLimit: number;
-      readonly totalJSHeapSize: number;
-      readonly usedJSHeapSize: number;
-    };
   }
 }
 

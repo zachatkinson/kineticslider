@@ -4,24 +4,6 @@ import type { UseKineticSliderProps, SliderGestureEvent } from '../../types/hook
 import { useErrorTracking } from './useErrorTracking';
 import { ErrorType } from '../../types/error';
 
-// interface UseKineticSliderProps {
-//   slides: Slide[];
-//   duration: number;
-//   ease: string;
-//   onSlideChange?: (index: number) => void;
-//   onAnimationComplete?: () => void;
-//   initialSlide?: number;
-//   infiniteLoop?: boolean;
-// }
-
-// interface GestureEvent {
-//   type: string;
-//   clientX: number;
-//   clientY: number;
-//   startX: number;
-//   startY: number;
-// }
-
 export function useKineticSlider({
   slides,
   duration,

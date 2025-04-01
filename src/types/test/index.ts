@@ -7,6 +7,7 @@
 
 export type * from './pixi';
 export type * from './gsap';
+export type * from './vitest';
 
 /**
  * Common test utility types

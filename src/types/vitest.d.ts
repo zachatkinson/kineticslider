@@ -1,31 +1,19 @@
 /// <reference types="vitest" />
 /// <reference types="@testing-library/jest-dom" />
 
+import { CustomMatchers, ExtendedAssertion, ExtendedAsymmetricMatchers, ExtendedMock } from './test/vitest';
+
 /**
- * Custom test matchers for Vitest
- * @internal
+ * Type declaration augmentations for Vitest
+ * This file provides augmentations to the global vitest module
+ * using types defined in src/types/test/vitest.ts
  */
-interface CustomMatchers<R = unknown> {
-  toHaveBeenCalledWithDirection(direction: string): R;
-}
-
 declare module 'vitest' {
-  /**
-   * Extended assertion interface with custom matchers
-   * @internal
-   */
-  interface Assertion<T = unknown> extends CustomMatchers<T> {
-    toBe(expected: unknown): void;
-  }
+  interface Assertion<T = unknown> extends ExtendedAssertion<T> {}
   
-  /**
-   * Extended asymmetric matchers interface
-   * @internal
-   */
-  interface AsymmetricMatchersContaining extends CustomMatchers {
-    toBe(expected: unknown): void;
-  }
+  interface AsymmetricMatchersContaining extends ExtendedAsymmetricMatchers {}
 
+  // Re-export the standard vitest exports
   export const describe: typeof import('vitest').describe;
   export const it: typeof import('vitest').it;
   export const test: typeof import('vitest').test;
@@ -36,23 +24,6 @@ declare module 'vitest' {
   export const afterEach: typeof import('vitest').afterEach;
   export const vi: typeof import('vitest').vi;
 
-  /**
-   * Extended mock interface for testing
-   * @internal
-   */
-  export interface Mock<_T = unknown> {
-    (...args: unknown[]): unknown;
-    mockImplementation(fn: (...args: unknown[]) => unknown): this;
-    mockReturnThis(): this;
-    mockReturnValue(value: unknown): this;
-    mockResolvedValue(value: unknown): this;
-    mockRejectedValue(value: unknown): this;
-    getMockName(): string;
-    mock: {
-      calls: unknown[][];
-      instances: unknown[];
-      invocationCallOrder: number[];
-      results: { type: string; value: unknown }[];
-    };
-  }
+  // Augment the Mock interface
+  export interface Mock<T = unknown> extends ExtendedMock<T> {}
 }

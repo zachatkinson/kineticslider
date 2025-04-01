@@ -4,18 +4,7 @@
 import type { GsapInstance } from './gsap';
 import type { WindowWithAnalytics } from './performance';
 
-declare global {
-  interface Window extends WindowWithAnalytics {
-    gsap: GsapInstance;
-    // Add performance with memory
-    performance: Performance & {
-      memory?: {
-        usedJSHeapSize: number;
-        totalJSHeapSize: number;
-        jsHeapSizeLimit: number;
-      };
-    };
-  }
-}
+// All global type declarations have been moved to src/types/global.ts
+// This file is kept for declaration merging and re-exports
 
 export {};
