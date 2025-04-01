@@ -10,6 +10,7 @@ import { validateStringConstraints, validateNumberConstraints, validateRequiredF
 import { createSlideId, createComponentId } from './id-helpers';
 import { globalValidationCache as validationCache } from './cache';
 import type { CacheOptions } from './cache';
+import { getFieldClass as getFieldClassByErrors, getFieldError } from './form-helpers';
 
 // Global validation registry
 const validatorRegistry = new Map<string, Validator | AsyncValidator>();
@@ -370,3 +371,38 @@ export function composeAsyncValidators(
     };
   };
 }
+
+/**
+ * Validation utility functions
+ */
+
+/**
+ * Get a field-specific error from an array of validation errors
+ * 
+ * @param errors - Validation errors array
+ * @param fieldName - Field name to extract error for
+ * @returns The validation error for the field or undefined
+ */
+export function getErrorForField(
+  errors: ValidationResult['errors'],
+  fieldName: string
+): ValidationError | undefined {
+  return errors.find((err) => err.property === fieldName);
+}
+
+/**
+ * Get CSS class for a form field based on validation result
+ * 
+ * @param validationErrors - Validation errors array
+ * @param fieldName - Field name to get class for
+ * @returns CSS class string
+ */
+export function getFieldClass(
+  validationErrors: ValidationResult['errors'],
+  fieldName: string
+): string {
+  return getFieldClassByErrors(validationErrors, fieldName);
+}
+
+// Export all validation functions
+export * from './validation-helpers';

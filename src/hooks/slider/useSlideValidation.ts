@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { ValidationError, ValidationResult } from '../../types/validation';
-import { getFieldClass } from '../../utils/form-helpers';
-import { getErrorForField } from '../../utils/validation-helpers';
+import { getFieldClass, getErrorForField } from '../../utils/validation';
 
 /**
  * Custom hook for slide validation
