@@ -148,12 +148,11 @@ jobs:
             echo "✅ Bundle size within threshold" >> bundle-report.md
           fi
         
-      - name: Generate documentation
-        id: docs
+      - name: Generate Documentation
         run: |
-          if ! npm run docs; then
-            echo "::warning::Documentation generation failed"
-          fi
+          echo "## Generating documentation"
+          npm run docs:generate
+          echo "Documentation generated successfully"
         
       - name: Performance test
         id: performance
@@ -238,7 +237,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload artifacts
+      - name: Upload Artifacts
         if: always()
         uses: actions/upload-artifact@v3
         with:
@@ -250,6 +249,7 @@ jobs:
             performance-report.md
             bundle-report.md
             lighthouse-results.json
+            docs/
 
       - name: Check for failures
         if: failure()
