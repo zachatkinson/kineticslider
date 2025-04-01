@@ -9,6 +9,19 @@ export {
   hasFormCriticalErrors,
 } from './form-helpers';
 
+// Common utilities
+export {
+  debounce,
+  throttle,
+  memoize,
+  safeJsonParse,
+  sleep,
+  createRandomId,
+  deepClone,
+  shallowMerge,
+  getNestedValue,
+} from './common';
+
 // Performance utilities
 export {
   measurePerformance,
@@ -55,7 +68,6 @@ export {
 
 // String utilities
 export {
-  generateId,
   capitalize,
   camelToKebab,
   kebabToCamel,
@@ -65,8 +77,6 @@ export {
 
 // JSON utilities
 export {
-  safeJsonParse,
-  safeJsonStringify,
   safeGet,
 } from './json';
 

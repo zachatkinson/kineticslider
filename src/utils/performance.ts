@@ -6,6 +6,7 @@ import type { FPS, ByteSize, Milliseconds } from '../types/branded';
 import type { PerformanceMetrics, PerformanceMonitoringOptions } from '../types/performance';
 import type { MetricSummary } from '../types/performance-shared';
 import { calculateMean, calculateMedian, calculateStandardDeviation, calculatePercentile } from './math';
+import { debounce, throttle } from './common';
 
 /**
  * Options for performance monitoring configuration
@@ -30,58 +31,8 @@ export function createPerformanceComponentId(): string {
   return `perf-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-/**
- * Creates a debounced function that delays invoking func until after wait milliseconds
- * have elapsed since the last time the debounced function was invoked.
- * 
- * @param fn The function to debounce
- * @param wait The number of milliseconds to delay
- * @returns A debounced version of the function
- */
-export function debounce<T extends (...args: any[]) => any>(
-  fn: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  
-  return function(...args: Parameters<T>): void {
-    const later = () => {
-      timeout = null;
-      fn(...args);
-    };
-    
-    if (timeout !== null) {
-      clearTimeout(timeout);
-    }
-    
-    timeout = setTimeout(later, wait);
-  };
-}
-
-/**
- * Throttles a function to only execute once within the specified time period
- * 
- * @param fn The function to throttle
- * @param limit The time limit in milliseconds
- * @returns A throttled version of the function
- */
-export function throttle<T extends (...args: any[]) => any>(
-  fn: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle = false;
-  let lastResult: ReturnType<T>;
-  
-  return function(...args: Parameters<T>): void {
-    if (!inThrottle) {
-      fn(...args);
-      inThrottle = true;
-      setTimeout(() => {
-        inThrottle = false;
-      }, limit);
-    }
-  };
-}
+// Re-export debounce and throttle from common for backward compatibility
+export { debounce, throttle };
 
 /**
  * Measures the execution time of a function

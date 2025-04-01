@@ -10,6 +10,7 @@ import { isObject } from './type-checks';
 import type { ValidationResult } from '../types/validation';
 import type { Slide } from '../types/slider';
 import { validateSlideWithBusinessRules } from './slide-validator';
+import { debounce } from './common';
 
 /**
  * Helper function to create a validation error with enhanced fields
@@ -412,14 +413,7 @@ export function createDebouncedValidator<T>(
   validateFn: (data: T) => Promise<void>,
   debounceMs: number
 ): (data: T) => void {
-  let timer: ReturnType<typeof setTimeout>;
-  
-  return (data: T) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      void validateFn(data);
-    }, debounceMs);
-  };
+  return debounce(validateFn, debounceMs);
 }
 
 /**
