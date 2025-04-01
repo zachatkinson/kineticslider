@@ -1,58 +1,129 @@
 /**
- * Main utilities export file
+ * Core utilities index
  */
 
 // Form utilities
-export * from './form-validation';
-export * from './form-helpers';
-
-// Analytics and errors
-export * from './analytics';
-export * from './errors';
-
-// Accessibility utilities
-export * from './a11y';
+export {
+  getFeedbackClass,
+  hasFieldCriticalError,
+  hasFormCriticalErrors,
+} from './form-helpers';
 
 // Performance utilities
-export * from './performance';
+export {
+  measurePerformance,
+  measureFPS,
+  createPerformanceMonitor,
+  calculateMetricSummary,
+  trackInteraction as trackPerformanceInteraction,
+} from './performance';
 
 // Validation utilities
 export {
   registerValidator,
   getValidator,
-  composeValidators,
-  composeAsyncValidators,
+  createSchemaValidator,
+  validateErrorInfo,
   memoizeValidator,
   clearValidationCache,
-  createValidationError,
-  isObject,
-  safeGet,
-  createSchemaValidator,
-  validateImageExists,
-  validateSlideImageUrl,
-  validateSlideWithUrl,
-  validateSlides,
-  validateAnimationConfig,
-  validateProps,
-  validateErrorInfo,
-  validateAccessibility,
-  validatePerformanceConfig,
-  isEmpty,
-  createValidator,
-  isValidSlide,
-  isValidProps,
-  isValidErrorInfo,
+  toSlideId,
+  toComponentId,
+  composeValidators,
+  composeAsyncValidators,
 } from './validation';
 
-// Slide validation
-export * from './slide-validator';
+// Type checking utilities
+export {
+  isNullOrUndefined,
+  isObject,
+  isArray,
+  isString,
+  isNumber,
+  isBoolean,
+  isFunction,
+  isEmpty,
+  hasMethod,
+  isPromise,
+  isDate,
+  isFiniteNumber,
+  isValidationResult,
+  isPerformanceMetrics,
+  isAnimationConfig,
+  hasFocusFunction,
+  hasInitialFocusFunction,
+} from './type-checks';
 
-// Browser support
-export * from './browserSupport';
+// String utilities
+export {
+  generateId,
+  capitalize,
+  camelToKebab,
+  kebabToCamel,
+  truncate,
+  isEmptyString,
+} from './string';
 
-// Type utilities
-export * from './type-guards';
-export * from './id-helpers';
+// JSON utilities
+export {
+  safeJsonParse,
+  safeJsonStringify,
+  safeGet,
+} from './json';
 
-// Component utilities
-export * from './hoc';
+// Math utilities
+export {
+  calculateMean,
+  calculateMedian,
+  calculateStandardDeviation,
+  clamp,
+  lerp,
+  mapRange,
+  roundTo,
+  approximatelyEqual,
+  randomBetween,
+  randomIntBetween,
+  safeArithmetic,
+} from './math';
+
+// Animation utilities
+export {
+  AnimationController,
+  animationController,
+  createSlideTransition,
+  animateSlide,
+  createBasicAnimation,
+  createFadeAnimation,
+  createSlideAnimation,
+} from './animation';
+
+// Image utilities
+export {
+  preloadImage,
+} from './image';
+
+// Cache utilities
+export {
+  Cache,
+  ValidationCache,
+  globalValidationCache,
+  type CacheOptions,
+} from './cache';
+
+// Validation helpers
+export {
+  validateStringConstraints,
+  validateNumberConstraints,
+  validateRequiredFields,
+  validateAgainstSchemaField,
+  createValidationError,
+} from './validation-helpers';
+
+// Validation checks
+export {
+  hasErrors,
+  hasErrorsOfSeverity,
+  getErrorsOfSeverity,
+  getMostSevereError,
+  hasErrorsWithProperties,
+  getErrorsForProperties,
+} from './validation-checks';

@@ -5,13 +5,54 @@ import { FocusManagerProps } from '../types/accessibility';
 import { FocusTrapOptions } from '../types/keyboard';
 
 /**
- * FocusManager component for managing focus within a container
+ * A component that manages focus within a container, providing focus trapping, auto-focus,
+ * and keyboard navigation capabilities.
  *
- * This component can:
- * 1. Trap focus within a container (for modals, dialogs, etc.)
- * 2. Auto-focus the first focusable element or a specific element on mount
- * 3. Restore focus to a previous element when unmounted
- * 4. Handle keyboard navigation
+ * @component
+ * @example
+ * ```tsx
+ * <FocusManager
+ *   trapFocus
+ *   autoFocus
+ *   escapeDeactivates
+ *   onEscape={() => setIsOpen(false)}
+ * >
+ *   <div role="dialog">
+ *     <button>First focusable</button>
+ *     <button>Second focusable</button>
+ *   </div>
+ * </FocusManager>
+ * ```
+ *
+ * @accessibility
+ * - Traps keyboard focus within container
+ * - Supports initial focus management
+ * - Restores focus on unmount
+ * - Handles keyboard navigation (Tab/Shift+Tab)
+ * - Supports escape key for deactivation
+ *
+ * @state
+ * - Manages focus state within container
+ * - Tracks previously focused element
+ * - Handles focus trap activation/deactivation
+ *
+ * @events
+ * - onActivate: Fired when focus trap is activated
+ * - onDeactivate: Fired when focus trap is deactivated
+ * - onEscape: Fired when escape key is pressed
+ *
+ * @performance
+ * - Uses refs for DOM access
+ * - Implements cleanup on unmount
+ * - Optimizes focus event handling
+ *
+ * @error
+ * - Handles missing focusable elements
+ * - Manages focus restoration failures
+ * - Provides fallback behaviors
+ *
+ * @see {@link useKeyboard} For keyboard event handling
+ * @see {@link FocusTrapOptions} For configuration options
  */
 export const FocusManager: React.FC<FocusManagerProps> = ({
   children,

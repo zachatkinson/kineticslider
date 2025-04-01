@@ -40,7 +40,8 @@ community include:
 * Giving and gracefully accepting constructive feedback
 * Accepting responsibility and apologizing to those affected by our mistakes,
   and learning from the experience
-* Focusing on what is best for the overall community
+* Focusing on what is best not just for us as individuals, but for the
+  overall community
 
 Examples of unacceptable behavior include:
 
@@ -55,15 +56,10 @@ Examples of unacceptable behavior include:
 
 ## Enforcement Responsibilities
 
-Community leaders are responsible for clarifying and enforcing our standards of
+Project maintainers are responsible for clarifying and enforcing our standards of
 acceptable behavior and will take appropriate and fair corrective action in
 response to any behavior that they deem inappropriate, threatening, offensive,
 or harmful.
-
-Community leaders have the right and responsibility to remove, edit, or reject
-comments, commits, code, wiki edits, issues, and other contributions that are
-not aligned to this Code of Conduct, and will communicate reasons for moderation
-decisions when appropriate.
 
 ## Scope
 
@@ -73,12 +69,9 @@ an individual is officially representing the community in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-[conduct@kineticslider.dev](mailto:conduct@kineticslider.dev).
+reported to the project maintainers responsible for enforcement at
+[INSERT EMAIL ADDRESS].
 All complaints will be reviewed and investigated promptly and fairly.
-
-All community leaders are obligated to respect the privacy and security of the
-reporter of any incident.
 
 ## Enforcement Guidelines
 
@@ -160,7 +153,11 @@ For urgent matters involving immediate safety concerns, we will respond as quick
 
 ## Attribution
 
-This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org).
+This Code of Conduct is adapted from the [Contributor Covenant][homepage],
+version 2.0, available at
+https://www.contributor-covenant.org/version/2/0/code_of_conduct.html.
+
+[homepage]: https://www.contributor-covenant.org
 
 Community Impact Guidelines were inspired by [Mozilla's code of conduct
 enforcement ladder](https://github.com/mozilla/diversity).

@@ -2,16 +2,19 @@ import React, { MouseEvent, TouchEvent, memo, useCallback, useEffect, useState, 
 import gsap from 'gsap';
 
 import { useKineticSlider } from '../hooks/useKineticSlider';
-import type { KineticSliderProps, Slide, SliderAnalyticsData } from '../types/slider';
+import type { KineticSliderProps, Slide } from '../types/slider';
+import type { SliderAnalyticsData, SlideChangeAnalytics, AnimationCompleteAnalytics, GestureAnalytics, ErrorAnalytics } from '../types/analytics';
+import type { BaseSliderEvent, SliderEventHandler, KeyboardEventHandler } from '../types/events';
 import { ErrorBoundary } from './ErrorBoundary';
 import { debounce } from '../utils/performance';
 import { FocusManager } from './FocusManager';
-
-const Loading = () => (
-  <div role="progressbar" aria-label="Loading slides" className="kinetic-slider-loading">
-    Loading...
-  </div>
-);
+import { preloadImage } from '../utils/image';
+import { Loading, LoadingIndicator } from './Loading/Loading';
+import { createBrandedNumber } from '../types/branded';
+import type { SlideIndex } from '../types/branded';
+import type { ErrorType } from '../types/slider';
+import { animateSlide } from '../utils/animation';
+import { trackInteraction } from '../utils/analytics';
 
 /**
  * A high-performance kinetic slider component with smooth animations and gesture support.
@@ -37,16 +40,43 @@ const Loading = () => (
  * - Employs transform3d for hardware acceleration
  *
  * @accessibility
- * - Supports keyboard navigation
- * - Maintains focus management
- * - Implements ARIA attributes
- * - Provides live region updates
+ * - Supports keyboard navigation (←/→ arrows)
+ * - Maintains focus management within slides
+ * - Implements ARIA attributes for slides and controls
+ * - Provides live region updates for slide changes
  * - Supports screen reader announcements
+ *
+ * @state
+ * - Manages slide position and animation state
+ * - Handles gesture interactions
+ * - Controls keyboard navigation
+ * - Manages lazy loading of slides
+ *
+ * @events
+ * - onSlideChange: Fired when active slide changes
+ * - onAnimationComplete: Fired when slide transition completes
+ * - onError: Fired when an error occurs
+ *
+ * @styling
+ * - Supports custom classNames and styles
+ * - Uses CSS transforms for smooth animations
+ * - Implements responsive design patterns
+ * - Handles touch and mouse interactions
+ *
+ * @error
+ * - Implements error boundaries for graceful failure
+ * - Provides error reporting through onError callback
+ * - Handles animation and gesture errors
+ * - Manages state recovery after errors
+ *
+ * @see {@link useKineticSlider} For the hook implementation
+ * @see {@link SlideContainer} For the slide container component
+ * @see {@link SlideControls} For the navigation controls component
  */
 export const KineticSlider = memo(
   ({
     slides,
-    initialSlide = 0,
+    initialSlide = createBrandedNumber(0, 'SlideIndex'),
     onSlideChange,
     onAnimationComplete,
     onError,
@@ -69,22 +99,23 @@ export const KineticSlider = memo(
     } = useKineticSlider({
       slides,
       initialSlide,
-      onSlideChange: (index) => {
-        // Track slide change analytics
-        const analyticsData: SliderAnalyticsData = {
+      onSlideChange: (index: SlideIndex) => {
+        const analyticsData: SlideChangeAnalytics = {
           eventType: 'slide_change',
           timestamp: new Date().toISOString(),
-          index
+          fromIndex: createBrandedNumber(currentSlide, 'SlideIndex'),
+          toIndex: index,
+          slideId: slides[index]?.id,
+          isAutoplay: false
         };
-        
-        // Call the original onSlideChange if provided
         onSlideChange?.(index);
       },
       onAnimationComplete: () => {
-        const analyticsData: SliderAnalyticsData = {
+        const analyticsData: AnimationCompleteAnalytics = {
           eventType: 'animation_complete',
           timestamp: new Date().toISOString(),
-          index: currentSlide
+          duration: duration * 1000,
+          direction: 'forward'
         };
         console.debug('Animation complete:', analyticsData);
         onAnimationComplete?.();
@@ -102,15 +133,16 @@ export const KineticSlider = memo(
 
     // Track user interactions
     const trackInteraction = useCallback((gestureType: string) => {
-      const analyticsData: SliderAnalyticsData = {
+      const analyticsData: GestureAnalytics = {
         eventType: 'gesture_detected',
         timestamp: new Date().toISOString(),
         gestureType,
-        index: currentSlide
+        direction: 'horizontal',
+        distance: 0,
+        velocity: 0
       };
-      // You can send this to your analytics service
       console.debug('Slider interaction:', analyticsData);
-    }, [currentSlide]);
+    }, []);
 
     // Handle window resize to maintain slider proportions
     useEffect(() => {
@@ -184,7 +216,7 @@ export const KineticSlider = memo(
             type: 'touchstart',
             startX: touch.clientX,
             startY: touch.clientY,
-          });
+          } as BaseSliderEvent);
         }
       },
       [enableGestures, handleGesture, trackInteraction],
@@ -260,107 +292,34 @@ export const KineticSlider = memo(
       [enableGestures, handleGesture],
     );
 
-    // Enhanced slide transition effect
-    const animateSlide = useCallback((direction: 'next' | 'prev') => {
-      if (!sliderRef.current) return;
-      
-      const slideElements = Array.from(sliderRef.current.children) as HTMLElement[];
-      const currentSlideEl = slideElements[currentSlide];
-      const nextIndex = (currentSlide + 1) % slideElements.length;
-      const prevIndex = (currentSlide - 1 + slideElements.length) % slideElements.length;
-      const targetSlide = direction === 'next' 
-        ? slideElements[nextIndex]
-        : slideElements[prevIndex];
-
-      if (!currentSlideEl || !targetSlide) return;
-
-      // Reset positions
-      gsap.set(slideElements, { 
-        x: '100%',
-        opacity: 0,
-        scale: 0.8,
-        zIndex: 1
-      });
-
-      gsap.set(currentSlideEl, { 
-        x: '0%',
-        opacity: 1,
-        scale: 1,
-        zIndex: 2
-      });
-
-      // Animate current slide out
-      gsap.to(currentSlideEl, {
-        x: direction === 'next' ? '-100%' : '100%',
-        opacity: 0,
-        scale: 0.8,
-        duration,
-        ease,
-      });
-
-      // Animate target slide in
-      gsap.fromTo(targetSlide,
-        {
-          x: direction === 'next' ? '100%' : '-100%',
-          opacity: 0,
-          scale: 0.8,
-          zIndex: 3
-        },
-        {
-          x: '0%',
-          opacity: 1,
-          scale: 1,
-          duration,
-          ease,
-          onComplete: () => {
-            const analyticsData: SliderAnalyticsData = {
-              eventType: 'animation_complete',
-              timestamp: new Date().toISOString(),
-              index: currentSlide
-            };
-            console.debug('Animation complete:', analyticsData);
-            onAnimationComplete?.();
-          }
-        }
-      );
-    }, [currentSlide, duration, ease, onAnimationComplete]);
-
-    // Update slide transition logic
+    // Update the useEffect that handles animation
     useEffect(() => {
       if (isAnimating) {
         const direction = currentSlide > (currentSlide - 1 + slides.length) % slides.length
           ? 'next'
           : 'prev';
-        animateSlide(direction);
+        animateSlide(
+          sliderRef,
+          currentSlide,
+          direction,
+          duration,
+          ease,
+          () => {
+            const analyticsData: AnimationCompleteAnalytics = {
+              eventType: 'animation_complete',
+              timestamp: new Date().toISOString(),
+              duration: duration * 1000,
+              direction: direction === 'next' ? 'forward' : 'backward'
+            };
+            console.debug('Animation complete:', analyticsData);
+            onAnimationComplete?.();
+          }
+        );
       }
-    }, [currentSlide, isAnimating, animateSlide, slides.length]);
+    }, [currentSlide, isAnimating, slides.length, duration, ease, onAnimationComplete]);
 
     // Preload adjacent images
     useEffect(() => {
-      const preloadImage = (src: string) => {
-        if (preloadedImages.has(src)) return;
-        
-        const img = new Image();
-        img.src = src;
-        img.onload = () => {
-          setPreloadedImages(prev => new Set([...prev, src]));
-          setLoadingStates(prev => ({ ...prev, [src]: false }));
-        };
-        img.onerror = () => {
-          setLoadingStates(prev => ({ ...prev, [src]: false }));
-          const error = new Error(`Failed to preload image: ${src}`);
-          const analyticsData: SliderAnalyticsData = {
-            eventType: 'error',
-            timestamp: new Date().toISOString(),
-            error,
-            index: slides.findIndex(slide => slide.image === src)
-          };
-          console.error('Preload error:', analyticsData);
-          onError?.(error);
-        };
-        setLoadingStates(prev => ({ ...prev, [src]: true }));
-      };
-
       // Preload current and adjacent slides
       const slidesToPreload = [
         slides[currentSlide]?.image,
@@ -368,26 +327,29 @@ export const KineticSlider = memo(
         slides[(currentSlide - 1 + slides.length) % slides.length]?.image
       ].filter(Boolean) as string[];
 
-      slidesToPreload.forEach(preloadImage);
-    }, [currentSlide, slides, preloadedImages, onError]);
+      const cleanupFns = slidesToPreload.map(src => 
+        preloadImage(src, {
+          onLoad: () => {
+            setPreloadedImages(prev => new Set([...prev, src]));
+            setLoadingStates(prev => ({ ...prev, [src]: false }));
+          },
+          onError: (error) => {
+            setLoadingStates(prev => ({ ...prev, [src]: false }));
+            const index = slides.findIndex(slide => slide.image === src);
+            onError?.(error);
+          },
+          onAnalytics: (data) => {
+            if (data.eventType === 'error') {
+              console.error('Preload error:', data);
+            }
+          }
+        })
+      );
 
-    // Loading indicator component
-    const LoadingIndicator = () => (
-      <div 
-        className="kinetic-slider-loading" 
-        role="progressbar" 
-        aria-label="Loading slide"
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 10
-        }}
-      >
-        <div className="kinetic-slider-loading-spinner"></div>
-      </div>
-    );
+      return () => {
+        cleanupFns.forEach(cleanup => cleanup());
+      };
+    }, [currentSlide, slides, preloadedImages, onError]);
 
     // Update renderSlides to include loading states
     const renderSlides = () => {
@@ -416,11 +378,16 @@ export const KineticSlider = memo(
             loading={lazyLoad && index !== currentSlide ? 'lazy' : 'eager'}
             onError={() => {
               const error = new Error(`Failed to load image: ${slide.image}`);
-              const analyticsData: SliderAnalyticsData = {
+              const analyticsData: ErrorAnalytics = {
                 eventType: 'error',
                 timestamp: new Date().toISOString(),
                 error,
-                index
+                errorType: 'IMAGE_LOAD_ERROR' as ErrorType,
+                componentInfo: {
+                  currentIndex: createBrandedNumber(currentSlide, 'SlideIndex'),
+                  isAnimating,
+                  isDragging: false
+                }
               };
               console.error('Slider error:', analyticsData);
               onError?.(error);

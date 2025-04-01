@@ -1,100 +1,108 @@
 import React, { useState, useEffect } from 'react';
-import { FeatureFlag, useFeatureFlags, FeatureFlagConfig } from './feature-flags';
-
-// Define migration phases
-export enum MigrationPhase {
-  PREPARATION = 'preparation',
-  CORE_IMPLEMENTATION = 'core-implementation',
-  GESTURE_HANDLING = 'gesture-handling',
-  ANIMATION_SYSTEM = 'animation-system',
-  PERFORMANCE_OPTIMIZATIONS = 'performance-optimizations',
-  ACCESSIBILITY = 'accessibility',
-  FINALIZATION = 'finalization',
-}
-
-// Define the status of each phase
-export enum PhaseStatus {
-  NOT_STARTED = 'not-started',
-  IN_PROGRESS = 'in-progress',
-  COMPLETED = 'completed',
-}
+import { FeatureFlag, useFeatureFlags } from './feature-flags';
+import {
+  MigrationDashboardProps,
+  PhaseMetadata,
+  PhaseStatus,
+  PhaseProgress,
+  MigrationPhase
+} from '../src/types/migration';
 
 // Map phases to relevant feature flags
 const phaseToFeatureFlags: Record<MigrationPhase, FeatureFlag[]> = {
   [MigrationPhase.PREPARATION]: [],
-  [MigrationPhase.CORE_IMPLEMENTATION]: [FeatureFlag.NEW_CORE_SLIDER],
-  [MigrationPhase.GESTURE_HANDLING]: [FeatureFlag.NEW_GESTURE_HANDLING],
-  [MigrationPhase.ANIMATION_SYSTEM]: [FeatureFlag.NEW_ANIMATION_SYSTEM],
-  [MigrationPhase.PERFORMANCE_OPTIMIZATIONS]: [FeatureFlag.NEW_PERFORMANCE_OPTIMIZATIONS],
-  [MigrationPhase.ACCESSIBILITY]: [FeatureFlag.NEW_ACCESSIBILITY_FEATURES],
+  [MigrationPhase.CORE_SLIDER]: [
+    FeatureFlag.NEW_CORE_SLIDER,
+    FeatureFlag.NEW_GESTURE_HANDLING
+  ],
+  [MigrationPhase.CANVAS_SYSTEM]: [
+    FeatureFlag.RESPONSIVE_CANVAS
+  ],
+  [MigrationPhase.THEME_SYSTEM]: [
+    FeatureFlag.THEME_SYSTEM
+  ],
+  [MigrationPhase.ANIMATION_EFFECTS]: [
+    FeatureFlag.NEW_ANIMATION_SYSTEM,
+    FeatureFlag.ADVANCED_EFFECTS
+  ],
+  [MigrationPhase.CONTENT_MANAGEMENT]: [
+    FeatureFlag.CONTENT_MANAGEMENT
+  ],
+  [MigrationPhase.PERFORMANCE_OPTIMIZATIONS]: [
+    FeatureFlag.NEW_PERFORMANCE_OPTIMIZATIONS
+  ],
+  [MigrationPhase.ACCESSIBILITY]: [
+    FeatureFlag.NEW_ACCESSIBILITY_FEATURES
+  ],
   [MigrationPhase.FINALIZATION]: [
     FeatureFlag.NEW_CORE_SLIDER,
-    FeatureFlag.NEW_ANIMATION_SYSTEM,
     FeatureFlag.NEW_GESTURE_HANDLING,
+    FeatureFlag.RESPONSIVE_CANVAS,
+    FeatureFlag.THEME_SYSTEM,
+    FeatureFlag.NEW_ANIMATION_SYSTEM,
+    FeatureFlag.ADVANCED_EFFECTS,
+    FeatureFlag.CONTENT_MANAGEMENT,
     FeatureFlag.NEW_PERFORMANCE_OPTIMIZATIONS,
-    FeatureFlag.NEW_ACCESSIBILITY_FEATURES,
+    FeatureFlag.NEW_ACCESSIBILITY_FEATURES
   ],
 };
 
 // Phase metadata
-interface PhaseMetadata {
-  label: string;
-  description: string;
-  estimatedDuration: string;
-}
-
-const phaseMetadata: Record<MigrationPhase, PhaseMetadata> = {
+const phaseMetadata: Record<MigrationPhase, Omit<PhaseMetadata, 'status' | 'progress' | 'startedAt' | 'completedAt' | 'errors'>> = {
   [MigrationPhase.PREPARATION]: {
     label: 'Phase 0: Preparation',
     description: 'Set up feature flags, migration dashboard, and benchmarking',
     estimatedDuration: '1 week',
   },
-  [MigrationPhase.CORE_IMPLEMENTATION]: {
-    label: 'Phase 1: Core Implementation',
-    description: 'Migrate core slider functionality',
+  [MigrationPhase.CORE_SLIDER]: {
+    label: 'Phase 1: Core Slider',
+    description: 'Implement new core slider and gesture handling',
+    estimatedDuration: '2 weeks',
+  },
+  [MigrationPhase.CANVAS_SYSTEM]: {
+    label: 'Phase 2: Canvas System',
+    description: 'Implement responsive canvas with dynamic sizing',
     estimatedDuration: '1 week',
   },
-  [MigrationPhase.GESTURE_HANDLING]: {
-    label: 'Phase 2: Gesture Handling',
-    description: 'Implement new gesture system',
+  [MigrationPhase.THEME_SYSTEM]: {
+    label: 'Phase 3: Theme System',
+    description: 'Implement theme provider and preset system',
     estimatedDuration: '1 week',
   },
-  [MigrationPhase.ANIMATION_SYSTEM]: {
-    label: 'Phase 3: Animation System',
-    description: 'Upgrade animation capabilities',
+  [MigrationPhase.ANIMATION_EFFECTS]: {
+    label: 'Phase 4: Animation & Effects',
+    description: 'Upgrade animation system and implement advanced effects',
+    estimatedDuration: '2 weeks',
+  },
+  [MigrationPhase.CONTENT_MANAGEMENT]: {
+    label: 'Phase 5: Content Management',
+    description: 'Implement dynamic content loading system',
     estimatedDuration: '1 week',
   },
   [MigrationPhase.PERFORMANCE_OPTIMIZATIONS]: {
-    label: 'Phase 4: Performance Optimizations',
-    description: 'Implement performance improvements',
+    label: 'Phase 6: Performance',
+    description: 'Implement performance optimizations and monitoring',
     estimatedDuration: '1 week',
   },
   [MigrationPhase.ACCESSIBILITY]: {
-    label: 'Phase 5: Accessibility',
-    description: 'Enhance accessibility features',
+    label: 'Phase 7: Accessibility',
+    description: 'Enhance accessibility features and compliance',
     estimatedDuration: '1 week',
   },
   [MigrationPhase.FINALIZATION]: {
-    label: 'Phase 6: Finalization',
-    description: 'Complete testing and ensure compatibility',
-    estimatedDuration: '1 week',
+    label: 'Phase 8: Finalization',
+    description: 'Complete testing and ensure all systems work together',
+    estimatedDuration: '2 weeks',
   },
 };
 
-// Phase progress tracker
-type PhaseProgress = {
-  [key in MigrationPhase]: {
-    status: PhaseStatus;
-    progress: number; // 0-100
-    startedAt?: Date;
-    completedAt?: Date;
-  };
-};
+const PROGRESS_STORAGE_KEY = 'kinetic-slider-migration-progress';
 
 const initialPhaseProgress: PhaseProgress = Object.values(MigrationPhase).reduce(
   (acc, phase) => ({
     ...acc,
     [phase]: {
+      ...phaseMetadata[phase],
       status: PhaseStatus.NOT_STARTED,
       progress: 0,
     },
@@ -102,25 +110,15 @@ const initialPhaseProgress: PhaseProgress = Object.values(MigrationPhase).reduce
   {} as PhaseProgress
 );
 
-// Storage key for persisting migration progress
-const PROGRESS_STORAGE_KEY = 'kinetic-slider-migration-progress';
-
-interface MigrationDashboardProps {
-  isAdmin?: boolean;
-}
-
 export const MigrationDashboard: React.FC<MigrationDashboardProps> = ({ isAdmin = false }) => {
   const { flags, setFlag } = useFeatureFlags();
   const [phaseProgress, setPhaseProgress] = useState<PhaseProgress>(() => {
     try {
-      const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
-      if (savedProgress) {
-        return JSON.parse(savedProgress) as PhaseProgress;
-      }
-    } catch (error) {
-      console.warn('Failed to load migration progress from localStorage:', error);
+      const saved = localStorage.getItem(PROGRESS_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : initialPhaseProgress;
+    } catch {
+      return initialPhaseProgress;
     }
-    return initialPhaseProgress;
   });
 
   // Calculate overall progress

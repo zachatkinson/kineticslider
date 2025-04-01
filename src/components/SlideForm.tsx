@@ -3,15 +3,62 @@ import React, { useState } from 'react';
 import { DEFAULT_SLIDE } from '../constants/slides';
 import { DEFAULT_VALIDATION_DEBOUNCE } from '../constants/validation';
 import '../styles/SlideForm.css';
-import type { Slide, SlideId } from '../types';
-import { SlideFormProps } from '../types/components';
-import {
-  getFeedbackClass,
-  useSlideValidation,
-  validateAndSubmit,
-} from '../utils/form-validation';
-import { validateSlideWithBusinessRules } from '../utils/slide-validator';
-import { ValidationErrorSeverity, ValidationResult } from '../utils/validation';
+import type { Slide, SliderId } from '../types/slider';
+import type { SlideFormProps } from '../types/components';
+import type { ValidationError } from '../types/validation';
+import { getFeedbackClass, validateAndSubmit } from '../utils/form-helpers';
+import { useSlideValidation } from '../hooks/slider/useSlideValidation';
+import { validateSlide } from '../utils/validation-helpers';
+import { ValidationErrorSeverity } from '../types/validation';
+import type { ValidationResult } from '../types/validation';
+
+/**
+ * A form component for creating and editing slider slides with validation and accessibility support.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <SlideForm
+ *   initialSlide={{ title: 'Example', image: 'https://example.com/image.jpg' }}
+ *   onSave={(slide) => handleSave(slide)}
+ *   onCancel={() => handleCancel()}
+ * />
+ * ```
+ *
+ * @accessibility
+ * - Uses semantic form elements
+ * - Provides ARIA labels and descriptions
+ * - Shows validation feedback
+ * - Supports keyboard navigation
+ * - Uses required field indicators
+ *
+ * @state
+ * - Manages form field values
+ * - Tracks validation state
+ * - Handles submission state
+ * - Manages error states
+ *
+ * @events
+ * - onSave: Fired when form is valid and submitted
+ * - onCancel: Fired when form is cancelled
+ * - onChange: Internal field change handling
+ *
+ * @validation
+ * - Real-time field validation
+ * - Debounced validation checks
+ * - Error message display
+ * - Field-level feedback
+ * - Form-level validation
+ *
+ * @error
+ * - Displays validation errors
+ * - Shows warning messages
+ * - Provides error suggestions
+ * - Prevents invalid submissions
+ *
+ * @see {@link useSlideValidation} For validation hook implementation
+ * @see {@link validateSlide} For validation logic
+ */
 
 export const SlideForm: React.FC<SlideFormProps> = ({
   initialSlide = {},
@@ -20,7 +67,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
 }) => {
   // Merge initial values with defaults and ensure id is present
   const [slide, setSlide] = useState<Slide>({
-    id: initialSlide.id || (('temp-' + Date.now()) as SlideId),
+    id: initialSlide.id || (('temp-' + Date.now()) as SliderId),
     ...DEFAULT_SLIDE,
     ...initialSlide,
   } as Slide);
@@ -51,10 +98,6 @@ export const SlideForm: React.FC<SlideFormProps> = ({
   // Handle form submission
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
-
-    const validateSlide = async (data: Slide): Promise<ValidationResult> => {
-      return validateSlideWithBusinessRules(data);
-    };
 
     void validateAndSubmit(
       slide,
@@ -165,7 +208,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
         <div className="alert alert-warning">
           <strong>Please review the form for issues:</strong>
           <ul>
-            {validationResult.errors.map((error, index) => (
+            {validationResult.errors.map((error: ValidationError, index: number) => (
               <li
                 key={index}
                 className={`text-${error.severity === ValidationErrorSeverity.WARNING ? 'warning' : 'danger'}`}

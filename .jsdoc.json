@@ -1,0 +1,25 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc"]
+  },
+  "source": {
+    "include": ["src"],
+    "includePattern": "\\.(tsx?|jsx?)$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "opts": {
+    "destination": "./docs/jsdoc",
+    "recurse": true,
+    "readme": "./README.md"
+  },
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true,
+    "useLongnameInNav": false,
+    "showInheritedInNav": true
+  }
+} 

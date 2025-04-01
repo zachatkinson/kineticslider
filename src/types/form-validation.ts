@@ -1,39 +1,37 @@
-import { ValidationResult } from './validation';
+import { ValidationError, ValidationResult } from '../utils/validation';
 
 /**
- * Form validation state and helper functions
+ * Form validation options
  */
-export interface FormValidationState<_T> {
+export interface FormValidationOptions {
+  /** Debounce time in milliseconds */
+  debounceMs?: number;
+  /** Whether to validate on mount */
+  validateOnMount?: boolean;
+  /** Whether to validate on change */
+  validateOnChange?: boolean;
+}
+
+/**
+ * Form validation state
+ */
+export interface FormValidationState<T> {
   /** Current validation result */
   validationResult: ValidationResult;
   /** Whether validation is in progress */
   validating: boolean;
-  /** Whether the form has been submitted */
+  /** Whether form has been submitted */
   submitted: boolean;
-  /** Function to set submitted state */
-  setSubmitted: (state: boolean) => void;
-  /** Get error for a specific field */
-  getErrorForField: (
-    fieldName: string
-  ) => ValidationResult['errors'][0] | undefined;
-  /** Get CSS class based on field validation state */
+  /** Set submitted state */
+  setSubmitted: (submitted: boolean) => void;
+  /** Get error for specific field */
+  getErrorForField: (fieldName: string) => ValidationError | undefined;
+  /** Get field class name based on validation state */
   getFieldClass: (fieldName: string) => string;
   /** Check if form has critical errors */
   hasCriticalErrors: () => boolean;
-  /** Function to set validating state */
-  setValidating: (state: boolean) => void;
-  /** Function to set validation result */
+  /** Set validating state */
+  setValidating: (validating: boolean) => void;
+  /** Set validation result */
   setValidationResult: (result: ValidationResult) => void;
-}
-
-/**
- * Options for form validation hook
- */
-export interface FormValidationOptions {
-  /** Debounce timeout in milliseconds */
-  debounceMs?: number;
-  /** Auto-validate on initial render */
-  validateOnMount?: boolean;
-  /** Auto-validate on field change */
-  validateOnChange?: boolean;
 }

@@ -1,77 +1,217 @@
 /**
- * Analytics types for tracking slider events
+ * Analytics-related type definitions and interfaces
  */
+import type { SlideIndex, SliderId } from './branded';
+import type { ErrorType } from './slider';
 
 /**
- * Event types for slider analytics tracking
+ * Types of events that can be tracked
  */
-export enum SliderEventType {
-  SLIDE_CHANGE = 'SLIDE_CHANGE',
-  ANIMATION_COMPLETE = 'ANIMATION_COMPLETE',
-  SLIDE_INTERACTION = 'SLIDE_INTERACTION',
-  GESTURE_DETECTED = 'GESTURE_DETECTED',
-  ERROR = 'ERROR',
-  ERROR_MAX_RETRIES = 'ERROR_MAX_RETRIES',
-  PERFORMANCE_METRIC = 'PERFORMANCE_METRIC',
-  COMPONENT_MOUNT = 'COMPONENT_MOUNT',
-  COMPONENT_UNMOUNT = 'COMPONENT_UNMOUNT',
-  USER_INTERACTION = 'USER_INTERACTION',
-}
-
-export interface AnalyticsEvent {
-  type: string;
-  category?: string;
-  action?: string;
-  label?: string;
-  value?: number;
-  timestamp?: number;
-  properties?: Record<string, unknown>;
-}
+type SliderEventType =
+  | 'slide_change'
+  | 'animation_start'
+  | 'animation_complete'
+  | 'gesture_start'
+  | 'gesture_end'
+  | 'gesture_detected'
+  | 'error'
+  | 'view'
+  | 'interaction'
+  | 'performance_metric'
+  | 'accessibility_action';
 
 /**
- * Slider-specific analytics event structure
+ * Base event data interface
  */
-export interface SliderAnalyticsEvent
-  extends Omit<AnalyticsEvent, 'timestamp' | 'type'> {
-  type: SliderEventType;
-  timestamp: string;
-  componentId?: string | undefined;
+interface BaseEventData {
+  timestamp: number;
   sessionId: string;
-  data: Record<string, unknown>;
-}
-
-export interface AnalyticsConfig {
-  enabled: boolean;
-  trackingId?: string;
-  debug?: boolean;
-  anonymizeIp?: boolean;
-  trackSlideChanges?: boolean;
-  trackInteractions?: boolean;
-  trackErrors?: boolean;
-  trackPerformance?: boolean;
+  type: SliderEventType;
+  componentId?: string;
 }
 
 /**
- * Extended analytics configuration for slider components
+ * Event-specific data interfaces
  */
-export interface SliderAnalyticsConfig extends AnalyticsConfig {
+interface SlideChangeEventData extends BaseEventData {
+  type: 'slide_change';
+  fromIndex: SlideIndex;
+  toIndex: SlideIndex;
+  slideId: SliderId;
+  isAutoplay: boolean;
+}
+
+interface AnimationEventData extends BaseEventData {
+  type: 'animation_start' | 'animation_complete';
+  duration: number;
+  direction: 'forward' | 'backward';
+}
+
+interface GestureEventData extends BaseEventData {
+  type: 'gesture_start' | 'gesture_end' | 'gesture_detected';
+  direction: 'horizontal' | 'vertical';
+  distance: number;
+  velocity: number;
+}
+
+interface ErrorEventData extends BaseEventData {
+  type: 'error';
+  errorType: ErrorType;
+  message: string;
+  stack?: string;
+}
+
+interface ViewEventData extends BaseEventData {
+  type: 'view';
+  slideId: SliderId;
+  duration: number;
+  isVisible: boolean;
+}
+
+interface InteractionEventData extends BaseEventData {
+  type: 'interaction';
+  action: 'click' | 'hover' | 'focus';
+  target: string;
+  slideId?: SliderId;
+}
+
+interface PerformanceEventData extends BaseEventData {
+  type: 'performance_metric';
+  metricName: string;
+  value: number;
+  unit: string;
+}
+
+interface AccessibilityEventData extends BaseEventData {
+  type: 'accessibility_action';
+  action: string;
+  element: string;
+  role: string;
+}
+
+/**
+ * Union type of all event data
+ */
+type SliderEventData =
+  | SlideChangeEventData
+  | AnimationEventData
+  | GestureEventData
+  | ErrorEventData
+  | ViewEventData
+  | InteractionEventData
+  | PerformanceEventData
+  | AccessibilityEventData;
+
+/**
+ * Analytics configuration
+ */
+interface AnalyticsConfig {
+  enabled: boolean;
   debug: boolean;
+  batchEvents: boolean;
+  batchSize: number;
+  batchInterval: number;
+  enableErrors: boolean;
+  enablePerformance: boolean;
+  enableInteractions: boolean;
   trackPerformance: boolean;
   trackInteractions: boolean;
   trackErrors: boolean;
-  batchSize: number;
-  batchInterval: number;
+  onEvent?: (event: SliderAnalyticsData) => void;
   endpoint?: string;
-  onEvent?: (event: SliderAnalyticsEvent) => void;
-  // Additional properties used in tests
-  enablePerformance?: boolean;
-  enableInteractions?: boolean;
-  enableErrors?: boolean;
-  batchEvents?: boolean;
 }
 
 /**
- * Type aliases for simplified imports in utility files
+ * Analytics provider interface
  */
-export type AnalyticsEventType = SliderAnalyticsEvent;
-export type AnalyticsConfigType = SliderAnalyticsConfig;
+export interface AnalyticsProvider {
+  trackEvent: (event: SliderEventData) => void;
+  getConfig: () => AnalyticsConfig;
+  setConfig: (config: Partial<AnalyticsConfig>) => void;
+  flush: () => Promise<void>;
+}
+
+/** All possible slider event types for analytics */
+type SliderAnalyticsEventType = 
+  | 'slide_change'
+  | 'animation_complete'
+  | 'gesture_detected'
+  | 'error'
+  | 'interaction'
+  | 'performance_metric'
+  | 'accessibility_action';
+
+/** Base analytics data interface */
+interface BaseAnalyticsData {
+  eventType: SliderAnalyticsEventType;
+  timestamp: string;
+  componentId?: string;
+  sessionId?: string;
+}
+
+/** Analytics data for slide changes */
+interface SlideChangeAnalytics extends BaseAnalyticsData {
+  eventType: 'slide_change';
+  fromIndex: SlideIndex;
+  toIndex: SlideIndex;
+  slideId: SliderId;
+  isAutoplay: boolean;
+}
+
+/** Analytics data for animation completion */
+interface AnimationCompleteAnalytics extends BaseAnalyticsData {
+  eventType: 'animation_complete';
+  duration: number;
+  direction: 'forward' | 'backward';
+}
+
+/** Analytics data for gesture detection */
+interface GestureAnalytics extends BaseAnalyticsData {
+  eventType: 'gesture_detected';
+  gestureType: string;
+  direction: 'horizontal' | 'vertical';
+  distance: number;
+  velocity: number;
+}
+
+/** Analytics data for errors */
+interface ErrorAnalytics extends BaseAnalyticsData {
+  eventType: 'error';
+  error: Error;
+  errorType: ErrorType;
+  componentInfo?: {
+    currentIndex: SlideIndex;
+    isAnimating: boolean;
+    isDragging: boolean;
+  };
+}
+
+/** Union type for all slider analytics data */
+type SliderAnalyticsData = 
+  | SlideChangeAnalytics 
+  | AnimationCompleteAnalytics 
+  | GestureAnalytics 
+  | ErrorAnalytics;
+
+// Export all types
+export type {
+  SliderEventType,
+  BaseEventData,
+  SlideChangeEventData,
+  AnimationEventData,
+  GestureEventData,
+  ErrorEventData,
+  ViewEventData,
+  InteractionEventData,
+  PerformanceEventData,
+  AccessibilityEventData,
+  SliderEventData,
+  AnalyticsConfig,
+  SliderAnalyticsEventType,
+  BaseAnalyticsData,
+  SlideChangeAnalytics,
+  AnimationCompleteAnalytics,
+  GestureAnalytics,
+  ErrorAnalytics,
+  SliderAnalyticsData
+};

@@ -1,9 +1,9 @@
 /**
  * Base error class for the kinetic slider
  */
-import { SliderErrorInfo } from '../types/slider';
+import type { SliderErrorInfo, ErrorType, SliderError as ISliderError } from '../types/error';
 
-export class SliderError extends Error {
+export class SliderError extends Error implements ISliderError {
   public readonly code: string;
   public readonly timestamp: string;
   public readonly details?: unknown;
@@ -186,7 +186,7 @@ export function createSliderError(
   return {
     name: baseError.name,
     message: baseError.message,
-    componentStack: '', // This will be filled by React if it's a component error
+    componentStack: '',
     stack: baseError.stack || null,
     code,
     timestamp: new Date().toISOString(),

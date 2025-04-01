@@ -1,34 +1,41 @@
 /**
+ * Branded type utility and all branded types for the application
+ */
+
+/**
  * Branded type utility for type-safe identifiers
  */
 export type Brand<K, T> = K & { __brand: T };
 
 /**
- * Slide identifier type
- */
-export type SlideId = Brand<string, 'SlideId'>;
-
-/**
- * Slider identifier type
+ * Identifier types
  */
 export type SliderId = Brand<string, 'SliderId'>;
-
-/**
- * Component identifier type
- */
 export type ComponentId = Brand<string, 'ComponentId'>;
-
-/**
- * Animation identifier type
- */
 export type AnimationId = Brand<string, 'AnimationId'>;
-
-/**
- * Gesture identifier type
- */
 export type GestureId = Brand<string, 'GestureId'>;
+export type SessionId = Brand<string, 'SessionId'>;
 
 /**
- * Session identifier type
+ * Measurement types
  */
-export type SessionId = Brand<string, 'SessionId'>;
+export type FPS = Brand<number, 'FPS'>;
+export type Milliseconds = Brand<number, 'Milliseconds'>;
+export type ByteSize = Brand<number, 'ByteSize'>;
+export type Duration = Brand<number, 'Duration'>;
+export type Delay = Brand<number, 'Delay'>;
+export type GestureDistance = Brand<number, 'GestureDistance'>;
+export type SlideIndex = Brand<number, 'SlideIndex'>;
+export type GestureVelocity = Brand<number, 'GestureVelocity'>;
+export type GestureThreshold = Brand<number, 'GestureThreshold'>;
+
+/**
+ * Helper functions for creating branded types
+ */
+export function createBrandedId<T extends string>(value: string, brand: T): Brand<string, T> {
+  return value as Brand<string, T>;
+}
+
+export function createBrandedNumber<T extends string>(value: number, brand: T): Brand<number, T> {
+  return value as Brand<number, T>;
+}

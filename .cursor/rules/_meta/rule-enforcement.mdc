@@ -1,7 +1,10 @@
 ---
 description: Rule Enforcement Standards and Exception Management for Modern Web Applications
+version: 1.0.0
 globs: ["**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,mdx,css,scss,html}"]
 alwaysApply: true
+extends: []
+tags: ["meta", "enforcement", "compliance", "exceptions", "policies"]
 ---
 
 # Rule Enforcement Standards
@@ -311,7 +314,7 @@ const userId = user!.id;
 #### ESLint
 - No use of `// eslint-disable` without approval
 - No use of `/* eslint-disable */` for entire files
-- No modification of `.eslint.config.mjs` to bypass rules
+- No modification of `.eslintrc` to bypass rules
 - Always use specific rule disables, never blanket disables
 
 #### TypeScript
@@ -437,5 +440,4 @@ All approved exceptions must be recorded in the central exception registry:
 | Version | ESLint | TypeScript | Prettier | Node.js |
 |---------|--------|------------|----------|---------|
 | 1.0.0   | ≥8.0.0 | ≥4.0.0     | ≥2.0.0   | ≥14.0.0 |
-| 1.1.0   | ≥8.0.0 | ≥5.0.0     | ≥3.0.0   | ≥18.0.0 |
-```
+| 1.1.0   | ≥8.0.0 | ≥5.0.0     | ≥3.0.0   | ≥18.0.0 | 

@@ -32,10 +32,12 @@
     "validate": "pnpm run lint && pnpm run style && pnpm run test",
     "commit": "cz",
     "types:check": "tsc --noEmit",
-    "docs:generate": "typedoc",
+    "docs:generate": "pnpm run clean:docs && typedoc && jsdoc -c .jsdoc.json",
+    "docs:jsdoc": "rimraf docs/jsdoc && jsdoc -c .jsdoc.json",
     "docs:storybook": "storybook dev -p 6006",
     "docs:storybook:build": "storybook build",
     "clean": "rimraf dist .next coverage storybook-static",
+    "clean:docs": "rimraf docs/jsdoc docs/api",
     "typecheck": "tsc --noEmit",
     "audit": "pnpm audit --audit-level=high",
     "precommit": "lint-staged",
@@ -45,7 +47,9 @@
     "bundlewatch": "bundlewatch",
     "analyze": "ANALYZE=true next build",
     "lighthouse": "lighthouse-ci",
-    "security:scan": "snyk test"
+    "security:scan": "snyk test",
+    "lint:jsdoc": "eslint --config eslint.config.ts --ext .ts,.tsx src/ --rule 'jsdoc/require-jsdoc: error'",
+    "clean:comments": "tsx src/scripts/cleanComments.ts"
   },
   "keywords": [
     "react",
@@ -75,8 +79,11 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
+    "@sentry/browser": "9.10.1",
     "@sentry/react": "^9.10.1",
     "@tanstack/react-query": "^5.71.0",
+    "@types/glob": "8.1.0",
+    "glob": "11.0.1",
     "pixi.js": "^8.9.0",
     "zustand": "^5.0.3"
   },
@@ -122,6 +129,7 @@
     "chromatic": "^11.27.0",
     "cssnano": "^7.0.6",
     "eslint": "^9.23.0",
+    "eslint-plugin-jsdoc": "50.6.9",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -131,6 +139,7 @@
     "gsap": "^3.12.7",
     "husky": "^9.1.7",
     "jest-axe": "^10.0.0",
+    "jsdoc": "4.0.4",
     "jsdom": "^26.0.0",
     "lighthouse-ci": "1.13.1",
     "postcss-flexbugs-fixes": "^5.0.2",
@@ -146,6 +155,7 @@
     "snyk": "^1.1296.1",
     "stylelint": "^16.17.0",
     "stylelint-config-standard": "^37.0.0",
+    "tsx": "4.19.3",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.28.0",
     "vite": "^6.2.3",

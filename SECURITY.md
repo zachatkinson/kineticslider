@@ -4,10 +4,73 @@
 
 Use this section to tell people about which versions of your project are currently being supported with security updates.
 
-| Version | Supported          | End of Support    |
-| ------- | ------------------ | ---------------- |
-| 1.x.x   | :white_check_mark: | TBD             |
-| < 1.0.0 | :x:                | Not Supported    |
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.0.x   | :white_check_mark: |
+| < 1.0   | :x:                |
+
+## Reporting a Vulnerability
+
+We take the security of KineticSlider seriously. If you believe you have found a security vulnerability, please follow these steps:
+
+1. **DO NOT** open a public issue
+2. Email your findings to [security@yourdomain.com]
+3. Include as much information as possible:
+   - A description of the vulnerability
+   - Steps to reproduce
+   - Possible impacts
+   - Suggested fixes (if any)
+
+## Security Measures
+
+KineticSlider implements several security measures:
+
+### Input Validation
+- All user inputs are validated and sanitized
+- Type checking is enforced through TypeScript
+- Input length and format restrictions are in place
+
+### XSS Prevention
+- Content Security Policy (CSP) headers
+- HTML sanitization for user-generated content
+- Strict type checking and escaping
+
+### CSRF Protection
+- CSRF tokens for all state-changing operations
+- SameSite cookie attributes
+- Origin validation
+
+### Rate Limiting
+- API rate limiting
+- Exponential backoff for failed attempts
+- Request throttling
+
+## Development Security Guidelines
+
+When contributing to KineticSlider, please follow these security guidelines:
+
+1. Never store sensitive information in the repository
+2. Use environment variables for configuration
+3. Keep dependencies up to date
+4. Follow the principle of least privilege
+5. Write tests for security-critical code
+6. Document security considerations
+
+## Dependency Management
+
+We regularly monitor and update our dependencies for security vulnerabilities:
+
+1. Automated security scanning with GitHub's Dependabot
+2. Regular manual review of dependencies
+3. Prompt patching of known vulnerabilities
+
+## Security Updates
+
+Security updates will be released as soon as possible after a vulnerability is confirmed. Updates will be distributed through:
+
+1. GitHub releases
+2. Security advisories
+3. Email notifications to registered users (for critical updates)
 
 ## Security Update Process
 
@@ -19,48 +82,6 @@ Security updates are released as soon as possible after a vulnerability is confi
 4. Security advisory is drafted
 5. Fix is released along with advisory
 6. Users are notified through our security advisory feed
-
-## Reporting a Vulnerability
-
-We take the security of KineticSlider seriously. If you believe you have found a security vulnerability, please report it to us as described below.
-
-**Please do not report security vulnerabilities through public GitHub issues.**
-
-Instead, please report them via email to [security@kineticslider.dev](mailto:security@kineticslider.dev). 
-
-### Response Timeline
-- Initial Response: Within 48 hours
-- Issue Classification: Within 72 hours
-- Regular Updates: Every 72 hours until resolution
-- Resolution Timeline: Dependent on severity (typically within 1-2 weeks)
-
-If you don't receive a response within 48 hours, please follow up via email to ensure we received your original message.
-
-### Required Information
-
-Please include as much of the following information as possible to help us better understand the nature and scope of the potential issue:
-
-- Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-- Full paths of source file(s) related to the manifestation of the issue
-- The location of the affected source code (tag/branch/commit or direct URL)
-- Any special configuration required to reproduce the issue
-- Step-by-step instructions to reproduce the issue
-- Proof-of-concept or exploit code (if possible)
-- Impact of the issue, including how an attacker might exploit the issue
-- Any known mitigations or workarounds
-
-This information will help us triage your report more quickly.
-
-## Security Measures
-
-KineticSlider implements the following security measures:
-
-- Regular dependency updates and audits
-- Automated vulnerability scanning
-- Code signing for all releases
-- Security-focused code review process
-- Regular penetration testing
-- Automated testing for security-critical features
 
 ## Preferred Languages
 

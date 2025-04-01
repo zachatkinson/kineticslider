@@ -1,24 +1,27 @@
+/**
+ * Storybook type definitions and interfaces
+ */
 import type { Meta as ComponentMeta, StoryObj } from '@storybook/react';
 
 /**
- * Base Story type for all stories
+ * Story type helper
  */
 export type Story<T> = StoryObj<T>;
 
 /**
- * Base Meta type for all stories
+ * Meta type helper
  */
 export type Meta<T> = ComponentMeta<T>;
 
 /**
- * Common story args interface
+ * Story arguments interface
  */
 export interface StoryArgs {
   [key: string]: any;
 }
 
 /**
- * Story context for template binding
+ * Story context interface
  */
 export interface StoryContext<T = any> {
   args: T;

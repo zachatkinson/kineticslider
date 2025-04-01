@@ -1,4 +1,4 @@
-import type { SliderErrorInfo } from '../types/slider';
+import type { SliderErrorInfo } from '../types/error';
 import { SliderError } from './errors';
 import type { ErrorTrackerContext, ErrorTrackerReport } from '../types/error';
 

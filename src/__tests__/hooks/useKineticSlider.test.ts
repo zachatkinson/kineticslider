@@ -1,19 +1,29 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useKineticSlider } from './useKineticSlider';
-import type { Slide } from '@/types/slider';
-import type { SlideId } from '@/types/branded';
+import { useKineticSlider } from '../../hooks/slider/useKineticSlider';
+import type { Slide } from '../../types/slider';
+import type { SliderId } from '../../types/branded';
+import { createSlideId } from '../../utils/id-helpers';
 
-// Helper function to create branded SlideId
-const createSlideId = (id: string): SlideId => id as SlideId;
+// Test data
+const mockSlides: Slide[] = [
+  {
+    id: createSlideId('slide-1'),
+    title: 'Slide 1',
+    description: 'First slide',
+    image: 'image1.jpg',
+    alt: 'First slide image'
+  },
+  {
+    id: createSlideId('slide-2'),
+    title: 'Slide 2',
+    description: 'Second slide',
+    image: 'image2.jpg',
+    alt: 'Second slide image'
+  }
+];
 
 describe('useKineticSlider', () => {
-  const mockSlides: Slide[] = [
-    { id: createSlideId('1'), title: 'Slide 1', image: '/slide1.jpg', alt: 'Slide 1 description' },
-    { id: createSlideId('2'), title: 'Slide 2', image: '/slide2.jpg', alt: 'Slide 2 description' },
-    { id: createSlideId('3'), title: 'Slide 3', image: '/slide3.jpg', alt: 'Slide 3 description' },
-  ];
-
   const defaultProps = {
     slides: mockSlides,
     duration: 0.5,

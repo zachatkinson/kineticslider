@@ -1,23 +1,9 @@
 /* eslint-env vitest */
 import '@testing-library/jest-dom';
 import { afterEach, vi } from 'vitest';
+import type { TouchOptions, MockResizeObserver, MockIntersectionObserver } from '../types/test/mocks';
 
 // Mock Touch class for touch event simulations
-interface TouchOptions {
-  identifier?: number;
-  target?: EventTarget;
-  clientX?: number;
-  clientY?: number;
-  screenX?: number;
-  screenY?: number;
-  pageX?: number;
-  pageY?: number;
-  radiusX?: number;
-  radiusY?: number;
-  rotationAngle?: number;
-  force?: number;
-}
-
 class Touch {
   identifier;
   target;
@@ -51,17 +37,17 @@ class Touch {
 // Add Touch to global
 global.Touch = Touch;
 
-// Setup requestAnimationFrame and cancelAnimationFrame
-global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
-  return setTimeout(() => callback(Date.now()), 0) as unknown as number;
-};
+// Mock requestAnimationFrame and cancelAnimationFrame
+global.requestAnimationFrame = vi.fn((callback: FrameRequestCallback) => {
+  return setTimeout(callback, 0);
+});
 
-global.cancelAnimationFrame = (id: number): void => {
+global.cancelAnimationFrame = vi.fn((id: number) => {
   clearTimeout(id);
-};
+});
 
 // Mock the ResizeObserver
-class ResizeObserver {
+class ResizeObserver implements MockResizeObserver {
   observe = vi.fn();
   unobserve = vi.fn();
   disconnect = vi.fn();
@@ -71,7 +57,7 @@ class ResizeObserver {
 global.ResizeObserver = ResizeObserver;
 
 // Mock IntersectionObserver
-class MockIntersectionObserver implements IntersectionObserver {
+class MockIntersectionObserverImpl implements MockIntersectionObserver {
   readonly root: Element | null;
   readonly rootMargin: string;
   readonly thresholds: ReadonlyArray<number>;
@@ -114,7 +100,7 @@ class MockIntersectionObserver implements IntersectionObserver {
 
 // Add IntersectionObserver to global
 global.IntersectionObserver =
-  MockIntersectionObserver as unknown as typeof IntersectionObserver;
+  MockIntersectionObserverImpl as unknown as typeof IntersectionObserver;
 
 // Mock window.matchMedia
 window.matchMedia = vi.fn().mockImplementation((query: string) => ({

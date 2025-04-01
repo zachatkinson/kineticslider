@@ -1,6 +1,10 @@
 import { ErrorInfo, ReactNode } from 'react';
-
-import type { Slide } from './slider';
+import type { Slide, KineticSliderProps, SlideItem, SliderConfig } from './slider';
+import type { AnimationConfig } from './animation';
+import type { GestureConfig } from './gesture';
+import type { FocusTrapOptions } from './keyboard';
+import type { FocusManagerProps } from './accessibility';
+import type { SlideFormProps } from './form';
 
 /**
  * Props for the fallback render function
@@ -64,11 +68,5 @@ export interface PixiErrorBoundaryState {
   error: Error | null;
 }
 
-/**
- * Props for the SlideForm component
- */
-export interface SlideFormProps {
-  initialSlide?: Partial<Slide>;
-  onSave: (slide: Slide) => void;
-  onCancel: () => void;
-}
+// Re-export component props
+export type { SlideFormProps };

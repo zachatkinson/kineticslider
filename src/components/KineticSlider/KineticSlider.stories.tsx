@@ -1,12 +1,30 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { KineticSlider } from './KineticSlider';
+import type { Meta, Story } from '../../types/storybook';
+import { KineticSlider } from '../KineticSlider';
 import { createSlideId } from '../../__tests__/helpers/testHelpers';
+
+const mockSlides = [
+  {
+    id: createSlideId('slide-1'),
+    src: '/images/slide1.jpg',
+    alt: 'First slide description',
+  },
+  {
+    id: createSlideId('slide-2'),
+    src: '/images/slide2.jpg',
+    alt: 'Second slide description',
+  },
+  {
+    id: createSlideId('slide-3'),
+    src: '/images/slide3.jpg',
+    alt: 'Third slide description',
+  },
+];
 
 const meta = {
   title: 'Components/KineticSlider',
   component: KineticSlider,
   parameters: {
-    layout: 'centered',
+    layout: 'fullscreen',
     docs: {
       description: {
         component: 'A modern, accessible slider component with kinetic scrolling and touch support.',
@@ -39,30 +57,8 @@ const meta = {
 } satisfies Meta<typeof KineticSlider>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const mockSlides = [
-  {
-    id: createSlideId('slide-1'),
-    title: 'First Slide',
-    image: '/images/slide1.jpg',
-    alt: 'First slide description',
-  },
-  {
-    id: createSlideId('slide-2'),
-    title: 'Second Slide',
-    image: '/images/slide2.jpg',
-    alt: 'Second slide description',
-  },
-  {
-    id: createSlideId('slide-3'),
-    title: 'Third Slide',
-    image: '/images/slide3.jpg',
-    alt: 'Third slide description',
-  },
-];
-
-export const Default: Story = {
+export const Default: Story<typeof meta> = {
   args: {
     slides: mockSlides,
     initialSlideIndex: 0,
@@ -71,21 +67,21 @@ export const Default: Story = {
   },
 };
 
-export const WithoutKeyboardNavigation: Story = {
+export const WithoutKeyboardNavigation: Story<typeof meta> = {
   args: {
     ...Default.args,
     enableKeyboardNavigation: false,
   },
 };
 
-export const WithoutInfiniteLoop: Story = {
+export const WithoutInfiniteLoop: Story<typeof meta> = {
   args: {
     ...Default.args,
     enableInfiniteLoop: false,
   },
 };
 
-export const SingleSlide: Story = {
+export const SingleSlide: Story<typeof meta> = {
   args: {
     ...Default.args,
     slides: [mockSlides[0]],

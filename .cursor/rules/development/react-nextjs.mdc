@@ -1,7 +1,18 @@
 ---
 description: React and Next.js Configuration Standards and Best Practices for Modern Web Applications
+version: 1.0.0
 globs: ["**/*.{tsx,jsx}", "**/next.config.{js,ts}", "**/app/**/*"]
 alwaysApply: true
+extends:
+  - core/performance.mdc
+  - core/accessibility.mdc
+  - development/typescript.mdc
+  - development/server-components.mdc
+tags:
+  - react
+  - nextjs
+  - frontend
+  - framework
 ---
 
 # React and Next.js Standards
@@ -315,4 +326,4 @@ export function middleware(request: NextRequest) {
 ## Version Compatibility
 | Version | Node.js | TypeScript | React |
 |---------|---------|------------|-------|
-| 1.0.0   | ≥16.14.0 | ≥5.0.0 | ≥18.2.0 |
+| 1.0.0   | ≥16.14.0 | ≥5.0.0 | ≥18.2.0 | 

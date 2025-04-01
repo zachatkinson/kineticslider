@@ -1,7 +1,6 @@
 import React from 'react';
-
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import type { ErrorBoundaryProps } from '../types/components';
+import type { WithErrorBoundary } from '../types/hoc';
 
 /**
  * Higher-order component that wraps a component with an ErrorBoundary
@@ -12,13 +11,11 @@ import type { ErrorBoundaryProps } from '../types/components';
  */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps: Omit<ErrorBoundaryProps, 'children'>
+  errorBoundaryProps: Parameters<WithErrorBoundary>[1]
 ): React.FC<P> {
-  const WrappedComponent: React.FC<P> = (props: P) =>
+  return (props) =>
     React.createElement(ErrorBoundary, {
       ...errorBoundaryProps,
       children: React.createElement(Component, props),
     });
-
-  return WrappedComponent;
 }

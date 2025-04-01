@@ -3,7 +3,40 @@ import React, { useState } from 'react';
 import FocusManager from './FocusManager';
 
 /**
- * Example component demonstrating focus management in a modal dialog
+ * Example component demonstrating focus management in a modal dialog using the FocusManager component.
+ * This component serves as a reference implementation for proper focus management in modal dialogs.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <FocusRestoreExample />
+ * ```
+ *
+ * @accessibility
+ * - Implements ARIA dialog pattern
+ * - Manages focus trap in modal
+ * - Restores focus on close
+ * - Supports keyboard navigation
+ * - Uses semantic HTML structure
+ * - Provides ARIA labels
+ *
+ * @state
+ * - Manages modal open/close state
+ * - Controls focus state
+ * - Handles dialog visibility
+ *
+ * @events
+ * - Modal open/close events
+ * - Focus trap activation
+ * - Focus restoration
+ * - Escape key handling
+ *
+ * @performance
+ * - Uses React state for modal
+ * - Implements conditional rendering
+ * - Manages DOM focus efficiently
+ *
+ * @see {@link FocusManager} For focus management implementation
  */
 export const FocusRestoreExample: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,6 +68,9 @@ export const FocusRestoreExample: React.FC = () => {
             restoreFocus={true}
             returnFocusTo="#open-modal-button"
             onEscape={closeModal}
+            trapOptions={{
+              fallbackFocus: "#first-button"
+            }}
           >
             <div className="modal" role="dialog" aria-labelledby="modal-title">
               <div className="modal-content">

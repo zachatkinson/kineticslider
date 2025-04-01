@@ -1,90 +1,64 @@
-import { Mock } from 'vitest';
-import type { SlideId } from '@/types/branded';
+import { Mock, vi } from 'vitest';
+import type { SliderId } from '../../types/branded';
+import type { 
+  MockPixiApplication,
+  MockPixiContainer,
+  MockPixiSprite,
+  MockPixiAssets,
+  MockResult
+} from '../../types/test/mocks';
 
-interface MockPixiApplication {
-  renderer: {
-    resize: Mock;
-  };
-  stage: {
-    addChild: Mock;
-  };
-  ticker: {
-    add: Mock;
-  };
-  destroy: Mock;
-}
-
-interface MockPixiContainer {
-  addChild: Mock;
-  destroy: Mock;
-  visible: boolean;
-  alpha: number;
-}
-
-interface MockPixiSprite {
-  anchor: { set: Mock };
-  position: { set: Mock };
-  scale: { set: Mock };
-  destroy: Mock;
-  texture: {
-    width: number;
-    height: number;
+export function createMockPixiApplication(): MockPixiApplication {
+  return {
+    stage: createMockPixiContainer(),
+    renderer: {
+      view: document.createElement('canvas'),
+      resize: vi.fn(),
+    },
+    destroy: vi.fn(),
   };
 }
 
-export interface MockPixiAssets {
-  load: Mock;
+export function createMockPixiContainer(): MockPixiContainer {
+  return {
+    addChild: vi.fn(),
+    removeChild: vi.fn(),
+    children: [],
+  };
 }
 
-type MockResult<T> = {
-  type: 'return' | 'throw';
-  value: T;
-};
+export function createMockPixiSprite(): MockPixiSprite {
+  return {
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    alpha: 1,
+    texture: {
+      baseTexture: {
+        resource: {
+          source: document.createElement('img'),
+        },
+      },
+    },
+  };
+}
 
-export const getMockApp = (mock: Mock): MockPixiApplication => {
-  const results = mock.mock.results as Array<MockResult<MockPixiApplication>>;
-  if (results.length === 0) {
-    throw new Error('Mock app not initialized');
-  }
+export function createMockPixiAssets(): MockPixiAssets {
+  return {
+    load: vi.fn().mockResolvedValue({}),
+    unload: vi.fn(),
+  };
+}
 
-  const firstResult = results[0]!;
-  if (firstResult.type !== 'return') {
-    throw new Error('Mock app initialization failed');
-  }
+export function createSlideId(id: string): SliderId {
+  return id as SliderId;
+}
 
-  return firstResult.value;
-};
-
-export const getMockContainer = (mock: Mock): MockPixiContainer => {
-  const results = mock.mock.results as Array<MockResult<MockPixiContainer>>;
-  if (results.length === 0) {
-    throw new Error('Mock container not initialized');
-  }
-
-  const firstResult = results[0]!;
-  if (firstResult.type !== 'return') {
-    throw new Error('Mock container initialization failed');
-  }
-
-  return firstResult.value;
-};
-
-export const getMockSprite = (mock: Mock): MockPixiSprite => {
-  const results = mock.mock.results as Array<MockResult<MockPixiSprite>>;
-  if (results.length === 0) {
-    throw new Error('Mock sprite not initialized');
-  }
-
-  const firstResult = results[0]!;
-  if (firstResult.type !== 'return') {
-    throw new Error('Mock sprite initialization failed');
-  }
-
-  return firstResult.value;
-};
-
-/**
- * Creates a branded SlideId from a string
- * @param id - The string to convert to a SlideId
- */
-export const createSlideId = (id: string): SlideId => id as SlideId; 
+export function createMockResult<T>(data?: T, error?: Error): MockResult<T> {
+  return {
+    success: !error,
+    data,
+    error,
+  };
+} 

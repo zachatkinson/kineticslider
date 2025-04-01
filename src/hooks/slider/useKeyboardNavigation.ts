@@ -1,0 +1,40 @@
+import React from 'react';
+import { useCallback } from 'react';
+import { useSlider } from '../../context/SliderContext';
+
+export function useKeyboardNavigation(): {
+  handleKeyDown: (event: React.KeyboardEvent) => void;
+};
+
+export function useKeyboardNavigation() {
+  const { state, items, actions } = useSlider();
+
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (state.isAnimating) return;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        event.preventDefault();
+        actions.previous();
+        break;
+      case 'ArrowRight':
+      case 'ArrowDown':
+        event.preventDefault();
+        actions.next();
+        break;
+      case 'Home':
+        event.preventDefault();
+        actions.goTo(0);
+        break;
+      case 'End':
+        event.preventDefault();
+        actions.goTo(items.length - 1);
+        break;
+      default:
+        break;
+    }
+  }, [state.isAnimating, items.length, actions]);
+
+  return { handleKeyDown };
+} 

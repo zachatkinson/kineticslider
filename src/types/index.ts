@@ -1,36 +1,88 @@
 /**
- * Main types export file
+ * Central type exports for the application
  */
 
-// Export all types from separate files
-export * from './slider';
-export * from './gsap';
+// Animation types
+export * from './animation';
+
+// Analytics types
+export * from './analytics';
+
+// Accessibility types
+export {
+  type FocusManagerProps,
+  type AccessibilityAction,
+  type AccessibilityEvent,
+  type AccessibilityConfig,
+  type UseSliderAccessibilityProps
+} from './accessibility';
+
+// Branded types
 export * from './branded';
+
+// Browser types
 export * from './browser';
-export * from './performance';
-export * from './accessibility';
-export * from './hooks';
+
+// Common types
+export * from './common';
+
+// Component types
 export * from './components';
+
+// Error types
+export {
+  type BaseError,
+  type AnimationError,
+  type GestureError,
+  type NavigationError,
+  type RenderError
+} from './error';
+
+// Gesture types
+export * from './gesture';
+
+// GSAP types
+export * from './gsap';
+
+// Hook types
+export {
+  type UseAnimationReturn,
+  type BasicAnimationReturn,
+  type UseAnimationResult,
+  type UseKeyboardReturn,
+  type UsePerformanceReturn,
+  type UseKineticSliderReturn,
+  type UseErrorTrackingReturn,
+  type UsePerformanceOptions,
+  type UseAnimationConfig,
+  type UseKineticSliderProps,
+  type FormValidationOptions
+} from './hooks';
+
+// Keyboard types
 export * from './keyboard';
-export * from './gestures';
-export * from './form-validation';
 
-// Re-export with more specific control to avoid naming conflicts
-export type {
-  AnalyticsEvent,
-  AnalyticsConfig,
-  SliderAnalyticsEvent,
-  SliderAnalyticsConfig,
-  AnalyticsEventType,
-  AnalyticsConfigType,
-} from './analytics';
-export { SliderEventType } from './analytics';
+// Performance types
+export * from './performance';
+export * from './performance-testing';
+export * from './performance-shared';
 
-export type {
-  AnimationConfig,
-  AnimationOptions,
-  BasicAnimationReturn,
-} from './animation';
+// PIXI types
+export * from './pixi';
 
-// Re-export global augmentations
-export * from './global.d';
+// Slider types
+export * from './slider';
+
+// Store types
+export * from './store';
+
+// Storybook types
+export * from './storybook';
+
+// Test types
+export * from './test/mocks';
+
+// Validation types
+export * from './validation';
+
+// Do not export test types or global augmentations

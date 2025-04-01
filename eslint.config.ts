@@ -3,6 +3,7 @@ import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import testingLibraryPlugin from 'eslint-plugin-testing-library';
+import jsdocPlugin from 'eslint-plugin-jsdoc';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -39,6 +40,9 @@ const config: any = tseslint.config(
       react: {
         version: 'detect',
       },
+      jsdoc: {
+        mode: 'typescript',
+      },
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
@@ -46,10 +50,40 @@ const config: any = tseslint.config(
       'react-hooks': reactHooksPlugin,
       'jsx-a11y': jsxA11yPlugin,
       'testing-library': testingLibraryPlugin,
+      jsdoc: jsdocPlugin,
     },
     rules: {
       // Base ESLint rules
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+
+      // JSDoc rules
+      'jsdoc/require-jsdoc': ['error', {
+        publicOnly: true,
+        require: {
+          FunctionDeclaration: true,
+          MethodDefinition: true,
+          ClassDeclaration: true,
+          ArrowFunctionExpression: false,
+          FunctionExpression: false
+        }
+      }],
+      'jsdoc/require-description': ['error', {
+        contexts: ['TSInterfaceDeclaration', 'TSTypeAliasDeclaration', 'ClassDeclaration', 'ClassProperty']
+      }],
+      'jsdoc/require-param': ['error', {
+        checkConstructors: false,
+      }],
+      'jsdoc/require-param-type': 'off',
+      'jsdoc/require-returns': ['error', {
+        checkGetters: true,
+      }],
+      'jsdoc/require-returns-type': 'off',
+      'jsdoc/valid-types': 'error',
+      'jsdoc/check-tag-names': 'error',
+      'jsdoc/check-param-names': 'error',
+      'jsdoc/require-example': ['warn', {
+        contexts: ['TSInterfaceDeclaration', 'ClassDeclaration']
+      }],
 
       // TypeScript rules
       '@typescript-eslint/no-unused-vars': [

@@ -1,7 +1,114 @@
 /**
  * Core slider types and interfaces
  */
-import { SlideId } from './branded';
+import type { GestureConfig, GestureEvent, GestureDelta, GestureDirection } from './gesture';
+import type { AnimationConfig, AnimationEvents, AnimationMetrics } from './animation';
+import type { ErrorType, SliderError, SliderErrorInfo } from './error';
+import type { 
+  SlideIndex, 
+  GestureDistance, 
+  GestureVelocity, 
+  GestureThreshold,
+  SliderId 
+} from './branded';
+import type { SliderEventHandler } from './events';
+
+// Re-export branded types for backward compatibility
+export type { 
+  SlideIndex, 
+  GestureDistance, 
+  GestureVelocity, 
+  GestureThreshold,
+  SliderId,
+  ErrorType,
+  SliderErrorInfo
+};
+
+// Export error types from errors.ts
+export { ErrorType as ErrorTypes };
+
+// Core slide types
+export interface Slide {
+  /** Unique identifier for the slide */
+  id: SliderId;
+  /** Title of the slide */
+  title: string;
+  /** Optional description */
+  description?: string;
+  /** Image URL */
+  image: string;
+  /** Alt text for the image */
+  alt: string;
+  /** Optional custom content */
+  content?: React.ReactNode;
+  /** Optional metadata */
+  metadata?: Record<string, unknown>;
+}
+
+export interface SlideItem {
+  id: SliderId;
+  content: React.ReactNode;
+  metadata?: Record<string, unknown>;
+}
+
+// Accessibility types
+export interface AccessibilityConfig {
+  ariaLabel?: string;
+  keyboardNavigation?: boolean;
+}
+
+// Autoplay types
+export interface AutoplayConfig {
+  enabled: boolean;
+  interval: number;
+  pauseOnHover: boolean;
+}
+
+// Slider configuration
+export interface SliderConfig {
+  initialSlide?: SlideIndex;
+  loop?: boolean;
+  autoplay?: boolean;
+  autoplayDelay?: number;
+  gestureThreshold?: number;
+  gestureDirection?: GestureDirection;
+}
+
+// State types
+export interface SliderState {
+  currentIndex: SlideIndex;
+  isDragging: boolean;
+  dragDelta: GestureDelta;
+  isAnimating: boolean;
+}
+
+// Context value type
+export interface SliderContextValue {
+  state: SliderState;
+  config: SliderConfig;
+  items: SlideItem[];
+  actions: {
+    next: () => void;
+    previous: () => void;
+    goTo: (index: SlideIndex) => void;
+    startAutoplay: () => void;
+    stopAutoplay: () => void;
+    updateDragDelta: (delta: GestureDelta) => void;
+  };
+}
+
+/**
+ * Action types for slider state management
+ */
+export type SliderAction =
+  | { type: 'NEXT' }
+  | { type: 'PREVIOUS' }
+  | { type: 'GO_TO'; index: SlideIndex }
+  | { type: 'START_ANIMATION' }
+  | { type: 'END_ANIMATION' }
+  | { type: 'START_DRAG' }
+  | { type: 'UPDATE_DRAG'; delta: GestureDelta }
+  | { type: 'END_DRAG' };
 
 export interface SliderMetrics {
   currentIndex: number;
@@ -11,94 +118,63 @@ export interface SliderMetrics {
   isAnimating: boolean;
 }
 
-export interface Slide {
-  id: SlideId;
-  title: string;
-  description?: string;
-  image: string;
-  alt: string;
+// Animation configuration types
+export interface SlideAnimation {
+  duration: number;
+  easing: string;
+  delay?: number;
 }
 
+/** Props for the KineticSlider component */
 export interface KineticSliderProps {
+  /** Array of slides to render */
   slides: Slide[];
-  onSlideChange?: (currentIndex: number) => void;
+  /** Initial slide index */
+  initialSlide?: SlideIndex;
+  /** Callback when slide changes */
+  onSlideChange?: (index: SlideIndex) => void;
+  /** Callback when animation completes */
   onAnimationComplete?: () => void;
+  /** Callback when error occurs */
   onError?: (error: Error) => void;
+  /** Additional class name */
   className?: string;
+  /** Additional inline styles */
   style?: React.CSSProperties;
+  /** Enable keyboard navigation */
   enableKeyboard?: boolean;
+  /** Enable gesture support */
   enableGestures?: boolean;
-  initialSlide?: number;
+  /** Animation duration in seconds */
   duration?: number;
+  /** Animation easing function */
   ease?: string;
+  /** Enable infinite loop */
+  infiniteLoop?: boolean;
+  /** Enable lazy loading of slides */
   lazyLoad?: boolean;
-  infiniteLoop?: boolean;
 }
 
 /**
- * Props for the useKineticSlider hook
+ * Default configuration for the slider
  */
-export interface UseKineticSliderProps {
-  slides: Slide[];
-  duration?: number;
-  ease?: string;
-  onSlideChange?: ((index: number) => void) | undefined;
-  onAnimationComplete?: (() => void) | undefined;
-  initialSlide?: number;
-  infiniteLoop?: boolean;
-}
+export const defaultConfig: SliderConfig = {
+  initialSlide: 0 as SlideIndex,
+  loop: true,
+  autoplay: false,
+  autoplayDelay: 3000,
+  gestureThreshold: 50,
+};
 
 /**
- * Extended gesture event for slider interaction
+ * Initial state for the slider reducer
  */
-export interface SliderGestureEvent {
-  clientX: number;
-  clientY: number;
-  type: string;
-  startX?: number;
-  startY?: number;
-  preventDefault?: () => void;
-}
-
-/**
- * Return type for the useKineticSlider hook
- */
-export interface UseKineticSliderReturn {
-  currentSlide: number;
-  isAnimating: boolean;
-  next: () => void;
-  prev: () => void;
-  handleGesture: (event: SliderGestureEvent) => void;
-  sliderRef: React.RefObject<HTMLDivElement>;
-  metrics: SliderMetrics;
-}
-
-/**
- * Extended error information for better error handling
- */
-export interface SliderErrorInfo {
-  componentStack: string;
-  message: string;
-  name: string;
-  stack?: string | null;
-  code: string;
-  timestamp: string;
-  details?: unknown;
-}
-
-/**
- * Analytics data structure for slider events
- */
-export type SliderAnalyticsEvent =
-  | 'slide_change'
-  | 'animation_complete'
-  | 'error'
-  | 'gesture_detected';
-
-export interface SliderAnalyticsData {
-  eventType: SliderAnalyticsEvent;
-  timestamp: string;
-  gestureType?: string;
-  error?: Error;
-  index?: number;
-}
+export const initialState: SliderState = {
+  currentIndex: 0 as SlideIndex,
+  isAnimating: false,
+  isDragging: false,
+  dragDelta: { 
+    x: 0 as GestureDistance, 
+    y: 0 as GestureDistance 
+  },
+};

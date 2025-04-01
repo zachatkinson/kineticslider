@@ -1,13 +1,19 @@
 /**
  * Analytics event types for the slider
  */
-import {
-  AnalyticsConfigType,
-  AnalyticsEventType,
-  SliderEventType,
+import type { 
+  AnalyticsConfig,
+  SliderAnalyticsEventType,
+  GestureAnalytics,
+  SliderAnalyticsData,
+  BaseAnalyticsData,
+  ErrorAnalytics,
+  SliderEventType
 } from '../types/analytics';
+import type { GestureDirection } from '../types/gesture';
+import type { ErrorType } from '../types/error';
 
-const DEFAULT_CONFIG: AnalyticsConfigType = {
+const DEFAULT_CONFIG: AnalyticsConfig = {
   enabled: false,
   debug: false,
   trackPerformance: false,
@@ -26,12 +32,12 @@ const DEFAULT_CONFIG: AnalyticsConfigType = {
  */
 export class AnalyticsManager {
   private static instance: AnalyticsManager;
-  private config: AnalyticsConfigType;
-  private eventQueue: AnalyticsEventType[] = [];
+  private config: AnalyticsConfig;
+  private eventQueue: SliderAnalyticsData[] = [];
   private batchInterval: number | null = null;
   private sessionId: string;
 
-  private constructor(config: Partial<AnalyticsConfigType> = {}) {
+  private constructor(config: Partial<AnalyticsConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.sessionId = this.generateSessionId();
 
@@ -48,7 +54,7 @@ export class AnalyticsManager {
   }
 
   public static getInstance(
-    config?: Partial<AnalyticsConfigType>
+    config?: Partial<AnalyticsConfig>
   ): AnalyticsManager {
     if (!AnalyticsManager.instance) {
       AnalyticsManager.instance = new AnalyticsManager(config);
@@ -56,11 +62,11 @@ export class AnalyticsManager {
     return AnalyticsManager.instance;
   }
 
-  public getConfig(): AnalyticsConfigType {
+  public getConfig(): AnalyticsConfig {
     return { ...this.config };
   }
 
-  public updateConfig(config: Partial<AnalyticsConfigType>): void {
+  public updateConfig(config: Partial<AnalyticsConfig>): void {
     const wasEnabled = this.config.enabled;
     this.config = { ...this.config, ...config };
 
@@ -73,16 +79,19 @@ export class AnalyticsManager {
   }
 
   public trackEvent(
-    event: Omit<AnalyticsEventType, 'timestamp' | 'sessionId'>
+    event: Partial<SliderAnalyticsData>
   ): void {
     if (!this.config.enabled) return;
 
-    const fullEvent: AnalyticsEventType = {
-      ...event,
+    const baseEvent = {
       timestamp: new Date().toISOString(),
-      sessionId: this.sessionId,
-      componentId: event.componentId || undefined,
+      sessionId: this.sessionId
     };
+
+    const fullEvent = {
+      ...baseEvent,
+      ...event
+    } as SliderAnalyticsData;
 
     if (this.config.debug) {
       console.warn('[Analytics]', fullEvent);
@@ -102,17 +111,15 @@ export class AnalyticsManager {
   public trackError(error: Error, context: Record<string, unknown> = {}): void {
     if (!this.config.enabled || !this.config.enableErrors) return;
 
-    this.trackEvent({
-      type: SliderEventType.ERROR,
-      data: {
-        error: {
-          message: error.message,
-          name: error.name,
-          stack: error.stack,
-        },
-        ...context,
-      },
-    });
+    const errorEvent: ErrorAnalytics = {
+      eventType: 'error',
+      error,
+      errorType: 'unknown' as ErrorType,
+      timestamp: new Date().toISOString(),
+      sessionId: this.sessionId
+    };
+
+    this.trackEvent(errorEvent);
   }
 
   public flushEvents(): void {
@@ -143,9 +150,7 @@ export class AnalyticsManager {
     // If a custom event handler is provided, use it
     if (this.config.onEvent) {
       events.forEach((event) => {
-        if (this.config.onEvent) {
-          this.config.onEvent(event);
-        }
+        this.config.onEvent?.(event);
       });
       return;
     }
@@ -158,7 +163,6 @@ export class AnalyticsManager {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(events),
-        // For immediate sends (like before page unload), use sendBeacon if available
         keepalive: immediate,
       };
 
@@ -180,14 +184,21 @@ export class AnalyticsManager {
 // Export singleton instance
 export const analytics = AnalyticsManager.getInstance();
 
-// Helper hooks and utilities
-export const trackEvent = (
-  type: SliderEventType,
+/**
+ * Tracks an analytics event
+ */
+export function trackEvent(
+  type: 'slide_change' | 'animation_complete' | 'gesture_detected' | 'error',
   data: Record<string, unknown> = {},
   componentId?: string
-): void => {
-  analytics.trackEvent({ type, data, componentId });
-};
+): void {
+  const event: Partial<SliderAnalyticsData> = {
+    eventType: type,
+    componentId,
+    ...data
+  };
+  analytics.trackEvent(event);
+}
 
 export const trackError = (
   error: Error,
@@ -196,11 +207,37 @@ export const trackError = (
   analytics.trackError(error, context);
 };
 
-// Export the SliderEventType enum directly
-export { SliderEventType } from '../types/analytics';
+// Export types
+export type { 
+  SliderAnalyticsEventType,
+  SliderAnalyticsData,
+  BaseAnalyticsData,
+  SliderEventType
+} from '../types/analytics';
+export type { GestureDirection } from '../types/gesture';
 
 // Reset the singleton instance for testing purposes
 export const resetAnalyticsForTesting = (): void => {
   // @ts-ignore - accessing private property for testing
   AnalyticsManager.instance = undefined;
 };
+
+/**
+ * Tracks user interaction events for analytics
+ */
+export function trackInteraction(
+  gestureType: string,
+  direction: 'horizontal' | 'vertical',
+  distance: number = 0,
+  velocity: number = 0
+): void {
+  const analyticsData: GestureAnalytics = {
+    eventType: 'gesture_detected',
+    timestamp: new Date().toISOString(),
+    gestureType,
+    direction,
+    distance,
+    velocity
+  };
+  analytics.trackEvent(analyticsData);
+}

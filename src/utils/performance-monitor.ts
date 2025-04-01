@@ -3,16 +3,19 @@ import type { PerformanceMetrics, MetricSummary } from '../types/performance';
 
 /**
  * Performance monitoring utility that tracks various performance metrics
- * and provides analysis capabilities.
+ * and provides analysis capabilities. Implements standardized performance
+ * monitoring patterns and resource management.
  */
 export class PerformanceMonitor {
   private metrics: Partial<PerformanceMetrics> = {};
   private observers: Set<ResizeObserver | IntersectionObserver> = new Set();
   private cleanupTasks: Set<() => void> = new Set();
+  private resourcePools: Map<string, ResourcePool<any>> = new Map();
+  private workerPool: WorkerPool;
 
   /**
-   * Initializes performance monitoring
-   * @param options - Configuration options
+   * Initializes performance monitoring with standardized thresholds
+   * and resource management.
    */
   constructor() {
     // Initialize metric arrays
@@ -20,8 +23,18 @@ export class PerformanceMonitor {
       this.metrics[metric as keyof PerformanceMetrics] = [];
     });
 
+    // Initialize worker pool
+    this.workerPool = new WorkerPool(
+      Math.max(navigator.hardwareConcurrency - 1, 1)
+    );
+
     // Setup cleanup on window unload
-    window.addEventListener('unload', () => this.cleanup());
+    if (typeof window !== 'undefined') {
+      window.addEventListener('unload', () => this.cleanup());
+    }
+
+    // Initialize resource pools
+    this.initializeResourcePools();
   }
 
   /**
@@ -32,11 +45,12 @@ export class PerformanceMonitor {
    */
   private getThresholds() {
     return {
-      FCP: 1800, // Google recommended
-      LCP: 2500, // Google recommended
-      FID: 100, // Google recommended
-      CLS: 0.1, // Google recommended
-      TTI: 3800, // Based on average 4G connection
+      FCP: 1800, // First Contentful Paint
+      LCP: 2500, // Largest Contentful Paint
+      FID: 100, // First Input Delay
+      CLS: 0.1, // Cumulative Layout Shift
+      TTI: 3800, // Time to Interactive
+      TBT: 200, // Total Blocking Time
       fps: 60, // Standard refresh rate
       memoryUsage: 0.8, // 80% of heap size
       cpuUsage: 0.7, // 70% of CPU
@@ -49,6 +63,33 @@ export class PerformanceMonitor {
       droppedFrames: 5, // max 5 dropped frames
       gestureProcessingTime: 50 // 50ms gesture processing
     } as const;
+  }
+
+  /**
+   * Initialize resource pools for common operations
+   */
+  private initializeResourcePools() {
+    // Pool for DOM elements
+    this.resourcePools.set('dom', new ResourcePool(
+      () => document.createElement('div'),
+      (el) => {
+        el.textContent = '';
+        el.className = '';
+        el.removeAttribute('style');
+      },
+      10
+    ));
+
+    // Pool for canvas contexts
+    this.resourcePools.set('canvas', new ResourcePool(
+      () => document.createElement('canvas').getContext('2d'),
+      (ctx) => {
+        ctx.canvas.width = 0;
+        ctx.canvas.height = 0;
+        ctx.clearRect(0, 0, 0, 0);
+      },
+      5
+    ));
   }
 
   /**
@@ -76,8 +117,11 @@ export class PerformanceMonitor {
     const threshold = this.getThresholds()[metric];
     if (threshold && value > threshold) {
       console.warn(`Performance threshold exceeded for ${metric}: ${value}`);
-      // Could integrate with error tracking service here
+      this.reportThresholdViolation(metric, value, threshold);
     }
+
+    // Cleanup old metrics to prevent memory growth
+    this.cleanupOldMetrics(metric);
   }
 
   /**
@@ -137,6 +181,13 @@ export class PerformanceMonitor {
     this.cleanupTasks.forEach((task) => task());
     this.cleanupTasks.clear();
 
+    // Release resource pools
+    this.resourcePools.forEach(pool => pool.releaseAll());
+    this.resourcePools.clear();
+
+    // Terminate worker pool
+    this.workerPool.terminate();
+
     // Clear metrics
     this.metrics = {};
   }
@@ -163,9 +214,10 @@ export class PerformanceMonitor {
    * 3. Calculate FPS as (frames * 1000) / elapsed time
    * 4. Reset counter and start new window
    */
-  public trackFPS(): void {
+  public trackFPS(): () => void {
     let lastTime = performance.now();
     let frames = 0;
+    let rafId: number;
 
     const measure = () => {
       const now = performance.now();
@@ -178,10 +230,11 @@ export class PerformanceMonitor {
         lastTime = now;
       }
 
-      requestAnimationFrame(measure);
+      rafId = requestAnimationFrame(measure);
     };
 
-    requestAnimationFrame(measure);
+    rafId = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(rafId);
   }
 
   /**
@@ -191,9 +244,11 @@ export class PerformanceMonitor {
    * Note: This API is only available in Chromium-based browsers.
    * For other browsers, this method will have no effect.
    */
-  public trackMemory(): void {
+  public trackMemory(): () => void {
+    let intervalId: number;
+
     if ('memory' in performance) {
-      setInterval(() => {
+      intervalId = window.setInterval(() => {
         const memory = (performance as any).memory;
         if (memory) {
           const usage = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
@@ -201,5 +256,142 @@ export class PerformanceMonitor {
         }
       }, 10000);
     }
+
+    return () => clearInterval(intervalId);
+  }
+
+  /**
+   * Report threshold violations for monitoring
+   */
+  private reportThresholdViolation(
+    metric: keyof PerformanceMetrics,
+    value: number,
+    threshold: number
+  ): void {
+    const violation = {
+      metric,
+      value,
+      threshold,
+      timestamp: new Date().toISOString(),
+      url: window.location.href
+    };
+
+    // Send to monitoring service if available
+    if (window.monitoringService) {
+      window.monitoringService.reportViolation(violation);
+    }
+  }
+
+  /**
+   * Clean up old metrics to prevent unbounded memory growth
+   */
+  private cleanupOldMetrics(metric: keyof PerformanceMetrics): void {
+    const MAX_METRICS = 1000;
+    const values = this.metrics[metric];
+    if (values && values.length > MAX_METRICS) {
+      this.metrics[metric] = values.slice(-MAX_METRICS);
+    }
+  }
+}
+
+/**
+ * Resource pool for reusing objects
+ */
+class ResourcePool<T> {
+  private resources: T[] = [];
+  private inUse = new Set<T>();
+
+  constructor(
+    private factory: () => T,
+    private reset: (resource: T) => void,
+    private initialSize: number
+  ) {
+    for (let i = 0; i < initialSize; i++) {
+      this.resources.push(factory());
+    }
+  }
+
+  acquire(): T {
+    let resource = this.resources.pop();
+    if (!resource) {
+      resource = this.factory();
+    }
+    this.inUse.add(resource);
+    return resource;
+  }
+
+  release(resource: T): void {
+    if (this.inUse.has(resource)) {
+      this.reset(resource);
+      this.inUse.delete(resource);
+      this.resources.push(resource);
+    }
+  }
+
+  releaseAll(): void {
+    this.inUse.forEach(resource => this.release(resource));
+  }
+}
+
+/**
+ * Worker pool for offloading heavy computations
+ */
+class WorkerPool {
+  private workers: Worker[] = [];
+  private taskQueue: Array<{
+    task: () => void;
+    resolve: (value: any) => void;
+    reject: (error: any) => void;
+  }> = [];
+  private availableWorkers: Worker[] = [];
+
+  constructor(size: number) {
+    for (let i = 0; i < size; i++) {
+      const worker = new Worker(new URL('../workers/pool-worker.ts', import.meta.url));
+      this.workers.push(worker);
+      this.availableWorkers.push(worker);
+      this.setupWorker(worker);
+    }
+  }
+
+  private setupWorker(worker: Worker): void {
+    worker.onmessage = (event) => {
+      const { result, error } = event.data;
+      const task = this.taskQueue.shift();
+      if (task) {
+        if (error) {
+          task.reject(error);
+        } else {
+          task.resolve(result);
+        }
+      }
+      this.availableWorkers.push(worker);
+      this.processQueue();
+    };
+  }
+
+  private processQueue(): void {
+    while (this.taskQueue.length > 0 && this.availableWorkers.length > 0) {
+      const task = this.taskQueue[0];
+      const worker = this.availableWorkers.pop();
+      if (worker && task) {
+        this.taskQueue.shift();
+        worker.postMessage({ task: task.toString() });
+      }
+    }
+  }
+
+  execute<T>(task: () => T): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.taskQueue.push({ task, resolve, reject });
+      this.processQueue();
+    });
+  }
+
+  terminate(): void {
+    this.workers.forEach(worker => worker.terminate());
+    this.workers = [];
+    this.availableWorkers = [];
+    this.taskQueue = [];
   }
 } 

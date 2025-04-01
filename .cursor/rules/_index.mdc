@@ -58,7 +58,8 @@ alwaysApply: Whether rule should always be applied
 ```
 .cursor/rules/
 ├── _meta/
-│   └── rule-enforcement.mdc
+│   ├── rule-enforcement.mdc
+│   └── cursor-rules.mdc
 ├── core/
 │   ├── accessibility.mdc
 │   ├── analysis-process.mdc
@@ -120,6 +121,7 @@ alwaysApply: Whether rule should always be applied
 
 ### Meta Rules
 - `_meta/rule-enforcement.mdc`: Rules for enforcing rules and managing exceptions
+- `_meta/cursor-rules.mdc`: Standards for cursor rules management and organization
 
 ### Core Rules
 - `core/accessibility.mdc`: Accessibility standards and WCAG compliance
@@ -152,7 +154,7 @@ alwaysApply: Whether rule should always be applied
 
 ### Package-Specific Rules
 - `packages/astro.mdc`: Astro framework configuration and patterns
-- `packages/base-performance.mdc`: Base performance and resource management
+- `packages/base-documentation.mdc`: Base documentation standards and requirements
 - `packages/documentation.mdc`: Documentation standards and JSDoc rules
 - `packages/gsap.mdc`: GSAP animation standards and optimization
 - `packages/pixi.mdc`: Pixi.js rendering and performance standards
@@ -174,6 +176,7 @@ alwaysApply: Whether rule should always be applied
 
 1. Meta Rules (Foundational)
    - rule-enforcement.mdc → Rule enforcement standards
+   - cursor-rules.mdc → Standards for cursor rules management and organization
 
 2. Core Rules (Foundation)
    - code-style.mdc → Base coding standards

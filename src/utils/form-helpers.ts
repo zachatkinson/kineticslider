@@ -1,5 +1,6 @@
 import { VALIDATION_CSS_CLASSES } from '../constants/validation';
-import { ValidationErrorSeverity, ValidationResult } from './validation';
+import { ValidationErrorSeverity, ValidationResult, ValidationErrorType, ValidationErrorCode } from '../types/validation';
+import type { ValidationError } from '../types/validation';
 
 /**
  * Extract error message for a specific field
@@ -16,41 +17,39 @@ export function getFieldError(
 }
 
 /**
- * Get CSS class for form field based on validation state
+ * Get CSS class for a form field based on its validation state
+ * Supports both array of errors and single error
  *
- * @param error - Validation error for the field
- * @param submitted - Whether the form has been submitted
- * @param baseClass - Base CSS class
- * @returns CSS class for the field
+ * @param errors - Validation errors array or single error
+ * @param fieldName - Field name to get class for
+ * @returns CSS class string
  */
 export function getFieldClass(
-  error: ValidationResult['errors'][0] | undefined,
-  submitted: boolean,
-  baseClass: string = VALIDATION_CSS_CLASSES.BASE
+  errors: ValidationResult['errors'] | ValidationError | undefined,
+  fieldName: string
 ): string {
-  if (!submitted) return baseClass;
+  if (Array.isArray(errors)) {
+    const error = errors.find((err) => err.property === fieldName);
+    if (!error) return VALIDATION_CSS_CLASSES.BASE;
+    return error.severity === ValidationErrorSeverity.WARNING
+      ? VALIDATION_CSS_CLASSES.WARNING
+      : VALIDATION_CSS_CLASSES.INVALID;
+  }
 
-  if (!error) return VALIDATION_CSS_CLASSES.VALID;
-
-  return error.severity === ValidationErrorSeverity.WARNING
+  if (!errors) return VALIDATION_CSS_CLASSES.BASE;
+  return errors.severity === ValidationErrorSeverity.WARNING
     ? VALIDATION_CSS_CLASSES.WARNING
     : VALIDATION_CSS_CLASSES.INVALID;
 }
 
 /**
- * Build CSS class for feedback element based on error severity
- *
- * @param error - The validation error
- * @returns CSS class for the feedback element
+ * Get the appropriate feedback class based on validation error
  */
-export function getFeedbackClass(
-  error?: ValidationResult['errors'][0]
-): string {
+export function getFeedbackClass(error?: ValidationError): string {
   if (!error) return '';
-
   return error.severity === ValidationErrorSeverity.WARNING
-    ? VALIDATION_CSS_CLASSES.FEEDBACK_WARNING
-    : VALIDATION_CSS_CLASSES.FEEDBACK_INVALID;
+    ? 'invalid-feedback warning'
+    : 'invalid-feedback';
 }
 
 /**
@@ -84,4 +83,40 @@ export function hasFormCriticalErrors(
       error.severity === ValidationErrorSeverity.ERROR ||
       error.severity === ValidationErrorSeverity.CRITICAL
   );
+}
+
+/**
+ * Validate and submit form data
+ */
+export async function validateAndSubmit<T>(
+  data: T,
+  validateFn: (data: T) => Promise<ValidationResult>,
+  onSave: (data: T) => void,
+  setValidating: (validating: boolean) => void,
+  setValidationResult: (result: ValidationResult) => void,
+  setSubmitted: (submitted: boolean) => void
+): Promise<void> {
+  setValidating(true);
+  setSubmitted(true);
+
+  try {
+    const result = await validateFn(data);
+    setValidationResult(result);
+
+    if (result.valid) {
+      onSave(data);
+    }
+  } catch (error: unknown) {
+    setValidationResult({
+      valid: false,
+      errors: [{
+        type: ValidationErrorType.CUSTOM_VALIDATION_FAILED,
+        code: ValidationErrorCode.CUSTOM_VALIDATION_FAILED,
+        message: 'Validation failed unexpectedly',
+        severity: ValidationErrorSeverity.ERROR
+      }]
+    });
+  } finally {
+    setValidating(false);
+  }
 }
