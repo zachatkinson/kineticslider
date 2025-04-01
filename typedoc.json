@@ -1,0 +1,31 @@
+{
+  "entryPoints": ["./src"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "exclude": ["**/node_modules/**", "**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "externalPattern": ["**/node_modules/**"],
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "default",
+  "categorizeByGroup": true,
+  "categoryOrder": ["Performance", "Types", "Utils", "Components", "*"],
+  "includeVersion": true,
+  "readme": "README.md",
+  "validation": {
+    "invalidLink": true,
+    "notDocumented": true
+  },
+  "sort": ["static-first", "alphabetical"],
+  "treatWarningsAsErrors": false,
+  "skipErrorChecking": true,
+  "tsconfig": "./tsconfig.json",
+  "name": "KineticSlider Documentation",
+  "githubPages": true,
+  "searchInComments": true,
+  "navigationLinks": {
+    "Home": "https://github.com/zach/kineticslider",
+    "GitHub": "https://github.com/zach/kineticslider"
+  }
+}

@@ -15,6 +15,7 @@ import { isObject } from './type-checks';
 import type { ValidationResult } from '../types/validation';
 import type { PerformanceMetrics } from '../types/performance';
 import type { AnimationConfig } from '../types/animation';
+import type { Focusable, InitialFocusable } from '../types/interactable';
 
 /**
  * Checks if a value is a valid SlideId
@@ -72,7 +73,7 @@ export function isValidSlideSchema(value: unknown): value is Slide {
 /**
  * Type guard to check if a value has a focus function
  */
-export function hasFocusFunction(value: unknown): value is { focus: () => void } {
+export function hasFocusFunction(value: unknown): value is Focusable {
   return value !== null && 
          typeof value === 'object' && 
          'focus' in value && 
@@ -82,7 +83,7 @@ export function hasFocusFunction(value: unknown): value is { focus: () => void }
 /**
  * Type guard to check if a value has an initialFocus function
  */
-export function hasInitialFocusFunction(value: unknown): value is { initialFocus: () => void } {
+export function hasInitialFocusFunction(value: unknown): value is InitialFocusable {
   return value !== null && 
          typeof value === 'object' && 
          'initialFocus' in value && 
@@ -97,37 +98,73 @@ export function isNonNullObject(value: unknown): value is Record<string, unknown
 }
 
 /**
- * Type guard for checking if a value is a ValidationResult
+ * Type guard for ValidationResult objects
+ * @param value Value to test
+ * @returns True if the value is a ValidationResult
  */
 export function isValidationResult(value: unknown): value is ValidationResult {
-  if (!isNonNullObject(value)) return false;
-  const result = value as Record<string, unknown>;
   return (
-    'valid' in result &&
-    'errors' in result &&
-    Array.isArray(result.errors)
+    isObject(value) &&
+    'valid' in value &&
+    typeof value.valid === 'boolean' &&
+    'errors' in value &&
+    Array.isArray(value.errors)
   );
 }
 
 /**
- * Type guard for checking if a value is a PerformanceMetrics object
+ * Type guard function to check if a value is a valid PerformanceMetrics object.
+ * 
+ * This function verifies that a given value conforms to the shape of the
+ * PerformanceMetrics interface by checking that it:
+ * 1. Is an object
+ * 2. Has the required properties (fps, memoryUsage, etc.)
+ * 3. Each property has the correct type
+ * 
+ * @param value - The value to check
+ * @returns True if value is a valid PerformanceMetrics object, false otherwise
+ * 
+ * @example
+ * ```ts
+ * // Check if an API response contains valid performance metrics
+ * function processMetrics(data: unknown) {
+ *   if (isPerformanceMetrics(data)) {
+ *     // TypeScript knows data is PerformanceMetrics here
+ *     console.log(`Current FPS: ${data.fps}`);
+ *     console.log(`Memory usage: ${data.memoryUsage} bytes`);
+ *   } else {
+ *     console.error('Invalid performance metrics data');
+ *   }
+ * }
+ * ```
  */
 export function isPerformanceMetrics(value: unknown): value is PerformanceMetrics {
-  if (!isNonNullObject(value)) return false;
-  const metrics = value as Record<string, unknown>;
   return (
-    'fps' in metrics &&
-    'memoryUsage' in metrics
+    isObject(value) &&
+    'fps' in value &&
+    typeof value.fps === 'number' &&
+    'transitionDuration' in value &&
+    typeof value.transitionDuration === 'number' &&
+    'gestureLatency' in value &&
+    typeof value.gestureLatency === 'number' &&
+    'memoryUsage' in value &&
+    typeof value.memoryUsage === 'number'
   );
 }
 
 /**
- * Type guard for checking if a value is an AnimationConfig
+ * Type guard for AnimationConfig objects
+ * @param value Value to test
+ * @returns True if the value is an AnimationConfig
  */
 export function isAnimationConfig(value: unknown): value is AnimationConfig {
-  if (!isNonNullObject(value)) return false;
-  const config = value as Record<string, unknown>;
-  return 'target' in config;
+  return (
+    isObject(value) &&
+    'duration' in value &&
+    typeof value.duration === 'number' &&
+    'easing' in value &&
+    typeof value.easing === 'string'
+  );
 }
 
 /**

@@ -98,6 +98,14 @@ export interface ErrorInfo {
 }
 
 /**
+ * Extended Error interface with additional properties
+ */
+export interface ExtendedError extends Error {
+  code?: string;
+  context?: Record<string, unknown>;
+}
+
+/**
  * Extended Error interface with additional context
  */
 export interface ComponentError extends Error {

@@ -2,12 +2,14 @@
  * GSAP-related test type definitions
  * @module
  * @version 1.0.0
+ * @internal This module contains mock GSAP types used only for testing purposes
  */
 
 import type { Mock } from 'vitest';
 
 /**
  * Mock GSAP interface for testing
+ * @internal
  */
 export interface MockGsap {
   to: Mock;
@@ -22,6 +24,7 @@ export interface MockGsap {
 
 /**
  * Mock GSAP Timeline interface
+ * @internal
  */
 export interface MockGsapTimeline {
   to: Mock;
@@ -37,6 +40,7 @@ export interface MockGsapTimeline {
 
 /**
  * Mock GSAP Tween interface
+ * @internal
  */
 export interface MockGsapTween {
   pause: Mock;

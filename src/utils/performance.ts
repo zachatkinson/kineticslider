@@ -3,23 +3,24 @@
  */
 
 import type { FPS, ByteSize, Milliseconds } from '../types/branded';
-import type { PerformanceMetrics, MetricSummary } from '../types/performance';
+import type { PerformanceMetrics, PerformanceMonitoringOptions } from '../types/performance';
+import type { MetricSummary } from '../types/performance-shared';
 import { calculateMean, calculateMedian, calculateStandardDeviation, calculatePercentile } from './math';
 
 /**
  * Options for performance monitoring configuration
  */
-interface PerformanceMonitoringOptions {
-  /** Enable console logging of performance metrics */
-  enableLogging?: boolean;
-  /** Sampling rate for performance monitoring (0-1) */
-  sampleRate?: number;
-  /** Custom event handlers for performance events */
-  handlers?: {
-    onMeasure?: (name: string, duration: number) => void;
-    onError?: (error: Error) => void;
-  };
-}
+// interface PerformanceMonitoringOptions {
+//   /** Enable console logging of performance metrics */
+//   enableLogging?: boolean;
+//   /** Sampling rate for performance monitoring (0-1) */
+//   sampleRate?: number;
+//   /** Custom event handlers for performance events */
+//   handlers?: {
+//     onMeasure?: (name: string, duration: number) => void;
+//     onError?: (error: Error) => void;
+//   };
+// }
 
 /**
  * Creates a unique component ID for performance tracking
@@ -180,21 +181,31 @@ export function trackRenderTime(
 }
 
 /**
- * Track interaction events for performance monitoring.
+ * Track and measure interaction time for performance monitoring.
  *
- * @param eventName - Name of the interaction event
+ * Records the duration of user interactions like clicks, gestures, and
+ * form submissions to help identify slow event handlers or unresponsive UIs.
+ *
+ * @param eventName - Name of the interaction event (e.g., 'click', 'drag', 'submit')
  * @param duration - Duration of the interaction in milliseconds
- * @param metadata - Additional context about the interaction
+ * @param metadata - Optional additional context about the interaction
  *
  * @example
  * ```ts
- * trackInteraction('click', 150, { target: 'submit-button' });
+ * // Track a button click interaction
+ * button.addEventListener('click', () => {
+ *   const startTime = performance.now();
+ *   
+ *   // Handle the click...
+ *   doSomething();
+ *   
+ *   const duration = performance.now() - startTime;
+ *   trackInteraction('button_click', duration as Milliseconds, { 
+ *     buttonId: 'submit-button',
+ *     context: 'checkout-form' 
+ *   });
+ * });
  * ```
- *
- * @performance
- * - Batches interaction events
- * - Minimal overhead for tracking
- * - Supports custom metadata
  */
 export function trackInteraction(
   eventName: string,
@@ -265,7 +276,56 @@ export function initializePerformanceMonitoring(
 }
 
 /**
- * Create a performance monitor that tracks metrics over time
+ * Create a performance monitor that tracks metrics over time.
+ *
+ * This function sets up continuous monitoring of key performance indicators
+ * such as FPS, memory usage, and animation smoothness. It provides regular
+ * updates of these metrics through the onMetricsUpdate callback.
+ *
+ * @param options - Configuration options for the performance monitor
+ * @param options.onMetricsUpdate - Callback function that receives updated metrics
+ * @param options.trackMemory - Whether to track memory usage (if available in browser)
+ * @param options.includeWebVitals - Whether to include Web Vitals metrics
+ * @param options.updateInterval - Interval in milliseconds for reporting updates
+ * @param options.debug - Enable debug mode for additional logging
+ * @param options.logToConsole - Whether to log metrics to console
+ * @returns A cleanup function that stops monitoring when called
+ *
+ * @example
+ * ```tsx
+ * // Basic usage in a React component
+ * useEffect(() => {
+ *   const cleanup = createPerformanceMonitor({
+ *     onMetricsUpdate: (metrics) => {
+ *       console.log(`Current FPS: ${metrics.fps}`);
+ *       if (metrics.fps < 30) {
+ *         console.warn('Low frame rate detected');
+ *       }
+ *     },
+ *     updateInterval: 2000, // Update every 2 seconds
+ *     trackMemory: true
+ *   });
+ *   
+ *   return cleanup; // Automatically cleaned up on unmount
+ * }, []);
+ * 
+ * // Advanced usage with analytics integration
+ * const cleanup = createPerformanceMonitor({
+ *   onMetricsUpdate: (metrics) => {
+ *     // Send metrics to analytics when they exceed thresholds
+ *     if (metrics.memoryUsage > 100_000_000) { // 100MB
+ *       analytics.track('high_memory_usage', {
+ *         memoryUsage: metrics.memoryUsage,
+ *         fps: metrics.fps,
+ *         url: window.location.href
+ *       });
+ *     }
+ *   },
+ *   trackMemory: true,
+ *   debug: process.env.NODE_ENV === 'development',
+ *   updateInterval: 5000
+ * });
+ * ```
  */
 export function createPerformanceMonitor(options: {
   onMetricsUpdate?: (metrics: PerformanceMetrics) => void;
@@ -350,18 +410,22 @@ export function createPerformanceMonitor(options: {
  */
 export function calculateMetricSummary(values: number[]): MetricSummary {
   if (values.length === 0) return {
-    mean: 0,
+    avg: 0,
     median: 0,
     stdDev: 0,
     p95: 0,
+    min: 0,
+    max: 0,
     count: 0
   };
 
   return {
-    mean: calculateMean(values),
+    avg: calculateMean(values),
     median: calculateMedian(values),
     stdDev: calculateStandardDeviation(values),
     p95: calculatePercentile(values, 95),
+    min: Math.min(...values),
+    max: Math.max(...values),
     count: values.length
   };
 } 

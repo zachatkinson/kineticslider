@@ -1,25 +1,26 @@
 import { useState, useCallback, useRef } from 'react';
 import type { Slide, SliderMetrics } from '../../types/slider';
+import type { UseKineticSliderProps, SliderGestureEvent } from '../../types/hooks';
 import { useErrorTracking } from './useErrorTracking';
 import { ErrorType } from '../../types/error';
 
-interface UseKineticSliderProps {
-  slides: Slide[];
-  duration: number;
-  ease: string;
-  onSlideChange?: (index: number) => void;
-  onAnimationComplete?: () => void;
-  initialSlide?: number;
-  infiniteLoop?: boolean;
-}
+// interface UseKineticSliderProps {
+//   slides: Slide[];
+//   duration: number;
+//   ease: string;
+//   onSlideChange?: (index: number) => void;
+//   onAnimationComplete?: () => void;
+//   initialSlide?: number;
+//   infiniteLoop?: boolean;
+// }
 
-interface GestureEvent {
-  type: string;
-  clientX: number;
-  clientY: number;
-  startX: number;
-  startY: number;
-}
+// interface GestureEvent {
+//   type: string;
+//   clientX: number;
+//   clientY: number;
+//   startX: number;
+//   startY: number;
+// }
 
 export function useKineticSlider({
   slides,
@@ -76,7 +77,7 @@ export function useKineticSlider({
     animateSlide(prevIndex);
   }, [currentSlide, getNextIndex, animateSlide]);
 
-  const handleGesture = useCallback((event: GestureEvent) => {
+  const handleGesture = useCallback((event: SliderGestureEvent) => {
     try {
       if (event.type === 'touchend') {
         const deltaX = event.startX - event.clientX;

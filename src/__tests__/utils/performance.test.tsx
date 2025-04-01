@@ -1,3 +1,11 @@
+/**
+ * Performance testing for KineticSlider component
+ * 
+ * @internal
+ * This file contains performance tests for the KineticSlider component
+ * and is not part of the public API documentation.
+ */
+
 /* eslint-env vitest */
 import '@testing-library/jest-dom/vitest';
 import { render, act } from '@testing-library/react';

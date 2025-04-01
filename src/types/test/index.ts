@@ -2,6 +2,7 @@
  * Test-related type definitions and interfaces
  * @module
  * @version 1.0.0
+ * @internal This module contains types used only for testing purposes
  */
 
 export type * from './pixi';
@@ -9,10 +10,12 @@ export type * from './gsap';
 
 /**
  * Common test utility types
+ * @internal
  */
 
 /**
  * Mock event interface
+ * @internal
  */
 export interface MockEvent {
   preventDefault: () => void;
@@ -23,6 +26,7 @@ export interface MockEvent {
 
 /**
  * Mock touch event interface
+ * @internal
  */
 export interface MockTouchEvent extends MockEvent {
   touches: {
@@ -37,6 +41,7 @@ export interface MockTouchEvent extends MockEvent {
 
 /**
  * Mock mouse event interface
+ * @internal
  */
 export interface MockMouseEvent extends MockEvent {
   clientX: number;
@@ -46,6 +51,7 @@ export interface MockMouseEvent extends MockEvent {
 
 /**
  * Mock intersection observer entry
+ * @internal
  */
 export interface MockIntersectionObserverEntry {
   isIntersecting: boolean;
@@ -59,6 +65,7 @@ export interface MockIntersectionObserverEntry {
 
 /**
  * Mock resize observer entry
+ * @internal
  */
 export interface MockResizeObserverEntry {
   target: Element;
@@ -68,20 +75,29 @@ export interface MockResizeObserverEntry {
   devicePixelContentBoxSize: ReadonlyArray<ResizeObserverSize>;
 }
 
-// Test result types
+/**
+ * Test result type
+ * @internal
+ */
 export type MockResult<T> = {
   type: 'return' | 'throw';
   value: T;
 };
 
-// Test configuration types
+/**
+ * Test configuration interface
+ * @internal
+ */
 export interface TestConfig {
   timeout?: number;
   retries?: number;
   mockBehavior?: 'strict' | 'loose';
 }
 
-// Test event types
+/**
+ * Test event configuration interface
+ * @internal
+ */
 export interface TestEventConfig {
   preventDefault?: boolean;
   stopPropagation?: boolean;
@@ -89,5 +105,8 @@ export interface TestEventConfig {
   cancelable?: boolean;
 }
 
-// Mock function type
+/**
+ * Mock function type
+ * @internal
+ */
 export type Mock = jest.Mock; 

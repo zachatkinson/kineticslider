@@ -5,16 +5,12 @@
  */
 
 import type { ValidationResult } from '../types/validation';
+import type { CacheOptions, CacheEntry } from '../types/cache';
 
-interface CacheEntry<T> {
-  value: T;
-  timestamp: number;
-}
-
-export interface CacheOptions {
-  ttl?: number;
-  maxSize?: number;
-}
+// export interface CacheOptions {
+//   ttl?: number;
+//   maxSize?: number;
+// }
 
 /**
  * Generic cache implementation with TTL and size limits

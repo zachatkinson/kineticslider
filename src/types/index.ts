@@ -59,6 +59,9 @@ export {
   type FormValidationOptions
 } from './hooks';
 
+// Interactable elements types
+export * from './interactable';
+
 // Keyboard types
 export * from './keyboard';
 
@@ -66,6 +69,7 @@ export * from './keyboard';
 export * from './performance';
 export * from './performance-testing';
 export * from './performance-shared';
+export * from './performance-resources';
 
 // PIXI types
 export * from './pixi';

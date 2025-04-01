@@ -7,6 +7,7 @@
 import type { ValidationResult } from '../types/validation';
 import type { PerformanceMetrics } from '../types/performance';
 import type { AnimationConfig } from '../types/animation';
+import type { Focusable, InitialFocusable } from '../types/interactable';
 
 /**
  * Checks if a value is null or undefined
@@ -136,13 +137,13 @@ export function isAnimationConfig(value: unknown): value is AnimationConfig {
 /**
  * Type guard to check if a value has a focus function
  */
-export function hasFocusFunction(value: unknown): value is { focus: () => void } {
+export function hasFocusFunction(value: unknown): value is Focusable {
   return isObject(value) && 'focus' in value && isFunction((value as any).focus);
 }
 
 /**
  * Type guard to check if a value has an initialFocus function
  */
-export function hasInitialFocusFunction(value: unknown): value is { initialFocus: () => void } {
+export function hasInitialFocusFunction(value: unknown): value is InitialFocusable {
   return isObject(value) && 'initialFocus' in value && isFunction((value as any).initialFocus);
 } 

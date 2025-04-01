@@ -1,14 +1,6 @@
 import React from 'react';
 import { trackError as trackAnalyticsError } from './analytics';
-import { ErrorType } from '../types/error';
-
-/**
- * Extended Error interface with additional properties
- */
-interface ExtendedError extends Error {
-  code?: string;
-  context?: Record<string, unknown>;
-}
+import { ErrorType, ExtendedError } from '../types/error';
 
 /**
  * Handles component errors and tracks them for analytics.
@@ -31,7 +23,7 @@ interface ExtendedError extends Error {
  */
 export const handleComponentError = (event: React.SyntheticEvent<HTMLDivElement, Event>) => {
   const error = new Error('Slider render error');
-  trackAnalyticsError(error, ErrorType.RENDER);
+  trackAnalyticsError(error, { errorType: ErrorType.RENDER });
 };
 
 /**
@@ -102,9 +94,9 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
       return fn(...args);
     } catch (error) {
       if (error instanceof Error) {
-        trackAnalyticsError(error, errorType);
+        trackAnalyticsError(error, { errorType });
       } else {
-        trackAnalyticsError(new Error(String(error)), errorType);
+        trackAnalyticsError(new Error(String(error)), { errorType });
       }
       throw error;
     }
@@ -157,7 +149,7 @@ export async function handleAsyncError<T>(
   }
   
   if (lastError) {
-    trackAnalyticsError(lastError, ErrorType.ASYNC);
+    trackAnalyticsError(lastError, { errorType: ErrorType.ASYNC });
     throw lastError;
   }
   

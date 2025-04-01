@@ -2,6 +2,7 @@
  * Performance testing and benchmarking type definitions
  * @module
  * @version 1.0.0
+ * @internal This module contains types used only for performance testing and benchmarking
  * 
  * This module contains types specifically for performance testing and benchmarking.
  * For runtime monitoring types, see performance.ts
@@ -11,7 +12,10 @@
 import type { FeatureFlag } from './feature-flags';
 import type { MetricSummary, BasePerformanceMetric } from './performance-shared';
 
-/** Types of metrics that can be tested */
+/** 
+ * Types of metrics that can be tested 
+ * @internal
+ */
 export enum MetricType {
   RENDER_TIME = 'render-time',
   ANIMATION_SMOOTHNESS = 'animation-smoothness',
@@ -23,13 +27,19 @@ export enum MetricType {
   GESTURE_HANDLING = 'gesture-handling'
 }
 
-/** Implementation types for A/B testing */
+/** 
+ * Implementation types for A/B testing 
+ * @internal
+ */
 export enum ImplementationType {
   LEGACY = 'legacy',
   NEW = 'new'
 }
 
-/** Result of a single performance test */
+/** 
+ * Result of a single performance test 
+ * @internal
+ */
 export interface PerformanceResult {
   name: string;
   duration: number;
@@ -43,7 +53,10 @@ export interface PerformanceResult {
   unit?: string;
 }
 
-/** Configuration for running performance tests */
+/** 
+ * Configuration for running performance tests 
+ * @internal
+ */
 export interface TestConfig {
   name: string;
   iterations: number;
@@ -54,12 +67,18 @@ export interface TestConfig {
   testContext?: unknown;
 }
 
-/** Performance metric with feature flag context */
+/** 
+ * Performance metric with feature flag context 
+ * @internal
+ */
 export interface TestPerformanceMetric extends BasePerformanceMetric {
   featureFlags: Record<FeatureFlag, boolean>;
 }
 
-/** Result of a benchmark test run */
+/** 
+ * Result of a benchmark test run 
+ * @internal
+ */
 export interface BenchmarkResult {
   name: string;
   summary: MetricSummary;

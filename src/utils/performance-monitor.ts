@@ -1,23 +1,125 @@
 import { type Metric } from 'web-vitals';
-import type { PerformanceMetrics, MetricSummary } from '../types/performance';
+import type { PerformanceMetrics } from '../types/performance';
+import type { MetricSummary } from '../types/performance-shared';
+import type { ResourcePoolKey } from '../types/performance-resources';
+import { ResourcePool, WorkerPool } from '../services/resource-management';
 
 /**
- * Performance monitoring utility that tracks various performance metrics
- * and provides analysis capabilities. Implements standardized performance
- * monitoring patterns and resource management.
+ * Monitors performance metrics during application runtime.
+ * 
+ * The PerformanceMonitor class provides utilities for tracking, analyzing, and reporting
+ * various performance metrics including FPS, memory usage, and custom timing measurements.
+ * 
+ * @example
+ * ```ts
+ * // Create a new performance monitor
+ * const monitor = new PerformanceMonitor({
+ *   onUpdate: (metrics) => {
+ *     console.log('Updated metrics:', metrics);
+ *   }
+ * });
+ * 
+ * // Start monitoring FPS and memory usage
+ * const stopFPS = monitor.trackFPS();
+ * const stopMemory = monitor.trackMemory();
+ * 
+ * // Track custom metrics
+ * monitor.track('renderTime', 12.5);
+ * 
+ * // Get a summary of collected metrics
+ * const fpsSummary = monitor.getMetricSummary('fps');
+ * console.log(`Average FPS: ${fpsSummary?.avg || 0}`);
+ * 
+ * // Later, clean up all resources
+ * monitor.cleanup();
+ * 
+ * // Or stop individual tracking
+ * stopFPS();
+ * stopMemory();
+ * ```
  */
 export class PerformanceMonitor {
-  private metrics: Partial<PerformanceMetrics> = {};
+  /**
+   * @internal
+   * Storage for collected metrics
+   */
+  private metrics: Record<string, number[]> = {};
+  
+  /**
+   * @internal
+   * Callback executed when metrics are updated
+   */
+  private onUpdate?: (metrics: Record<string, number[]>) => void;
+  
+  /**
+   * @internal
+   * Flag to track if FPS monitoring is active
+   */
+  private isFPSMonitoring = false;
+  
+  /**
+   * @internal
+   * Flag to track if memory monitoring is active
+   */
+  private isMemoryMonitoring = false;
+  
+  /**
+   * @internal
+   * Interval ID for periodic monitoring
+   */
+  private monitoringIntervalId?: ReturnType<typeof setInterval>;
+  
+  /**
+   * @internal
+   * Animation frame ID for FPS monitoring
+   */
+  private animFrameId?: number;
+  
+  /**
+   * @internal
+   * Stores the count of frames for FPS calculation
+   */
+  private frameCount = 0;
+  
+  /**
+   * @internal
+   * Timestamp of last FPS measurement
+   */
+  private lastFPSUpdateTime = 0;
+  
+  /**
+   * Set of observers used for performance monitoring
+   * @private
+   */
   private observers: Set<ResizeObserver | IntersectionObserver> = new Set();
+  
+  /**
+   * Set of cleanup functions to execute when monitoring ends
+   * @private
+   */
   private cleanupTasks: Set<() => void> = new Set();
-  private resourcePools: Map<string, ResourcePool<any>> = new Map();
+  
+  /**
+   * Map of resource pools by type for efficient object reuse
+   * @private
+   */
+  private resourcePools: Map<ResourcePoolKey, ResourcePool<any>> = new Map();
+  
+  /**
+   * Worker pool for offloading heavy computations
+   * @private
+   */
   private workerPool: WorkerPool;
 
   /**
-   * Initializes performance monitoring with standardized thresholds
-   * and resource management.
+   * Creates a new performance monitor.
+   * 
+   * @param options - Configuration options
+   * @param options.onUpdate - Optional callback invoked when metrics are updated
    */
-  constructor() {
+  constructor(options: { onUpdate?: (metrics: Record<string, number[]>) => void } = {}) {
+    this.onUpdate = options.onUpdate;
+
     // Initialize metric arrays
     Object.keys(this.getThresholds()).forEach((metric) => {
       this.metrics[metric as keyof PerformanceMetrics] = [];
@@ -42,6 +144,7 @@ export class PerformanceMonitor {
    * These thresholds are used to trigger warnings when metrics exceed acceptable values.
    * 
    * @returns {Object} Object containing threshold values for each metric
+   * @private
    */
   private getThresholds() {
     return {
@@ -67,6 +170,9 @@ export class PerformanceMonitor {
 
   /**
    * Initialize resource pools for common operations
+   * Creates and configures pools for DOM elements and canvas contexts
+   * 
+   * @private
    */
   private initializeResourcePools() {
     // Pool for DOM elements
@@ -94,17 +200,29 @@ export class PerformanceMonitor {
 
   /**
    * Track a performance metric value and check against defined thresholds.
-   * If the value exceeds the threshold, a warning is logged.
+   * 
+   * This method records the value of a specified metric and compares it against
+   * predefined thresholds. If the value exceeds the threshold, a warning is logged
+   * and a threshold violation is reported.
    * 
    * @param metric - Name of the metric to track
    * @param value - Numerical value of the measurement
-   * @example
-   * ```typescript
-   * // Track render time
-   * monitor.track('renderTime', performance.now() - startTime);
    * 
-   * // Track memory usage
-   * monitor.track('memoryUsage', performance.memory.usedJSHeapSize);
+   * @example
+   * ```ts
+   * // Track component render time
+   * function MyComponent() {
+   *   const renderStart = performance.now();
+   *   
+   *   // Component logic...
+   *   
+   *   useEffect(() => {
+   *     const renderTime = performance.now() - renderStart;
+   *     monitor.track('renderTime', renderTime);
+   *   }, []);
+   *   
+   *   return <div>My Component</div>;
+   * }
    * ```
    */
   public track(metric: keyof PerformanceMetrics, value: number): void {
@@ -126,16 +244,30 @@ export class PerformanceMonitor {
 
   /**
    * Calculate summary statistics for a specific metric.
-   * Returns null if no measurements exist for the metric.
+   * 
+   * Processes all collected values for a given metric and returns statistical
+   * information including average, percentiles, minimum and maximum values.
    * 
    * @param metric - Name of the metric to summarize
-   * @returns Statistical summary including average, 95th percentile, max, min, and count
+   * @returns Statistical summary or null if no data is available
+   * 
    * @example
-   * ```typescript
+   * ```ts
+   * // Get statistics for FPS measurements
    * const fpsStats = monitor.getMetricSummary('fps');
+   * 
    * if (fpsStats) {
-   *   console.log(`Average FPS: ${fpsStats.avg}`);
-   *   console.log(`95th percentile FPS: ${fpsStats.p95}`);
+   *   console.log(`Average FPS: ${fpsStats.avg.toFixed(1)}`);
+   *   console.log(`Min FPS: ${fpsStats.min}`);
+   *   console.log(`Max FPS: ${fpsStats.max}`);
+   *   console.log(`95th percentile: ${fpsStats.p95}`);
+   *   console.log(`Sample count: ${fpsStats.count}`);
+   * }
+   * 
+   * // Check if render time is within acceptable range
+   * const renderStats = monitor.getMetricSummary('renderTime');
+   * if (renderStats && renderStats.avg > 100) {
+   *   console.warn('Render performance is degraded');
    * }
    * ```
    */
@@ -154,23 +286,82 @@ export class PerformanceMonitor {
   }
 
   /**
-   * Register a cleanup task
-   * @param cleanup - Cleanup function
+   * Register a cleanup task that will be executed when monitor.cleanup() is called.
+   * 
+   * Use this method to register custom cleanup functions that should be executed
+   * when the performance monitor is being cleaned up.
+   * 
+   * @param cleanup - Cleanup function to register
+   * 
+   * @example
+   * ```ts
+   * // Register a custom event listener cleanup
+   * const listener = () => monitor.track('scrollEvent', performance.now());
+   * window.addEventListener('scroll', listener);
+   * 
+   * // Make sure the listener is removed during cleanup
+   * monitor.registerCleanup(() => {
+   *   window.removeEventListener('scroll', listener);
+   * });
+   * ```
    */
   public registerCleanup(cleanup: () => void): void {
     this.cleanupTasks.add(cleanup);
   }
 
   /**
-   * Register an observer for cleanup
-   * @param observer - Observer instance
+   * Register an observer for automatic cleanup when monitor.cleanup() is called.
+   * 
+   * This method keeps track of observers (like ResizeObserver or IntersectionObserver)
+   * and ensures they are properly disconnected during cleanup.
+   * 
+   * @param observer - Observer instance to register
+   * 
+   * @example
+   * ```ts
+   * // Create and register a resize observer
+   * const resizeObserver = new ResizeObserver(entries => {
+   *   entries.forEach(entry => {
+   *     const width = entry.contentRect.width;
+   *     const height = entry.contentRect.height;
+   *     monitor.track('elementResize', width * height);
+   *   });
+   * });
+   * 
+   * // Start observing an element
+   * resizeObserver.observe(document.getElementById('container'));
+   * 
+   * // Register for automatic cleanup
+   * monitor.registerObserver(resizeObserver);
+   * ```
    */
   public registerObserver(observer: ResizeObserver | IntersectionObserver): void {
     this.observers.add(observer);
   }
 
   /**
-   * Clean up all registered resources
+   * Clean up all registered resources and stop all monitoring activities.
+   * 
+   * This method performs a complete cleanup by:
+   * - Disconnecting all registered observers
+   * - Running all registered cleanup tasks
+   * - Releasing all resources from resource pools
+   * - Terminating the worker pool
+   * - Clearing all collected metrics
+   * 
+   * @example
+   * ```ts
+   * // When component unmounts or monitoring is no longer needed
+   * useEffect(() => {
+   *   const monitor = new PerformanceMonitor();
+   *   monitor.trackFPS();
+   *   monitor.trackMemory();
+   *   
+   *   return () => {
+   *     monitor.cleanup();
+   *   };
+   * }, []);
+   * ```
    */
   public cleanup(): void {
     // Clean up observers
@@ -193,8 +384,18 @@ export class PerformanceMonitor {
   }
 
   /**
-   * Track web vitals metrics
-   * @param metric - Web vitals metric
+   * Track web vitals metrics from the web-vitals library
+   * 
+   * @param {Metric} metric - Web vitals metric object
+   * @example
+   * ```typescript
+   * import { onFCP, onLCP } from 'web-vitals';
+   * 
+   * onFCP((metric) => {
+   *   monitor.trackWebVital(metric);
+   * });
+   * ```
+   * @public
    */
   public trackWebVital(metric: Metric): void {
     const metricName = metric.name.toUpperCase() as keyof PerformanceMetrics;
@@ -204,15 +405,28 @@ export class PerformanceMonitor {
   }
 
   /**
-   * Track frames per second over time using requestAnimationFrame.
-   * FPS is calculated by counting frames over a 1-second interval.
-   * Values are automatically tracked and can be accessed via getMetricSummary('fps').
+   * Start monitoring frames per second (FPS).
    * 
-   * Algorithm:
-   * 1. Start a RAF loop
-   * 2. Count frames within each 1-second window
-   * 3. Calculate FPS as (frames * 1000) / elapsed time
-   * 4. Reset counter and start new window
+   * This method uses requestAnimationFrame to calculate the current FPS
+   * and track it over time. It returns a function that can be called to
+   * stop the FPS monitoring.
+   * 
+   * @returns A function that stops FPS monitoring when called
+   * 
+   * @example
+   * ```ts
+   * // Start FPS monitoring
+   * const stopFPSMonitoring = monitor.trackFPS();
+   * 
+   * // Later, stop monitoring if needed
+   * document.getElementById('stop-btn').addEventListener('click', () => {
+   *   stopFPSMonitoring();
+   *   
+   *   // Get the final FPS summary
+   *   const fpsSummary = monitor.getMetricSummary('fps');
+   *   console.log(`Average FPS: ${fpsSummary?.avg || 0}`);
+   * });
+   * ```
    */
   public trackFPS(): () => void {
     let lastTime = performance.now();
@@ -238,11 +452,30 @@ export class PerformanceMonitor {
   }
 
   /**
-   * Track memory usage if the browser supports the memory API.
-   * Measurements are taken every 10 seconds and tracked as a ratio of used/available heap size.
+   * Start monitoring memory usage if available in the browser.
    * 
-   * Note: This API is only available in Chromium-based browsers.
-   * For other browsers, this method will have no effect.
+   * This method tracks memory usage metrics like heap size over time.
+   * It's particularly useful for detecting memory leaks or excessive
+   * memory consumption.
+   * 
+   * Note: Memory API is only available in Chrome and some Chromium-based browsers.
+   * 
+   * @returns A function that stops memory monitoring when called
+   * 
+   * @example
+   * ```ts
+   * // Start memory monitoring with a conditional check
+   * let stopMemoryMonitoring = () => {};
+   * if (performance && (performance as any).memory) {
+   *   stopMemoryMonitoring = monitor.trackMemory();
+   *   console.log('Memory monitoring started');
+   * } else {
+   *   console.log('Memory monitoring not supported in this browser');
+   * }
+   * 
+   * // Stop monitoring when needed
+   * stopMemoryMonitoring();
+   * ```
    */
   public trackMemory(): () => void {
     let intervalId: number;
@@ -261,7 +494,12 @@ export class PerformanceMonitor {
   }
 
   /**
-   * Report threshold violations for monitoring
+   * Report threshold violation to monitoring service if available
+   * 
+   * @param {keyof PerformanceMetrics} metric - The metric that violated the threshold
+   * @param {number} value - The measured value
+   * @param {number} threshold - The threshold that was exceeded
+   * @private
    */
   private reportThresholdViolation(
     metric: keyof PerformanceMetrics,
@@ -283,7 +521,10 @@ export class PerformanceMonitor {
   }
 
   /**
-   * Clean up old metrics to prevent unbounded memory growth
+   * Remove old metrics to prevent excessive memory usage
+   * 
+   * @param {keyof PerformanceMetrics} metric - The metric to clean up
+   * @private
    */
   private cleanupOldMetrics(metric: keyof PerformanceMetrics): void {
     const MAX_METRICS = 1000;
@@ -291,107 +532,5 @@ export class PerformanceMonitor {
     if (values && values.length > MAX_METRICS) {
       this.metrics[metric] = values.slice(-MAX_METRICS);
     }
-  }
-}
-
-/**
- * Resource pool for reusing objects
- */
-class ResourcePool<T> {
-  private resources: T[] = [];
-  private inUse = new Set<T>();
-
-  constructor(
-    private factory: () => T,
-    private reset: (resource: T) => void,
-    private initialSize: number
-  ) {
-    for (let i = 0; i < initialSize; i++) {
-      this.resources.push(factory());
-    }
-  }
-
-  acquire(): T {
-    let resource = this.resources.pop();
-    if (!resource) {
-      resource = this.factory();
-    }
-    this.inUse.add(resource);
-    return resource;
-  }
-
-  release(resource: T): void {
-    if (this.inUse.has(resource)) {
-      this.reset(resource);
-      this.inUse.delete(resource);
-      this.resources.push(resource);
-    }
-  }
-
-  releaseAll(): void {
-    this.inUse.forEach(resource => this.release(resource));
-  }
-}
-
-/**
- * Worker pool for offloading heavy computations
- */
-class WorkerPool {
-  private workers: Worker[] = [];
-  private taskQueue: Array<{
-    task: () => void;
-    resolve: (value: any) => void;
-    reject: (error: any) => void;
-  }> = [];
-  private availableWorkers: Worker[] = [];
-
-  constructor(size: number) {
-    for (let i = 0; i < size; i++) {
-      const worker = new Worker(new URL('../workers/pool-worker.ts', import.meta.url));
-      this.workers.push(worker);
-      this.availableWorkers.push(worker);
-      this.setupWorker(worker);
-    }
-  }
-
-  private setupWorker(worker: Worker): void {
-    worker.onmessage = (event) => {
-      const { result, error } = event.data;
-      const task = this.taskQueue.shift();
-      if (task) {
-        if (error) {
-          task.reject(error);
-        } else {
-          task.resolve(result);
-        }
-      }
-      this.availableWorkers.push(worker);
-      this.processQueue();
-    };
-  }
-
-  private processQueue(): void {
-    while (this.taskQueue.length > 0 && this.availableWorkers.length > 0) {
-      const task = this.taskQueue[0];
-      const worker = this.availableWorkers.pop();
-      if (worker && task) {
-        this.taskQueue.shift();
-        worker.postMessage({ task: task.toString() });
-      }
-    }
-  }
-
-  execute<T>(task: () => T): Promise<T> {
-    return new Promise((resolve, reject) => {
-      this.taskQueue.push({ task, resolve, reject });
-      this.processQueue();
-    });
-  }
-
-  terminate(): void {
-    this.workers.forEach(worker => worker.terminate());
-    this.workers = [];
-    this.availableWorkers = [];
-    this.taskQueue = [];
   }
 } 

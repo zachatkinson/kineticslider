@@ -4,7 +4,7 @@
 import type { AnimationConfig, AnimationOptions, AnimationMetrics } from './animation';
 import type { GestureConfig, GestureDirection, GestureHandlers } from './gesture';
 import type { PerformanceMetrics } from './performance';
-import type { ErrorTypes, Slide, SliderGestureEvent, SliderMetrics } from './slider';
+import type { ErrorTypes, Slide, SliderMetrics } from './slider';
 import type { FocusTrapOptions } from './keyboard';
 import type { gsap } from 'gsap';
 import type { UseSliderAccessibilityProps } from './accessibility';
@@ -154,10 +154,21 @@ export interface UseAnimationConfig {
  * Props for the useKineticSlider hook
  */
 export interface UseKineticSliderProps {
-  initialIndex?: SlideIndex;
-  loop?: boolean;
-  autoplay?: boolean;
-  autoplayDelay?: number;
+  slides: Slide[];
+  duration: number;
+  ease: string;
+  onSlideChange?: (index: number) => void;
+  onAnimationComplete?: () => void;
+  initialSlide?: number;
+  infiniteLoop?: boolean;
+}
+
+/**
+ * Extended GestureEvent for slider interactions
+ */
+export interface SliderGestureEvent extends GestureEvent {
+  startX: number;
+  startY: number;
 }
 
 /**

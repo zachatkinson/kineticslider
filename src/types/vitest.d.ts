@@ -1,14 +1,27 @@
 /// <reference types="vitest" />
 /// <reference types="@testing-library/jest-dom" />
 
+/**
+ * Custom test matchers for Vitest
+ * @internal
+ */
 interface CustomMatchers<R = unknown> {
   toHaveBeenCalledWithDirection(direction: string): R;
 }
 
 declare module 'vitest' {
+  /**
+   * Extended assertion interface with custom matchers
+   * @internal
+   */
   interface Assertion<T = unknown> extends CustomMatchers<T> {
     toBe(expected: unknown): void;
   }
+  
+  /**
+   * Extended asymmetric matchers interface
+   * @internal
+   */
   interface AsymmetricMatchersContaining extends CustomMatchers {
     toBe(expected: unknown): void;
   }
@@ -23,6 +36,10 @@ declare module 'vitest' {
   export const afterEach: typeof import('vitest').afterEach;
   export const vi: typeof import('vitest').vi;
 
+  /**
+   * Extended mock interface for testing
+   * @internal
+   */
   export interface Mock<_T = unknown> {
     (...args: unknown[]): unknown;
     mockImplementation(fn: (...args: unknown[]) => unknown): this;

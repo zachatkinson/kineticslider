@@ -1,320 +1,105 @@
-# KineticSlider API Documentation
+**KineticSlider Documentation v0.1.0**
 
-## Components
+***
 
-### KineticSlider
+# KineticSlider
 
-The main slider component that provides smooth, kinetic scrolling with touch and mouse support.
+A high-performance, accessible React slider component with smooth GSAP animations and touch support.
+
+## Features
+
+- 🎯 Smooth GSAP-powered animations with hardware acceleration
+- 🔄 Infinite looping support
+- 📱 Touch and mouse gesture controls
+- ⌨️ Keyboard navigation support
+- ♿ WCAG 2.1 compliant accessibility
+- 🚀 Performance optimized with transform3d
+- 🎨 Customizable animation settings
+- 📦 TypeScript support
+
+## Installation
+
+```bash
+npm install @gsap/shockingly
+# or
+yarn add @gsap/shockingly
+```
+
+## Usage
 
 ```tsx
-import { KineticSlider } from '@kineticslider/core';
+import { KineticSlider } from './components/KineticSlider';
 
-<KineticSlider
-  slides={slides}
-  initialSlide={0}
-  enableKeyboard
-  enableGestures
-  duration={0.5}
-  ease="power2.out"
-  infiniteLoop
-  lazyLoad
-  onSlideChange={(index) => console.log(`Active slide: ${index}`)}
-  onAnimationComplete={() => console.log('Animation complete')}
-  onError={(error) => console.error('Slider error:', error)}
-/>
-```
-
-#### Props
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| slides | `Slide[]` | Required | Array of slide objects to render |
-| initialSlide | `SlideIndex` | `0` | Initial active slide index |
-| enableKeyboard | `boolean` | `true` | Enable keyboard navigation |
-| enableGestures | `boolean` | `true` | Enable touch/mouse gestures |
-| duration | `number` | `0.5` | Animation duration in seconds |
-| ease | `string` | `'power2.out'` | GSAP easing function |
-| infiniteLoop | `boolean` | `false` | Enable infinite looping |
-| lazyLoad | `boolean` | `true` | Enable lazy loading of slides |
-| onSlideChange | `(index: SlideIndex) => void` | - | Slide change callback |
-| onAnimationComplete | `() => void` | - | Animation complete callback |
-| onError | `(error: Error) => void` | - | Error handling callback |
-
-### FocusManager
-
-A component that manages focus within a container, providing focus trapping and keyboard navigation.
-
-```tsx
-import { FocusManager } from '@kineticslider/core';
-
-<FocusManager
-  trapFocus
-  autoFocus
-  escapeDeactivates
-  onEscape={() => setIsOpen(false)}
->
-  <div role="dialog">
-    <button>First focusable</button>
-    <button>Second focusable</button>
-  </div>
-</FocusManager>
-```
-
-#### Props
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| trapFocus | `boolean` | `false` | Enable focus trapping |
-| autoFocus | `boolean` | `true` | Auto-focus first element |
-| escapeDeactivates | `boolean` | `true` | Allow escape key to deactivate |
-| initialFocus | `string \| HTMLElement` | - | Element to focus initially |
-| returnFocusTo | `string \| HTMLElement` | - | Element to return focus to |
-| onActivate | `() => void` | - | Activation callback |
-| onDeactivate | `() => void` | - | Deactivation callback |
-| onEscape | `() => void` | - | Escape key callback |
-
-## Hooks
-
-### useKineticSlider
-
-```tsx
-const {
-  currentSlide,
-  isAnimating,
-  next,
-  prev,
-  handleGesture,
-  sliderRef
-} = useKineticSlider({
-  slides,
-  initialSlide,
-  onSlideChange,
-  onAnimationComplete,
-  duration,
-  ease,
-  infiniteLoop
-});
-```
-
-### useAnimation
-
-```tsx
-const {
-  isAnimating,
-  play,
-  pause,
-  reverse,
-  restart
-} = useAnimation({
-  duration: 0.5,
-  ease: 'power2.out',
-  onComplete: () => console.log('Animation complete')
-});
-```
-
-### useKeyboard
-
-```tsx
-const {
-  isKeyPressed,
-  lastKey,
-  addKeyBinding,
-  removeKeyBinding
-} = useKeyboard({
-  target: containerRef,
-  preventDefault: true
-});
-```
-
-## Utilities
-
-### Performance
-
-```tsx
-import {
-  trackRenderTime,
-  trackInteraction,
-  createPerformanceId
-} from '@kineticslider/core';
-
-// Track component render time
-const duration = trackRenderTime(
-  startTime,
-  'MyComponent',
-  'Initial render'
-);
-
-// Create unique performance ID
-const id = createPerformanceId('Slider', 'main');
-```
-
-### Error Handling
-
-```tsx
-import {
-  handleComponentError,
-  createError,
-  withErrorHandling,
-  handleAsyncError
-} from '@kineticslider/core';
-
-// Create standardized error
-const error = createError(
-  'Failed to load slide',
-  'SLIDE_LOAD_ERROR',
-  { slideId: '123' }
-);
-
-// Wrap function with error handling
-const safeFunction = withErrorHandling(
-  () => riskyOperation(),
-  ErrorType.OPERATION
-);
-
-// Handle async errors with retry
-const result = await handleAsyncError(
-  () => fetchData(),
-  3,
-  1000
-);
-```
-
-## Types
-
-### Slide
-
-```typescript
-interface Slide {
-  id: string;
-  content: React.ReactNode;
-  metadata?: Record<string, unknown>;
-}
-```
-
-### Error Types
-
-```typescript
-enum ErrorType {
-  RENDER = 'render',
-  ASYNC = 'async',
-  ANIMATION = 'animation',
-  VALIDATION = 'validation',
-  RESOURCE = 'resource',
-  INTERACTION = 'interaction',
-  STATE = 'state',
-  OPERATION = 'operation'
-}
-
-interface ComponentError extends Error {
-  code?: string;
-  type?: ErrorType;
-  severity?: ErrorSeverity;
-  componentInfo?: {
-    name?: string;
-    props?: Record<string, unknown>;
-    state?: Record<string, unknown>;
-  };
-}
-```
-
-## Integration
-
-### With Next.js
-
-```tsx
-// pages/slider.tsx
-import { KineticSlider } from '@kineticslider/core';
-
-export default function SliderPage() {
+function App() {
   return (
     <KineticSlider
-      slides={slides}
-      enableGestures
-      infiniteLoop
+      slides={[
+        {
+          id: 'slide1',
+          content: <div>Slide 1 Content</div>
+        },
+        {
+          id: 'slide2',
+          content: <div>Slide 2 Content</div>
+        },
+        {
+          id: 'slide3',
+          content: <div>Slide 3 Content</div>
+        }
+      ]}
+      options={{
+        duration: 1,
+        ease: "power2.inOut"
+      }}
     />
   );
 }
 ```
 
-### With TypeScript
+## Props
 
-```tsx
-import type {
-  Slide,
-  SlideIndex,
-  KineticSliderProps,
-  UseKineticSliderReturn
-} from '@kineticslider/core';
+### KineticSlider Props
 
-const MySlider: React.FC<KineticSliderProps> = (props) => {
-  // Implementation
-};
-```
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| slides | Slide[] | required | Array of slide objects to be rendered |
+| options | SliderOptions | {} | Configuration options for the slider |
 
-## Error Handling
+### Slide Object
 
-### Error Boundaries
+| Property | Type | Description |
+|------|------|-------------|
+| id | string | Unique identifier for the slide |
+| content | ReactNode | Content to be rendered in the slide |
 
-```tsx
-import { withErrorBoundary } from '@kineticslider/core';
+### SliderOptions
 
-const SafeSlider = withErrorBoundary(KineticSlider, {
-  fallback: <div>Something went wrong</div>,
-  onError: (error) => console.error(error)
-});
-```
+| Property | Type | Default | Description |
+|------|------|---------|-------------|
+| duration | number | 1 | Animation duration in seconds |
+| ease | string | "power2.inOut" | GSAP easing function |
 
-### Async Error Handling
+## Dependencies
 
-```tsx
-try {
-  await handleAsyncError(
-    async () => {
-      const data = await fetchSlides();
-      setSlides(data);
-    },
-    3,
-    1000
-  );
-} catch (error) {
-  console.error('Failed to load slides:', error);
-}
-```
+- React ≥18.0.0
+- GSAP ≥3.12.0
 
-## Performance Optimization
+## Browser Support
 
-### Render Tracking
+Supports all modern browsers (Chrome, Firefox, Safari, Edge) and their mobile variants.
 
-```tsx
-const MyComponent: React.FC = () => {
-  const startTime = performance.now();
-  
-  useEffect(() => {
-    trackRenderTime(
-      startTime,
-      'MyComponent',
-      'Initial render',
-      true
-    );
-  }, []);
-  
-  return <div>Content</div>;
-};
-```
+## Accessibility
 
-### Performance Monitoring
+KineticSlider is built with accessibility in mind:
+- Keyboard navigation using arrow keys
+- ARIA attributes for screen readers
+- Focus management
+- Touch-friendly controls
 
-```tsx
-const cleanup = initializePerformanceMonitoring('MyComponent', {
-  enableLogging: true,
-  sampleRate: 0.1,
-  handlers: {
-    onMeasure: (name, duration) => {
-      console.log(`${name}: ${duration}ms`);
-    }
-  }
-});
+## Contributing
 
-// Cleanup on unmount
-useEffect(() => cleanup, []);
-``` 
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT
