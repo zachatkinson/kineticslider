@@ -1,7 +1,8 @@
-import { ValidationError, ValidationResult } from '../utils/validation';
+import type { ValidationError, ValidationResult } from './validation';
 
 /**
  * Form validation options
+ * @example Example usage
  */
 export interface FormValidationOptions {
   /** Debounce time in milliseconds */
@@ -14,24 +15,25 @@ export interface FormValidationOptions {
 
 /**
  * Form validation state
+ * @example Example usage
  */
-export interface FormValidationState<T> {
-  /** Current validation result */
+export interface FormValidationState<_T> {
+  /** Current validation _result */
   validationResult: ValidationResult;
   /** Whether validation is in progress */
-  validating: boolean;
-  /** Whether form has been submitted */
-  submitted: boolean;
-  /** Set submitted state */
-  setSubmitted: (submitted: boolean) => void;
+  _validating: boolean;
+  /** Whether form has been _submitted */
+  _submitted: boolean;
+  /** Set _submitted state */
+  setSubmitted: (_submitted: boolean) => void;
   /** Get error for specific field */
-  getErrorForField: (fieldName: string) => ValidationError | undefined;
+  getErrorForField: (_fieldName: string) => ValidationError | undefined;
   /** Get field class name based on validation state */
-  getFieldClass: (fieldName: string) => string;
+  getFieldClass: (_fieldName: string) => string;
   /** Check if form has critical errors */
   hasCriticalErrors: () => boolean;
-  /** Set validating state */
-  setValidating: (validating: boolean) => void;
-  /** Set validation result */
-  setValidationResult: (result: ValidationResult) => void;
+  /** Set _validating state */
+  setValidating: (_validating: boolean) => void;
+  /** Set validation _result */
+  setValidationResult: (_result: ValidationResult) => void;
 }

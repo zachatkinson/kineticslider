@@ -1,4 +1,4 @@
-import { SlideId, SliderId } from './branded';
+import { SliderId } from './branded';
 
 /**
  * Common utility types
@@ -14,6 +14,7 @@ export type DeepReadOnly<T> = {
 
 /**
  * Result type for operations that can fail
+ * @example Example usage
  */
 export interface Result<T, E = Error> {
   success: boolean;
@@ -30,25 +31,41 @@ export type SlideTransition = 'fade' | 'slide' | 'zoom' | 'flip' | 'custom';
 export type AnimationEase = 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
 
 // Type Guard Pattern
-export function isError(value: unknown): value is Error {
+/**
+ * Checks if a value is an Error instance
+ * @param value - The value to check
+ * @returns {boolean} True if the value is an Error
+ */
+export function _isError(value: unknown): value is Error {
   return value instanceof Error;
 }
 
+/**
+ * Checks if a value is not null or undefined
+ * @param value - The value to check
+ * @returns {boolean} True if the value is neither null nor undefined
+ */
 export function isNonNullable<T>(value: T): value is NonNullable<T> {
   return value !== null && value !== undefined;
 }
 
-// Creator functions for branded types
-export function createSlideId(id: string): SlideId {
-  if (!id || typeof id !== 'string') {
-    throw new Error('Invalid slide id');
-  }
-  return id as SlideId;
-}
-
-export function createSliderId(id: string): SliderId {
-  if (!id || typeof id !== 'string') {
+/**
+ * Creates a branded SliderId
+ * @param id - The ID string to convert to a SliderId
+ * @returns {SliderId} The branded SliderId
+ */
+export function _createSliderId(id: string): SliderId {
+  if(!id || typeof id !== 'string') {
     throw new Error('Invalid slider id');
   }
   return id as SliderId;
+}
+
+/**
+ * Type guard for SliderId
+ * @param value - The value to check
+ * @returns {boolean} True if the value is a valid SliderId
+ */
+export function _isSliderId(value: unknown): value is SliderId {
+  return typeof value === 'string';
 } 

@@ -2,9 +2,8 @@
  * A high-performance, accessible slider component with gesture and keyboard support.
  * Implements feature flagging and error boundaries for safe rollout.
  * 
- * @component
- * @version 1.0.0
- * @example
+ * @description * @version 1.0.0
+ * @example Example usage
  * ```tsx
  * <Slider
  *   items={[
@@ -19,42 +18,39 @@
  * />
  * ```
  * 
- * @props
+ * @property
  * - items: SlideItem[] - Array of slide items with unique IDs and content
  * - config: SliderConfig - Configuration options for behavior and animations
  * - className?: string - Optional CSS class name for styling
  * - style?: React.CSSProperties - Optional inline styles
  * 
- * @accessibility
- * - Implements ARIA roles and labels
+ * @description * - Implements ARIA roles and labels
  * - Supports keyboard navigation
  * - Announces slide changes
  * - Manages focus states
  * 
- * @performance
- * - Uses requestAnimationFrame for smooth animations
+ * @description * - Uses requestAnimationFrame for smooth animations
  * - Implements touch gesture optimization
  * - Monitors FPS and performance metrics
  * - Lazy loads off-screen content
  * 
- * @error
- * - Implements error boundary protection
+ * @description * - Implements error boundary protection
  * - Tracks and reports errors
  * - Provides fallback UI
  * - Handles animation failures
  * 
- * @security
- * - Sanitizes user inputs
+ * @description * - Sanitizes user inputs
  * - Validates configuration
  * - Implements feature flags
  * 
  * @see useSlider - Context hook for slider state
  * @see SliderContext - State management context
  * @see useGestureHandling - Gesture handling hook
+ * @returns The slider component
  */
 import React, { useEffect, useRef } from 'react';
 import { FeatureErrorBoundary } from '../../../migration-tools/error-boundary';
-import { FeatureFlag } from '../../../migration-tools/feature-flags';
+import { FeatureFlag } from '../../types/feature-flags';
 import { useSlider } from '../../context/SliderContext';
 import type { 
   KineticSliderProps as SliderProps, 
@@ -71,13 +67,37 @@ import { useSliderAnimation } from '../../hooks/slider/useSliderAnimation';
 import { usePerformanceMonitoring } from '../../hooks/slider/usePerformanceMonitoring';
 import { useErrorTracking } from '../../hooks/slider/useErrorTracking';
 import styles from './Slider.module.css';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { useGestures } from '@/hooks/useGestures';
 import { getSlideStyle } from '../../utils/styles';
 
+/**
+ * Slider component with gesture and keyboard support
+ * 
+ * @param root0
+ * @param root0.slides
+ * @param root0.initialSlide
+ * @param root0.onSlideChange
+ * @param root0.onAnimationComplete
+ * @param root0.onError
+ * @param root0.className
+ * @param root0.style
+ * @param root0.enableKeyboard
+ * @param root0.enableGestures
+ * @param root0.duration
+ * @param root0.ease
+ * @param root0.infiniteLoop
+ * @param root0.lazyLoad
+ * @returns The slider component
+ */
 export const Slider: React.FC<SliderProps> = ({ 
   slides, 
   initialSlide,
+   
   onSlideChange,
+   
   onAnimationComplete,
+   
   onError,
   className, 
   style,
@@ -86,6 +106,7 @@ export const Slider: React.FC<SliderProps> = ({
   duration,
   ease,
   infiniteLoop,
+   
   lazyLoad
 }) => {
   return (
@@ -111,26 +132,36 @@ export const Slider: React.FC<SliderProps> = ({
 
 /**
  * Internal slider content component that handles the core slider functionality.
- * Manages gestures, animations, and accessibility features.
+ * Manages: gestures, animations, and accessibility features.
  * 
- * @component
- * @private
+ * @param root0
+ * @param root0.slides
+ * @param root0.initialSlide
+ * @param root0.onSlideChange
+ * @param root0.onAnimationComplete
+ * @param root0.onError
+ * @param root0.className
+ * @param root0.style
+ * @param root0.enableKeyboard
+ * @param root0.enableGestures
+ * @param root0.duration
+ * @param root0.ease
+ * @param root0.infiniteLoop
+ * @param root0.lazyLoad
+ * @description * @private
  * @version 1.0.0
  * 
- * @performance
- * - Optimizes reflows and repaints
+ * @description * - Optimizes reflows and repaints
  * - Uses CSS transforms for animations
  * - Implements gesture debouncing
  * - Monitors render performance
  * 
- * @accessibility
- * - Uses semantic HTML structure
+ * @description * - Uses semantic HTML structure
  * - Implements ARIA attributes
  * - Supports keyboard interactions
  * - Manages focus trapping
  * 
- * @error
- * - Handles gesture errors
+ * @description * - Handles gesture errors
  * - Manages animation failures
  * - Reports performance issues
  * - Implements error tracking
@@ -138,13 +169,17 @@ export const Slider: React.FC<SliderProps> = ({
  * @see useGestureHandling - Gesture management hook
  * @see useSliderAnimation - Animation control hook
  * @see usePerformanceMonitoring - Performance tracking hook
+ * @returns The slider content component
  */
 const SliderContent: React.FC<SliderProps> = ({ 
   slides,
   initialSlide,
-  onSlideChange,
-  onAnimationComplete,
-  onError,
+   
+  onSlideChange: _onSlideChange,
+   
+  onAnimationComplete: _onAnimationComplete,
+   
+  onError: _onError,
   className, 
   style,
   enableKeyboard = true,
@@ -152,32 +187,36 @@ const SliderContent: React.FC<SliderProps> = ({
   duration = 300,
   ease = 'ease-out',
   infiniteLoop = true,
-  lazyLoad = true
+   
+  lazyLoad: _lazyLoad = true
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { state, config, items, actions } = useSlider();
   
   // Ensure ref is not null before passing to hooks
   const safeContainerRef = containerRef as React.RefObject<HTMLDivElement>;
   
-  const sliderConfig: SliderConfig = {
+   
+  const _sliderConfig: SliderConfig = {
     initialSlide: initialSlide,
     loop: infiniteLoop,
     gestureDirection: 'horizontal',
     gestureThreshold: 50
   };
 
-  const accessibilityConfig: AccessibilityConfig = {
+  const _accessibilityConfig: AccessibilityConfig = {
     ariaLabel: 'Image Slider',
     keyboardNavigation: enableKeyboard
   };
 
-  const animationConfig: SlideAnimation = {
+   
+  const _animationConfig: SlideAnimation = {
     duration,
     easing: ease
   };
 
-  const gestureConfig: GestureConfig = {
+  const _gestureConfig: GestureConfig = {
     enabled: enableGestures,
     direction: 'horizontal',
     threshold: createBrandedNumber(50, 'GestureThreshold') as GestureThreshold,
@@ -188,6 +227,15 @@ const SliderContent: React.FC<SliderProps> = ({
   };
 
   // Initialize hooks with safe ref
+  const gestureHandlers = useGestureHandling(safeContainerRef) as {
+    handleTouchStart: (event: React.TouchEvent) => void;
+    handleTouchMove: (event: React.TouchEvent) => void;
+    handleTouchEnd: () => void;
+    handleMouseDown: (event: React.MouseEvent) => void;
+    handleMouseMove: (event: React.MouseEvent) => void;
+    handleMouseUp: () => void;
+  } | undefined;
+  
   const {
     handleTouchStart,
     handleTouchMove,
@@ -195,28 +243,49 @@ const SliderContent: React.FC<SliderProps> = ({
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-  } = useGestureHandling(safeContainerRef);
+  } = gestureHandlers ?? { 
+    handleTouchStart: () => {}, 
+    handleTouchMove: () => {}, 
+    handleTouchEnd: () => {},
+    handleMouseDown: () => {}, 
+    handleMouseMove: () => {}, 
+    handleMouseUp: () => {} 
+  };
 
   const { handleKeyDown } = useKeyboardNavigation();
   const { animateSlide } = useSliderAnimation(safeContainerRef);
   const { getMetrics } = usePerformanceMonitoring();
-  const { trackError, ERROR_TYPES } = useErrorTracking();
+  const errorTracking = useErrorTracking() as {
+    trackError: (error: Error, type: string) => void;
+    ERROR_TYPES: { 
+      ANIMATION: string;
+      RENDER: string;
+    };
+  } | undefined;
+  
+  const { trackError, ERROR_TYPES } = errorTracking ?? { 
+    trackError: () => {}, 
+    ERROR_TYPES: { 
+      ANIMATION: 'animation',
+      RENDER: 'render'
+    } 
+  };
 
   useEffect(() => {
-    if (state.isAnimating && containerRef.current) {
+    if(state.isAnimating && containerRef.current) {
       try {
         animateSlide();
-      } catch (error) {
+      } catch(error) {
         trackError(error as Error, ERROR_TYPES.ANIMATION);
       }
     }
-  }, [state.isAnimating, state.currentIndex, animateSlide, trackError]);
+  }, [state.isAnimating, state.currentIndex, animateSlide, trackError, ERROR_TYPES]);
 
   // Log performance metrics periodically
   useEffect(() => {
     const metricsInterval = setInterval(() => {
       const metrics = getMetrics();
-      if (metrics.fps < 30) {
+      if(metrics.fps < 30) {
         console.warn('Low FPS detected:', metrics);
       }
     }, 5000);
@@ -227,10 +296,12 @@ const SliderContent: React.FC<SliderProps> = ({
   /**
    * Handles slider render errors and reports them to the error tracking system.
    * 
-   * @param {React.SyntheticEvent<HTMLDivElement, Event>} event - The error event
-   * @private
+   * @param _event - The error event
+   * @returns {void} The function return value
    */
-  const handleError = (event: React.SyntheticEvent<HTMLDivElement, Event>) => {
+  const handleError = (
+    _event: React.SyntheticEvent<HTMLDivElement, Event>
+  ): void => {
     const error = new Error('Slider render error');
     trackError(error, ERROR_TYPES.RENDER);
   };
@@ -241,57 +312,68 @@ const SliderContent: React.FC<SliderProps> = ({
       className={`${styles.sliderContainer} ${className || ''}`}
       style={style}
       role="region"
-      aria-label={accessibilityConfig.ariaLabel || 'Image Slider'}
-      tabIndex={0}
-      onKeyDown={accessibilityConfig.keyboardNavigation ? handleKeyDown : undefined}
+      aria-label={_accessibilityConfig.ariaLabel || 'Image Slider'}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      onKeyDown={handleKeyDown}
       onError={handleError}
     >
       <div className={styles.sliderTrack}>
-        {items.map((item, index) => (
+        {slides.map((slide, index) => (
           <div
-            key={item.id}
-            className={styles.slide}
+            key={slide.id}
+            className={`${styles.slide} ${index === state.currentIndex ? 'active' : ''}`}
             style={getSlideStyle({
               index,
               state,
               config: {
-                direction: sliderConfig.gestureDirection || 'horizontal',
-                animation: animationConfig
+                direction: 'horizontal',
+                animation: {
+                  duration,
+                  easing: ease
+                }
               }
             })}
             role="group"
-            aria-label={`Slide ${index + 1} of ${items.length}`}
+            aria-roledescription="slide"
+            aria-label={`Slide ${index + 1} of ${slides.length}`}
             aria-hidden={index !== state.currentIndex}
           >
-            {item.content}
+            {slide.content}
           </div>
         ))}
       </div>
       
-      {sliderConfig.loop && (
+      {!(config as Record<string, unknown>)?.hideNavigation && config !== undefined && (
         <>
           <button
-            className={styles.navButton}
-            onClick={actions.previous}
+            type="button"
+            className={`${styles.navButton} prev`}
             aria-label="Previous slide"
-            disabled={state.isAnimating}
+            aria-controls="slider-container"
+            data-testid="prev-button"
+            disabled={!infiniteLoop && state.currentIndex === 0}
+            onClick={() => actions.previous()}
+            role="button"
           >
-            Previous
+            &lt;
           </button>
+          
           <button
-            className={styles.navButton}
-            onClick={actions.next}
+            type="button"
+            className={`${styles.navButton} next`}
             aria-label="Next slide"
-            disabled={state.isAnimating}
+            aria-controls="slider-container"
+            data-testid="next-button"
+            disabled={!infiniteLoop && state.currentIndex === slides.length - 1}
+            onClick={() => actions.next()}
+            role="button"
           >
-            Next
+            &gt;
           </button>
         </>
       )}
@@ -300,8 +382,14 @@ const SliderContent: React.FC<SliderProps> = ({
 };
 
 /**
- * Type guard to check if a ref's current value is not null
+ * Checks if a ref is not null
+ * 
+ * @param ref The ref to check
+ * @returns true if the ref is not null, false otherwise
  */
-const isRefNotNull = <T,>(ref: React.RefObject<T>): ref is React.RefObject<T> & { current: T } => {
+ 
+const _isRefNotNull = <T,>(ref: React.RefObject<T>): ref is React.RefObject<T> & { current: T } => {
   return ref.current !== null;
-}; 
+};
+
+export default Slider; 

@@ -1,25 +1,23 @@
 /**
  * Form validation constants and configuration module.
- * Provides standardized validation timeouts, error messages, and CSS classes.
+ * Provides standardized validation: timeouts, error: messages, and CSS classes.
  * 
  * @module
  * @version 1.0.0
- * @example
+ * @example Example usage
  * ```typescript
  * import { DEFAULT_VALIDATION_DEBOUNCE, DEFAULT_ERROR_MESSAGES } from './validation';
  * 
- * const validationTimeout = setTimeout(() => {
+ * const _validationTimeout = setTimeout(() () => {
  *   validateForm();
  * }, DEFAULT_VALIDATION_DEBOUNCE);
  * ```
  * 
- * @performance
- * - Optimized debounce timing for form validation
+ * @description * - Optimized debounce timing for form validation
  * - Reusable error messages to reduce memory usage
  * - Consistent CSS class naming for better caching
  * 
- * @security
- * - Sanitized error messages
+ * @description * - Sanitized error messages
  * - Consistent validation patterns
  * - Safe string interpolation
  */
@@ -32,33 +30,32 @@
  * @type {number}
  * @default 300
  * 
- * @example
+ * @example Example usage
  * ```typescript
  * import { DEFAULT_VALIDATION_DEBOUNCE } from './validation';
  * 
- * const debouncedValidation = debounce(validateForm, DEFAULT_VALIDATION_DEBOUNCE);
+ * const _debouncedValidation = debounce(validateForm, DEFAULT_VALIDATION_DEBOUNCE);
  * ```
  */
 export const DEFAULT_VALIDATION_DEBOUNCE = 300;
 
 /**
  * Default error messages for form validation.
- * Provides consistent, user-friendly error messages across the application.
+ * Provides: consistent, user-friendly error messages across the application.
  * 
  * @constant
  * @type {Record<string, string | ((param: number) => string)>}
  * 
- * @example
+ * @example Example usage
  * ```typescript
  * import { DEFAULT_ERROR_MESSAGES } from './validation';
  * 
- * const errorMessage = field.required 
+ * const _errorMessage = field.required 
  *   ? DEFAULT_ERROR_MESSAGES.REQUIRED 
  *   : DEFAULT_ERROR_MESSAGES.MIN_LENGTH(5);
  * ```
  * 
- * @security
- * - Messages are pre-defined to prevent XSS
+ * @description * - Messages are pre-defined to prevent XSS
  * - Safe string interpolation for dynamic values
  */
 export const DEFAULT_ERROR_MESSAGES = {
@@ -81,17 +78,16 @@ export const DEFAULT_ERROR_MESSAGES = {
  * @constant
  * @type {Record<string, string>}
  * 
- * @example
+ * @example Example usage
  * ```typescript
  * import { VALIDATION_CSS_CLASSES } from './validation';
  * 
- * const inputClassName = isValid 
+ * const _inputClassName = isValid 
  *   ? VALIDATION_CSS_CLASSES.VALID 
  *   : VALIDATION_CSS_CLASSES.INVALID;
  * ```
  * 
- * @accessibility
- * - Uses standard Bootstrap validation classes
+ * @description * - Uses standard Bootstrap validation classes
  * - Provides visual feedback for validation states
  * - Supports screen reader announcements
  */

@@ -9,25 +9,9 @@ import type { WindowWithAnalytics } from './performance';
 declare global {
   /**
    * Window interface extensions
+   * @example Example usage
    */
   interface Window extends WindowWithAnalytics {
-    /**
-     * Analytics service
-     */
-    analytics: {
-      track: (event: string, data: Record<string, unknown>) => void;
-    };
-
-    /**
-     * Error tracking service
-     */
-    errorTracker: {
-      captureError: (
-        error: Error | null,
-        context: Record<string, unknown>
-      ) => void;
-    };
-
     /**
      * GSAP instance
      */

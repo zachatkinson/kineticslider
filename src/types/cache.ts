@@ -2,10 +2,11 @@
  * Type definitions for cache utilities and classes
  */
 
-import type { ValidationResult } from './validation';
+import type { ValidationResult as _ValidationResult } from './validation';
 
 /**
  * Cache entry with value and timestamp
+ * @example Example usage
  */
 export interface CacheEntry<T> {
   value: T;
@@ -14,6 +15,7 @@ export interface CacheEntry<T> {
 
 /**
  * Cache entry options configuration
+ * @example Example usage
  */
 export interface CacheOptions {
   /** Time-to-live in milliseconds */
@@ -24,6 +26,7 @@ export interface CacheOptions {
 
 /**
  * Type definition for cache validation
+ * @example Example usage
  */
 export interface CacheValidationOptions extends CacheOptions {
   /** Whether to enable validation caching */

@@ -17,7 +17,8 @@ export type GestureDirection = 'horizontal' | 'vertical' | 'both';
 export type GestureState = 'idle' | 'start' | 'move' | 'end';
 
 /**
- * Gesture event data
+ * Gesture _event data
+ * @example Example usage
  */
 export interface GestureEvent {
   clientX: number;
@@ -30,6 +31,7 @@ export interface GestureEvent {
 
 /**
  * Gesture configuration
+ * @example Example usage
  */
 export interface GestureConfig {
   /** Enable gesture detection */
@@ -44,19 +46,20 @@ export interface GestureConfig {
   maxDistance: GestureDistance;
   /** Whether to prevent default browser behavior */
   preventDefault: boolean;
-  /** Whether to stop event propagation */
+  /** Whether to stop _event propagation */
   stopPropagation: boolean;
 }
 
 /**
  * Gesture handler return type
+ * @example Example usage
  */
 export interface UseGestureReturn {
   state: GestureState;
   direction: GestureDirection | null;
   distance: GestureDistance;
   velocity: GestureVelocity;
-  handleGesture: (event: GestureEvent) => void;
+  handleGesture: (_event: GestureEvent) => void;
 }
 
 // Gesture delta
@@ -67,7 +70,7 @@ export interface GestureDelta {
 
 // Gesture handlers
 export interface GestureHandlers {
-  onGestureStart?: (event: GestureEvent) => void;
-  onGestureMove?: (event: GestureEvent) => void;
-  onGestureEnd?: (event: GestureEvent) => void;
+  onGestureStart?: (_event: GestureEvent) => void;
+  onGestureMove?: (_event: GestureEvent) => void;
+  onGestureEnd?: (_event: GestureEvent) => void;
 } 

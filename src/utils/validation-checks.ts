@@ -4,7 +4,7 @@
  * Utility functions for checking validation states and results
  */
 
-import type { ValidationResult } from '../types/validation';
+import type { ValidationResult, ValidationError } from '../types/validation';
 import { ValidationErrorSeverity } from '../types/validation';
 
 /**
@@ -13,7 +13,7 @@ import { ValidationErrorSeverity } from '../types/validation';
  * @param error - Validation error for the field
  * @returns True if field has a critical error
  */
-export function hasFieldCriticalError(
+export function _hasFieldCriticalError(
   error?: ValidationResult['errors'][0]
 ): boolean {
   if (!error) return false;
@@ -30,11 +30,11 @@ export function hasFieldCriticalError(
  * @param errors - Validation errors array
  * @returns True if form has any critical errors
  */
-export function hasFormCriticalErrors(
+export function _hasFormCriticalErrors(
   errors: ValidationResult['errors']
 ): boolean {
   return errors.some(
-    (error) =>
+    (error: ValidationError) =>
       error.severity === ValidationErrorSeverity.ERROR ||
       error.severity === ValidationErrorSeverity.CRITICAL
   );
@@ -42,40 +42,50 @@ export function hasFormCriticalErrors(
 
 /**
  * Check if validation result has any errors
+ * @param result
+ * @returns {ReturnType} The return value
  */
-export function hasErrors(result: ValidationResult): boolean {
+export function _hasErrors(result: ValidationResult): boolean {
   return !result.valid || result.errors.length > 0;
 }
 
 /**
  * Check if validation result has any errors of a specific severity
+ * @param result
+ * @param severity
+ * @returns {ReturnType} The return value
  */
-export function hasErrorsOfSeverity(
+export function _hasErrorsOfSeverity(
   result: ValidationResult,
   severity: ValidationErrorSeverity
 ): boolean {
-  return result.errors.some((error) => error.severity === severity);
+  return result.errors.some((error: ValidationError) => error.severity === severity);
 }
 
 /**
  * Get all errors of a specific severity from a validation result
+ * @param result
+ * @param severity
+ * @returns {ReturnType} The return value
  */
-export function getErrorsOfSeverity(
+export function _getErrorsOfSeverity(
   result: ValidationResult,
   severity: ValidationErrorSeverity
 ): ValidationResult['errors'] {
-  return result.errors.filter((error) => error.severity === severity);
+  return result.errors.filter((error: ValidationError) => error.severity === severity);
 }
 
 /**
  * Get the most severe error from a validation result
+ * @param result
+ * @returns {ReturnType} The return value
  */
-export function getMostSevereError(
+export function _getMostSevereError(
   result: ValidationResult
 ): ValidationResult['errors'][0] | undefined {
   if (!result.errors.length) return undefined;
 
-  return result.errors.reduce((mostSevere, current) => {
+  return result.errors.reduce((mostSevere: ValidationError | undefined, current: ValidationError) => {
     if (!mostSevere) return current;
     if (!current.severity) return mostSevere;
     if (!mostSevere.severity) return current;
@@ -85,24 +95,30 @@ export function getMostSevereError(
 
 /**
  * Check if validation result has any errors with specific properties
+ * @param result
+ * @param properties
+ * @returns {ReturnType} The return value
  */
-export function hasErrorsWithProperties(
+export function _hasErrorsWithProperties(
   result: ValidationResult,
   properties: string[]
 ): boolean {
-  return result.errors.some((error) =>
-    properties.some((prop) => error.property === prop)
+  return result.errors.some((error: ValidationError) =>
+    properties.some((prop: string) => error.property === prop)
   );
 }
 
 /**
  * Get all errors for specific properties from a validation result
+ * @param result
+ * @param properties
+ * @returns {ReturnType} The return value
  */
-export function getErrorsForProperties(
+export function _getErrorsForProperties(
   result: ValidationResult,
   properties: string[]
 ): ValidationResult['errors'] {
-  return result.errors.filter((error) =>
-    properties.some((prop) => error.property === prop)
+  return result.errors.filter((error: ValidationError) =>
+    properties.some((prop: string) => error.property === prop)
   );
 } 

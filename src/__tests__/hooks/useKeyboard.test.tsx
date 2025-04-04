@@ -1,12 +1,12 @@
 /* eslint-env vitest */
-import { fireEvent, render } from '@testing-library/react';
-import { renderHook } from '@testing-library/react-hooks';
+import { fireEvent, render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import React from 'react';
 import { act } from 'react';
 
 import { useKeyboard } from '../../hooks/useKeyboard';
+import './setup-hooks'; // Import modern setup utilities
 
 describe('useKeyboard Hook', () => {
   let mockElement: HTMLDivElement;
@@ -19,7 +19,7 @@ describe('useKeyboard Hook', () => {
 
   afterEach(() => {
     // Clean up
-    if (mockElement && mockElement.parentNode) {
+    if(mockElement && mockElement.parentNode) {
       mockElement.parentNode.removeChild(mockElement);
     }
     vi.restoreAllMocks();
@@ -28,64 +28,47 @@ describe('useKeyboard Hook', () => {
   it('should initialize without errors', () => {
     const { result } = renderHook(() => useKeyboard());
 
-    expect(result.current.attachToElement).toBeDefined();
-    expect(result.current.focusElement).toBeDefined();
     expect(result.current.trapFocus).toBeDefined();
     expect(result.current.releaseFocus).toBeDefined();
+    expect(result.current.isFocusTrapped).toBeDefined();
   });
 
   it('should handle key events', () => {
     const onLeft = vi.fn();
     const onRight = vi.fn();
 
-    const { result } = renderHook(() =>
-      useKeyboard({
+    // Create a test component that uses the hook
+    const TestComponent = (): React.ReactElement => {
+      const { trapFocus } = useKeyboard({
         onLeft,
         onRight,
-      })
-    );
+      });
+      const divRef = React.useRef<HTMLDivElement>(null);
 
-    // Attach to mock element
+      React.useEffect(() => {
+        if(divRef.current) {
+          trapFocus(divRef.current);
+        }
+      }, [trapFocus]);
+
+      return <div data-testid="test-container" ref={divRef} tabIndex={0} />;
+    };
+
+    // Render the component
+    const { getByTestId } = render(<TestComponent />);
+    const container = getByTestId('test-container');
+    
+    // Focus the container to ensure it receives keyboard events
     act(() => {
-      result.current.attachToElement(mockElement);
+      container.focus();
     });
 
-    // Simulate key press
-    act(() => {
-      const leftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
-      mockElement.dispatchEvent(leftEvent);
-    });
-
+    // Use fireEvent to simulate keyDown events
+    fireEvent.keyDown(container, { key: 'ArrowLeft' });
     expect(onLeft).toHaveBeenCalledTimes(1);
-
-    // Simulate another key press
-    act(() => {
-      const rightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight' });
-      mockElement.dispatchEvent(rightEvent);
-    });
-
+    
+    fireEvent.keyDown(container, { key: 'ArrowRight' });
     expect(onRight).toHaveBeenCalledTimes(1);
-  });
-
-  it('should focus an element', () => {
-    const { result } = renderHook(() => useKeyboard());
-
-    // Create a button to focus
-    const button = document.createElement('button');
-    document.body.appendChild(button);
-
-    // Mock focus method
-    const focusSpy = vi.spyOn(button, 'focus');
-
-    // Focus the element
-    act(() => {
-      result.current.focusElement(button);
-    });
-
-    expect(focusSpy).toHaveBeenCalledTimes(1);
-
-    // Clean up
-    document.body.removeChild(button);
   });
 
   it('should trap and release focus', () => {
@@ -124,12 +107,12 @@ describe('useKeyboard Hook', () => {
 
   it('should handle tab key in trapped focus', () => {
     // Create a custom test component with the hook
-    const TestComponent = (): JSX.Element => {
+    const TestComponent = (): React.ReactElement => {
       const { trapFocus } = useKeyboard();
       const containerRef = React.useRef<HTMLDivElement>(null);
 
       React.useEffect(() => {
-        if (containerRef.current) {
+        if(containerRef.current) {
           trapFocus(containerRef.current);
         }
       }, [trapFocus]);
@@ -171,9 +154,9 @@ describe('useKeyboard Hook', () => {
 
     const { result, unmount } = renderHook(() => useKeyboard());
 
-    // Attach to mock element
+    // Attach to mock element using trapFocus
     act(() => {
-      result.current.attachToElement(mockElement);
+      result.current.trapFocus(mockElement);
     });
 
     // Unmount component

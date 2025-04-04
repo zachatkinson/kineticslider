@@ -3,52 +3,94 @@
  */
 
 /**
- * Safely parses JSON without throwing exceptions
- * @param value - The string to parse
- * @param fallback - Optional fallback value if parsing fails
- * @returns The parsed object or fallback value
+ * Safely parses a JSON string. 
+ * Returns the fallback value if parsing fails or if the input is not a string.
+ * @param value - The JSON string to parse
+ * @param fallback - A fallback value to return if parsing fails
+ * @returns The parsed object or the provided fallback value
  */
 export function safeJsonParse<T>(value: string, fallback: T): T;
+
+/**
+ * Safely parses a JSON string.
+ * Returns null if parsing fails or if the input is not a string.
+ * @param value - The JSON string to parse
+ * @returns The parsed object or null if parsing fails
+ */
 export function safeJsonParse<T>(value: string): T | null;
+
+/**
+ * Safely parses a JSON string.
+ * @param value - The JSON string to parse
+ * @param fallback - A fallback value to return if parsing fails
+ * @returns The parsed object, the fallback value, or null
+ */
 export function safeJsonParse<T>(value: string, fallback?: T): T | null {
+  if (typeof value !== 'string') {
+    return fallback ?? null;
+  }
+
   try {
-    return JSON.parse(value) as T;
-  } catch (error) {
-    return fallback !== undefined ? fallback : null;
+    return JSON.parse(value);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars  
+  } catch (_) {
+    return fallback ?? null;
   }
 }
 
 /**
- * Safely stringifies a value to JSON
+ * Safely stringifies a value to JSON.
  * @param value - The value to stringify
- * @param fallback - Optional fallback string if stringification fails
- * @returns The stringified value or fallback
+ * @param fallback - A fallback string to return if stringification fails
+ * @returns The stringified value or the fallback string if stringification fails
  */
 export function safeJsonStringify(value: unknown, fallback: string = ''): string {
   try {
     return JSON.stringify(value);
-  } catch (error) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_) {
     return fallback;
   }
 }
 
 /**
- * Safely gets a nested property from an object using a path string
- * @param obj - The object to get the property from
- * @param path - The path to the property (e.g. 'user.address.city')
- * @param defaultValue - Optional default value if property doesn't exist
- * @returns The property value or default value
+ * Helper function to safely get a nested property from an object using a path string.
+ * Path can be dot notation like 'a.b.c' or array notation like 'a[0].b.c[1]'.
+ * @param obj - Object to get value from
+ * @param path - Path to property, using dot notation, can include array indices as [0]
+ * @param defaultValue - Default value to return if the property does not exist
+ * @returns The property value or the default value if the property does not exist
  */
 export function safeGet<T>(
   obj: Record<string, unknown>,
   path: string,
   defaultValue: T
 ): T {
-  try {
-    return path.split('.').reduce((acc: any, key: string) => {
-      return acc?.[key];
-    }, obj) ?? defaultValue;
-  } catch {
+  if (!obj || !path) {
     return defaultValue;
   }
+
+  // Match any property name or array index inside brackets
+  const parts = path
+    .replace(/\[(\w+)\]/g, '.$1') // convert [0] to .0
+    .replace(/^\./, '') // strip leading dot
+    .split('.');
+
+  let current: unknown = obj;
+
+  for (const part of parts) {
+    if (current === null || current === undefined) {
+      return defaultValue;
+    }
+
+    if (typeof current !== 'object') {
+      return defaultValue;
+    }
+
+    current = (current as Record<string, unknown>)[part];
+  }
+
+  return current !== undefined && current !== null
+    ? (current as T)
+    : defaultValue;
 } 

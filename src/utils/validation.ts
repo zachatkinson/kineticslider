@@ -2,407 +2,786 @@
  * Core validation utilities
  */
 
-import type { ValidationResult, ValidationContext, Validator, AsyncValidator, SchemaField, Schema, ValidationError } from '../types/validation';
-import { ValidationErrorType, ValidationErrorCode, ValidationErrorSeverity } from '../types/validation';
-import type { SliderId, ComponentId } from '../types/branded';
-import { isObject } from './type-checks';
-import { validateStringConstraints, validateNumberConstraints, validateRequiredFields, validateAgainstSchemaField } from './validation-helpers';
-import { createSlideId, createComponentId } from './id-helpers';
-import { globalValidationCache as validationCache } from './cache';
-import type { CacheOptions } from './cache';
-import { getFieldClass as getFieldClassByErrors, getFieldError } from './form-helpers';
-
-// Global validation registry
-const validatorRegistry = new Map<string, Validator | AsyncValidator>();
+import type { ValidationResult, ValidationContext, Validator, AsyncValidator, Schema, ValidationError } from '../types/validation';
+import { ValidationErrorType, ValidationErrorCode, ValidationErrorSeverity, SchemaType } from '../types/validation';
+import type { SliderId as SlideId, ComponentId } from '../types/branded';
 
 /**
- * Register a validator in the global registry
- *
- * @param name - Name to register the validator under
- * @param validator - The validator function
+ * Helper function to convert a string to a SlideId
+ * @param id The string to convert
+ * @returns The string as a SlideId
  */
-export function registerValidator(
-  name: string,
-  validator: Validator | AsyncValidator
-): void {
-  validatorRegistry.set(name, validator);
+export function toSlideId(id: string): SlideId {
+  return id as SlideId;
 }
 
 /**
- * Get a validator from the registry
- *
- * @param name - Name of the validator
- * @returns The validator function or undefined if not found
+ * Helper function to convert a string to a ComponentId
+ * @param id The string to convert
+ * @returns The string as a ComponentId
  */
-export function getValidator(
-  name: string
-): Validator | AsyncValidator | undefined {
-  return validatorRegistry.get(name);
+export function toComponentId(id: string): ComponentId {
+  return id as ComponentId;
+}
+
+// Cache for memoized validators
+const validatorCache = new Map<string, ValidationResult>();
+const validatorRegistry = new Map<string, Validator<unknown>>();
+
+/**
+ * Helper function to check if a value is empty
+ * @param value The value to check
+ * @returns True if the value is: empty, false otherwise
+ */
+export function isEmpty(value: unknown): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === 'string') return value.trim().length === 0;
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === 'object') return Object.keys(value).length === 0;
+  return false;
 }
 
 /**
- * Helper function to create a validation error with enhanced fields
+ * Helper function to check if a value is an object
+ * @param value The value to check
+ * @returns True if the value is an: object, false otherwise
  */
-function createValidationError(
+export function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Helper function to safely get a value from an object
+ * @param obj The object to get the value from
+ * @param key The key to get the value for
+ * @param defaultValue The default value to return if the key doesn't exist
+ * @returns The value from the object or the default value
+ */
+export function safeGet<T>(obj: unknown, key: string, defaultValue: T): T {
+  if (!isObject(obj)) return defaultValue;
+  const value = obj[key];
+  return value === undefined ? defaultValue : value as T;
+}
+
+// Type guards
+/**
+ *
+ * @param value
+  * @returns {unknown} - The return value
+ */
+export function isValidSlide(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  const requiredFields = ['id', 'title', 'image', 'alt'];
+  return requiredFields.every(field => !isEmpty(safeGet(value, field, undefined)));
+}
+
+/**
+ *
+ * @param value
+ * @returns {ReturnType} The return value
+ */
+export function isValidProps(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  const { slides } = value;
+  if (!Array.isArray(slides) || slides.length === 0) return false;
+  return slides.every(isValidSlide);
+}
+
+/**
+ *
+ * @param value
+ * @returns {ReturnType} The return value
+ */
+export function isValidErrorInfo(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  const requiredFields = ['name', 'message', 'componentStack'];
+  return requiredFields.every(field => !isEmpty(safeGet(value, field, undefined)));
+}
+
+// Validation error creation
+/**
+ *
+ * @param type
+ * @param message
+ * @param property
+ * @param value
+ * @param expected
+ * @param severity
+ * @param suggestion
+ * @param locale
+ * @returns {ReturnType} The return value
+ */
+export function createValidationError(
   type: ValidationErrorType,
   message: string,
-  property?: string | undefined,
+  property?: string,
   value?: unknown,
   expected?: unknown,
   severity: ValidationErrorSeverity = ValidationErrorSeverity.ERROR,
-  suggestion?: string | undefined,
-  locale?: string | undefined
+  suggestion?: string,
+  locale?: string
 ): ValidationError {
-  // Map type to code
-  const codeMap: Record<ValidationErrorType, ValidationErrorCode> = {
-    [ValidationErrorType.REQUIRED_PROP]: ValidationErrorCode.REQUIRED_PROP,
-    [ValidationErrorType.INVALID_TYPE]: ValidationErrorCode.INVALID_TYPE,
-    [ValidationErrorType.INVALID_FORMAT]: ValidationErrorCode.INVALID_FORMAT,
-    [ValidationErrorType.INVALID_RANGE]: ValidationErrorCode.INVALID_RANGE,
-    [ValidationErrorType.INVALID_OPTION]: ValidationErrorCode.INVALID_OPTION,
-    [ValidationErrorType.ASYNC_VALIDATION_FAILED]: ValidationErrorCode.ASYNC_VALIDATION_FAILED,
-    [ValidationErrorType.CUSTOM_VALIDATION_FAILED]: ValidationErrorCode.CUSTOM_VALIDATION_FAILED,
-    [ValidationErrorType.SCHEMA_VALIDATION_FAILED]: ValidationErrorCode.SCHEMA_VALIDATION_FAILED,
-    [ValidationErrorType.CONSTRAINT_VALIDATION_FAILED]: ValidationErrorCode.CONSTRAINT_VALIDATION_FAILED,
-  };
-
   return {
     type,
-    code: codeMap[type],
+    code: ValidationErrorCode[type.toUpperCase() as keyof typeof ValidationErrorCode],
     message,
     property,
     value,
     expected,
     severity,
     suggestion,
-    locale,
+    locale
   };
 }
 
+// Validation functions
 /**
- * Create a validator from a schema definition
  *
- * @param schema - Schema definition
- * @returns A validator function based on the schema
+ * @param input
+ * @param context
+ * @returns {ReturnType} The return value
  */
-export function createSchemaValidator<T>(schema: Schema): Validator<T> {
-  return (
-    value: unknown,
-    context?: ValidationContext
-  ): ValidationResult | Promise<ValidationResult> => {
-    if (!isObject(value)) {
-      return {
-        valid: false,
-        errors: [
-          createValidationError(
-            ValidationErrorType.INVALID_TYPE,
-            'Value must be an object',
-            undefined,
-            value,
-            'object',
-            ValidationErrorSeverity.ERROR,
-            'Provide an object value',
-            context?.locale
-          ),
-        ],
-      };
-    }
+export function validateSlides(input: unknown, context?: ValidationContext): ValidationResult {
+  // Handle both single slide and array of slides
+  const slides = Array.isArray(input) ? input : [input];
 
-    const errors: ValidationError[] = [];
-    const metadata: Record<string, unknown> = {};
-
-    // Validate each field in the schema
-    const validationPromises: Promise<ValidationResult>[] = [];
-
-    for (const [key, field] of Object.entries(schema)) {
-      const propertyValue = value[key];
-      // Pass context as is - it already contains path information if needed
-      const result = validateAgainstSchemaField(
-        propertyValue,
-        field,
-        key,
-        context
-      );
-
-      // Handle both synchronous and asynchronous validation
-      if (result instanceof Promise) {
-        validationPromises.push(result);
-      } else if (!result.valid) {
-        errors.push(...result.errors);
-      }
-    }
-
-    // If no async validations, return synchronously
-    if (validationPromises.length === 0) {
-      return {
-        valid: errors.length === 0,
-        errors,
-        metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-      };
-    }
-
-    // Handle async validations
-    return Promise.all(validationPromises).then((results) => {
-      for (const result of results) {
-        if (!result.valid) {
-          errors.push(...result.errors);
-        }
-        if (result.metadata) {
-          Object.assign(metadata, result.metadata);
-        }
-      }
-
-      return {
-        valid: errors.length === 0,
-        errors,
-        metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-      };
-    });
-  };
-}
-
-/**
- * Validates error info object
- *
- * @param errorInfo - The error info to validate
- * @param context - Optional validation context
- * @returns Validation result
- */
-export function validateErrorInfo(
-  errorInfo: unknown,
-  context?: ValidationContext
-): ValidationResult {
-  if (!isObject(errorInfo)) {
+  if (!Array.isArray(input) && !isObject(input)) {
     return {
       valid: false,
-      errors: [
-        createValidationError(
-          ValidationErrorType.INVALID_TYPE,
-          'Error info must be an object',
-          undefined,
-          errorInfo,
-          'object'
-        ),
-      ],
+      errors: [createValidationError(
+        ValidationErrorType.REQUIRED_PROP,
+        'Input must be a slide object or an array of slides',
+        context?.path ? context.path.join('.') : 'slides',
+        input,
+        'object or array'
+      )]
     };
   }
 
-  // Required fields
-  const requiredFields = [
-    'name',
-    'message',
-    'componentStack',
-    'timestamp',
-    'code',
-  ];
-  
-  const errors = validateRequiredFields(errorInfo, requiredFields, context);
-
-  // Validate field types
-  if (
-    'name' in errorInfo &&
-    errorInfo['name'] !== undefined &&
-    typeof errorInfo['name'] !== 'string'
-  ) {
-    errors.push(
-      createValidationError(
-        ValidationErrorType.INVALID_TYPE,
-        'Error name must be a string',
-        'name',
-        errorInfo['name'],
-        'string'
-      )
-    );
+  if (Array.isArray(input) && input.length === 0) {
+    return {
+      valid: false,
+      errors: [createValidationError(
+        ValidationErrorType.INVALID_RANGE,
+        'At least one slide is required',
+        context?.path ? context.path.join('.') : 'slides',
+        input,
+        'non-empty array'
+      )]
+    };
   }
 
-  if (
-    'message' in errorInfo &&
-    errorInfo['message'] !== undefined &&
-    typeof errorInfo['message'] !== 'string'
-  ) {
-    errors.push(
-      createValidationError(
+  const errors: ValidationError[] = [];
+  slides.forEach((slide, index) => {
+    if (!isObject(slide)) {
+      errors.push(createValidationError(
         ValidationErrorType.INVALID_TYPE,
-        'Error message must be a string',
-        'message',
-        errorInfo['message'],
-        'string'
-      )
-    );
+        Array.isArray(input) ? `Slide at index ${index} must be an object` : 'Slide must be an object',
+        context ? [...(context.path || []), Array.isArray(input) ? `[${index}]` : ''].join('.') : `[${index}]`,
+        slide,
+        'object'
+      ));
+      return;
+    }
+
+    const requiredFields = ['id', 'title', 'image', 'alt'];
+    requiredFields.forEach(field => {
+      if (isEmpty(safeGet(slide, field, undefined))) {
+        errors.push(createValidationError(
+          ValidationErrorType.REQUIRED_PROP,
+          Array.isArray(input) ? 
+            `Required property '${field}' is missing at index ${index}` : 
+            `Required property '${field}' is missing`,
+          context ? 
+            [...(context.path || []), Array.isArray(input) ? `[${index}]` : '', field].join('.') : 
+            `[${index}].${field}`,
+          undefined,
+          'non-empty value'
+        ));
+      }
+    });
+
+    // Type validation for string fields
+    const stringFields = ['id', 'title', 'description', 'image', 'alt'];
+    stringFields.forEach(field => {
+      const value = safeGet(slide, field, undefined);
+      if(value !== undefined && typeof value !== 'string') {
+        errors.push(createValidationError(
+          ValidationErrorType.INVALID_TYPE,
+          Array.isArray(input) ?
+            `Property '${field}' at index ${index} must be a string` :
+            `Property '${field}' must be a string`,
+          context ?
+            [...(context.path || []), Array.isArray(input) ? `[${index}]` : '', field].join('.') :
+            `[${index}].${field}`,
+          value,
+          'string'
+        ));
+      }
+    });
+  });
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ *
+ * @param config
+ * @returns {ReturnType} The return value
+ */
+export function validateAnimationConfig(config: unknown): ValidationResult {
+  if (!isObject(config)) {
+    return {
+      valid: false,
+      errors: [createValidationError(
+        ValidationErrorType.INVALID_TYPE,
+        'Animation config must be an object',
+        'animationConfig',
+        config,
+        'object'
+      )]
+    };
+  }
+
+  const errors: ValidationError[] = [];
+  const { duration, ease } = config;
+
+  if(typeof duration !== 'undefined') {
+    if(typeof duration !== 'number' || duration <= 0) {
+      errors.push(createValidationError(
+        ValidationErrorType.INVALID_RANGE,
+        'Duration must be a positive number',
+        'animationConfig.duration',
+        duration,
+        'positive number'
+      ));
+    }
+  }
+
+  if(typeof ease !== 'undefined' && typeof ease !== 'string') {
+    errors.push(createValidationError(
+      ValidationErrorType.INVALID_TYPE,
+      'Ease must be a string',
+      'animationConfig.ease',
+      ease,
+      'string'
+    ));
   }
 
   return {
     valid: errors.length === 0,
-    errors,
+    errors
   };
 }
 
 /**
- * Memoize a validator to improve performance for expensive validations
  *
- * @param validator - Validator to memoize
- * @param getKey - Function to generate a cache key (defaults to JSON.stringify)
- * @param options - Cache options for TTL and size limits
- * @returns Memoized validator
+ * @param props
+ * @returns {ReturnType} The return value
  */
-export function memoizeValidator<T>(
-  validator: Validator<T>,
-  getKey: (value: unknown, context?: ValidationContext) => string = (
-    value,
-    context
-  ) => JSON.stringify({ value, context: context || {} }),
-  options?: CacheOptions
-): Validator<T> {
-  return (
-    value: unknown,
-    context?: ValidationContext
-  ): ValidationResult | Promise<ValidationResult> => {
-    const key = getKey(value, context);
+export function validateProps(props: unknown): ValidationResult {
+  if (!isObject(props)) {
+    return {
+      valid: false,
+      errors: [createValidationError(
+        ValidationErrorType.INVALID_TYPE,
+        'Props must be an object',
+        'props',
+        props,
+        'object'
+      )]
+    };
+  }
 
-    const cachedResult = validationCache.get(key);
-    if (cachedResult) {
-      return cachedResult;
+  const errors: ValidationError[] = [];
+  const { slides, initialSlide } = props;
+
+  if(!slides) {
+    errors.push(createValidationError(
+      ValidationErrorType.REQUIRED_PROP,
+      'Slides array is required',
+      'props.slides',
+      slides,
+      'array of slides'
+    ));
+  } else {
+    const slidesValidation = validateSlides(slides);
+    if(!slidesValidation.valid) {
+      errors.push(...slidesValidation.errors);
     }
+  }
+
+  if(typeof initialSlide !== 'undefined') {
+    // Validate initialSlide is a number
+    if (typeof initialSlide !== 'number') {
+      errors.push(createValidationError(
+        ValidationErrorType.INVALID_TYPE,
+        'initialSlide must be a number',
+        'props.initialSlide',
+        initialSlide,
+        'number'
+      ));
+    } else if (Array.isArray(slides) && slides.length > 0) {
+      // Validate initialSlide is within range
+      if (initialSlide < 0 || initialSlide >= slides.length) {
+        errors.push(createValidationError(
+          ValidationErrorType.INVALID_RANGE,
+          `initialSlide must be between 0 and ${slides.length - 1}`,
+          'props.initialSlide',
+          initialSlide,
+          `0-${slides.length - 1}`
+        ));
+      }
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ *
+ * @param errorInfo
+ * @returns {ReturnType} The return value
+ */
+export function validateErrorInfo(errorInfo: unknown): ValidationResult {
+  if (!isObject(errorInfo)) {
+    return {
+      valid: false,
+      errors: [createValidationError(
+        ValidationErrorType.INVALID_TYPE,
+        'Error info must be an object',
+        'errorInfo',
+        errorInfo,
+        'object'
+      )]
+    };
+  }
+
+  const errors: ValidationError[] = [];
+  const requiredFields = ['type', 'code', 'message'];
+  requiredFields.forEach(field => {
+    if (isEmpty(safeGet(errorInfo, field, undefined))) {
+      errors.push(createValidationError(ValidationErrorType.REQUIRED_PROP,
+        `Required property '${field}' is missing`,
+        `errorInfo.${field}`,
+        undefined,
+        'non-empty value'
+      ));
+    }
+  });
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ *
+ * @param props
+ * @returns {ReturnType} The return value
+ */
+export function validateAccessibility(props: unknown): ValidationResult {
+  if (!isObject(props)) {
+    return {
+      valid: false,
+      errors: [createValidationError(
+        ValidationErrorType.INVALID_TYPE,
+        'Accessibility props must be an object',
+        'accessibility',
+        props,
+        'object'
+      )]
+    };
+  }
+
+  const errors: ValidationError[] = [];
+  const { ariaLabel, ariaLive, role } = props;
+
+  if(typeof ariaLabel !== 'undefined' && typeof ariaLabel !== 'string') {
+    errors.push(createValidationError(
+      ValidationErrorType.INVALID_TYPE,
+      'aria-label must be a string',
+      'accessibility.ariaLabel',
+      ariaLabel,
+      'string'
+    ));
+  }
+
+  if(typeof ariaLive !== 'undefined' && typeof ariaLive !== 'string') {
+    errors.push(createValidationError(
+      ValidationErrorType.INVALID_TYPE,
+      'aria-live must be a string',
+      'accessibility.ariaLive',
+      ariaLive,
+      'string'
+    ));
+  }
+
+  if(typeof role !== 'undefined' && typeof role !== 'string') {
+    errors.push(createValidationError(
+      ValidationErrorType.INVALID_TYPE,
+      'role must be a string',
+      'accessibility.role',
+      role,
+      'string'
+    ));
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ *
+ * @param config
+ * @returns {ReturnType} The return value
+ */
+export function validatePerformanceConfig(config: unknown): ValidationResult {
+  if (!isObject(config)) {
+    return {
+      valid: false,
+      errors: [createValidationError(
+        ValidationErrorType.INVALID_TYPE,
+        'Performance config must be an object',
+        'performanceConfig',
+        config,
+        'object'
+      )]
+    };
+  }
+
+  const errors: ValidationError[] = [];
+  const { memoryTrackingInterval, fpsTrackingInterval, enableMemoryTracking, enableFpsTracking } = config;
+
+  if(typeof memoryTrackingInterval !== 'undefined') {
+    if(typeof memoryTrackingInterval !== 'number' || memoryTrackingInterval < 1000) {
+      errors.push(createValidationError(
+        ValidationErrorType.INVALID_RANGE,
+        'Memory tracking interval must be at least 1000ms',
+        'performanceConfig.memoryTrackingInterval',
+        memoryTrackingInterval,
+        'number >= 1000'
+      ));
+    }
+  }
+
+  if(typeof fpsTrackingInterval !== 'undefined') {
+    if(typeof fpsTrackingInterval !== 'number' || fpsTrackingInterval <= 0) {
+      errors.push(createValidationError(
+        ValidationErrorType.INVALID_RANGE,
+        'FPS tracking interval must be a positive number',
+        'performanceConfig.fpsTrackingInterval',
+        fpsTrackingInterval,
+        'positive number'
+      ));
+    }
+  }
+
+  if(typeof enableMemoryTracking !== 'undefined' && typeof enableMemoryTracking !== 'boolean') {
+    errors.push(createValidationError(
+      ValidationErrorType.INVALID_TYPE,
+      'enableMemoryTracking must be a boolean',
+      'performanceConfig.enableMemoryTracking',
+      enableMemoryTracking,
+      'boolean'
+    ));
+  }
+
+  if(typeof enableFpsTracking !== 'undefined' && typeof enableFpsTracking !== 'boolean') {
+    errors.push(createValidationError(
+      ValidationErrorType.INVALID_TYPE,
+      'enableFpsTracking must be a boolean',
+      'performanceConfig.enableFpsTracking',
+      enableFpsTracking,
+      'boolean'
+    ));
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ *
+ * @param url
+ * @returns {ReturnType} The return value
+ */
+export async function validateImageExists(url: string): Promise<ValidationResult> {
+  try {
+    const response = await fetch(url);
+    if(!response.ok) {
+      return {
+        valid: false,
+        errors: [createValidationError(
+          ValidationErrorType.NETWORK_ERROR,
+          `Failed to load image: Not Found (${response.status} ${response.statusText})`,
+          'image',
+          url,
+          'accessible image URL'
+        )]
+      };
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.startsWith('image/')) {
+      return {
+        valid: false,
+        errors: [createValidationError(
+          ValidationErrorType.INVALID_TYPE,
+          'URL does not point to an image',
+          'image',
+          url,
+          'image URL'
+        )]
+      };
+    }
+
+    return {
+      valid: true,
+      errors: []
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      errors: [createValidationError(
+        ValidationErrorType.NETWORK_ERROR,
+        `Network error: Not Found - ${(error as Error).message}`,
+        'image',
+        url,
+        'accessible image URL'
+      )]
+    };
+  }
+}
+
+// Validator composition
+/**
+ *
+ * @param {...any} validators
+ * @returns {ReturnType} The return value
+ */
+export function composeValidators<T>(...validators: Array<Validator<T>>): Validator<T> {
+  return (value: T, context?: ValidationContext): ValidationResult => {
+    const errors: ValidationError[] = [];
+    let valid = true;
+
+    for(const validator of validators) {
+      const result = validator(value, context);
+      if(!result.valid) {
+        valid = false;
+        errors.push(...result.errors);
+      }
+    }
+
+    return {
+      valid,
+      errors,
+      metadata: { count: validators.length, total: validators.length }
+    };
+  };
+}
+
+/**
+ *
+ * @param {...any} validators
+  * @returns {unknown} - The return value
+ */
+export function composeAsyncValidators<T>(...validators: Array<AsyncValidator<T>>): AsyncValidator<T> {
+  return async (value: T, context?: ValidationContext): Promise<ValidationResult> => {
+    const errors: ValidationError[] = [];
+    let valid = true;
+
+    for(const validator of validators) {
+      const result = await validator(value, context);
+      if(!result.valid) {
+        valid = false;
+        errors.push(...result.errors);
+      }
+    }
+
+    return {
+      valid,
+      errors,
+      metadata: { count: validators.length, total: validators.length }
+    };
+  };
+}
+
+// Validator memoization
+/**
+ *
+ * @param validator
+ * @param keyGenerator
+  * @returns {unknown} - The return value
+ */
+export function memoizeValidator<T>(validator: Validator<T>, keyGenerator?: (value: T, context?: ValidationContext) => string): Validator<T> {
+  return (value: T, context?: ValidationContext): ValidationResult => {
+    const key = keyGenerator ? keyGenerator(value, context) : JSON.stringify(value);
+    const cached = validatorCache.get(key);
+    if (cached) return cached;
 
     const result = validator(value, context);
-
-    // Handle both synchronous and asynchronous validation results
-    if (result instanceof Promise) {
-      // For async results, wait for them and then cache
-      return result.then((asyncResult) => {
-        validationCache.set(key, asyncResult);
-        return asyncResult;
-      });
-    } else {
-      // For sync results, cache directly
-      validationCache.set(key, result);
-      return result;
-    }
+    validatorCache.set(key, result);
+    return result;
   };
 }
 
 /**
- * Clear the global validation cache
+ * Clears the validation cache
+ * @returns {void}
  */
 export function clearValidationCache(): void {
-  validationCache.clear();
+  if (validatorCache.size > 0) {
+    validatorCache.clear();
+  }
 }
 
+// Validator registry
 /**
- * Convert a string to a SliderId branded type
- */
-export function toSlideId(id: string): SliderId {
-  return createSlideId(id);
-}
-
-/**
- * Convert a string to a ComponentId branded type
- */
-export function toComponentId(id: string): ComponentId {
-  return createComponentId(id);
-}
-
-/**
- * Compose multiple validators into a single validator
  *
- * @param validators - Array of validators to compose
- * @returns A composed validator that runs all validators
+ * @param name
+ * @param validator
+  * @returns {unknown} - The return value
  */
-export function composeValidators(...validators: Validator[]): Validator {
-  return async (
-    value: unknown,
-    context?: ValidationContext
-  ): Promise<ValidationResult> => {
-    const errors: ValidationError[] = [];
-    const metadata: Record<string, unknown> = {};
+export function registerValidator<T>(name: string, validator: Validator<T>): void {
+  validatorRegistry.set(name, validator as Validator<unknown>);
+}
 
-    for (const validator of validators) {
-      const result = await Promise.resolve(validator(value, context));
-      if (!result.valid) {
-        errors.push(...result.errors);
+/**
+ *
+ * @param name
+  * @returns {unknown} - The return value
+ */
+export function getValidator<T>(name: string): Validator<T> | undefined {
+  return validatorRegistry.get(name) as Validator<T> | undefined;
+}
+
+// Schema validation
+/**
+ *
+ * @param schema
+  * @returns {unknown} - The return value
+ */
+export function createSchemaValidator<T>(schema: Schema): Validator<T> {
+  return (value: unknown, context?: ValidationContext): ValidationResult => {
+    if (!isObject(value)) {
+      return {
+        valid: false,
+        errors: [createValidationError(
+          ValidationErrorType.INVALID_TYPE,
+          'Value must be an object',
+          context?.path ? context.path.join('.') : undefined,
+          value,
+          'object'
+        )]
+      };
+    }
+
+    const errors: ValidationError[] = [];
+
+    for (const [key, field] of Object.entries(schema)) {
+      const fieldValue = value[key];
+      const fieldPath = context?.path ? [...context.path, key] : [key];
+
+      if (field.options?.required && isEmpty(fieldValue)) {
+        errors.push(createValidationError(ValidationErrorType.REQUIRED_PROP,
+          `Required property '${key}' is missing`,
+          fieldPath.join('.'),
+          undefined,
+          'non-empty value'
+        ));
+        continue;
       }
 
-      // Merge metadata
-      if (result.metadata) {
-        Object.assign(metadata, result.metadata);
+      if(fieldValue !== undefined) {
+        if(field.type === SchemaType.STRING && typeof fieldValue !== 'string') {
+          errors.push(createValidationError(ValidationErrorType.INVALID_TYPE,
+            `Property '${key}' must be a string`,
+            fieldPath.join('.'),
+            fieldValue,
+            'string'
+          ));
+        } else if(field.type === SchemaType.NUMBER && typeof fieldValue !== 'number') {
+          errors.push(createValidationError(ValidationErrorType.INVALID_TYPE,
+            `Property '${key}' must be a number`,
+            fieldPath.join('.'),
+            fieldValue,
+            'number'
+          ));
+        } else if(field.type === SchemaType.BOOLEAN && typeof fieldValue !== 'boolean') {
+          errors.push(createValidationError(ValidationErrorType.INVALID_TYPE,
+            `Property '${key}' must be a boolean`,
+            fieldPath.join('.'),
+            fieldValue,
+            'boolean'
+          ));
+        }
+
+        if(field.options?.custom) {
+          const customError = field.options.custom(fieldValue);
+          if(customError) {
+            errors.push(customError);
+          }
+        }
       }
     }
 
     return {
       valid: errors.length === 0,
-      errors,
-      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      errors
     };
   };
 }
 
 /**
- * Compose multiple async validators into a single async validator
- *
- * @param validators - Array of async validators to compose
- * @returns A composed async validator that runs all validators
+ * Gets an error for a specific field from a collection of validation errors
+ * 
+ * @param errors Array of validation errors
+ * @param fieldName Name of the field to get errors for
+ * @returns The first error for the field or null if no errors exist
  */
-export function composeAsyncValidators(
-  ...validators: AsyncValidator[]
-): AsyncValidator {
-  return async (
-    value: unknown,
-    context?: ValidationContext
-  ): Promise<ValidationResult> => {
-    const errors: ValidationError[] = [];
-    const metadata: Record<string, unknown> = {};
-
-    for (const validator of validators) {
-      const result = await validator(value, context);
-      if (!result.valid) {
-        errors.push(...result.errors);
-      }
-
-      // Merge metadata
-      if (result.metadata) {
-        Object.assign(metadata, result.metadata);
-      }
+export function getErrorForField(errors: ValidationError[], fieldName: string): ValidationError | null {
+  if (!Array.isArray(errors) || errors.length === 0) return null;
+  
+  return errors.find(error => {
+    // Check for exact field name match
+    if (error.property === fieldName) return true;
+    
+    // Check for nested field patterns like 'slides[0].title'
+    if (error.property?.includes('.')) {
+      const parts = error.property.split('.');
+      return parts.includes(fieldName);
     }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-    };
-  };
+    
+    // Check for array index patterns like 'slides[0]'
+    if (error.property?.includes('[') && error.property?.includes(']')) {
+      const baseName = error.property.split('[')[0];
+      return baseName === fieldName;
+    }
+    
+    return false;
+  }) || null;
 }
 
 /**
- * Validation utility functions
- */
-
-/**
- * Get a field-specific error from an array of validation errors
+ * Gets a CSS class name based on field validation state
  * 
- * @param errors - Validation errors array
- * @param fieldName - Field name to extract error for
- * @returns The validation error for the field or undefined
+ * @param errors Array of validation errors
+ * @param fieldName Name of the field to get the class for
+ * @returns A CSS class name based on validation state
  */
-export function getErrorForField(
-  errors: ValidationResult['errors'],
-  fieldName: string
-): ValidationError | undefined {
-  return errors.find((err) => err.property === fieldName);
+export function getFieldClass(errors: ValidationError[], fieldName: string): string {
+  const hasError = getErrorForField(errors, fieldName) !== null;
+  return hasError ? 'invalid' : 'valid';
 }
-
-/**
- * Get CSS class for a form field based on validation result
- * 
- * @param validationErrors - Validation errors array
- * @param fieldName - Field name to get class for
- * @returns CSS class string
- */
-export function getFieldClass(
-  validationErrors: ValidationResult['errors'],
-  fieldName: string
-): string {
-  return getFieldClassByErrors(validationErrors, fieldName);
-}
-
-// Export all validation functions
-export * from './validation-helpers';

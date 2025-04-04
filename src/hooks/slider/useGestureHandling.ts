@@ -1,11 +1,23 @@
-import React from 'react';
+import * as React from 'react';
 import { useCallback, useRef } from 'react';
 import { useSlider } from '../../context/SliderContext';
-import { GestureState, GestureDistance } from '../../types/slider';
+import { createBrandedNumber } from '../../types/branded';
+import type { SliderContextValue } from '../../types/slider';
 
-export function useGestureHandling(containerRef: React.RefObject<HTMLDivElement>) {
-  const { state, config, actions } = useSlider();
-  const gestureState = useRef<GestureState>({
+interface GestureStateRef {
+  startX: number;
+  startY: number;
+  isDragging: boolean;
+}
+
+/**
+ *
+ * @param _containerRef The reference to the container element
+ * @returns {unknown} The function return value
+ */
+export function useGestureHandling(_containerRef: React.RefObject<HTMLDivElement>): unknown  {
+  const { state, config, actions } = useSlider() as SliderContextValue;
+  const gestureState = useRef<GestureStateRef>({
     startX: 0,
     startY: 0,
     isDragging: false,
@@ -27,39 +39,39 @@ export function useGestureHandling(containerRef: React.RefObject<HTMLDivElement>
     const deltaX = clientX - gestureState.current.startX;
     const deltaY = clientY - gestureState.current.startY;
 
-    // Apply resistance to the drag
-    const resistance = config.gesture?.resistance ?? 1;
-    const resistedDeltaX = (deltaX * resistance) as GestureDistance;
-    const resistedDeltaY = (deltaY * resistance) as GestureDistance;
+    // Apply resistance to the drag (default to 1 if not specified)
+    const resistance = 1;
+    const resistedDeltaX = createBrandedNumber(deltaX * resistance, 'GestureDistance');
+    const resistedDeltaY = createBrandedNumber(deltaY * resistance, 'GestureDistance');
 
     // Update drag delta based on direction
-    if (config.direction === 'horizontal' || config.direction === 'both') {
-      actions.updateDragDelta({ x: resistedDeltaX, y: 0 as GestureDistance });
+    if(config.gestureDirection === 'horizontal' || config.gestureDirection === 'both') {
+      actions.updateDragDelta({ x: resistedDeltaX, y: createBrandedNumber(0, 'GestureDistance') });
     }
-    if (config.direction === 'vertical' || config.direction === 'both') {
-      actions.updateDragDelta({ x: 0 as GestureDistance, y: resistedDeltaY });
+    if(config.gestureDirection === 'vertical' || config.gestureDirection === 'both') {
+      actions.updateDragDelta({ x: createBrandedNumber(0, 'GestureDistance'), y: resistedDeltaY });
     }
-  }, [config.direction, config.gesture?.resistance, actions]);
+  }, [config.gestureDirection, actions]);
 
   const handleGestureEnd = useCallback(() => {
     if (!gestureState.current.isDragging) return;
 
-    const { startX, startY } = gestureState.current;
+    const { startX, startY: _startY } = gestureState.current;
     const deltaX = state.dragDelta.x;
     const deltaY = state.dragDelta.y;
-    const velocity = Math.abs(deltaX) / (Date.now() - startX);
+    const velocity = Math.abs(deltaX as number) / (Date.now() - startX);
 
     // Reset gesture state
     gestureState.current.isDragging = false;
 
     // Determine if the gesture should trigger a slide change
-    const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
-    const threshold = config.gesture?.threshold ?? 50;
-    const velocityThreshold = config.gesture?.velocity ?? 0.5;
-    const meetsThreshold = Math.abs(deltaX) > threshold || velocity > velocityThreshold;
+    const isHorizontalSwipe = Math.abs(deltaX as number) > Math.abs(deltaY as number);
+    const threshold = config.gestureThreshold ?? 50;
+    const velocityThreshold = 0.5;
+    const meetsThreshold = Math.abs(deltaX as number) > threshold || velocity > velocityThreshold;
 
-    if (isHorizontalSwipe && meetsThreshold) {
-      if (deltaX > 0) {
+    if(isHorizontalSwipe && meetsThreshold) {
+      if(deltaX as number > 0) {
         actions.previous();
       } else {
         actions.next();
@@ -67,8 +79,11 @@ export function useGestureHandling(containerRef: React.RefObject<HTMLDivElement>
     }
 
     // Reset drag delta
-    actions.updateDragDelta({ x: 0 as GestureDistance, y: 0 as GestureDistance });
-  }, [state.dragDelta, config.gesture?.threshold, config.gesture?.velocity, actions]);
+    actions.updateDragDelta({ 
+      x: createBrandedNumber(0, 'GestureDistance'), 
+      y: createBrandedNumber(0, 'GestureDistance') 
+    });
+  }, [state.dragDelta, config.gestureThreshold, actions]);
 
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     const touch = event.touches[0];

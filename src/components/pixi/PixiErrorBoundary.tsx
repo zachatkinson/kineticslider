@@ -1,12 +1,31 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import type { PixiErrorBoundaryProps, PixiErrorBoundaryState } from '../../types/components';
+import type { PixiErrorBoundaryState } from '../../types/components';
+
+/**
+ * Props for Pixi-specific error boundary
+ * 
+ * @example
+ * ```tsx
+ * const props: PixiErrorBoundaryProps = {
+ *   children: <PixiComponent />,
+ *   fallback: <ErrorFallback />,
+ *   onError: (error, errorInfo) => console.error(error, errorInfo)
+ * };
+ * ```
+ */
+export interface PixiErrorBoundaryProps {
+  /** Child components to render */
+  children: React.ReactNode;
+  /** Fallback UI to render when an error occurs */
+  fallback?: React.ReactNode;
+  /** Callback fired when an error occurs */
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+}
 
 /**
  * Error boundary component specifically designed for Pixi.js related errors in the slider.
  * Catches and handles runtime errors in Pixi.js components and their children.
  * 
- * @component
- * @version 1.0.0
  * @example
  * ```tsx
  * <PixiErrorBoundary
@@ -17,30 +36,26 @@ import type { PixiErrorBoundaryProps, PixiErrorBoundaryState } from '../../types
  * </PixiErrorBoundary>
  * ```
  * 
- * @props
+ * @property
  * - children: ReactNode - The Pixi.js components to be rendered
  * - fallback?: ReactNode - Optional custom error UI component
  * - onError?: (error: Error, errorInfo: ErrorInfo) => void - Optional error handler
  * 
- * @accessibility
- * - Uses role="alert" for error messages
+ * @description * - Uses role="alert" for error messages
  * - Provides clear error messaging
  * - Includes instructions for user recovery
  * - Shows detailed error info in development mode
  * 
- * @error
- * - Catches and handles Pixi.js specific runtime errors
+ * @description * - Catches and handles Pixi.js specific runtime errors
  * - Prevents entire app from crashing
  * - Provides fallback UI
  * - Supports custom error handling
  * 
- * @security
- * - Sanitizes error messages in production
+ * @description * - Sanitizes error messages in production
  * - Only shows detailed error info in development
  * - Prevents exposure of sensitive stack traces
  * 
- * @performance
- * - Lightweight error boundary implementation
+ * @description * - Lightweight error boundary implementation
  * - Minimal impact on normal operation
  * - Efficient error state management
  * 
@@ -78,8 +93,13 @@ export class PixiErrorBoundary extends Component<PixiErrorBoundaryProps, PixiErr
    * @param {Error} error - The error that was caught
    * @param {ErrorInfo} errorInfo - Additional information about the error
    */
-  public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('PixiSlider Error:', error, errorInfo);
+  public override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    // Log error to console in development mode
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('PixiSlider Error:', error, errorInfo);
+    }
+    
+    // Call the onError callback if provided
     this.props.onError?.(error, errorInfo);
   }
 
@@ -89,9 +109,9 @@ export class PixiErrorBoundary extends Component<PixiErrorBoundaryProps, PixiErr
    * 
    * @returns {ReactNode} The rendered content
    */
-  public override render() {
-    if (this.state.hasError) {
-      if (this.props.fallback) {
+  public override render(): ReactNode {
+    if(this.state.hasError) {
+      if(this.props.fallback) {
         return this.props.fallback;
       }
 

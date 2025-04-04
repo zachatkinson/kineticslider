@@ -1,11 +1,16 @@
 /**
  * Error tracking utility functions
+ * @returns {ReturnType} The return value
  */
 
 import type { ErrorEvent, ErrorType } from '../types/error';
 
 /**
  * Track an error with component context
+ * @param error
+ * @param type
+ * @param componentInfo
+  * @returns {unknown} - The return value
  */
 export function trackError(
   error: Error,
@@ -21,7 +26,7 @@ export function trackError(
   };
 
   // Log to console in development
-  if (process.env.NODE_ENV === 'development') {
+  if(process.env.NODE_ENV === 'development') {
     console.error('Error:', errorEvent);
   }
 
@@ -30,7 +35,7 @@ export function trackError(
     const errors = JSON.parse(localStorage.getItem('errors') || '[]');
     errors.push(errorEvent);
     localStorage.setItem('errors', JSON.stringify(errors));
-  } catch (e) {
+  } catch(e) {
     console.error('Failed to track error:', e);
   }
 }
@@ -49,13 +54,13 @@ export function createErrorTracker(
 
   console.error = (...args: unknown[]) => {
     const error = args[0];
-    if (error instanceof Error) {
+    if(error instanceof Error) {
       trackError(error, type, componentInfo);
     }
     originalError.apply(console, args);
   };
 
-  return () => {
+  return (): void => {
     console.error = originalError;
   };
 } 

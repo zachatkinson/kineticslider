@@ -3,7 +3,7 @@ import {
   createPerformanceMonitor,
   trackInteraction as performanceTrackInteraction,
   trackRenderTime,
-  createPerformanceComponentId
+  _createPerformanceComponentId as createPerformanceComponentId
 } from '../utils/performance';
 import type {
   PerformanceMetrics,
@@ -23,18 +23,12 @@ import type { FPS, ByteSize, Milliseconds } from '../types/branded';
  * @param options.updateInterval - How often to update metrics (in milliseconds)
  * @param options.onMetricsUpdate - Optional callback when metrics are updated
  * 
- * @returns Performance monitoring utilities and current metrics
- * @returns {Object} metrics - The current performance metrics
- * @returns {FPS} metrics.fps - Current frames per second
- * @returns {ByteSize} metrics.memoryUsage - Current memory usage in bytes
- * @returns {Milliseconds} metrics.transitionDuration - Duration of transitions
- * @returns {Milliseconds} metrics.gestureLatency - Latency of gesture responses
- * @returns {Function} trackRender - Track render time for the component
- * @returns {Function} trackInteraction - Track interaction time for events
+ * @returns Object containing metrics (fps, memoryUsage, etc.), trackRender function
+ * to measure render times, and trackInteraction function to wrap event handlers
  * 
- * @example
+ * @example Example usage
  * ```tsx
- * function MyComponent() {
+ * function _MyComponent(): unknown  {
  *   const { metrics, trackRender } = usePerformance({
  *     logToConsole: true,
  *     onMetricsUpdate: (metrics) => {
@@ -69,7 +63,7 @@ export const usePerformance = (
   } = options;
 
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
-    fps: 0 as FPS,
+    fps: null as unknown as FPS,
     memoryUsage: 0 as ByteSize,
     transitionDuration: 0 as Milliseconds,
     gestureLatency: 0 as Milliseconds,
@@ -113,6 +107,11 @@ export const usePerformance = (
       performanceTrackInteraction('interaction', duration as Milliseconds, {
         component: componentId.current
       });
+      
+      setMetrics((prev) => ({
+        ...prev,
+        interactionTime: prev.interactionTime ? [...prev.interactionTime, duration as Milliseconds] : [duration as Milliseconds],
+      }));
       
       return result;
     }) as T;

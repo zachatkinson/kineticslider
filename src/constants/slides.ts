@@ -6,18 +6,18 @@ import { Slide } from '../types';
  * 
  * @module
  * @version 1.0.0
- * @example
+ * @example Example usage
  * ```typescript
  * import { DEFAULT_SLIDE } from './slides';
  * 
- * const newSlide = {
+ * const _newSlide = {
  *   ...DEFAULT_SLIDE,
  *   title: 'New Slide',
- *   image: '/path/to/image.jpg'
+ *   image: '/path/to/image.jpg';
  * };
  * ```
  * 
- * @see {@link Slide} for the complete slide type definition
+ * @see {@link: Slide} for the complete slide type definition
  */
 
 /**
@@ -27,25 +27,23 @@ import { Slide } from '../types';
  * @constant
  * @type {Partial<Slide>}
  * 
- * @example
+ * @example Example usage
  * ```typescript
  * import { DEFAULT_SLIDE } from './slides';
  * 
- * function createSlide(title: string): Slide {
+ * function _createSlide(title: string): Slide {
  *   return {
  *     ...DEFAULT_SLIDE,
  *     title,
- *     id: generateUniqueId()
+ *     id: generateUniqueId();
  *   };
  * }
  * ```
  * 
- * @accessibility
- * - Includes alt text field for images
+ * @description * - Includes alt text field for images
  * - Supports descriptive titles
  * 
- * @performance
- * - Minimal default properties
+ * @description * - Minimal default properties
  * - Type-safe partial implementation
  */
 export const DEFAULT_SLIDE: Partial<Slide> = {

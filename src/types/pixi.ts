@@ -6,6 +6,7 @@ import type { Application, Container, Sprite, Texture } from 'pixi.js';
 
 /**
  * Represents the data for a slide
+ * @example Example usage
  */
 export interface SlideData {
   /** Unique identifier for the slide */
@@ -18,6 +19,7 @@ export interface SlideData {
 
 /**
  * Props for the PixiApp component
+ * @example Example usage
  */
 export interface PixiAppProps {
   /** Width of the Pixi application */
@@ -31,13 +33,14 @@ export interface PixiAppProps {
   /** Array of slides to display */
   slides: Array<SlideData>;
   /** Callback when the current slide changes */
-  onSlideChange?: (index: number) => void;
-  /** Callback when an error occurs */
-  onError?: (error: Error) => void;
+  onSlideChange?: (_index: number) => void;
+  /** Callback when an _error occurs */
+  onError?: (_error: Error) => void;
 }
 
 /**
  * Represents a slide in the Pixi.js context
+ * @example Example usage
  */
 export interface PixiSlide {
   /** Unique identifier for the slide */

@@ -3,6 +3,7 @@ import { useSlider } from '../../context/SliderContext';
 import { createPerformanceMonitor } from '../../utils/performance';
 import type { PerformanceMetrics } from '../../types/performance';
 import type { FPS, Milliseconds, ByteSize } from '../../types/branded';
+import type { SliderContextValue } from '../../types/slider';
 
 /**
  * Custom hook for monitoring performance metrics in a slider component.
@@ -16,17 +17,15 @@ import type { FPS, Milliseconds, ByteSize } from '../../types/branded';
  * It integrates with the slider context to accurately measure timings for
  * animations and user interactions.
  * 
- * @returns {Object} An object containing the getMetrics function.
- * @returns {Function} getMetrics - Returns a copy of the current performance metrics.
- * @returns {PerformanceMetrics} getMetrics.return - The current performance metrics object.
+ * @returns An object containing the getMetrics function that returns current performance metrics.
  * 
- * @example
+ * @example Example usage
  * ```tsx
- * function SliderComponent() {
+ * function _SliderComponent() {
  *   const { getMetrics } = usePerformanceMonitoring();
  *   
  *   // Log metrics when needed
- *   const logPerformance = () => {
+ *   const _logPerformance = () => {
  *     console.log('Performance metrics:', getMetrics());
  *   };
  *   
@@ -34,8 +33,8 @@ import type { FPS, Milliseconds, ByteSize } from '../../types/branded';
  * }
  * ```
  */
-export function usePerformanceMonitoring() {
-  const { state } = useSlider();
+export function usePerformanceMonitoring(): { getMetrics: () => PerformanceMetrics } {
+  const { state } = useSlider() as SliderContextValue;
   const metricsRef = useRef<PerformanceMetrics>({
     fps: 0 as FPS,
     transitionDuration: 0 as Milliseconds,
@@ -63,7 +62,7 @@ export function usePerformanceMonitoring() {
 
   // Track transition duration
   useEffect(() => {
-    if (state.isAnimating) {
+    if(state.isAnimating) {
       const startTime = performance.now();
 
       return () => {
@@ -74,7 +73,7 @@ export function usePerformanceMonitoring() {
 
   // Track gesture latency
   useEffect(() => {
-    if (state.isDragging) {
+    if(state.isDragging) {
       const startTime = performance.now();
 
       return () => {

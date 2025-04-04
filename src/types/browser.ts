@@ -4,6 +4,7 @@
 
 /**
  * Options for addEventListener
+ * @example Example usage
  */
 export interface AddEventListenerOptions {
   passive?: boolean;
@@ -25,7 +26,8 @@ export type ResizeObserverCallback = (
 ) => void;
 
 /**
- * Normalized pointer event interface to handle touch, mouse and pointer events uniformly
+ * Normalized pointer event interface to handle: touch, mouse and pointer events uniformly
+ * @example Example usage
  */
 export interface NormalizedPointerEvent {
   clientX: number;

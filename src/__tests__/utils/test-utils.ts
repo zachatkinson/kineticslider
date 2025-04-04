@@ -8,19 +8,26 @@ import { vi } from 'vitest';
 
 import { ReactElement } from 'react';
 
-import type { Slide } from '@/types/slider';
-import { MockFunction } from '@/types/test';
+import type { Slide } from '../../types/slider';
+import type { MockFunction } from '../../types/test/mocks';
 
 import { createSlideId } from '../../utils/id-helpers';
 
 // Re-export render with wrapper if needed
+/**
+ * Renders a React component for testing
+ *
+ * @param ui The React element to render
+ * @returns {RenderResult} The rendered component's result
+ */
 export function render(ui: ReactElement): RenderResult {
   return testRender(ui);
 }
 
 // User event setup helper
-export const setupUserEvent = (): ReturnType<typeof userEvent.setup> =>
-  userEvent.setup();
+export const setupUserEvent = (): ReturnType<typeof userEvent.setup> => {
+  return userEvent.setup();
+};
 
 // Wait for animation to complete
 export const waitForAnimationComplete = async (): Promise<void> => {
@@ -50,7 +57,7 @@ export const generateMockSlides = (count: number): Slide[] => {
 // Custom matchers for GSAP animations
 export const customMatchers = {
   toHaveBeenCalledWithDirection: (
-    received: MockFunction,
+    received: MockFunction<any>,
     direction: string
   ) => {
     const calls = received.mock.calls;
@@ -67,11 +74,23 @@ export const customMatchers = {
 };
 
 // Mock IntersectionObserver
+/**
+ * A mock implementation of the IntersectionObserver API for testing purposes.
+ * Provides mock methods for observe, unobserve, disconnect, and takeRecords.
+ *
+ * @example Example usage
+ * ```ts
+ * global.IntersectionObserver = MockIntersectionObserver;
+ * ```
+ */
 export class MockIntersectionObserver {
   readonly root: Element | null;
   readonly rootMargin: string;
   readonly thresholds: ReadonlyArray<number>;
 
+  /**
+   *
+   */
   constructor(
     _callback: (
       entries: IntersectionObserverEntry[],
@@ -115,7 +134,7 @@ export const mockMatchMedia = (matches: boolean): void => {
 
 // Mock requestAnimationFrame
 export const mockRequestAnimationFrame = (
-  callback: (timestamp: number) => void
+  callback: (timestamp: number) => unknown
 ): number => {
   return setTimeout(() => callback(Date.now()), 0) as unknown as number;
 };

@@ -1,13 +1,23 @@
 import { useEffect, useRef } from 'react';
 import type { UseSliderAccessibilityProps } from '../../types/accessibility';
 
+/**
+ * Hook to handle accessibility features for slider components
+ * @param root0 - The props object
+ * @param root0.totalSlides - Total number of slides
+ * @param root0.currentIndex - Current slide index
+ * @param root0.onNext - Function to go to next slide
+ * @param root0.onPrev - Function to go to previous slide
+ * @param root0.isAnimating - Whether the slider is currently animating
+ * @returns Accessibility utilities for the slider
+ */
 export function useSliderAccessibility({
   totalSlides,
   currentIndex,
   onNext,
   onPrev,
   isAnimating,
-}: UseSliderAccessibilityProps) {
+}: UseSliderAccessibilityProps): { announceSlide: (message: string) => void } {
   const liveRegionRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -34,17 +44,17 @@ export function useSliderAccessibility({
 
   // Update live region when slide changes
   useEffect(() => {
-    if (liveRegionRef.current) {
+    if(liveRegionRef.current) {
       liveRegionRef.current.textContent = `Showing slide ${currentIndex + 1} of ${totalSlides}`;
     }
   }, [currentIndex, totalSlides]);
 
   // Handle keyboard navigation
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
       if (isAnimating) return;
 
-      switch (e.key) {
+      switch(e.key) {
         case 'ArrowLeft':
           onPrev();
           break;
@@ -53,13 +63,13 @@ export function useSliderAccessibility({
           break;
         case 'Home':
           // Navigate to first slide
-          if (currentIndex !== 0) {
+          if(currentIndex !== 0) {
             onPrev();
           }
           break;
         case 'End':
           // Navigate to last slide
-          if (currentIndex !== totalSlides - 1) {
+          if(currentIndex !== totalSlides - 1) {
             onNext();
           }
           break;
@@ -71,8 +81,8 @@ export function useSliderAccessibility({
   }, [currentIndex, totalSlides, onNext, onPrev, isAnimating]);
 
   return {
-    announceSlide: (message: string) => {
-      if (liveRegionRef.current) {
+    announceSlide: (message: string): void => {
+      if(liveRegionRef.current) {
         liveRegionRef.current.textContent = message;
       }
     },

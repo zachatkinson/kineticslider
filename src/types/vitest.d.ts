@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
 /// <reference types="@testing-library/jest-dom" />
 
-import { CustomMatchers, ExtendedAssertion, ExtendedAsymmetricMatchers, ExtendedMock } from './test/vitest';
+import { CustomMatchers as _CustomMatchers, ExtendedAssertion, ExtendedAsymmetricMatchers, ExtendedMock } from './test/vitest';
 
 /**
  * Type declaration augmentations for Vitest

@@ -2,16 +2,30 @@ import { useState } from 'react';
 import type { ValidationError, ValidationResult } from '../../types/validation';
 import { getFieldClass, getErrorForField } from '../../utils/validation';
 
+interface SlideValidationOptions {
+  validateOnMount?: boolean;
+  debounceMs?: number;
+}
+
 /**
  * Custom hook for slide validation
+ * @param data The data to validate
+ * @param _options Validation options
+ * @returns Validation state and utility functions
  */
 export function useSlideValidation(
   data: unknown,
-  options: {
-    validateOnMount?: boolean;
-    debounceMs?: number;
-  } = {}
-) {
+  _options: SlideValidationOptions = {}
+): {
+  validationResult: ValidationResult;
+  validating: boolean;
+  submitted: boolean;
+  setSubmitted: React.Dispatch<React.SetStateAction<boolean>>;
+  getErrorForField: (fieldName: string) => ValidationError | null;
+  getFieldClass: (fieldName: string) => string;
+  setValidating: React.Dispatch<React.SetStateAction<boolean>>;
+  setValidationResult: React.Dispatch<React.SetStateAction<ValidationResult>>;
+} {
   const [validationResult, setValidationResult] = useState<ValidationResult>({
     valid: true,
     errors: []

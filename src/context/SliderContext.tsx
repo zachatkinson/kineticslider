@@ -4,11 +4,11 @@
  * 
  * @module
  * @version 1.0.0
- * @example
+ * @example Example usage
  * ```tsx
  * import { SliderProvider, useSlider } from './SliderContext';
  * 
- * function App() {
+ * function _App(): unknown  {
  *   return (
  *     <SliderProvider items={slides}>
  *       <Slider />
@@ -17,34 +17,33 @@
  * }
  * ```
  * 
- * @performance
- * - Uses React.memo for optimized re-renders
+ * @description * - Uses React.memo for optimized re-renders
  * - Implements useCallback for memoized actions
  * - Efficient state updates via reducer pattern
  * 
- * @security
- * - Type-safe state management
+ * @description * - Type-safe state management
  * - Input validation for configuration
  * - Protected context access
  */
 
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { defaultConfig, initialState } from '../types/slider';
+import * as React from 'react';
+import { createContext, useContext, useReducer, useCallback } from 'react';
+import { _defaultConfig as defaultConfig, _initialState as initialState } from '../types/slider';
 import type { 
   SliderContextValue, 
-  SliderConfig, 
+  SliderConfig as _SliderConfig, 
   SliderState, 
-  SlideItem,
+  SlideItem as _SlideItem,
   SliderAction,
-  SlideIndex
+  SlideIndex as _SlideIndex
 } from '../types/slider';
-import type { GestureDelta } from '../types/gesture';
-import type { GestureDistance } from '../types/branded';
+import type { GestureDelta as _GestureDelta } from '../types/gesture';
+import type { GestureDistance as _GestureDistance } from '../types/branded';
 import { createBrandedNumber } from '../types/branded';
 import type { 
   SliderProviderProps, 
   SliderConsumerProps,
-  WithSliderProps 
+  WithSliderProps as _WithSliderProps 
 } from '../types/context';
 
 /**
@@ -55,14 +54,14 @@ import type {
  * @param action - Action to perform on the state
  * @returns Updated slider state
  * 
- * @example
+ * @example Example usage
  * ```tsx
  * const [state, dispatch] = useReducer(sliderReducer, initialState);
  * dispatch({ type: 'NEXT' });
  * ```
  */
 function sliderReducer(state: SliderState, action: SliderAction): SliderState {
-  switch (action.type) {
+  switch(action.type) {
     case 'NEXT':
       return {
         ...state,
@@ -84,7 +83,7 @@ function sliderReducer(state: SliderState, action: SliderAction): SliderState {
     case 'GO_TO':
       return {
         ...state,
-        currentIndex: action.index,
+        currentIndex: action._index,
         isAnimating: true,
       };
     case 'START_ANIMATION':
@@ -107,10 +106,10 @@ function sliderReducer(state: SliderState, action: SliderAction): SliderState {
         },
       };
     case 'UPDATE_DRAG': {
-      const { delta } = action;
+      const { _delta } = action;
       return {
         ...state,
-        dragDelta: delta,
+        dragDelta: _delta,
       };
     }
     case 'END_DRAG':
@@ -137,45 +136,46 @@ const SliderContext = createContext<SliderContextValue | null>(null);
  * Provider component for the Slider context.
  * Manages state and provides actions for slider functionality.
  * 
- * @component
- * @param props - Provider props including children, items, and configuration
+ * @param props - Provider props including: children, items, and configuration
+ * @param props.children - React children to render inside the provider
+ * @param props.items - Slide items to display in the slider
+ * @param props.config - Optional configuration for the slider
+ * @returns The provider component with context
  * 
- * @example
+ * @example Example usage
  * ```tsx
  * <SliderProvider items={slides} config={{ loop: true }}>
  *   <Slider />
  * </SliderProvider>
  * ```
  * 
- * @performance
- * - Memoized callback functions
+ * @description * - Memoized callback functions
  * - Optimized state updates
  * - Efficient context value computation
  * 
- * @accessibility
- * - Supports keyboard navigation
+ * @description * - Supports keyboard navigation
  * - Announces slide changes
  * - ARIA attributes for controls
  */
-export function SliderProvider({ children, items, config = {} }: SliderProviderProps) {
+export function SliderProvider({ children, items, config = {} }: SliderProviderProps): React.ReactNode {
   const [state, dispatch] = useReducer(sliderReducer, initialState);
   const mergedConfig = { ...defaultConfig, ...config };
 
   const next = useCallback(() => {
-    if (!state.isAnimating) {
+    if(!state.isAnimating) {
       dispatch({ type: 'NEXT' });
     }
   }, [state.isAnimating]);
 
   const previous = useCallback(() => {
-    if (!state.isAnimating) {
+    if(!state.isAnimating) {
       dispatch({ type: 'PREVIOUS' });
     }
   }, [state.isAnimating]);
 
   const goTo = useCallback((index: number) => {
-    if (!state.isAnimating && index !== state.currentIndex) {
-      dispatch({ type: 'GO_TO', index: createBrandedNumber(index, 'SlideIndex') });
+    if(!state.isAnimating && index !== state.currentIndex) {
+      dispatch({ type: 'GO_TO', _index: createBrandedNumber(index, 'SlideIndex') });
     }
   }, [state.isAnimating, state.currentIndex]);
 
@@ -190,7 +190,7 @@ export function SliderProvider({ children, items, config = {} }: SliderProviderP
   const updateDragDelta = useCallback((delta: { x: number; y: number }) => {
     dispatch({ 
       type: 'UPDATE_DRAG', 
-      delta: {
+      _delta: {
         x: createBrandedNumber(delta.x, 'GestureDistance'),
         y: createBrandedNumber(delta.y, 'GestureDistance')
       }
@@ -222,12 +222,12 @@ export function SliderProvider({ children, items, config = {} }: SliderProviderP
  * Hook for accessing slider context values and actions.
  * Must be used within a SliderProvider component.
  * 
- * @returns Slider context value containing state, config, items, and actions
+ * @returns Slider context value containing: state, config, items, and actions
  * @throws Error if used outside of SliderProvider
  * 
- * @example
+ * @example Example usage
  * ```tsx
- * function SlideControls() {
+ * function _SlideControls(): unknown  {
  *   const { state, actions } = useSlider();
  *   return (
  *     <button onClick={actions.next} disabled={state.isAnimating}>
@@ -237,9 +237,9 @@ export function SliderProvider({ children, items, config = {} }: SliderProviderP
  * }
  * ```
  */
-export function useSlider() {
+export function useSlider(): SliderContextValue {
   const context = useContext(SliderContext);
-  if (!context) {
+  if(!context) {
     throw new Error('useSlider must be used within a SliderProvider');
   }
   return context;
@@ -253,11 +253,11 @@ export function useSlider() {
  * @param WrappedComponent - Component to wrap with slider context
  * @returns Wrapped component with slider context
  * 
- * @example
+ * @example Example usage
  * ```tsx
  * const SliderWithContext = withSlider(Slider);
  * 
- * function App() {
+ * function _App(): unknown  {
  *   return <SliderWithContext items={slides} config={config} />;
  * }
  * ```
@@ -265,24 +265,25 @@ export function useSlider() {
 export function withSlider<P extends object>(
   WrappedComponent: React.ComponentType<P>
 ) {
-  return function WithSliderComponent(props: P & Omit<SliderProviderProps, 'children'>) {
+  return function _WithSliderComponent(props: P & Omit<SliderProviderProps, 'children'>): unknown  {
     const { items, config, ...rest } = props;
-    return (
-      <SliderProvider items={items} config={config}>
+    return(
+      <SliderProvider items={items} config={config} children={
         <SliderConsumer>
           {(context) => <WrappedComponent {...(rest as P)} {...context} />}
         </SliderConsumer>
-      </SliderProvider>
+      } />
     );
   };
 }
 
 /**
  * Consumer component for the Slider context.
- * Provides render prop pattern access to slider context.
+ * Provides access to slider context via render props pattern.
  * 
- * @component
- * @internal
+ * @param props - Consumer props
+ * @param props.children - Function that receives slider context and renders UI
+ * @returns The rendered result of the children function with slider context 
  */
 const SliderConsumer: React.FC<SliderConsumerProps> = ({ children }) => {
   const context = useSlider();

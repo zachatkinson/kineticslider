@@ -9,12 +9,12 @@ export * from './animation';
 export * from './analytics';
 
 // Accessibility types
-export {
-  type FocusManagerProps,
-  type AccessibilityAction,
-  type AccessibilityEvent,
-  type AccessibilityConfig,
-  type UseSliderAccessibilityProps
+export type {
+  FocusManagerProps,
+  AccessibilityAction,
+  AccessibilityEvent,
+  AccessibilityConfig,
+  UseSliderAccessibilityProps
 } from './accessibility';
 
 // Branded types
@@ -30,12 +30,12 @@ export * from './common';
 export * from './components';
 
 // Error types
-export {
-  type BaseError,
-  type AnimationError,
-  type GestureError,
-  type NavigationError,
-  type RenderError
+export type {
+  BaseError,
+  AnimationError,
+  GestureError,
+  NavigationError,
+  RenderError
 } from './error';
 
 // Gesture types
@@ -45,18 +45,18 @@ export * from './gesture';
 export * from './gsap';
 
 // Hook types
-export {
-  type UseAnimationReturn,
-  type BasicAnimationReturn,
-  type UseAnimationResult,
-  type UseKeyboardReturn,
-  type UsePerformanceReturn,
-  type UseKineticSliderReturn,
-  type UseErrorTrackingReturn,
-  type UsePerformanceOptions,
-  type UseAnimationConfig,
-  type UseKineticSliderProps,
-  type FormValidationOptions
+export type {
+  UseAnimationReturn,
+  BasicAnimationReturn,
+  UseAnimationResult,
+  UseKeyboardReturn,
+  UsePerformanceReturn,
+  UseKineticSliderReturn,
+  UseErrorTrackingReturn,
+  UsePerformanceOptions,
+  UseAnimationConfig,
+  UseKineticSliderProps,
+  FormValidationOptions
 } from './hooks';
 
 // Interactable elements types
@@ -87,6 +87,26 @@ export * from './storybook';
 export * from './test/mocks';
 
 // Validation types
-export * from './validation';
+export { 
+  ValidationErrorType,
+  ValidationErrorCode,
+  SchemaType
+} from './validation';
+
+export type { 
+  SchemaValidationOptions,
+  SchemaField,
+  Schema,
+  ValidationError,
+  ValidationContext,
+  ValidationResult,
+  Validator,
+  AsyncValidator,
+  ValidationFunction,
+  ValidationRule,
+  KeyGenerator
+} from './validation';
+
+export { ValidationErrorSeverity } from './validation';
 
 // Do not export test types or global augmentations

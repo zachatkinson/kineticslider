@@ -1,7 +1,6 @@
 /* eslint-env vitest */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SliderEventType } from '../../types/analytics';
 // Import after mocking
 import { trackError, trackEvent } from '../../utils/analytics';
 
@@ -11,12 +10,12 @@ vi.mock('../../utils/analytics', () => {
     analytics: {
       trackEvent: vi.fn(),
       trackError: vi.fn(),
-      getConfig: vi.fn().mockReturnValue({ enabled: true, enableErrors: true }),
+      getConfig: vi.fn().mockReturnValue({ enabled: true, enableErrors: true })
     },
     trackEvent: vi.fn(),
     trackError: vi.fn(),
-    SliderEventType,
-    resetAnalyticsForTesting: vi.fn(),
+    // Remove SliderEventType from the mock as it's only a type
+    resetAnalyticsForTesting: vi.fn()
   };
 });
 
@@ -27,11 +26,11 @@ describe('Analytics Utilities', () => {
 
   describe('trackEvent helper', () => {
     it('should call analytics.trackEvent', () => {
-      // Call the helper
-      trackEvent(SliderEventType.SLIDE_CHANGE, { index: 1 });
+      // Call the helper with the string literal for slide_change
+      trackEvent('slide_change', { index: 1 });
 
       // Verify it was called with the right arguments
-      expect(trackEvent).toHaveBeenCalledWith(SliderEventType.SLIDE_CHANGE, {
+      expect(trackEvent).toHaveBeenCalledWith('slide_change', {
         index: 1,
       });
     });

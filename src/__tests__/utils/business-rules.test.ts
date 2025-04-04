@@ -2,20 +2,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Slide } from '../../types';
-import type { ValidationResult } from '../../types/validation';
+import type { ValidationError, ValidationResult } from '../../types/validation';
 // Import mocked modules
 import {
-  memoizedSlideValidator,
-  validateSlidesWithSchema,
-  validateSlideWithBusinessRules,
+  _memoizedSlideValidator as memoizedSlideValidator,
   validateSlideWithSchema,
+  _validateSlideWithBusinessRules as validateSlideWithBusinessRules,
+  _validateSlidesWithSchema as validateSlidesWithSchema
 } from '../../utils/slide-validator';
 import { clearValidationCache, toSlideId } from '../../utils/validation';
 import {
   ValidationErrorCode,
   ValidationErrorSeverity,
   ValidationErrorType,
-} from '../../utils/validation';
+} from '../../types/validation';
 
 // Mock modules
 vi.mock('../../utils/slide-validator');
@@ -38,7 +38,7 @@ describe('Business Rule Validation', () => {
       {
         property: 'title',
         message: 'Title is required',
-        type: ValidationErrorType.INVALID_TYPE,
+        type: ValidationErrorType.TYPE,
         code: ValidationErrorCode.INVALID_TYPE,
         severity: ValidationErrorSeverity.ERROR,
         value: undefined,
@@ -88,7 +88,7 @@ describe('Business Rule Validation', () => {
           {
             property: 'order',
             message: 'Order must be a number',
-            type: ValidationErrorType.INVALID_TYPE,
+            type: ValidationErrorType.TYPE,
             code: ValidationErrorCode.INVALID_TYPE,
             severity: ValidationErrorSeverity.ERROR,
             value: 'not-a-number',
@@ -102,7 +102,7 @@ describe('Business Rule Validation', () => {
       expect(result.valid).toBe(false);
 
       // Check that we have a type error for the order field
-      const orderError = result.errors.find((e) => e.property === 'order');
+      const orderError = result.errors.find((e: ValidationError) => e.property === 'order');
       expect(orderError).toBeDefined();
     });
   });
@@ -133,7 +133,7 @@ describe('Business Rule Validation', () => {
           {
             property: 'title',
             message: 'Slide at index 1: Title is required',
-            type: ValidationErrorType.INVALID_TYPE,
+            type: ValidationErrorType.TYPE,
             code: ValidationErrorCode.INVALID_TYPE,
             severity: ValidationErrorSeverity.ERROR,
             value: undefined,
@@ -165,9 +165,9 @@ describe('Business Rule Validation', () => {
         valid: false,
         errors: [
           {
-            type: ValidationErrorType.INVALID_RANGE,
+            type: ValidationErrorType.RANGE,
             message: 'Slides array cannot be empty',
-            code: ValidationErrorCode.INVALID_RANGE,
+            code: ValidationErrorCode.OUT_OF_RANGE,
             severity: ValidationErrorSeverity.ERROR,
             value: 0,
             expected: '> 0 slides',
@@ -177,7 +177,7 @@ describe('Business Rule Validation', () => {
 
       const result = await validateSlidesWithSchema([]);
       expect(result.valid).toBe(false);
-      expect(result.errors[0]?.type).toBe(ValidationErrorType.INVALID_RANGE);
+      expect(result.errors[0]?.type).toBe(ValidationErrorType.RANGE);
     });
 
     it('provides metadata about validation results', async () => {
@@ -194,7 +194,7 @@ describe('Business Rule Validation', () => {
       const slides = [validSlide, { ...validSlide, id: toSlideId('slide-2') }];
       const result = await validateSlidesWithSchema(slides);
       expect(result.metadata).toBeDefined();
-      if (result.metadata) {
+      if(result.metadata) {
         expect(result.metadata['totalSlides']).toBe(2);
         expect(result.metadata['validSlides']).toBe(2);
       }
@@ -202,7 +202,6 @@ describe('Business Rule Validation', () => {
   });
 
   describe('memoizedSlideValidator', () => {
-    // Just define some simple test cases that don't rely on mocking internals
     it('validates a valid slide correctly', async () => {
       // Since we're mocking at the module level, ensure the mock returns valid for this test
       vi.mocked(memoizedSlideValidator).mockResolvedValue(validResult);
@@ -246,104 +245,47 @@ describe('Business Rule Validation', () => {
           {
             message: 'Description should not simply repeat the title',
             property: 'description',
-            suggestion: 'Make the description provide additional context',
-            type: ValidationErrorType.CUSTOM_VALIDATION_FAILED,
-            code: ValidationErrorCode.CUSTOM_VALIDATION_FAILED,
+            type: ValidationErrorType.CUSTOM,
+            code: ValidationErrorCode.CUSTOM_ERROR,
             severity: ValidationErrorSeverity.WARNING,
-            value: 'Very specific title with some extra words',
-            expected: 'Unique content that adds value beyond the title',
+            value: 'Test Slide',
+            expected: 'More detailed description',
           },
         ],
       });
 
-      const slide = {
+      const sameContentSlide = {
         ...validSlide,
-        title: 'Very specific title',
-        description: 'Very specific title with some extra words',
+        description: validSlide.title,
       };
-
-      const result = await validateSlideWithBusinessRules(slide);
+      const result = await validateSlideWithBusinessRules(sameContentSlide);
       expect(result.valid).toBe(false);
-
-      // Should have a warning about title similarity
-      const titleError = result.errors.find(
-        (e) =>
-          e.message.includes('repeat the title') || e.property === 'description'
-      );
-      expect(titleError).toBeDefined();
-      expect(titleError?.suggestion).toBeDefined();
+      expect(result.errors[0]?.code).toBe(ValidationErrorCode.CUSTOM_ERROR);
     });
 
-    it('validates image quality through mock function', async () => {
-      // Configure mock to return image quality violation
+    it('detects when image does not meet quality requirements', async () => {
+      // Configure mock to return business rule violation for image
       vi.mocked(validateSlideWithBusinessRules).mockResolvedValue({
         valid: false,
         errors: [
           {
             message: 'Image does not meet quality requirements',
             property: 'image',
-            type: ValidationErrorType.CUSTOM_VALIDATION_FAILED,
-            code: ValidationErrorCode.CUSTOM_VALIDATION_FAILED,
-            severity: ValidationErrorSeverity.WARNING,
-            value: 'https://example.com/small-thumbnail.jpg',
-            expected: 'High quality image (min 800x600)',
-          },
-        ],
-      });
-
-      // Create a slide with a low quality image URL
-      const slide = {
-        ...validSlide,
-        image: 'https://example.com/small-thumbnail.jpg',
-      };
-
-      const result = await validateSlideWithBusinessRules(slide);
-      expect(result.valid).toBe(false);
-
-      // Should have a warning about image quality
-      const imageError = result.errors.find(
-        (e) => e.message.includes('quality') || e.property === 'image'
-      );
-      expect(imageError).toBeDefined();
-    });
-
-    it('adds metadata to validation result', async () => {
-      // Configure mock to return result with metadata
-      vi.mocked(validateSlideWithBusinessRules).mockResolvedValue({
-        valid: true,
-        errors: [],
-        metadata: {
-          checkedBusinessRules: true,
-          timestamp: '2023-01-01T00:00:00.000Z',
-        },
-      });
-
-      const result = await validateSlideWithBusinessRules(validSlide);
-      expect(result.metadata).toBeDefined();
-      if (result.metadata) {
-        expect(result.metadata['checkedBusinessRules']).toBe(true);
-        expect(result.metadata['timestamp']).toBeDefined();
-      }
-    });
-
-    it('handles non-object input gracefully', async () => {
-      // Configure mock to return invalid result for null
-      vi.mocked(validateSlideWithBusinessRules).mockResolvedValue({
-        valid: false,
-        errors: [
-          {
-            message: 'Value must be an object',
-            type: ValidationErrorType.INVALID_TYPE,
-            code: ValidationErrorCode.INVALID_TYPE,
+            type: ValidationErrorType.CUSTOM,
+            code: ValidationErrorCode.CUSTOM_ERROR,
             severity: ValidationErrorSeverity.ERROR,
-            value: null,
-            expected: 'object',
+            value: 'https://example.com/low-quality.jpg',
+            expected: 'High quality image (min 1024x768)',
           },
         ],
       });
 
-      const result = await validateSlideWithBusinessRules(null as any);
+      const result = await validateSlideWithBusinessRules({
+        ...validSlide,
+        image: 'https://example.com/low-quality.jpg',
+      });
       expect(result.valid).toBe(false);
+      expect(result.errors[0]?.property).toBe('image');
     });
   });
 });

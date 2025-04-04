@@ -3,25 +3,50 @@ import { trackError as trackAnalyticsError } from './analytics';
 import { ErrorType, ExtendedError } from '../types/error';
 
 /**
+ * Function type for error handlers
+ */
+type ErrorHandlerFunction = (error: Error, errorType: ErrorType) => void;
+
+/**
+ * Options for error handling configuration
+ * @example
+ * ```typescript
+ * const options: ErrorHandlingOptions = {
+ *   capturePromiseRejections: true,
+ *   captureConsoleErrors: false,
+ *   reportToAnalytics: true,
+ *   logToConsole: process.env.NODE_ENV !== 'production'
+ * };
+ * ```
+ */
+interface ErrorHandlingOptions {
+  capturePromiseRejections?: boolean;
+  captureConsoleErrors?: boolean;
+  reportToAnalytics?: boolean;
+  logToConsole?: boolean;
+}
+
+/**
  * Handles component errors and tracks them for analytics.
  *
- * @param event - The error event from the component
+ * @param _event - The error event from the component
  * @throws {Error} When the error cannot be handled
  *
- * @example
+ * @example Example usage
  * ```tsx
  * <div onError={handleComponentError}>
  *   {children}
  * </div>
  * ```
  *
- * @error
+ * @description
  * - Captures React synthetic events
  * - Tracks errors in analytics
  * - Provides error context
  * - Supports error recovery
+ * @returns {void} The function return value
  */
-export const handleComponentError = (event: React.SyntheticEvent<HTMLDivElement, Event>) => {
+export const handleComponentError = (_event: React.SyntheticEvent<HTMLDivElement, Event>): void => {
   const error = new Error('Slider render error');
   trackAnalyticsError(error, { errorType: ErrorType.RENDER });
 };
@@ -34,7 +59,7 @@ export const handleComponentError = (event: React.SyntheticEvent<HTMLDivElement,
  * @param context - Additional error context
  * @returns A formatted error object
  *
- * @example
+ * @example Example usage
  * ```ts
  * const error = createError(
  *   'Failed to load slide',
@@ -43,7 +68,7 @@ export const handleComponentError = (event: React.SyntheticEvent<HTMLDivElement,
  * );
  * ```
  *
- * @error
+ * @description
  * - Standardizes error format
  * - Adds debugging context
  * - Supports error codes
@@ -55,10 +80,10 @@ export function createError(
   context?: Record<string, unknown>
 ): ExtendedError {
   const error = new Error(message) as ExtendedError;
-  if (code) {
+  if(code) {
     error.code = code;
   }
-  if (context) {
+  if(context) {
     error.context = context;
   }
   return error;
@@ -71,7 +96,7 @@ export function createError(
  * @param errorType - The type of error to track
  * @returns A wrapped function with error handling
  *
- * @example
+ * @example Example usage
  * ```ts
  * const safeFunction = withErrorHandling(
  *   () => riskyOperation(),
@@ -79,21 +104,21 @@ export function createError(
  * );
  * ```
  *
- * @error
+ * @description
  * - Catches synchronous errors
  * - Tracks error metrics
  * - Preserves function context
  * - Maintains type safety
  */
-export function withErrorHandling<T extends (...args: any[]) => any>(
+export function withErrorHandling<T extends (...args: unknown[]) => unknown>(
   fn: T,
   errorType: ErrorType
-): (...args: Parameters<T>) => ReturnType<T> {
-  return (...args: Parameters<T>): ReturnType<T> => {
+): (...args: Parameters<T>) => unknown {
+  return (...args: Parameters<T>): unknown => {
     try {
       return fn(...args);
-    } catch (error) {
-      if (error instanceof Error) {
+    } catch(error) {
+      if(error instanceof Error) {
         trackAnalyticsError(error, { errorType });
       } else {
         trackAnalyticsError(new Error(String(error)), { errorType });
@@ -111,7 +136,7 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
  * @param delay - Delay between retries in milliseconds
  * @returns The operation result or throws after retries
  *
- * @example
+ * @example Example usage
  * ```ts
  * const result = await handleAsyncError(
  *   () => fetchData(),
@@ -120,7 +145,7 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
  * );
  * ```
  *
- * @error
+ * @description
  * - Implements retry logic
  * - Tracks retry attempts
  * - Supports delay between retries
@@ -133,25 +158,48 @@ export async function handleAsyncError<T>(
 ): Promise<T> {
   let lastError: ExtendedError | null = null;
   
-  for (let attempt = 0; attempt < retryCount; attempt++) {
+  for(let attempt = 0; attempt < retryCount; attempt++) {
     try {
       return await operation();
-    } catch (error) {
-      if (error instanceof Error) {
+    } catch(error) {
+      if(error instanceof Error) {
         lastError = error as ExtendedError;
       } else {
         lastError = new Error(String(error)) as ExtendedError;
       }
-      if (attempt < retryCount - 1) {
+      if(attempt < retryCount - 1) {
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
   }
   
-  if (lastError) {
+  if(lastError) {
     trackAnalyticsError(lastError, { errorType: ErrorType.ASYNC });
     throw lastError;
   }
   
   throw new Error('Operation failed after retries');
+}
+
+/**
+ * Event handler for window errors
+ * @param _event - The error event
+ */
+function _handleWindowError(_event: ErrorEvent): void {
+  // Implementation goes here
+}
+
+export const setupErrorHandling = (
+  errorHandler: ErrorHandlerFunction,
+  _options: ErrorHandlingOptions = {}
+): void => {
+  // Setup global error handling for uncaught exceptions
+  window.addEventListener('error', (_event: ErrorEvent) => {
+    // Unhandled errors from scripts
+    try {
+      errorHandler(new Error('Unhandled script error'), ErrorType.UNKNOWN);
+    } catch (err) {
+      console.error('Error in error handler:', err);
+    }
+  });
 } 

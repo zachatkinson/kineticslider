@@ -8,63 +8,58 @@ import type { SlideFormProps } from '../types/components';
 import type { ValidationError } from '../types/validation';
 import { getFeedbackClass, validateAndSubmit } from '../utils/form-helpers';
 import { useSlideValidation } from '../hooks/slider/useSlideValidation';
-import { validateSlide } from '../utils/validation-helpers';
+import { _validateSlide as validateSlide } from '../utils/validation-helpers';
 import { ValidationErrorSeverity } from '../types/validation';
-import type { ValidationResult } from '../types/validation';
+import type { ValidationResult as _ValidationResult } from '../types/validation';
 
 /**
  * A form component for creating and editing slider slides with validation and accessibility support.
  *
- * @component
- * @example
+ * @description * @example Example usage
  * ```tsx
  * <SlideForm
- *   initialSlide={{ title: 'Example', image: 'https://example.com/image.jpg' }}
+ *   initialSlide={{ title: 'Example', image: 'https://example.com/image.jpg' }} />
  *   onSave={(slide) => handleSave(slide)}
  *   onCancel={() => handleCancel()}
  * />
  * ```
  *
- * @accessibility
- * - Uses semantic form elements
+ * @description * - Uses semantic form elements
  * - Provides ARIA labels and descriptions
  * - Shows validation feedback
  * - Supports keyboard navigation
  * - Uses required field indicators
  *
- * @state
- * - Manages form field values
+ * @description * - Manages form field values
  * - Tracks validation state
  * - Handles submission state
  * - Manages error states
  *
- * @events
+ * @event onChange
  * - onSave: Fired when form is valid and submitted
  * - onCancel: Fired when form is cancelled
  * - onChange: Internal field change handling
  *
- * @validation
- * - Real-time field validation
+ * @description * - Real-time field validation
  * - Debounced validation checks
  * - Error message display
  * - Field-level feedback
  * - Form-level validation
  *
- * @error
- * - Displays validation errors
+ * @description * - Displays validation errors
  * - Shows warning messages
  * - Provides error suggestions
  * - Prevents invalid submissions
  *
- * @see {@link useSlideValidation} For validation hook implementation
- * @see {@link validateSlide} For validation logic
+ * @see {@link: useSlideValidation} For validation hook implementation
+ * @see {@link: validateSlide} For validation logic
  */
 
 export const SlideForm: React.FC<SlideFormProps> = ({
   initialSlide = {},
   onSave,
   onCancel,
-}) => {
+}): React.ReactElement => {
   // Merge initial values with defaults and ensure id is present
   const [slide, setSlide] = useState<Slide>({
     id: initialSlide.id || (('temp-' + Date.now()) as SliderId),
@@ -131,7 +126,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           required
         />
         {getErrorForField('title') && (
-          <div className={getFeedbackClass(getErrorForField('title'))}>
+          <div className={getFeedbackClass(getErrorForField('title') || undefined)}>
             {getErrorForField('title')?.message}
           </div>
         )}
@@ -151,7 +146,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           rows={3}
         />
         {getErrorForField('description') && (
-          <div className={getFeedbackClass(getErrorForField('description'))}>
+          <div className={getFeedbackClass(getErrorForField('description') || undefined)}>
             {getErrorForField('description')?.message}
             {getErrorForField('description')?.suggestion && (
               <span className="suggestion">
@@ -176,7 +171,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           required
         />
         {getErrorForField('image') && (
-          <div className={getFeedbackClass(getErrorForField('image'))}>
+          <div className={getFeedbackClass(getErrorForField('image') || undefined)}>
             {getErrorForField('image')?.message}
           </div>
         )}
@@ -195,7 +190,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           required
         />
         {getErrorForField('alt') && (
-          <div className={getFeedbackClass(getErrorForField('alt'))}>
+          <div className={getFeedbackClass(getErrorForField('alt') || undefined)}>
             {getErrorForField('alt')?.message}
           </div>
         )}
@@ -205,8 +200,11 @@ export const SlideForm: React.FC<SlideFormProps> = ({
       </div>
 
       {submitted && validationResult.errors.length > 0 && (
-        <div className="alert alert-warning">
-          <strong>Please review the form for issues:</strong>
+        <div 
+          className={`alert alert-warning ${validationResult.valid ? 'has-warnings' : ''}`} 
+          data-testid="validation-summary"
+        >
+          <strong>Please review the form for issues: </strong>
           <ul>
             {validationResult.errors.map((error: ValidationError, index: number) => (
               <li

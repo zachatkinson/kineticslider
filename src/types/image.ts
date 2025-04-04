@@ -8,14 +8,14 @@ export interface ImageError extends Error {
 }
 
 export interface ImageAnalyticsData {
-  eventType: 'error' | 'load';
+  eventType: '_error' | 'load';
   timestamp: string;
-  error?: ImageError;
+  _error?: ImageError;
   index?: number;
 }
 
 export interface PreloadImageOptions {
   onLoad?: () => void;
-  onError?: (error: ImageError) => void;
-  onAnalytics?: (data: ImageAnalyticsData) => void;
+  onError?: (_error: ImageError) => void;
+  onAnalytics?: (_data: ImageAnalyticsData) => void;
 } 

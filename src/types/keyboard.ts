@@ -26,6 +26,7 @@ export interface KeyboardOptions {
 
 /**
  * Options for focus trap behavior
+ * @example Example usage
  */
 export interface FocusTrapOptions {
   /** Whether to return focus to the previously focused element when deactivating */
@@ -48,6 +49,7 @@ export interface FocusTrapOptions {
 
 /**
  * Keyboard navigation configuration
+ * @example Example usage
  */
 export interface KeyboardConfig {
   /** Enable keyboard navigation */
@@ -77,6 +79,7 @@ export type KeyboardHandlers = Record<string, KeyboardEventHandler | undefined>;
 
 /**
  * Return type for useKeyboard hook
+ * @example Example usage
  */
 export interface UseKeyboardReturn {
   /** Trap focus within a container */

@@ -6,7 +6,7 @@ import './index.css';
 
 // Replace non-null assertion with a safer approach
 const rootElement = document.getElementById('root');
-if (rootElement) {
+if(rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <BasicExample />

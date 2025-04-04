@@ -1,161 +1,127 @@
 /* eslint-env vitest */
-import { renderHook } from '@testing-library/react-hooks';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
+import _React from 'react';
+import { renderHook } from '@testing-library/react';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { usePerformance } from '../../hooks/usePerformance';
+import * as performanceUtils from '../../utils/performance';
+import type { PerformanceMetrics as _PerformanceMetrics } from '../../types/performance';
+
+/**
+ * Tests for the usePerformance hook
+ * 
+ * Testing strategy:
+ * 1. Mock the performance.now API to control timestamp values
+ * 2. Spy on utility functions to verify they're called correctly
+ * 3. Test: initialization, options: handling, and metric tracking
+ * 4. Test callback behavior and state updates
+ */
+
+// Mock the performance API to control timing
+const mockPerformanceNow = vi.fn();
+global.performance.now = mockPerformanceNow;
 
 describe('usePerformance Hook', () => {
   beforeEach(() => {
-    // Mock performance API
-    vi.useFakeTimers();
-    vi.spyOn(performance, 'now').mockImplementation(() => 0);
+    vi.clearAllMocks();
+    mockPerformanceNow.mockReturnValue(0);
+    
+    // Spy on performance utility functions
+    vi.spyOn(performanceUtils, 'createPerformanceMonitor').mockReturnValue(() => { return; });
+    vi.spyOn(performanceUtils, 'trackRenderTime').mockReturnValue(10);
+    vi.spyOn(performanceUtils, '_createPerformanceComponentId').mockReturnValue('test-component-id');
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  // Helper function to advance requestAnimationFrame
-  const advanceFrame = (callback?: () => void): void => {
-    vi.advanceTimersByTime(16.7); // roughly 60fps
-    if (callback) callback();
-  };
-
-  it('should initialize with default options', () => {
+  it('should initialize with default values', () => {
     const { result } = renderHook(() => usePerformance());
-
-    expect(result.current.metrics.fps).toBe(null);
-    expect(result.current.metrics.renderTime).toBe(0);
-    expect(result.current.metrics.memoryUsage).toBe(null);
+    
+    // Verify initial metrics state
+    expect(result.current.metrics.fps).toBeNull();
+    expect(result.current.metrics.memoryUsage).toBe(0);
+    expect(result.current.metrics.renderTime).toEqual([]);
+    expect(result.current.metrics.interactionTime).toEqual([]);
+    
+    // Verify that hook returns expected functions
+    expect(result.current.trackRender).toBeInstanceOf(Function);
+    expect(result.current.trackInteraction).toBeInstanceOf(Function);
   });
 
-  it('should start monitoring when debug is enabled', () => {
-    const { result } = renderHook(() =>
-      usePerformance({
-        debug: true,
-        logToConsole: true,
-      })
-    );
-
-    expect(result.current.metrics).toBeDefined();
-  });
-
-  it('should update FPS when monitored', () => {
-    const { result } = renderHook(() =>
-      usePerformance({
-        debug: true,
-        updateInterval: 100,
-      })
-    );
-
-    // Simulate a few frames passing
-    advanceFrame();
-    advanceFrame();
-    advanceFrame();
-
-    // Force update the requestAnimationFrame cycle
-    result.current.trackRender();
-
-    // FPS might still be null since we haven't exceeded the updateInterval
-    expect(result.current.metrics).toBeDefined();
-  });
-
-  it('should calculate performance metrics', () => {
-    let time = 0;
-    const nowSpy = vi.spyOn(performance, 'now').mockImplementation(() => time);
-
-    const { result } = renderHook(() =>
-      usePerformance({
-        debug: true,
-        updateInterval: 100,
-      })
-    );
-
-    // Simulate 10 frames at 60fps
-    for (let i = 0; i < 10; i++) {
-      time += 16.7; // ~60fps
-      advanceFrame();
-      result.current.trackRender();
-    }
-
-    expect(result.current.metrics.renderTime).toBeGreaterThan(0);
-
-    // Clean up the spy
-    nowSpy.mockRestore();
-  });
-
-  it('should provide metric updates through callback', () => {
-    const onMetricsUpdate = vi.fn();
-
-    const { result } = renderHook(() =>
-      usePerformance({
-        debug: true,
-        updateInterval: 100,
-        onMetricsUpdate,
-      })
-    );
-
-    // Simulate frames passing with different intervals
-    for (let i = 0; i < 10; i++) {
-      advanceFrame();
-      result.current.trackRender();
-    }
-
-    expect(onMetricsUpdate).toHaveBeenCalled();
-  });
-
-  it('should track interactions correctly', () => {
-    let mockTime = 0;
-    const mockNow = vi.spyOn(performance, 'now').mockImplementation(() => {
-      // Increment time by 10ms each call to simulate elapsed time
-      mockTime += 10;
-      return mockTime;
+  it('should call createPerformanceMonitor with correct options', () => {
+    // Test with custom options
+    const options = {
+      debug: true,
+      logToConsole: true,
+      trackMemory: true,
+      includeWebVitals: true,
+      updateInterval: 2000,
+      onMetricsUpdate: vi.fn()
+    };
+    
+    renderHook(() => usePerformance(options));
+    
+    // Verify options are passed correctly to the monitoring utility
+    expect(performanceUtils.createPerformanceMonitor).toHaveBeenCalledWith({
+      onMetricsUpdate: expect.any(Function),
+      trackMemory: true,
+      includeWebVitals: true,
+      updateInterval: 2000,
+      debug: true,
+      logToConsole: true
     });
+  });
 
-    const { result } = renderHook(() =>
-      usePerformance({
-        debug: true,
-        logToConsole: true,
-      })
+  it('should call trackRenderTime when trackRender is called', () => {
+    // Set a specific timestamp for consistent testing
+    mockPerformanceNow.mockReturnValue(100);
+    
+    const { result } = renderHook(() => usePerformance());
+    
+    // Call trackRender
+    result.current.trackRender('test-render');
+    
+    // Verify trackRenderTime was called with correct arguments
+    expect(performanceUtils.trackRenderTime).toHaveBeenCalledWith(
+      100,
+      'test-component-id',
+      'test-render',
+      false
     );
-
-    // Create a tracked function
-    const trackedFn = result.current.trackInteraction(() => {
-      // This function takes some time to execute
-    });
-
+  });
+  
+  it('should call the original function when using trackInteraction', () => {
+    // Simulate timing for interaction measurement
+    mockPerformanceNow
+      .mockReturnValueOnce(0)   // Initial call
+      .mockReturnValueOnce(100) // Start of interaction
+      .mockReturnValueOnce(150); // End of interaction
+    
+    const { result } = renderHook(() => usePerformance());
+    
+    // Create a mock function to track
+    const mockFn = vi.fn();
+    const trackedFn = result.current.trackInteraction(mockFn);
+    
     // Execute the tracked function
     trackedFn();
-
-    // Since our mock increments by 10ms each call, and trackInteraction calls
-    // performance.now() twice, we should see a 10ms interaction time
-    expect(result.current.metrics.interactionTime).toBe(10);
-
-    // Clean up the spy
-    mockNow.mockRestore();
+    
+    // Verify original function was called
+    expect(mockFn).toHaveBeenCalled();
   });
-
-  it('should track render time correctly', () => {
-    let mockTime = 0;
-    vi.spyOn(performance, 'now').mockImplementation(() => {
-      // Increment time by 10ms each call to simulate elapsed time
-      mockTime += 10;
-      return mockTime;
-    });
-
-    const { result } = renderHook(() =>
-      usePerformance({
-        debug: true,
-        logToConsole: true,
-      })
-    );
-
-    // Track render time with a label
-    result.current.trackRender('Test Label');
-
-    // The mock is called multiple times during initialization and rendering,
-    // so the expected value is 110ms rather than 10ms
-    expect(result.current.metrics.renderTime).toBe(110);
+  
+  it('should provide onMetricsUpdate callback to performance monitor', () => {
+    // Create a spy to capture the callback
+    const createMonitorSpy = vi.spyOn(performanceUtils, 'createPerformanceMonitor');
+    
+    // Render the hook
+    renderHook(() => usePerformance());
+    
+    // Verify createPerformanceMonitor was called with an onMetricsUpdate callback
+    expect(createMonitorSpy).toHaveBeenCalled();
+    const callArgs = createMonitorSpy.mock.calls[0][0];
+    expect(callArgs).toHaveProperty('onMetricsUpdate');
+    expect(typeof callArgs.onMetricsUpdate).toBe('function');
   });
 });

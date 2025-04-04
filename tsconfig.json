@@ -12,7 +12,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "baseUrl": ".",
     "paths": {
@@ -35,6 +35,21 @@
       "@styles/*": ["src/styles/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/__tests__/**/*.ts",
+    "src/__tests__/**/*.tsx",
+    "src/__tests__/**/*.js",
+    "src/__tests__/**/*.jsx",
+    "migration-tools/**/*.ts",
+    "migration-tools/**/*.tsx",
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx",
+    ".cursor/**/*.ts",
+    ".cursor/**/*.tsx"
+  ],
   "exclude": ["node_modules", "dist", ".next", "coverage"]
 }

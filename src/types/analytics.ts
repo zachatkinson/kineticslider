@@ -7,7 +7,7 @@ import type { ErrorType } from './slider';
 /**
  * Types of events that can be tracked
  */
-type SliderEventType =
+export type SliderEventType =
   | 'slide_change'
   | 'animation_start'
   | 'animation_complete'
@@ -22,6 +22,7 @@ type SliderEventType =
 
 /**
  * Base event data interface
+ * @example Example usage
  */
 interface BaseEventData {
   timestamp: number;
@@ -32,6 +33,7 @@ interface BaseEventData {
 
 /**
  * Event-specific data interfaces
+ * @example Example usage
  */
 interface SlideChangeEventData extends BaseEventData {
   type: 'slide_change';
@@ -92,7 +94,7 @@ interface AccessibilityEventData extends BaseEventData {
 /**
  * Union type of all event data
  */
-type SliderEventData =
+export type SliderEventData =
   | SlideChangeEventData
   | AnimationEventData
   | GestureEventData
@@ -104,6 +106,7 @@ type SliderEventData =
 
 /**
  * Analytics configuration
+ * @example Example usage
  */
 interface AnalyticsConfig {
   enabled: boolean;
@@ -117,22 +120,23 @@ interface AnalyticsConfig {
   trackPerformance: boolean;
   trackInteractions: boolean;
   trackErrors: boolean;
-  onEvent?: (event: SliderAnalyticsData) => void;
+  onEvent?: (_event: SliderAnalyticsData) => void;
   endpoint?: string;
 }
 
 /**
  * Analytics provider interface
+ * @example Example usage
  */
 export interface AnalyticsProvider {
-  trackEvent: (event: SliderEventData) => void;
+  trackEvent: (_event: SliderEventData) => void;
   getConfig: () => AnalyticsConfig;
-  setConfig: (config: Partial<AnalyticsConfig>) => void;
+  setConfig: (_config: Partial<AnalyticsConfig>) => void;
   flush: () => Promise<void>;
 }
 
 /** All possible slider event types for analytics */
-type SliderAnalyticsEventType = 
+export type SliderAnalyticsEventType =
   | 'slide_change'
   | 'animation_complete'
   | 'gesture_detected'
@@ -141,7 +145,9 @@ type SliderAnalyticsEventType =
   | 'performance_metric'
   | 'accessibility_action';
 
-/** Base analytics data interface */
+/** Base analytics data interface 
+ * @example Example usage
+ */
 interface BaseAnalyticsData {
   eventType: SliderAnalyticsEventType;
   timestamp: string;
@@ -149,7 +155,9 @@ interface BaseAnalyticsData {
   sessionId?: string;
 }
 
-/** Analytics data for slide changes */
+/** Analytics data for slide changes 
+ * @example Example usage
+ */
 interface SlideChangeAnalytics extends BaseAnalyticsData {
   eventType: 'slide_change';
   fromIndex: SlideIndex;
@@ -158,14 +166,18 @@ interface SlideChangeAnalytics extends BaseAnalyticsData {
   isAutoplay: boolean;
 }
 
-/** Analytics data for animation completion */
+/** Analytics data for animation completion 
+ * @example Example usage
+ */
 interface AnimationCompleteAnalytics extends BaseAnalyticsData {
   eventType: 'animation_complete';
   duration: number;
   direction: 'forward' | 'backward';
 }
 
-/** Analytics data for gesture detection */
+/** Analytics data for gesture detection 
+ * @example Example usage
+ */
 interface GestureAnalytics extends BaseAnalyticsData {
   eventType: 'gesture_detected';
   gestureType: string;
@@ -174,7 +186,9 @@ interface GestureAnalytics extends BaseAnalyticsData {
   velocity: number;
 }
 
-/** Analytics data for errors */
+/** Analytics data for errors 
+ * @example Example usage
+ */
 interface ErrorAnalytics extends BaseAnalyticsData {
   eventType: 'error';
   error: Error;
@@ -187,7 +201,7 @@ interface ErrorAnalytics extends BaseAnalyticsData {
 }
 
 /** Union type for all slider analytics data */
-type SliderAnalyticsData = 
+export type SliderAnalyticsData =
   | SlideChangeAnalytics 
   | AnimationCompleteAnalytics 
   | GestureAnalytics 
@@ -195,7 +209,6 @@ type SliderAnalyticsData =
 
 // Export all types
 export type {
-  SliderEventType,
   BaseEventData,
   SlideChangeEventData,
   AnimationEventData,
@@ -205,13 +218,10 @@ export type {
   InteractionEventData,
   PerformanceEventData,
   AccessibilityEventData,
-  SliderEventData,
   AnalyticsConfig,
-  SliderAnalyticsEventType,
   BaseAnalyticsData,
   SlideChangeAnalytics,
   AnimationCompleteAnalytics,
   GestureAnalytics,
-  ErrorAnalytics,
-  SliderAnalyticsData
+  ErrorAnalytics
 };

@@ -9,17 +9,18 @@
  * Contains statistical values calculated from a series of metric measurements
  * 
  * @interface
- * @example
+ * @example Example usage
  * ```typescript
  * // Example metric summary for FPS measurements
- * const fpsSummary: MetricSummary = {
- *   avg: 58.7,
+ * const _fpsSummary: MetricSummary = {
+ *   avg: 58.
+ * 7,
  *   p95: 60,
  *   min: 45,
  *   max: 60,
  *   count: 120,
  *   median: 59,
- *   stdDev: 3.2
+ *   stdDev: 3.2;
  * };
  * ```
  */
@@ -65,14 +66,14 @@ export interface MetricSummary {
  * Core structure for all performance measurements
  * 
  * @interface
- * @example
+ * @example Example usage
  * ```typescript
  * // Example of a frame rate measurement
- * const fpsMetric: BasePerformanceMetric = {
+ * const _fpsMetric: BasePerformanceMetric = {
  *   name: 'fps',
  *   value: 60,
  *   timestamp: Date.now(),
- *   unit: 'fps'
+ *   unit: 'fps';
  * };
  * ```
  */
@@ -99,17 +100,17 @@ export interface BasePerformanceMetric {
 }
 
 /**
- * Common metric names used across the system
- * Core web vitals and general performance metrics
+ * Common metric names shared across performance monitoring components
  * 
- * @type
- * @example
- * ```typescript
- * // Using a common metric name in a function
- * function trackMetric(name: CommonMetricName, value: number) {
- *   if (name === 'FCP' || name === 'LCP') {
+ * Defines standard metric names that are recognized by the performance
+ * monitoring system for consistent identification and reporting.
+ * 
+ * @example Example usage
+ * ```ts
+ * function logMetric(name: CommonMetricName, value: number): void {
+ *   if(name === 'FCP' || name === 'LCP') {
  *     console.log(`Critical rendering metric ${name}: ${value}ms`);
- *   } else if (name === 'fps') {
+ *   } else if(name === 'fps') {
  *     console.log(`Frame rate: ${value} FPS`);
  *   }
  * }

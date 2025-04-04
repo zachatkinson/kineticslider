@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DEFAULT_VALIDATION_DEBOUNCE } from '../constants/validation';
 import {
   FormValidationOptions,
@@ -12,7 +12,7 @@ import {
 import type { ValidationError, ValidationResult } from '../types/validation';
 import {
   validateFormData,
-  createDebouncedValidator
+  createDebouncedValidator as _createDebouncedValidator
 } from '../utils/validation-helpers';
 
 /**
@@ -21,7 +21,7 @@ import {
  * @param formData - The form data to validate
  * @param validationFn - Optional custom validation function
  * @param options - Validation options
- * @returns Object containing validation state, result and helper functions
+ * @returns Object containing validation: state, result and helper functions
  */
 export function useFormValidation<T>(
   formData: T,
@@ -38,9 +38,9 @@ export function useFormValidation<T>(
   const [validating, setValidating] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  // Initial validation if validateOnMount is true
-  useEffect(() => {
-    if (options?.validateOnMount && validationFn) {
+  // Track the latest validation result
+  const validate = useCallback(() => {
+    if (validationFn) {
       void validateFormData(
         formData,
         validationFn,
@@ -48,19 +48,27 @@ export function useFormValidation<T>(
         setValidationResult
       );
     }
-  }, [options?.validateOnMount, validationFn, formData]);
+  }, [formData, validationFn]);
 
-  // Real-time validation as user types
+  // Validate on mount if enabled
+  useEffect(() => {
+    if(options?.validateOnMount && validationFn) {
+      validate();
+    }
+  }, [options?.validateOnMount, validationFn, formData, validate]);
+
+  // Validate on change if enabled
   useEffect(() => {
     if (!validateOnChange || !validationFn) return;
 
-    const debouncedValidate = createDebouncedValidator(
-      (data: T) => validateFormData(data, validationFn, setValidating, setValidationResult),
-      debounceMs
-    );
+    const handler = setTimeout(() => {
+      validate();
+    }, debounceMs);
 
-    debouncedValidate(formData);
-  }, [formData, validationFn, debounceMs, validateOnChange]);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [formData, validationFn, debounceMs, validateOnChange, validate]);
 
   // Helper to get error message for a field
   const getErrorForField = (fieldName: string): ValidationError | undefined => {
@@ -80,8 +88,8 @@ export function useFormValidation<T>(
 
   return {
     validationResult,
-    validating,
-    submitted,
+    _validating: validating,
+    _submitted: submitted,
     setSubmitted,
     getErrorForField,
     getFieldClass,

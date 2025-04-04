@@ -2,8 +2,14 @@
  * Types related to application state management
  */
 
+// Import types first
+import type { SlideIndex, SliderId } from './branded';
+import type { GestureDelta } from './gesture';
+import type { Slide } from './slider';
+
 /**
  * Global application state interface
+ * @example Example usage
  */
 export interface AppState {
   slides: {
@@ -29,9 +35,6 @@ export interface AppState {
 /**
  * Store-related type definitions and interfaces
  */
-import type { SlideIndex, SliderId } from './branded';
-import type { GestureDelta } from './gesture';
-import type { Slide } from './slider';
 
 // Action types
 export type SlideAction = 
@@ -43,12 +46,12 @@ export type SlideAction =
   | { type: 'REMOVE_SLIDE'; id: SliderId }
   | { type: 'REORDER_SLIDES'; ids: SliderId[] };
 
-export type UIAction =
+export type UIAction = 
   | { type: 'TOGGLE_FULLSCREEN' }
   | { type: 'TOGGLE_MUTE' }
   | { type: 'SET_THEME'; theme: 'light' | 'dark' };
 
-export type SettingsAction =
+export type SettingsAction = 
   | { type: 'TOGGLE_AUTOPLAY' }
   | { type: 'TOGGLE_LOOP' }
   | { type: 'TOGGLE_GESTURE' }

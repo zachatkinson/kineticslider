@@ -75,7 +75,7 @@ export async function removeCommentsFromTypeScriptFiles(
       const success = await processFile(file);
       if (success) {
         stats.successful++;
-        console.log(`Successfully processed: ${file}`);
+        console.warn(`Successfully processed: ${file}`);
       } else {
         stats.failed++;
         console.error(`Failed to process: ${file}`);

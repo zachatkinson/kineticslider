@@ -1,6 +1,7 @@
 /**
+ * Description
  * @module Slider
- * @description Core slider module exports providing components, hooks, and types for the slider implementation.
+ * @description Core slider module exports providing: components, hooks, and types for the slider implementation.
  * @version 1.0.0
  */
 
@@ -11,6 +12,4 @@
  * @see useSlider - Hook for slider state management
  */
 export { Slider } from './Slider';
-export { SliderTest } from './SliderTest';
-export { useSlider } from '../../context/SliderContext';
-export type { SliderProps, SliderConfig, SlideItem } from '../../types/slider'; 
+export type { SliderConfig, SlideItem } from '../../types/slider'; 

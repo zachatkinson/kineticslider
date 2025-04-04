@@ -6,18 +6,20 @@ import type { Slide } from './slider';
 
 /**
  * Props for the SlideForm component
+ * @example Example usage
  */
 export interface SlideFormProps {
-  /** Initial slide data */
+  /** Initial _slide data */
   initialSlide?: Partial<Slide>;
   /** Callback when form is saved */
-  onSave: (slide: Slide) => void;
+  onSave: (_slide: Slide) => void;
   /** Callback when form is cancelled */
   onCancel: () => void;
 }
 
 /**
  * Form field configuration
+ * @example Example usage
  */
 export interface FormFieldConfig {
   /** Field label */

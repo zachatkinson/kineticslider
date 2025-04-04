@@ -1,8 +1,18 @@
 /**
  * Event types for the KineticSlider component
+ * @example Example usage
  */
 
-/** Base event interface for all slider events */
+/**
+ * Base event interface for all slider events 
+ * @example
+ * ```typescript
+ * const handleSliderEvent = (event: BaseSliderEvent) => {
+ *   console.warn(`Slider event at position (${event.clientX}, ${event.clientY}), type: ${event.type}`);
+ *   // Handle the slider event based on its type
+ * };
+ * ```
+ */
 export interface BaseSliderEvent {
   clientX: number;
   clientY: number;

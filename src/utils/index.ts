@@ -2,6 +2,23 @@
  * Core utilities index
  */
 
+// Import error types for re-export
+import { ValidationErrorType, ValidationErrorCode, ValidationErrorSeverity } from '../types/validation';
+
+// Import slide validator functions
+import { _validateSlidesWithSchema as validateSlides } from './slide-validator';
+// Import animation validator functions
+import { _validateAnimationConfig as validateAnimationConfig } from './animation-validator';
+
+// Import validation functions from validation.ts
+import {
+  validateProps as _validateProps,
+  validateErrorInfo as _validateErrorInfo,
+  validateAccessibility as _validateAccessibility,
+  validatePerformanceConfig as _validatePerformanceConfig,
+  validateImageExists as _validateImageExists
+} from './validation';
+
 // Form utilities
 export {
   getFeedbackClass,
@@ -16,7 +33,7 @@ export {
   memoize,
   safeJsonParse,
   sleep,
-  createRandomId,
+  _createRandomId as createRandomId,
   deepClone,
   shallowMerge,
   getNestedValue,
@@ -25,74 +42,95 @@ export {
 // Performance utilities
 export {
   measurePerformance,
-  measureFPS,
+  _measureFPS as measureFPS,
   createPerformanceMonitor,
-  calculateMetricSummary,
+  _calculateMetricSummary as calculateMetricSummary,
   trackInteraction as trackPerformanceInteraction,
 } from './performance';
 
 // Validation utilities
 export {
+  isEmpty,
+  isObject,
   registerValidator,
   getValidator,
   createSchemaValidator,
-  validateErrorInfo,
   memoizeValidator,
   clearValidationCache,
   toSlideId,
   toComponentId,
+  safeGet,
   composeValidators,
   composeAsyncValidators,
+  createValidationError,
 } from './validation';
+
+// Slide validation utilities
+export { validateSlides, validateAnimationConfig };
+
+// Additional validation utilities
+export {
+  createValidator,
+  safeGet as safeGetProp, // Rename to avoid conflict with safeGet from json.ts
+  _createValidationError as createTestValidationError, // Rename to avoid conflict
+} from './validation-extras';
+
+// Validation guard functions
+export {
+  isValidSlide,
+  isValidProps,
+  isValidErrorInfo,
+} from './validation-guards';
+
+// Re-export validation enums
+export { ValidationErrorType, ValidationErrorCode, ValidationErrorSeverity };
 
 // Type checking utilities
 export {
   isNullOrUndefined,
-  isObject,
   isArray,
   isString,
   isNumber,
   isBoolean,
   isFunction,
-  isEmpty,
   hasMethod,
   isPromise,
-  isDate,
-  isFiniteNumber,
-  isValidationResult,
-  isPerformanceMetrics,
-  isAnimationConfig,
-  hasFocusFunction,
-  hasInitialFocusFunction,
+  isValidDate as isDate,
+  _isFiniteNumber as isFiniteNumber,
+  _isValidationResult as isValidationResult,
+  _isPerformanceMetrics as isPerformanceMetrics,
+  _isAnimationConfig as isAnimationConfig,
+  _hasFocusFunction as hasFocusFunction,
+  _hasInitialFocusFunction as hasInitialFocusFunction,
 } from './type-checks';
 
 // String utilities
 export {
   capitalize,
-  camelToKebab,
-  kebabToCamel,
+  _camelToKebab as camelToKebab,
+  _kebabToCamel as kebabToCamel,
   truncate,
-  isEmptyString,
+  _isEmptyString as isEmptyString,
 } from './string';
 
 // JSON utilities
 export {
-  safeGet,
+  safeGet as safeGetJson,
 } from './json';
 
 // Math utilities
 export {
   calculateMean,
-  calculateMedian,
-  calculateStandardDeviation,
+  _calculateMedian as calculateMedian,
+  _calculateStandardDeviation as calculateStandardDeviation,
   clamp,
-  lerp,
-  mapRange,
-  roundTo,
-  approximatelyEqual,
+  _lerp as lerp,
+  _mapRange as mapRange,
+  _roundTo as roundTo,
+  _approximatelyEqual as approximatelyEqual,
   randomBetween,
-  randomIntBetween,
-  safeArithmetic,
+  _randomIntBetween as randomIntBetween,
+  _safeArithmetic as safeArithmetic,
 } from './math';
 
 // Animation utilities
@@ -115,25 +153,26 @@ export {
 export {
   Cache,
   ValidationCache,
-  globalValidationCache,
-  type CacheOptions,
+  _globalValidationCache as globalValidationCache,
 } from './cache';
+
+// Export types from type definitions
+export type { CacheOptions } from '../types/cache';
 
 // Validation helpers
 export {
   validateStringConstraints,
   validateNumberConstraints,
-  validateRequiredFields,
+  _validateRequiredFields as validateRequiredFields,
   validateAgainstSchemaField,
-  createValidationError,
 } from './validation-helpers';
 
 // Validation checks
 export {
-  hasErrors,
-  hasErrorsOfSeverity,
-  getErrorsOfSeverity,
-  getMostSevereError,
-  hasErrorsWithProperties,
-  getErrorsForProperties,
+  _hasErrors as hasErrors,
+  _hasErrorsOfSeverity as hasErrorsOfSeverity,
+  _getErrorsOfSeverity as getErrorsOfSeverity,
+  _getMostSevereError as getMostSevereError,
+  _hasErrorsWithProperties as hasErrorsWithProperties,
+  _getErrorsForProperties as getErrorsForProperties,
 } from './validation-checks';

@@ -43,15 +43,15 @@
     "alwaysStrict": true
   },
   "include": [
-    "vite.config.ts",
-    "vitest.config.ts",
-    "eslint.config.ts",
-    "lint-staged.config.ts",
-    "prettier.config.ts",
-    "stylelint.config.ts",
-    "babel.config.ts",
-    "commitlint.config.ts",
-    "postcss.config.ts",
-    "*.config.ts"
+    "*.config.ts",
+    "src/types/*.d.ts",
+    "src/types/**/*.d.ts",
+    "vite.config.*.ts",
+    "vitest.config.*.ts",
+    "playwright.config.*.ts",
+    ".cursor/**/*.config.ts",
+    ".storybook/**/*.config.ts",
+    "src/__tests__/**/*.ts",
+    "src/__tests__/**/*.tsx"
   ]
 } 

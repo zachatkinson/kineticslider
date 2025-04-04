@@ -3,7 +3,7 @@
  * Based on GSAP cursor rules for optimized animations
  */
 import gsap from 'gsap';
-import type { AnimationEase } from '../types/common';
+import type { AnimationEase as _AnimationEase } from '../types/common';
 import { AnimationConfig, TimelineConfig, TransitionType, ExtendedAnimationConfig } from '../types/animation';
 import type { AnimationOptions } from '../types/animation';
 
@@ -15,12 +15,16 @@ export type { AnimationConfig, TimelineConfig };
  * - Performance optimization
  * - Memory management
  * - Best practices
+ * @example Example usage
  */
 export class AnimationController {
   private timelines: Map<string, gsap.core.Timeline>;
   private tweens: Map<string, gsap.core.Tween>;
   private defaultConfig: Partial<ExtendedAnimationConfig>;
   
+  /**
+   *
+   */
   constructor(defaultConfig: Partial<ExtendedAnimationConfig> = {}) {
     this.timelines = new Map();
     this.tweens = new Map();
@@ -36,6 +40,9 @@ export class AnimationController {
   
   /**
    * Create a timeline with the specified ID
+   * @param id
+   * @param config
+   * @returns {gsap.core.Timeline} A GSAP timeline instance
    */
   createTimeline(id: string, config: TimelineConfig = {}): gsap.core.Timeline {
     this.killTimeline(id); // Clean up any existing timeline
@@ -53,6 +60,8 @@ export class AnimationController {
   
   /**
    * Get an existing timeline by ID
+   * @param id - The ID of the timeline to retrieve
+   * @returns {gsap.core.Timeline | undefined} The timeline with the specified ID or undefined if not found
    */
   getTimeline(id: string): gsap.core.Timeline | undefined {
     return this.timelines.get(id);
@@ -60,10 +69,12 @@ export class AnimationController {
   
   /**
    * Kill a timeline by ID and remove from the registry
+   * @param id
+   * @returns {void}
    */
   killTimeline(id: string): void {
     const timeline = this.timelines.get(id);
-    if (timeline) {
+    if(timeline) {
       timeline.kill();
       this.timelines.delete(id);
     }
@@ -71,6 +82,9 @@ export class AnimationController {
   
   /**
    * Create an animation tween
+   * @param id
+   * @param config
+   * @returns {gsap.core.Tween} A GSAP tween instance
    */
   createTween(
     id: string,
@@ -91,10 +105,11 @@ export class AnimationController {
   
   /**
    * Kill a tween by ID and remove from the registry
+   * @param id
    */
   killTween(id: string): void {
     const tween = this.tweens.get(id);
-    if (tween) {
+    if(tween) {
       tween.kill();
       this.tweens.delete(id);
     }
@@ -119,6 +134,9 @@ export class AnimationController {
   
   /**
    * Batch animations for performance
+   * @param animations
+   * @param staggerDelay
+   * @returns {void}
    */
   batchAnimations(
     animations: Array<{ id: string; config: ExtendedAnimationConfig }>,
@@ -149,6 +167,11 @@ export const animationController = new AnimationController();
 
 /**
  * Utility function to create a slide transition
+ * @param element
+ * @param direction
+ * @param type
+ * @param duration
+ * @returns A GSAP tween instance for the slide transition
  */
 export function createSlideTransition(
   element: Element | string,
@@ -168,20 +191,20 @@ export function createSlideTransition(
     overwrite: 'auto'
   };
   
-  if (type === TransitionType.FADE) {
+  if(type === TransitionType.FADE) {
     config.opacity = direction === 'in' ? 1 : 0;
-    if (direction === 'in') {
+    if(direction === 'in') {
       gsap.set(element, { opacity: 0 });
     }
-  } else if (type === TransitionType.SLIDE) {
+  } else if(type === TransitionType.SLIDE) {
     config.x = direction === 'in' ? 0 : '100%';
-    if (direction === 'in') {
+    if(direction === 'in') {
       gsap.set(element, { x: '-100%' });
     }
-  } else if (type === TransitionType.ZOOM) {
+  } else if(type === TransitionType.ZOOM) {
     config.scale = direction === 'in' ? 1 : 0.5;
     config.opacity = direction === 'in' ? 1 : 0;
-    if (direction === 'in') {
+    if(direction === 'in') {
       gsap.set(element, { scale: 1.5, opacity: 0 });
     }
   }
@@ -191,6 +214,13 @@ export function createSlideTransition(
 
 /**
  * Animates a slide transition in the slider
+ * @param sliderRef
+ * @param currentSlide
+ * @param direction
+ * @param duration
+ * @param ease
+ * @param onComplete
+ * @returns {void}
  */
 export function animateSlide(
   sliderRef: React.RefObject<HTMLElement>,
@@ -227,18 +257,10 @@ export function animateSlide(
     zIndex: 2
   });
 
-  // Animate current slide out
-  gsap.to(currentSlideEl, {
-    x: direction === 'next' ? '-100%' : '100%',
-    opacity: 0,
-    scale: 0.8,
-    duration,
-    ease,
-  });
-
-  // Animate target slide in
-  gsap.fromTo(targetSlide,
-    {
+  // Animate to new slide
+  gsap.fromTo(
+    targetSlide,
+    { 
       x: direction === 'next' ? '100%' : '-100%',
       opacity: 0,
       scale: 0.8,
@@ -248,37 +270,45 @@ export function animateSlide(
       x: '0%',
       opacity: 1,
       scale: 1,
-      duration,
-      ease,
-      onComplete
+      ease: ease,
+      duration: duration,
+      onComplete: onComplete
     }
   );
+
+  // Animate current slide out
+  gsap.to(currentSlideEl, {
+    x: direction === 'next' ? '-100%' : '100%',
+    opacity: 0,
+    scale: 0.8,
+    ease: ease,
+    duration: duration
+  });
 }
 
 /**
- * Create a basic GSAP animation with default configuration
- * @param options Animation configuration options
- * @returns Cleanup function to kill the animation
+ * Utility function to create a basic animation 
+ * @param options Animation options
+ * @returns Cleanup function to stop the animation
  */
 export function createBasicAnimation(options: AnimationOptions): () => void {
   const animation = gsap.to(options.target, {
-    x: 0,
-    duration: options.config.duration,
-    ease: options.config.ease,
-    ...(options.onComplete && { onComplete: options.onComplete }),
+    duration: options.config.duration || 0.3,
+    ease: options.config.ease || 'power2.out',
+    ...(options.onComplete && { onComplete: options.onComplete })
   });
-
+  
   return () => {
     animation.kill();
   };
 }
 
 /**
- * Create a fade animation
+ * Create a fade animation (in or out)
  * @param target Element to animate
  * @param duration Animation duration in seconds
- * @param fadeIn Whether to fade in or out
- * @returns Cleanup function to kill the animation
+ * @param fadeIn Whether to fade in (true) or out (false)
+ * @returns Cleanup function to stop the animation
  */
 export function createFadeAnimation(
   target: gsap.TweenTarget,
@@ -288,9 +318,9 @@ export function createFadeAnimation(
   const animation = gsap.to(target, {
     opacity: fadeIn ? 1 : 0,
     duration,
-    ease: 'power2.inOut',
+    ease: 'power2.inOut'
   });
-
+  
   return () => {
     animation.kill();
   };
@@ -299,10 +329,10 @@ export function createFadeAnimation(
 /**
  * Create a slide animation
  * @param target Element to animate
- * @param direction Direction to slide ('left' | 'right' | 'up' | 'down')
+ * @param direction Direction to slide
  * @param duration Animation duration in seconds
  * @param distance Distance to slide in pixels
- * @returns Cleanup function to kill the animation
+ * @returns Cleanup function to stop the animation
  */
 export function createSlideAnimation(
   target: gsap.TweenTarget,
@@ -312,14 +342,74 @@ export function createSlideAnimation(
 ): () => void {
   const axis = direction === 'left' || direction === 'right' ? 'x' : 'y';
   const multiplier = direction === 'right' || direction === 'down' ? 1 : -1;
-
+  
   const animation = gsap.to(target, {
-    [axis]: distance * multiplier,
+    [axis]: multiplier * distance,
     duration,
-    ease: 'power2.inOut',
+    ease: 'power2.inOut'
   });
-
+  
   return () => {
     animation.kill();
   };
+}
+
+/**
+ * Creates a tween animation using GSAP
+ * 
+ * @param target - The target element or object to animate
+ * @param props - The animation properties
+ * @param options - Additional options for the animation
+ * @returns {gsap.core.Tween} The GSAP animation tween instance
+ */
+export function createTween(
+  target: gsap.TweenTarget,
+  props: gsap.TweenVars,
+  options?: AnimationOptions
+): gsap.core.Tween {
+  return gsap.to(target, {
+    ...props,
+    duration: options?.config?.duration || 0.5,
+    ease: options?.config?.ease || 'power2.out'
+  });
+}
+
+/**
+ * Creates a timeline animation using GSAP
+ * 
+ * @param options - Timeline options
+ * @returns {gsap.core.Timeline} The GSAP timeline instance
+ */
+export function createTimeline(options?: gsap.TimelineVars): gsap.core.Timeline {
+  return gsap.timeline(options);
+}
+
+/**
+ * Registers a custom animation effect
+ * 
+ * @param name - The name of the animation effect
+ * @param animationFn - The animation function
+ * @returns {void}
+ */
+export function registerEffect(
+  name: string,
+  animationFn: (target: gsap.TweenTarget, options?: gsap.TweenVars) => gsap.core.Tween
+): void {
+  gsap.registerEffect({ name, effect: animationFn });
+}
+
+/**
+ * Applies a predefined animation effect
+ * 
+ * @param name - The name of the effect to apply
+ * @param target - The target element or object
+ * @param options - Additional options for the effect
+ * @returns {gsap.core.Tween} The resulting animation tween
+ */
+export function applyEffect(
+  name: string,
+  target: gsap.TweenTarget,
+  options?: gsap.TweenVars
+): gsap.core.Tween {
+  return gsap.effects[name](target, options);
 } 

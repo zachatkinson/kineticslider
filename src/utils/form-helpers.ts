@@ -44,6 +44,8 @@ export function getFieldClass(
 
 /**
  * Get the appropriate feedback class based on validation error
+ * @param error
+ * @returns {ReturnType} The return value
  */
 export function getFeedbackClass(error?: ValidationError): string {
   if (!error) return '';
@@ -87,6 +89,13 @@ export function hasFormCriticalErrors(
 
 /**
  * Validate and submit form data
+ * @param data - The data to validate and submit
+ * @param validateFn - The validation function
+ * @param onSave - The callback to save the data
+ * @param setValidating - Function to set validating state
+ * @param setValidationResult - Function to set validation result state
+ * @param setSubmitted - Function to set submitted state
+ * @returns {Promise<void>} A promise that resolves when validation and submission are complete 
  */
 export async function validateAndSubmit<T>(
   data: T,
@@ -103,10 +112,11 @@ export async function validateAndSubmit<T>(
     const result = await validateFn(data);
     setValidationResult(result);
 
-    if (result.valid) {
+    if(result.valid) {
       onSave(data);
     }
-  } catch (error: unknown) {
+  } catch {
+    // Error thrown during validation, create a generic error message
     setValidationResult({
       valid: false,
       errors: [{
@@ -118,5 +128,77 @@ export async function validateAndSubmit<T>(
     });
   } finally {
     setValidating(false);
+  }
+}
+
+/**
+ * Parse form data into an object
+ * @param formData - The form data to parse
+ * @returns {T} The parsed object
+ */
+export function parseFormData<T>(formData: FormData): T {
+  const result: Record<string, string | File> = {};
+  
+  try {
+    for (const [key, value] of formData.entries()) {
+      result[key] = value;
+    }
+    
+    return result as T;
+  } catch {
+    // Return empty object on error
+    return {} as T;
+  }
+}
+
+type FieldValidationResult = { isValid: boolean; message: string };
+type Validator = (value: string) => FieldValidationResult;
+type Formatter = (value: string) => string;
+
+/**
+ * Validate a field value using an array of validators
+ * 
+ * @param value - The field value to validate 
+ * @param validators - Array of validator functions
+ * @returns Validation result with isValid flag and message
+ */
+export function validateField(
+  value: string,
+  validators: Validator[]
+): FieldValidationResult {
+  try {
+    for (const validator of validators) {
+      const result = validator(value);
+      if (!result.isValid) {
+        return result;
+      }
+    }
+    return { isValid: true, message: '' };
+  } catch {
+    // Generic error case
+    return { isValid: false, message: 'Validation failed' };
+  }
+}
+
+/**
+ * Format a field value using an array of formatters
+ * 
+ * @param value - The field value to format
+ * @param formatters - Array of formatter functions
+ * @returns The formatted value
+ */
+export function formatFieldValue(
+  value: string,
+  formatters: Formatter[]
+): string {
+  try {
+    let formattedValue = value;
+    for (const formatter of formatters) {
+      formattedValue = formatter(formattedValue);
+    }
+    return formattedValue;
+  } catch {
+    // Return original value on error
+    return value;
   }
 }

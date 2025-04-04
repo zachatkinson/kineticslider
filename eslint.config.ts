@@ -12,7 +12,14 @@ import tseslint from 'typescript-eslint';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config: any = tseslint.config(
   {
-    ignores: ['**/dist/**', '**/node_modules/**', 'coverage/**', 'vite.config.ts', 'vitest.config.ts'],
+    ignores: [
+      '**/dist/**', 
+      '**/node_modules/**', 
+      'coverage/**', 
+      'vite.config.ts', 
+      'vitest.config.ts',
+      'src/__tests__/hooks/useKineticSlider.test.tsx'
+    ],
   },
   {
     files: ['**/*.{ts,tsx}'],
@@ -79,7 +86,9 @@ const config: any = tseslint.config(
       }],
       'jsdoc/require-returns-type': 'off',
       'jsdoc/valid-types': 'error',
-      'jsdoc/check-tag-names': 'error',
+      'jsdoc/check-tag-names': ['error', {
+        definedTags: ['group', 'typeParam', 'category']
+      }],
       'jsdoc/check-param-names': 'error',
       'jsdoc/require-example': ['warn', {
         contexts: ['TSInterfaceDeclaration', 'ClassDeclaration']

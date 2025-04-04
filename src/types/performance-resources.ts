@@ -10,13 +10,13 @@
  * 
  * @template T - The return type of the task function
  * @interface
- * @example
+ * @example Example usage
  * ```typescript
  * // Example of creating a worker task manually
- * const workerTask: WorkerTask<number> = {
+ * const _workerTask: WorkerTask<number> = {
  *   task: () => calculatePrimes(10000),
- *   resolve: (result) => console.log(`Found ${result} primes`),
- *   reject: (error) => console.error('Calculation failed:', error)
+ *   resolve: (result) => console.log(`Found $){result} primes`),
+ *   reject: (_error) => console._error('Calculation failed:', _error)
  * };
  * ```
  */
@@ -30,24 +30,24 @@ export interface WorkerTask<T> {
   /**
    * Function to call when the task is completed successfully
    */
-  resolve: (value: T) => void;
+  resolve: (_value: T) => void;
   
   /**
-   * Function to call when the task fails with an error
+   * Function to call when the task fails with an _error
    */
-  reject: (error: any) => void;
+  reject: (_error: Error | unknown) => void;
 }
 
 /**
  * Configuration options for resource pools
- * Defines how resources are created, managed, and recycled
+ * Defines how resources are: created, managed, and recycled
  * 
  * @template T - The type of resources managed by the pool
  * @interface
- * @example
+ * @example Example usage
  * ```typescript
  * // Configuration for a canvas context pool
- * const canvasPoolOptions: ResourcePoolOptions<CanvasRenderingContext2D> = {
+ * const _canvasPoolOptions: ResourcePoolOptions<CanvasRenderingContext2D> = {
  *   factory: () => document.createElement('canvas').getContext('2d'),
  *   reset: (ctx) => {
  *     ctx.canvas.width = 0;
@@ -55,7 +55,7 @@ export interface WorkerTask<T> {
  *     ctx.clearRect(0, 0, 0, 0);
  *   },
  *   initialSize: 5,
- *   maxSize: 20
+ *   maxSize: 20;
  * };
  * ```
  */
@@ -92,9 +92,9 @@ export interface ResourcePoolOptions<T> {
  * Used for DOM element resource pools
  * 
  * @returns {HTMLElement} A new DOM element instance
- * @example
+ * @example Example usage
  * ```typescript
- * const divFactory: DOMElementFactory = () => {
+ * const _divFactory: DOMElementFactory = () => {
  *   const div = document.createElement('div');
  *   div.classList.add('pooled-element');
  *   return div;
@@ -108,9 +108,9 @@ export type DOMElementFactory = () => HTMLElement;
  * Used for canvas rendering context resource pools
  * 
  * @returns {CanvasRenderingContext2D | null} A new 2D canvas context or null if creation fails
- * @example
+ * @example Example usage
  * ```typescript
- * const contextFactory: CanvasContextFactory = () => {
+ * const _contextFactory: CanvasContextFactory = () => {
  *   const canvas = document.createElement('canvas');
  *   canvas.width = 200;
  *   canvas.height = 200;
@@ -124,8 +124,8 @@ export type CanvasContextFactory = () => CanvasRenderingContext2D | null;
  * Typed resource pool identifier keys
  * Used to identify different types of resource pools in a map
  * 
- * @type
- * @example
+ * @type {unknown}
+ * @example Example usage
  * ```typescript
  * // Creating a map of resource pools
  * const pools = new Map<ResourcePoolKey, ResourcePool<any>>();

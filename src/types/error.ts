@@ -33,7 +33,51 @@ export enum ErrorType {
   /** Gesture handling errors */
   GESTURE = 'gesture',
   /** Navigation errors */
-  NAVIGATION = 'navigation'
+  NAVIGATION = 'navigation',
+  /**
+   * Animation errors
+   */
+  ANIMATION_ERROR = 'animation_error',
+  
+  /**
+   * Asset loading errors
+   */
+  ASSET_LOADING = 'asset_loading',
+  
+  /**
+   * Image loading errors
+   */
+  IMAGE_LOAD_ERROR = 'image_load_error',
+  
+  /**
+   * Network errors
+   */
+  NETWORK = 'network',
+  
+  /**
+   * User input errors
+   */
+  USER_INPUT = 'user_input',
+  
+  /**
+   * Configuration errors
+   */
+  CONFIGURATION = 'configuration',
+  
+  /**
+   * Unknown or unspecified errors
+   */
+  UNKNOWN = 'unknown',
+  
+  /**
+   * Performance-related errors
+   */
+  PERFORMANCE = 'performance',
+  
+  /**
+   * Initialization errors
+   */
+  INITIALIZATION = 'initialization'
 }
 
 /**
@@ -52,6 +96,7 @@ export enum ErrorSeverity {
 
 /**
  * Base error interface for all application errors
+ * @example Example usage
  */
 export interface BaseError {
   message: string;
@@ -63,6 +108,7 @@ export interface BaseError {
 
 /**
  * Base slider error information interface
+ * @example Example usage
  */
 export interface SliderErrorInfo {
   name: string;
@@ -76,6 +122,7 @@ export interface SliderErrorInfo {
 
 /**
  * Base slider error interface
+ * @example Example usage
  */
 export interface SliderError extends Error {
   code: string;
@@ -86,6 +133,7 @@ export interface SliderError extends Error {
 
 /**
  * Structure of a tracked error event
+ * @example Example usage
  */
 export interface ErrorEvent extends BaseError {
   componentInfo: Record<string, unknown>;
@@ -99,14 +147,48 @@ export interface ErrorInfo {
 
 /**
  * Extended Error interface with additional properties
+ * @example Example usage
  */
 export interface ExtendedError extends Error {
+  /**
+   * Error code
+   */
   code?: string;
+  
+  /**
+   * Error context
+   */
   context?: Record<string, unknown>;
+  
+  /**
+   * Error stack
+   */
+  stack?: string;
+  
+  /**
+   * Error timestamp
+   */
+  timestamp?: string;
+  
+  /**
+   * Whether the error has been handled
+   */
+  handled?: boolean;
+  
+  /**
+   * Number of error occurrences
+   */
+  occurrences?: number;
+  
+  /**
+   * Convert to standardized error info
+   */
+  toErrorInfo(): SliderErrorInfo;
 }
 
 /**
  * Extended Error interface with additional context
+ * @example Example usage
  */
 export interface ComponentError extends Error {
   /** Error classification code */
@@ -138,16 +220,18 @@ export interface ComponentError extends Error {
 
 /**
  * Error boundary state interface
+ * @example Example usage
  */
 export interface ErrorBoundaryState {
   /** Whether an error has occurred */
   hasError: boolean;
-  /** The error that occurred, if any */
+  /** The error that: occurred, if any */
   error: Error | null;
 }
 
 /**
  * Error tracking configuration options
+ * @example Example usage
  */
 export interface ErrorTrackingOptions {
   /** Whether to enable error tracking */
@@ -169,6 +253,7 @@ export interface ErrorTrackingOptions {
 
 /**
  * Represents a sanitized error object safe for client display
+ * @example Example usage
  */
 export interface SanitizedError {
   name: string;
@@ -183,13 +268,15 @@ export interface SanitizedError {
  */
 export enum ValidationErrorSeverity {
   WARNING = 'warning',
-  ERROR = 'error'
+  ERROR = 'error',
+  CRITICAL = 'critical'
 }
 
 /**
  * Animation error for slider transitions
+ * @example Example usage
  */
-export interface AnimationError extends BaseError {
+export interface AnimationError extends ExtendedError {
   type: ErrorType.ANIMATION;
   details: {
     currentSlide: SlideIndex;
@@ -201,6 +288,7 @@ export interface AnimationError extends BaseError {
 
 /**
  * Gesture error for touch/mouse interactions
+ * @example Example usage
  */
 export interface GestureError extends BaseError {
   type: ErrorType.GESTURE;
@@ -215,6 +303,7 @@ export interface GestureError extends BaseError {
 
 /**
  * Navigation error for slide transitions
+ * @example Example usage
  */
 export interface NavigationError extends BaseError {
   type: ErrorType.NAVIGATION;
@@ -227,8 +316,9 @@ export interface NavigationError extends BaseError {
 
 /**
  * Render error for component failures
+ * @example Example usage
  */
-export interface RenderError extends BaseError {
+export interface RenderError extends ExtendedError {
   type: ErrorType.RENDER;
   details: {
     slideId: SliderId;
@@ -238,8 +328,9 @@ export interface RenderError extends BaseError {
 
 /**
  * Validation error interface with improved structure
+ * @example Example usage
  */
-export interface ValidationError extends BaseError {
+export interface ValidationError extends ExtendedError {
   type: ErrorType.VALIDATION;
   details: {
     field: string;
@@ -251,6 +342,7 @@ export interface ValidationError extends BaseError {
 
 /**
  * Resource error for asset loading failures
+ * @example Example usage
  */
 export interface ResourceError extends BaseError {
   type: ErrorType.RESOURCE;
@@ -264,6 +356,7 @@ export interface ResourceError extends BaseError {
 
 /**
  * Operation error for general failures
+ * @example Example usage
  */
 export interface OperationError extends BaseError {
   type: ErrorType.OPERATION;
@@ -272,6 +365,93 @@ export interface OperationError extends BaseError {
     input?: unknown;
     context?: Record<string, unknown>;
   };
+}
+
+/**
+ * Network error
+ * @example
+ * ```typescript
+ * const networkError: NetworkError = {
+ *   message: "Failed to fetch data",
+ *   type: ErrorType.NETWORK,
+ *   status: 404,
+ *   url: "https://api.example.com/data",
+ *   stack: new Error().stack,
+ *   code: "API_FETCH_ERROR",
+ *   timestamp: new Date().toISOString(),
+ *   toErrorInfo: () => ({ ... })
+ * };
+ * ```
+ */
+export interface NetworkError extends ExtendedError {
+  type: ErrorType.NETWORK;
+  status?: number;
+  url?: string;
+}
+
+/**
+ * User input error
+ * @example
+ * ```typescript
+ * const inputError: UserInputError = {
+ *   message: "Invalid email format",
+ *   type: ErrorType.USER_INPUT,
+ *   fieldName: "email",
+ *   inputValue: "invalid-email",
+ *   code: "INVALID_EMAIL_FORMAT",
+ *   timestamp: new Date().toISOString(),
+ *   toErrorInfo: () => ({ ... })
+ * };
+ * ```
+ */
+export interface UserInputError extends ExtendedError {
+  type: ErrorType.USER_INPUT;
+  fieldName?: string;
+  inputValue?: unknown;
+}
+
+/**
+ * Configuration error
+ * @example
+ * ```typescript
+ * const configError: ConfigurationError = {
+ *   message: "Missing required configuration",
+ *   type: ErrorType.CONFIGURATION,
+ *   configKey: "apiKey",
+ *   configValue: undefined,
+ *   code: "MISSING_CONFIG",
+ *   timestamp: new Date().toISOString(),
+ *   toErrorInfo: () => ({ ... })
+ * };
+ * ```
+ */
+export interface ConfigurationError extends ExtendedError {
+  type: ErrorType.CONFIGURATION;
+  configKey?: string;
+  configValue?: unknown;
+}
+
+/**
+ * Asset loading error
+ * @example
+ * ```typescript
+ * const assetError: AssetLoadingError = {
+ *   message: "Failed to load image",
+ *   type: ErrorType.ASSET_LOADING,
+ *   assetId: "hero-image",
+ *   assetType: "image",
+ *   assetUrl: "/images/hero.webp",
+ *   code: "IMAGE_LOAD_FAILURE",
+ *   timestamp: new Date().toISOString(),
+ *   toErrorInfo: () => ({ ... })
+ * };
+ * ```
+ */
+export interface AssetLoadingError extends ExtendedError {
+  type: ErrorType.ASSET_LOADING;
+  assetId?: string;
+  assetType?: string;
+  assetUrl?: string;
 }
 
 /**
@@ -284,10 +464,15 @@ export type SliderErrorUnion =
   | RenderError
   | ValidationError
   | ResourceError
-  | OperationError;
+  | OperationError
+  | NetworkError
+  | UserInputError
+  | ConfigurationError
+  | AssetLoadingError;
 
 /**
  * Error tracker context for error reporting
+ * @example Example usage
  */
 export interface ErrorTrackerContext {
   /** Component where the error occurred */
@@ -304,6 +489,7 @@ export interface ErrorTrackerContext {
 
 /**
  * Error report structure for error tracking
+ * @example Example usage
  */
 export interface ErrorTrackerReport {
   /** The error that occurred */
@@ -316,4 +502,62 @@ export interface ErrorTrackerReport {
   userAgent: string;
   /** URL where error occurred */
   url: string;
+}
+
+/**
+ * Component error handling options
+ * @example
+ * ```typescript
+ * const errorOptions: ErrorHandlingOptions = {
+ *   retry: true,
+ *   retryAttempts: 3,
+ *   retryDelay: 1000,
+ *   errorBoundary: {
+ *     enabled: true,
+ *     onError: (error) => {
+ *       console.error("Component error:", error);
+ *       trackError(error);
+ *     },
+ *     onRecovery: () => {
+ *       console.log("Component recovered from error");
+ *     }
+ *   }
+ * };
+ * ```
+ */
+export interface ErrorHandlingOptions {
+  /**
+   * Whether to retry on error
+   */
+  retry?: boolean;
+  
+  /**
+   * Number of retry attempts
+   */
+  retryAttempts?: number;
+  
+  /**
+   * Delay between retries in ms
+   */
+  retryDelay?: number;
+  
+  /**
+   * Error boundary options
+   */
+  errorBoundary?: {
+    /**
+     * Whether to use error boundary
+     */
+    enabled?: boolean;
+    
+    /**
+     * Error callback
+     */
+    onError?: (error: ComponentError) => void;
+    
+    /**
+     * Recovery callback
+     */
+    onRecovery?: () => void;
+  };
 }

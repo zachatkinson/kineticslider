@@ -1,11 +1,59 @@
 /**
- * Test fixture types
+ * Types for test fixtures
  */
+import type { GestureEvent, SwipeDirection } from '../gestures';
 import type { Slide } from '../slider';
-import type { GsapVars } from '../gsap';
+
+/**
+ * Mock event interface
+ * @example
+ * ```typescript
+ * const mockEvent: MockEvent = {
+ *   type: 'click',
+ *   preventDefault: jest.fn(),
+ *   stopPropagation: jest.fn()
+ * };
+ * ```
+ */
+export interface MockEvent {
+  /**
+   * Event type
+   */
+  type: string;
+  /**
+   * Prevent default behavior
+   */
+  preventDefault: () => void;
+  /**
+   * Stop propagation
+   */
+  stopPropagation: () => void;
+}
+
+/**
+ * Mock gesture event with direction
+ * @example
+ * ```typescript
+ * const swipeEvent: MockGestureEvent = {
+ *   type: 'swipe',
+ *   direction: 'left',
+ *   deltaX: -120,
+ *   deltaY: 5,
+ *   velocity: 0.8,
+ *   target: document.createElement('div')
+ * };
+ * ```
+ */
+export interface MockGestureEvent extends Omit<GestureEvent, 'type'> {
+  type: 'swipe';
+  direction: SwipeDirection;
+}
+
+export { type TouchOptions as TouchInit } from './mocks';
 
 /**
  * Test Data Fixtures
+ * @example Example usage
  */
 export interface TestSlide extends Slide {
   testId?: string;
@@ -14,6 +62,7 @@ export interface TestSlide extends Slide {
 
 /**
  * Test Event Fixtures
+ * @example Example usage
  */
 export interface TestEvent {
   type: string;
@@ -23,7 +72,4 @@ export interface TestEvent {
   clientX?: number;
   clientY?: number;
   touches?: { clientX: number; clientY: number }[];
-}
-
-// Import touch types from mocks
-export { type TouchOptions as TouchInit } from './mocks'; 
+} 

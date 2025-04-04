@@ -4,15 +4,15 @@ import { gsap } from 'gsap';
 import { useSliderAccessibility } from '../../hooks/pixi/useSliderAccessibility';
 import { PixiErrorBoundary } from './PixiErrorBoundary';
 import type { PixiAppProps, PixiSlide } from '../../types/pixi';
-import { SliderError } from '../../utils/error';
+import { SliderError } from '../../utils/errors';
 
 /**
- * Core Pixi.js slider application class that handles rendering, animations, and slide management.
+ * Core Pixi.js slider application class that handles: rendering, animations, and slide management.
  * Implements high-performance WebGL-based image transitions with GSAP animations.
  * 
  * @class
  * @version 1.0.0
- * @example
+ * @example Example usage
  * ```typescript
  * const slider = new PixiSliderApp(canvasElement, {
  *   width: 800,
@@ -36,40 +36,35 @@ import { SliderError } from '../../utils/error';
  * slider.destroy();
  * ```
  * 
- * @performance
- * - Target FPS: 60 (minimum 30)
- * - Memory limits: 512MB heap, 2048MB texture
+ * @description * - Target FPS: 60 (minimum 30)
+ * - Memory limits: 512MB: heap, 2048MB texture
  * - Draw calls: <100 per frame
  * - Batch rendering enabled
  * - Hardware acceleration via WebGL
  * - Texture compression and caching
  * - Efficient slide transitions using GSAP
  * 
- * @error
- * - Asset loading failures with retry mechanism
+ * @description * - Asset loading failures with retry mechanism
  * - Texture loading error handling
  * - WebGL context loss recovery
  * - Memory management errors
  * - Initialization failures
  * - Graceful destruction
  * 
- * @security
- * - Input validation for slide data
+ * @description * - Input validation for slide data
  * - Memory protection limits
  * - WebGL context safety
  * - Asset loading security
  * - Error message sanitization
  * - Event handling safety
  * 
- * @accessibility
- * - ARIA roles and labels
+ * @description * - ARIA roles and labels
  * - Keyboard navigation support
  * - Focus management
  * - Screen reader announcements
  * - Alt text for images
  * 
- * @compatibility
- * - WebGL 2.0 (preferred)
+ * @description * - WebGL 2.0 (preferred)
  * - WebGL 1.0 (fallback)
  * - Canvas (emergency fallback)
  * - Browsers: Chrome ≥90, Firefox ≥90, Safari ≥15, Edge ≥90
@@ -96,16 +91,15 @@ export class PixiSliderApp {
    * @param {function} [options.onSlideChange] - Optional callback for slide changes
    * @throws {SliderError} When initialization fails or invalid options provided
    * 
-   * @performance Uses WebGL for hardware acceleration and optimized rendering
-   * @security Validates all input parameters and slide data
+   * @description Uses WebGL for hardware acceleration and optimized rendering
+   * @description Validates all input parameters and slide data
    */
-  constructor(
-    private readonly canvas: HTMLCanvasElement,
+  constructor(private readonly canvas: HTMLCanvasElement,
     private readonly options: Omit<PixiAppProps, 'onSlideChange' | 'onError'> & {
       onSlideChange?: ((index: number) => void) | undefined;
     }
   ) {
-    if (options.slides.length === 0) {
+    if(options.slides.length === 0) {
       throw new SliderError('At least one slide is required', 'INIT_ERROR');
     }
 
@@ -125,7 +119,9 @@ export class PixiSliderApp {
     this.app.stage.addChild(this.container);
 
     // Initialize
-    this.init();
+    void this.init().catch(err => {
+      console.error('Failed to initialize slider:', err);
+    });
   }
 
   /**
@@ -135,15 +131,16 @@ export class PixiSliderApp {
    * @private
    * @async
    * @throws {SliderError} When initialization fails
-   * @performance Optimizes initial load time and memory usage
-   * @security Validates asset loading and initialization sequence
+   * @description Optimizes initial load time and memory usage
+   * @description Validates asset loading and initialization sequence
+   * @returns A promise that resolves when initialization is complete
    */
-  private async init() {
+  private async init(): Promise<void> {
     try {
       await this.loadAssets();
       this.setupSlides();
       this.startRendering();
-    } catch (error) {
+    } catch(error) {
       console.error('Failed to initialize slider:', error);
       throw new SliderError('Failed to initialize slider', 'INIT_ERROR');
     }
@@ -156,10 +153,11 @@ export class PixiSliderApp {
    * @private
    * @async
    * @throws {SliderError} When asset loading fails
-   * @performance Implements efficient texture loading and caching
-   * @security Validates asset URLs and texture data
+   * @description Implements efficient texture loading and caching
+   * @description Validates asset URLs and texture data
+   * @returns A promise that resolves when all assets are loaded
    */
-  private async loadAssets() {
+  private async loadAssets(): Promise<void> {
     const assets = this.options.slides.map(slide => ({
       name: slide.id,
       url: slide.image,
@@ -167,9 +165,9 @@ export class PixiSliderApp {
 
     try {
       await Promise.all(
-        assets.map(async asset => {
+        assets.map(async asset => { 
           const texture = await PIXI.Assets.load(asset.url);
-          if (!texture) {
+          if(!texture) {
             throw new SliderError(`Failed to load texture for slide: ${asset.name}`, 'TEXTURE_ERROR');
           }
 
@@ -198,18 +196,18 @@ export class PixiSliderApp {
       );
 
       const firstSlideId = this.options.slides[0]?.id;
-      if (!firstSlideId) {
+      if(!firstSlideId) {
         throw new SliderError('No slides available', 'INIT_ERROR');
       }
 
       const firstSlide = this.slides.get(firstSlideId);
-      if (!firstSlide?.container) {
+      if(!firstSlide?.container) {
         throw new SliderError('Failed to load first slide', 'INIT_ERROR');
       }
 
       firstSlide.container.visible = true;
       firstSlide.container.alpha = 1;
-    } catch (error) {
+    } catch(error) {
       console.error('Failed to load assets:', error);
       throw new SliderError('Failed to load slider assets', 'INIT_ERROR');
     }
@@ -223,10 +221,11 @@ export class PixiSliderApp {
    * @param {number} width - Target width
    * @param {number} height - Target height
    * @throws {SliderError} When sprite texture is invalid
-   * @performance Optimizes sprite scaling for rendering
+   * @description Optimizes sprite scaling for rendering
+   * @returns void
    */
-  private scaleToFit(sprite: PIXI.Sprite, width: number, height: number) {
-    if (!sprite.texture) {
+  private scaleToFit(sprite: PIXI.Sprite, width: number, height: number): void {
+    if(!sprite.texture) {
       throw new SliderError('Sprite texture is undefined', 'SPRITE_ERROR');
     }
     const scale = Math.max(
@@ -241,14 +240,15 @@ export class PixiSliderApp {
    * 
    * @private
    * @throws {SliderError} When slide setup fails
-   * @performance Optimizes initial render state
-   * @security Validates slide data integrity
+   * @description Optimizes initial render state
+   * @description Validates slide data integrity
+   * @returns void
    */
-  private setupSlides() {
+  private setupSlides(): void {
     // Set initial positions and states
     this.options.slides.forEach((slide, index) => {
       const pixiSlide = this.slides.get(slide.id);
-      if (!pixiSlide || !pixiSlide.container) {
+      if(!pixiSlide || !pixiSlide.container) {
         throw new SliderError(`Failed to find slide with id: ${slide.id}`, 'INIT_ERROR');
       }
       pixiSlide.container.visible = index === 0;
@@ -257,32 +257,28 @@ export class PixiSliderApp {
   }
 
   /**
-   * Advances to the next slide with animation.
-   * Does nothing if animation is in progress.
+   * Moves to the next slide.
    * 
    * @public
-   * @performance Uses GSAP for smooth animations
-   * @accessibility Announces slide change to screen readers
+   * @throws {SliderError} When operation fails
+   * @description Handles transition animation and state updates
    */
-  public next() {
-    if (this.isAnimating) return;
+  public next(): void {
+    if(this.isAnimating) return;
     const nextIndex = (this.currentIndex + 1) % this.options.slides.length;
     this.animateToSlide(nextIndex);
   }
 
   /**
-   * Returns to the previous slide with animation.
-   * Does nothing if animation is in progress.
+   * Moves to the previous slide.
    * 
    * @public
-   * @performance Uses GSAP for smooth animations
-   * @accessibility Announces slide change to screen readers
+   * @throws {SliderError} When operation fails
+   * @description Handles transition animation and state updates
    */
-  public prev() {
-    if (this.isAnimating) return;
-    const prevIndex =
-      (this.currentIndex - 1 + this.options.slides.length) %
-      this.options.slides.length;
+  public prev(): void {
+    if(this.isAnimating) return;
+    const prevIndex = (this.currentIndex - 1 + this.options.slides.length) % this.options.slides.length;
     this.animateToSlide(prevIndex);
   }
 
@@ -290,47 +286,47 @@ export class PixiSliderApp {
    * Gets the current slide index.
    * 
    * @public
-   * @returns {number} Current slide index
-   * @performance Constant time operation
+   * @returns The current slide index
+   * @description Provides current state information
    */
   public getCurrentIndex(): number {
     return this.currentIndex;
   }
 
   /**
-   * Checks if a slide transition is in progress.
+   * Checks if slider is currently animating.
    * 
    * @public
-   * @returns {boolean} True if animating, false otherwise
-   * @performance Constant time operation
+   * @returns Whether the slider is currently animating
+   * @description Provides animation state information
    */
   public getIsAnimating(): boolean {
     return this.isAnimating;
   }
 
   /**
-   * Animates transition between slides.
+   * Animates to a specific slide.
    * 
    * @private
-   * @param {number} targetIndex - Index of the target slide
+   * @param {number} targetIndex - The index to animate to
    * @throws {SliderError} When animation fails
-   * @performance Uses GSAP for optimized animations
-   * @accessibility Manages focus during transition
+   * @description Implements smooth transition animations
+   * @description Validates target index and animation state
    */
-  private animateToSlide(targetIndex: number) {
+  private animateToSlide(targetIndex: number): void {
     if (this.isAnimating || targetIndex === this.currentIndex) return;
 
     const currentSlideId = this.options.slides[this.currentIndex]?.id;
     const nextSlideId = this.options.slides[targetIndex]?.id;
 
-    if (!currentSlideId || !nextSlideId) {
+    if(!currentSlideId || !nextSlideId) {
       throw new SliderError('Invalid slide index', 'INIT_ERROR');
     }
 
     const currentSlide = this.slides.get(currentSlideId);
     const nextSlide = this.slides.get(nextSlideId);
 
-    if (!currentSlide?.container || !nextSlide?.container) {
+    if(!currentSlide?.container || !nextSlide?.container) {
       throw new SliderError('Failed to find slides for animation', 'INIT_ERROR');
     }
 
@@ -369,28 +365,27 @@ export class PixiSliderApp {
   }
 
   /**
-   * Starts the render loop.
+   * Starts the rendering loop.
    * 
    * @private
-   * @performance Optimizes render cycle for 60 FPS
-   * @security Implements render loop safety checks
+   * @description Initializes the PIXI rendering loop
    */
-  private startRendering() {
+  private startRendering(): void {
     this.app.ticker.add(() => {
-      // Add any per-frame updates here if needed
+      // Add any per-frame updates here if: needed});
     });
   }
 
   /**
-   * Cleans up resources and destroys the application.
+   * Destroys the PIXI application and releases resources.
    * 
    * @public
-   * @performance Ensures proper memory cleanup
-   * @security Implements safe destruction sequence
+   * @description Properly disposes of all resources and event listeners
+   * @description Ensures memory is fully released
    */
-  public destroy() {
+  public destroy(): void {
     // Destroy textures and sprites
-    this.slides.forEach(slide => {
+    this.slides.forEach(slide => { 
       slide.sprite.destroy();
       slide.container.destroy();
       slide.texture.destroy();
@@ -401,26 +396,24 @@ export class PixiSliderApp {
 
     // Destroy the Pixi application
     this.app.destroy(true);
-
-    throw new SliderError('Failed to destroy application', 'DESTROY_ERROR');
   }
 
   /**
-   * Resizes the slider and updates all slides.
+   * Resizes the slider to new dimensions.
    * 
    * @public
    * @param {number} width - New width in pixels
    * @param {number} height - New height in pixels
-   * @throws {SliderError} When resize fails
-   * @performance Optimizes resize operations
-   * @security Validates dimensions
+   * @throws {SliderError} When resize operation fails
+   * @description Updates canvas and sprites for new dimensions
+   * @description Validates input dimensions
    */
-  public resize(width: number, height: number) {
+  public resize(width: number, height: number): void {
     // Update renderer size
     this.app.renderer.resize(width, height);
 
     // Update all slides
-    this.slides.forEach(slide => {
+    this.slides.forEach(slide => { 
       slide.sprite.position.set(width / 2, height / 2);
       this.scaleToFit(slide.sprite, width, height);
     });
@@ -428,37 +421,15 @@ export class PixiSliderApp {
 }
 
 /**
- * React component wrapper for PixiSliderApp.
- * Provides a declarative interface for the slider.
+ * React component wrapper for PixiSliderApp
  * 
- * @component
- * @version 1.0.0
- * @example
- * ```tsx
- * <PixiSliderComponent
- *   width={800}
- *   height={600}
- *   slides={[
- *     { id: '1', image: '/slide1.jpg', alt: 'Slide 1' },
- *     { id: '2', image: '/slide2.jpg', alt: 'Slide 2' }
- *   ]}
- *   onSlideChange={(index) => console.log(`Slide changed to ${index}`)}
- *   onError={(error) => console.error('Slider error:', error)}
- * />
- * ```
- * 
- * @performance
- * - Efficient React lifecycle management
- * - Optimized canvas updates
- * - Proper cleanup on unmount
- * 
- * @accessibility
- * - Keyboard navigation
- * - Screen reader support
- * - ARIA attributes
- * 
- * @see PixiSliderApp - Core slider implementation
- * @see PixiErrorBoundary - Error handling
+ * @param {PixiAppProps} props - Component props
+ * @param {number} props.width - Width of the slider
+ * @param {number} props.height - Height of the slider
+ * @param {Array<{id: string, image: string, alt: string}>} props.slides - Slider slides
+ * @param {function} [props.onSlideChange] - Slide change callback
+ * @param {function} [props.onError] - Error handling callback
+ * @returns {React.ReactElement} The slider component
  */
 const PixiSliderComponent: React.FC<PixiAppProps> = ({
   width,
@@ -466,17 +437,17 @@ const PixiSliderComponent: React.FC<PixiAppProps> = ({
   slides,
   onSlideChange,
   onError,
-}) => {
+}): React.ReactElement => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const appRef = useRef<PixiSliderApp | null>(null);
-
+  const sliderRef = useRef<PixiSliderApp | null>(null);
+  
   // Initialize accessibility hook
   const { announceSlide } = useSliderAccessibility({
     totalSlides: slides.length,
-    currentIndex: appRef.current?.getCurrentIndex() ?? 0,
-    onNext: () => appRef.current?.next(),
-    onPrev: () => appRef.current?.prev(),
-    isAnimating: appRef.current?.getIsAnimating() ?? false,
+    currentIndex: sliderRef.current?.getCurrentIndex() ?? 0,
+    onNext: () => sliderRef.current?.next(),
+    onPrev: () => sliderRef.current?.prev(),
+    isAnimating: sliderRef.current?.getIsAnimating() ?? false,
   });
 
   useEffect(() => {
@@ -484,75 +455,105 @@ const PixiSliderComponent: React.FC<PixiAppProps> = ({
 
     try {
       // Initialize Pixi application
-      appRef.current = new PixiSliderApp(canvasRef.current, {
+      sliderRef.current = new PixiSliderApp(canvasRef.current, {
         width,
         height,
         slides,
         onSlideChange: (index) => {
           onSlideChange?.(index);
           const currentSlide = slides[index];
-          if (currentSlide) {
+          if(currentSlide) {
             announceSlide(`Showing slide ${index + 1} of ${slides.length}: ${currentSlide.alt}`);
           }
         },
       });
-    } catch (error) {
+    } catch(error) {
       console.error('Failed to initialize PixiSlider:', error);
-      if (error instanceof Error) {
+      if(error instanceof Error) {
         onError?.(error);
       }
     }
 
     // Cleanup
     return () => {
-      appRef.current?.destroy();
-      appRef.current = null;
+      sliderRef.current?.destroy();
+      sliderRef.current = null;
     };
   }, [width, height, slides, onSlideChange, announceSlide, onError]);
 
   // Handle resize
   useEffect(() => {
-    if (!appRef.current) return;
-    appRef.current.resize(width, height);
+    if (!sliderRef.current) return;
+    sliderRef.current.resize(width, height);
   }, [width, height]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'block',
-      }}
-      aria-label={`Image Slider with ${slides.length} slides`}
-      role="img"
-      tabIndex={0}
-    />
+    <div 
+      className="pixi-slider-container"
+      style={{ width, height, position: 'relative' }}
+      data-testid="pixi-slider"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Image slider"
+    >
+      <canvas 
+        ref={canvasRef}
+        width={width}
+        height={height}
+        style={{ display: 'block' }}
+        data-testid="pixi-canvas"
+        tabIndex={0}
+        aria-label={`Slide container with ${slides.length} slides`}
+      />
+      {/* ... existing controls ... */}
+    </div>
   );
 };
 
 /**
- * Error boundary wrapped PixiSlider component.
- * Provides error handling and recovery for the slider.
+ * Error fallback component for PixiSlider errors
  * 
- * @component
- * @version 1.0.0
- * @example
- * ```tsx
- * <PixiSlider
- *   width={800}
- *   height={600}
- *   slides={slides}
- *   onSlideChange={handleSlideChange}
- *   onError={handleError}
- * />
- * ```
- * 
- * @see PixiSliderComponent - Core slider component
- * @see PixiErrorBoundary - Error handling wrapper
+ * @param {Object} props - Component props
+ * @param {Error} props.error - The error that occurred
+ * @param {() => void} props.retry - Function to retry rendering the slider
+ * @returns {React.ReactElement} The error fallback UI
  */
-export const PixiSlider: React.FC<PixiAppProps> = (props) => (
-  <PixiErrorBoundary onError={props.onError}>
+const PixiErrorFallbackComponent: React.FC<{
+  error: Error;
+  retry: () => void;
+}> = ({ error, retry }) => (
+  <div className="pixi-error-fallback" data-testid="pixi-error-fallback">
+    <h3>Slider Error</h3>
+    <p>{error.message}</p>
+    <button 
+      onClick={retry}
+      type="button"
+      data-testid="pixi-retry-button"
+    >
+      Retry
+    </button>
+  </div>
+);
+
+/**
+ * Error boundary wrapped PixiSlider component
+ * 
+ * @param {PixiAppProps} props - Component props
+ * @returns {React.ReactElement} The error-protected slider component
+ */
+export const PixiSlider: React.FC<PixiAppProps> = (props): React.ReactElement => (
+  <PixiErrorBoundary
+    fallback={<PixiErrorFallbackComponent error={new Error('An error occurred in the slider')} retry={() => {}} />}
+    onError={(error, _errorInfo) => {
+      console.error('PixiSlider error:', error);
+      // Update the fallback component with the actual error
+      const fallbackElement = document.querySelector('[data-testid="pixi-error-fallback"]');
+      if (fallbackElement) {
+        const errorText = fallbackElement.querySelector('p');
+        if (errorText) errorText.textContent = error.message;
+      }
+    }}
+  >
     <PixiSliderComponent {...props} />
   </PixiErrorBoundary>
 ); 

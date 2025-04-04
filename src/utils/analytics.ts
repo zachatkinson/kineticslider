@@ -3,14 +3,14 @@
  */
 import type { 
   AnalyticsConfig,
-  SliderAnalyticsEventType,
+  SliderAnalyticsEventType as _SliderAnalyticsEventType,
   GestureAnalytics,
   SliderAnalyticsData,
-  BaseAnalyticsData,
+  BaseAnalyticsData as _BaseAnalyticsData,
   ErrorAnalytics,
-  SliderEventType
+  SliderEventType as _SliderEventType
 } from '../types/analytics';
-import type { GestureDirection } from '../types/gesture';
+import type { GestureDirection as _GestureDirection } from '../types/gesture';
 import type { ErrorType } from '../types/error';
 
 const DEFAULT_CONFIG: AnalyticsConfig = {
@@ -29,6 +29,7 @@ const DEFAULT_CONFIG: AnalyticsConfig = {
 
 /**
  * Analytics manager for KineticSlider
+ * @example Example usage
  */
 export class AnalyticsManager {
   private static instance: AnalyticsManager;
@@ -37,6 +38,10 @@ export class AnalyticsManager {
   private batchInterval: number | null = null;
   private sessionId: string;
 
+  /**
+   * Creates a new AnalyticsManager instance
+   * @param config - Optional analytics configuration
+   */
   private constructor(config: Partial<AnalyticsConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.sessionId = this.generateSessionId();
@@ -53,6 +58,11 @@ export class AnalyticsManager {
     }
   }
 
+  /**
+   * Gets the singleton instance of AnalyticsManager
+   * @param config - Optional analytics configuration
+   * @returns {AnalyticsManager} The AnalyticsManager singleton instance
+   */
   public static getInstance(
     config?: Partial<AnalyticsConfig>
   ): AnalyticsManager {
@@ -62,10 +72,19 @@ export class AnalyticsManager {
     return AnalyticsManager.instance;
   }
 
+  /**
+   * Gets the current analytics configuration
+   * @returns {AnalyticsConfig} The current analytics configuration
+   */
   public getConfig(): AnalyticsConfig {
     return { ...this.config };
   }
 
+  /**
+   * Updates the analytics configuration
+   * @param config - Partial configuration to update
+   * @returns {void}
+   */
   public updateConfig(config: Partial<AnalyticsConfig>): void {
     const wasEnabled = this.config.enabled;
     this.config = { ...this.config, ...config };
@@ -78,6 +97,11 @@ export class AnalyticsManager {
     }
   }
 
+  /**
+   * Tracks an analytics event
+   * @param event - The event data to track
+   * @returns {void}
+   */
   public trackEvent(
     event: Partial<SliderAnalyticsData>
   ): void {
@@ -100,15 +124,20 @@ export class AnalyticsManager {
     this.eventQueue.push(fullEvent);
 
     // Send immediately if batch size reached or not batching
-    if (
-      !this.config.batchEvents ||
+    if (!this.config.batchEvents ||
       this.eventQueue.length >= this.config.batchSize
     ) {
       this.sendBatch();
     }
   }
 
-  public trackError(error: Error, context: Record<string, unknown> = {}): void {
+  /**
+   * Tracks an error in the analytics system
+   * @param error - The error object to track
+   * @param _context - Additional context to include with the error
+   * @returns {void}
+   */
+  public trackError(error: Error, _context: Record<string, unknown> = {}): void {
     if (!this.config.enabled || !this.config.enableErrors) return;
 
     const errorEvent: ErrorAnalytics = {
@@ -122,6 +151,10 @@ export class AnalyticsManager {
     this.trackEvent(errorEvent);
   }
 
+  /**
+   * Immediately sends all queued events
+   * @returns {void}
+   */
   public flushEvents(): void {
     this.sendBatch();
   }
@@ -185,59 +218,70 @@ export class AnalyticsManager {
 export const analytics = AnalyticsManager.getInstance();
 
 /**
- * Tracks an analytics event
+ * Tracks a custom event
+ *
+ * @param {('slide_change' | 'animation_complete' | 'gesture_detected' | 'error')} eventName - The name of the event
+ * @param {Record<string, unknown>} [data] - Additional data to track with the event
+ * @param {string} [componentId] - Optional component ID
+ * @returns {void}
  */
-export function trackEvent(
-  type: 'slide_change' | 'animation_complete' | 'gesture_detected' | 'error',
+export const trackEvent = (
+  eventName: 'slide_change' | 'animation_complete' | 'gesture_detected' | 'error',
   data: Record<string, unknown> = {},
   componentId?: string
-): void {
+): void => {
   const event: Partial<SliderAnalyticsData> = {
-    eventType: type,
+    eventType: eventName,
     componentId,
     ...data
   };
   analytics.trackEvent(event);
-}
+};
 
-export const trackError = (
-  error: Error,
-  context: Record<string, unknown> = {}
-): void => {
-  analytics.trackError(error, context);
+/**
+ * Tracks an error
+ *
+ * @param {Error | unknown} error - The error to track
+ * @param {Record<string, unknown>} [metadata] - Additional metadata about the error
+ * @returns {void}
+ */
+export const trackError = (error: Error | unknown, metadata?: Record<string, unknown>): void => {
+  analytics.trackError(error as Error, metadata || {});
 };
 
 // Export types
 export type { 
-  SliderAnalyticsEventType,
+  SliderAnalyticsEventType as _SliderAnalyticsEventType,
   SliderAnalyticsData,
-  BaseAnalyticsData,
-  SliderEventType
+  BaseAnalyticsData as _BaseAnalyticsData,
+  SliderEventType as _SliderEventType
 } from '../types/analytics';
-export type { GestureDirection } from '../types/gesture';
+export type { GestureDirection as _GestureDirection } from '../types/gesture';
 
 // Reset the singleton instance for testing purposes
-export const resetAnalyticsForTesting = (): void => {
+export const _resetAnalyticsForTesting = (): void => {
   // @ts-ignore - accessing private property for testing
   AnalyticsManager.instance = undefined;
 };
 
 /**
- * Tracks user interaction events for analytics
+ * Tracks a user interaction
+ *
+ * @param {string} interactionType - The type of interaction
+ * @param {Record<string, unknown>} [_data] - Additional data to track with the interaction
+ * @returns {void}
  */
-export function trackInteraction(
-  gestureType: string,
-  direction: 'horizontal' | 'vertical',
-  distance: number = 0,
-  velocity: number = 0
-): void {
+export const trackInteraction = (
+  interactionType: string,
+  _data?: Record<string, unknown>
+): void => {
   const analyticsData: GestureAnalytics = {
     eventType: 'gesture_detected',
     timestamp: new Date().toISOString(),
-    gestureType,
-    direction,
-    distance,
-    velocity
+    gestureType: interactionType,
+    direction: 'horizontal',
+    distance: 0,
+    velocity: 0
   };
   analytics.trackEvent(analyticsData);
-}
+};

@@ -6,11 +6,11 @@ import {
   UseKeyboardReturn,
 } from '../types/keyboard';
 import {
-  handleKeyboardEvent,
-  setupFocusTrap,
-  handleTabInFocusTrap,
-  createKeyboardHandlers,
-  attachKeyboardListener
+  _handleKeyboardEvent as handleKeyboardEvent,
+  _setupFocusTrap as setupFocusTrap,
+  _handleTabInFocusTrap as handleTabInFocusTrap,
+  _createKeyboardHandlers as createKeyboardHandlers,
+  _attachKeyboardListener as attachKeyboardListener
 } from '../utils/keyboard-helpers';
 
 /**
@@ -96,10 +96,10 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
 
   // Handle keyboard events
   const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
+    (event: KeyboardEvent): void => {
       if (!enabled) return;
 
-      if (isFocusTrapped && event.key === 'Tab') {
+      if(isFocusTrapped && event.key === 'Tab') {
         handleTabInFocusTrap(event, focusableElementsRef.current);
         return;
       }
@@ -114,11 +114,11 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
 
   // Set up focus trap
   const trapFocus = useCallback(
-    (container: HTMLElement | null, options: FocusTrapOptions = {}) => {
+    (container: HTMLElement | null, options: FocusTrapOptions = {}): (() => void) | undefined => {
       if (!container) return;
 
       // Store previous focus if needed
-      if (options.returnFocusOnDeactivate !== false) {
+      if(options.returnFocusOnDeactivate !== false) {
         previousFocusRef.current = document.activeElement as HTMLElement;
       }
 
@@ -129,7 +129,7 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
       };
 
       // Set up focus trap
-      const { focusableElements, initialElement } = setupFocusTrap(container, trapOptionsRef.current);
+      const { focusableElements } = setupFocusTrap(container, trapOptionsRef.current);
       focusableElementsRef.current = focusableElements;
 
       // Activate the trap
@@ -145,12 +145,11 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
   );
 
   // Release focus trap
-  const releaseFocus = useCallback(() => {
+  const releaseFocus = useCallback((): void => {
     setIsFocusTrapped(false);
     trapOptionsRef.current.onDeactivate?.();
 
-    if (
-      trapOptionsRef.current.returnFocusOnDeactivate !== false &&
+    if(trapOptionsRef.current.returnFocusOnDeactivate !== false &&
       previousFocusRef.current &&
       previousFocusRef.current instanceof HTMLElement
     ) {
@@ -162,7 +161,7 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
   // Clean up event listeners
   useEffect(() => {
     return () => {
-      if (elementRef.current) {
+      if(elementRef.current) {
         elementRef.current.removeEventListener('keydown', handleKeyDown);
         elementRef.current = null;
       }

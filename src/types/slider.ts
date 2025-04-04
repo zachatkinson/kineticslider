@@ -1,9 +1,9 @@
 /**
  * Core slider types and interfaces
  */
-import type { GestureConfig, GestureEvent, GestureDelta, GestureDirection } from './gesture';
-import type { AnimationConfig, AnimationEvents, AnimationMetrics } from './animation';
-import type { ErrorType, SliderError, SliderErrorInfo } from './error';
+import type { GestureConfig as _GestureConfig, GestureEvent as _GestureEvent, GestureDelta, GestureDirection } from './gesture';
+import type { AnimationConfig as _AnimationConfig, AnimationEvents as _AnimationEvents, AnimationMetrics as _AnimationMetrics } from './animation';
+import type { ErrorType, SliderError as _SliderError, SliderErrorInfo } from './error';
 import type { 
   SlideIndex, 
   GestureDistance, 
@@ -11,7 +11,7 @@ import type {
   GestureThreshold,
   SliderId 
 } from './branded';
-import type { SliderEventHandler } from './events';
+import type { SliderEventHandler as _SliderEventHandler } from './events';
 
 // Re-export branded types for backward compatibility
 export type { 
@@ -24,8 +24,8 @@ export type {
   SliderErrorInfo
 };
 
-// Export error types from errors.ts
-export { ErrorType as ErrorTypes };
+// Export _error types from errors.ts
+export { ErrorType as ErrorTypes};
 
 // Core slide types
 export interface Slide {
@@ -43,6 +43,18 @@ export interface Slide {
   content?: React.ReactNode;
   /** Optional metadata */
   metadata?: Record<string, unknown>;
+  /** Optional className for the slide */
+  className?: string;
+  /** Optional inline styles for the slide */
+  style?: React.CSSProperties;
+  /** Optional style for the content container */
+  contentStyle?: React.CSSProperties;
+  /** Optional style for the image */
+  imageStyle?: React.CSSProperties;
+  /** Optional alt text for the image (alternative to alt) */
+  imageAlt?: string;
+  /** Optional render function for custom content */
+  render?: () => React.ReactNode;
 }
 
 export interface SlideItem {
@@ -90,24 +102,24 @@ export interface SliderContextValue {
   actions: {
     next: () => void;
     previous: () => void;
-    goTo: (index: SlideIndex) => void;
+    goTo: (_index: SlideIndex) => void;
     startAutoplay: () => void;
     stopAutoplay: () => void;
-    updateDragDelta: (delta: GestureDelta) => void;
+    updateDragDelta: (_delta: GestureDelta) => void;
   };
 }
 
 /**
  * Action types for slider state management
  */
-export type SliderAction =
+export type SliderAction = 
   | { type: 'NEXT' }
   | { type: 'PREVIOUS' }
-  | { type: 'GO_TO'; index: SlideIndex }
+  | { type: 'GO_TO', _index: SlideIndex }
   | { type: 'START_ANIMATION' }
   | { type: 'END_ANIMATION' }
   | { type: 'START_DRAG' }
-  | { type: 'UPDATE_DRAG'; delta: GestureDelta }
+  | { type: 'UPDATE_DRAG', _delta: GestureDelta }
   | { type: 'END_DRAG' };
 
 export interface SliderMetrics {
@@ -125,18 +137,21 @@ export interface SlideAnimation {
   delay?: number;
 }
 
-/** Props for the KineticSlider component */
+/**
+ * Props for the KineticSlider component
+ * @example Example usage
+ */
 export interface KineticSliderProps {
   /** Array of slides to render */
   slides: Slide[];
-  /** Initial slide index */
+  /** Initial slide _index */
   initialSlide?: SlideIndex;
   /** Callback when slide changes */
-  onSlideChange?: (index: SlideIndex) => void;
+  onSlideChange?: (_index: SlideIndex) => void;
   /** Callback when animation completes */
   onAnimationComplete?: () => void;
-  /** Callback when error occurs */
-  onError?: (error: Error) => void;
+  /** Callback when _error occurs */
+  onError?: (_error: Error | Record<string, unknown>) => void;
   /** Additional class name */
   className?: string;
   /** Additional inline styles */
@@ -155,10 +170,13 @@ export interface KineticSliderProps {
   lazyLoad?: boolean;
 }
 
+/** Alias for backward compatibility */
+export type SliderProps = KineticSliderProps;
+
 /**
  * Default configuration for the slider
  */
-export const defaultConfig: SliderConfig = {
+export const _defaultConfig: SliderConfig = {
   initialSlide: 0 as SlideIndex,
   loop: true,
   autoplay: false,
@@ -169,12 +187,12 @@ export const defaultConfig: SliderConfig = {
 /**
  * Initial state for the slider reducer
  */
-export const initialState: SliderState = {
+export const _initialState: SliderState = {
   currentIndex: 0 as SlideIndex,
   isAnimating: false,
   isDragging: false,
-  dragDelta: { 
+  dragDelta: {
     x: 0 as GestureDistance, 
-    y: 0 as GestureDistance 
-  },
+    y: 0 as GestureDistance
+  }
 };

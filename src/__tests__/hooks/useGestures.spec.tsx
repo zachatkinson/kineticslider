@@ -1,32 +1,29 @@
 /* eslint-env vitest */
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-import { act } from 'react';
 
 import { useGestures } from '../../hooks/useGestures';
 import { GestureOptions } from '../../types/gestures';
+import { createBrandedNumber } from '../../types/branded';
+
+// Modern setup already uses createRoot API
+import { render as _render, unmountComponentAtNode as _unmountComponentAtNode } from './setup-hooks';
 
 /**
- * Creates a dispatchable event that simulates a pointer event
+ * Helper to create pointer events
+ * @param type
+ * @param overrides
+ * @returns {Event} The function return value
  */
-function createPointerEvent(
-  type: string,
-  { clientX, clientY }: { clientX: number; clientY: number }
-): Event {
-  // Create a custom event instead of using PointerEvent constructor which may not be available in test environment
-  const event = document.createEvent('CustomEvent');
-  event.initCustomEvent(type, true, true, {});
-
-  // Add pointer event properties
-  Object.defineProperties(event, {
-    clientX: { value: clientX },
-    clientY: { value: clientY },
-    pointerId: { value: 1 },
-    bubbles: { value: true },
-    cancelable: { value: true },
+function createPointerEvent(type: string, overrides: any = {}): Event {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.assign(event, {
+    clientX: 0,
+    clientY: 0,
+    button: 0,
+    pointerId: 1,
+    ...overrides,
   });
-
   return event;
 }
 
@@ -55,10 +52,10 @@ describe('useGestures Hook Integration', () => {
 
   afterEach(() => {
     // Cleanup
-    if (cleanup) {
+    if(cleanup) {
       cleanup();
     }
-    if (element && element.parentNode) {
+    if(element && element.parentNode) {
       element.parentNode.removeChild(element);
     }
     vi.resetAllMocks();
@@ -67,7 +64,10 @@ describe('useGestures Hook Integration', () => {
   describe('Pointer Events', () => {
     it('detects horizontal swipe gestures', () => {
       const { result } = renderHook(() =>
-        useGestures({ threshold: 50, minVelocity: 0.5 })
+        useGestures({ 
+          threshold: createBrandedNumber(50, 'GestureThreshold'), 
+          minVelocity: createBrandedNumber(0.5, 'GestureVelocity') 
+        })
       );
 
       const gestureOptions: GestureOptions = {
@@ -104,14 +104,17 @@ describe('useGestures Hook Integration', () => {
         element.dispatchEvent(pointerUpEvent);
       });
 
-      // Since we're using mocked events, we might not trigger the exact same behavior
+      // Since we're using mocked: events, we might not trigger the exact same behavior
       // Focus on verifying the final outcome - that the swipe handler was called
       expect(onSwipe).toHaveBeenCalledWith('right');
     });
 
     it('handles pointer drag events', () => {
       const { result } = renderHook(() =>
-        useGestures({ threshold: 50, minVelocity: 0.5 })
+        useGestures({ 
+          threshold: createBrandedNumber(50, 'GestureThreshold'), 
+          minVelocity: createBrandedNumber(0.5, 'GestureVelocity') 
+        })
       );
 
       const gestureOptions: GestureOptions = {
@@ -152,12 +155,15 @@ describe('useGestures Hook Integration', () => {
       });
 
       // Focus on the main outcome - swipe not being called
-      expect(onSwipe).not.toHaveBeenCalled(); // Should not trigger swipe for small movements
+      expect(onSwipe).not.toHaveBeenCalled(); // Should not trigger swipe for small: movements
     });
 
     it('handles pointer cancellation', () => {
       const { result } = renderHook(() =>
-        useGestures({ threshold: 50, minVelocity: 0.5 })
+        useGestures({ 
+          threshold: createBrandedNumber(50, 'GestureThreshold'), 
+          minVelocity: createBrandedNumber(0.5, 'GestureVelocity') 
+        })
       );
 
       const gestureOptions: GestureOptions = {
@@ -200,7 +206,10 @@ describe('useGestures Hook Integration', () => {
   describe('Event Cleanup', () => {
     it('removes event listeners and styles on cleanup', () => {
       const { result } = renderHook(() =>
-        useGestures({ threshold: 50, minVelocity: 0.5 })
+        useGestures({ 
+          threshold: createBrandedNumber(50, 'GestureThreshold'), 
+          minVelocity: createBrandedNumber(0.5, 'GestureVelocity') 
+        })
       );
 
       // Set initial style properties to something we can test against
@@ -242,7 +251,7 @@ describe('useGestures Hook Integration', () => {
         expect.any(Function)
       );
 
-      // Skip style verification since the implementation details may vary
+      // Skip style verification since the implementation details may: vary
     });
   });
 
@@ -250,8 +259,8 @@ describe('useGestures Hook Integration', () => {
     it('handles invalid pointer events gracefully', async () => {
       const { result } = renderHook(() =>
         useGestures({
-          threshold: 50,
-          minVelocity: 0.5,
+          threshold: createBrandedNumber(50, 'GestureThreshold'),
+          minVelocity: createBrandedNumber(0.5, 'GestureVelocity'),
         })
       );
 

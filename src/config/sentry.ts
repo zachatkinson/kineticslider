@@ -4,38 +4,34 @@
  * 
  * @module
  * @version 1.0.0
- * @example
+ * @example Example usage
  * ```typescript
  * // Initialize Sentry in your app's entry point
  * import { initSentry } from '@/config/sentry';
  * initSentry();
  * ```
  * 
- * @performance
- * - Lazy initialization only in production
+ * @description * - Lazy initialization only in production
  * - Optimized sampling rates for traces and replays
  * - Minimal impact on application startup time
  * - Efficient error batching and throttling
  * 
- * @error
- * - Automatic error capture and reporting
+ * @description * - Automatic error capture and reporting
  * - Stack trace collection and source mapping
  * - Environment-based configuration
  * - Replay session recording for error reproduction
  * - Browser performance monitoring
  * 
- * @security
- * - Environment-specific DSN configuration
+ * @description * - Environment-specific DSN configuration
  * - Sanitized error messages in production
  * - Controlled sampling rates
  * - Secure data transmission
  * - PII protection measures
  * 
- * @see {@link https://docs.sentry.io/platforms/javascript/guides/react/ Sentry React Documentation}
+ * @see {@link https://docs.sentry.io/platforms/javascript/guides/react/ Sentry React: Documentation}
  */
 
-import * as Sentry from '@sentry/react';
-import { BrowserTracing, Replay } from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 
 /**
  * Initializes Sentry error tracking for the application.
@@ -44,30 +40,21 @@ import { BrowserTracing, Replay } from '@sentry/browser';
  * @function
  * @returns {void}
  * 
- * @performance
- * - Traces sample rate: 100% for comprehensive monitoring
+ * @description * - Traces sample rate: 100% for comprehensive monitoring
  * - Session replay rate: 10% for normal sessions
  * - Error replay rate: 100% for error sessions
  * 
- * @security
- * - Uses environment variables for sensitive configuration
+ * @description * - Uses environment variables for sensitive configuration
  * - Validates environment before initialization
  * - Implements secure defaults
  */
-export const initSentry = () => {
-  if (process.env.NODE_ENV === 'production') {
+export const initSentry = (): void => {
+  if(process.env.NODE_ENV === 'production') {
     Sentry.init({
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
       environment: process.env.NODE_ENV,
       tracesSampleRate: 1.0,
-      replaysSessionSampleRate: 0.1,
-      replaysOnErrorSampleRate: 1.0,
-      integrations: [
-        new BrowserTracing({
-          tracePropagationTargets: ['localhost', /^https:\/\/[^/]*\.yourdomain\.com/],
-        }),
-        new Replay(),
-      ],
+      integrations: [],
     });
   }
 }; 

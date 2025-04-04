@@ -13,7 +13,7 @@ export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   errorBoundaryProps: Parameters<WithErrorBoundary>[1]
 ): React.FC<P> {
-  return (props) =>
+  return (props) => 
     React.createElement(ErrorBoundary, {
       ...errorBoundaryProps,
       children: React.createElement(Component, props),

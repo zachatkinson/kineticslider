@@ -1,18 +1,23 @@
 import React from 'react';
 import { useCallback } from 'react';
 import { useSlider } from '../../context/SliderContext';
+import { createBrandedNumber } from '../../types/branded';
 
-export function useKeyboardNavigation(): {
+interface KeyboardNavigationHook {
   handleKeyDown: (event: React.KeyboardEvent) => void;
-};
+}
 
-export function useKeyboardNavigation() {
+/**
+ *
+  * @returns {unknown} The function return value
+ */
+export function useKeyboardNavigation(): KeyboardNavigationHook {
   const { state, items, actions } = useSlider();
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (state.isAnimating) return;
 
-    switch (event.key) {
+    switch(event.key) {
       case 'ArrowLeft':
       case 'ArrowUp':
         event.preventDefault();
@@ -25,11 +30,11 @@ export function useKeyboardNavigation() {
         break;
       case 'Home':
         event.preventDefault();
-        actions.goTo(0);
+        actions.goTo(createBrandedNumber(0, 'SlideIndex'));
         break;
       case 'End':
         event.preventDefault();
-        actions.goTo(items.length - 1);
+        actions.goTo(createBrandedNumber(items.length - 1, 'SlideIndex'));
         break;
       default:
         break;

@@ -6,6 +6,7 @@
 
 /**
  * Interface for elements that can receive focus
+ * @example Example usage
  */
 export interface Focusable {
   /**
@@ -16,6 +17,7 @@ export interface Focusable {
 
 /**
  * Interface for elements that can be initially focused
+ * @example Example usage
  */
 export interface InitialFocusable {
   /**
@@ -26,6 +28,7 @@ export interface InitialFocusable {
 
 /**
  * Interface for elements that can be activated
+ * @example Example usage
  */
 export interface Activatable {
   /**
@@ -36,6 +39,7 @@ export interface Activatable {
 
 /**
  * Interface for elements that can be selected
+ * @example Example usage
  */
 export interface Selectable {
   /**
@@ -51,6 +55,7 @@ export interface Selectable {
 
 /**
  * Interface for elements that can have their visibility toggled
+ * @example Example usage
  */
 export interface Toggleable {
   /**

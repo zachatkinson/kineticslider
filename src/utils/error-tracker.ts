@@ -1,10 +1,10 @@
-import type { SliderErrorInfo } from '../types/error';
 import { SliderError } from './errors';
 import type { ErrorTrackerContext, ErrorTrackerReport } from '../types/error';
 
 /**
  * Error tracking utility that provides comprehensive error monitoring
  * and reporting capabilities.
+ * @example Example usage
  */
 export class ErrorTracker {
   private static instance: ErrorTracker;
@@ -14,14 +14,20 @@ export class ErrorTracker {
 
   /**
    * Get singleton instance
+   * @returns {ErrorTracker} The singleton ErrorTracker instance
    */
   public static getInstance(): ErrorTracker {
-    if (!ErrorTracker.instance) {
+    if(!ErrorTracker.instance) {
       ErrorTracker.instance = new ErrorTracker();
     }
     return ErrorTracker.instance;
   }
 
+  /**
+   * Create a new ErrorTracker instance
+   * @param maxReports - Maximum number of reports to store
+   * @returns {void}
+   */
   constructor(maxReports = 100) {
     this.maxReports = maxReports;
     this.setupGlobalHandlers();
@@ -31,7 +37,7 @@ export class ErrorTracker {
    * Setup global error and unhandled rejection handlers
    */
   private setupGlobalHandlers(): void {
-    if (typeof window !== 'undefined') {
+    if(typeof window !== 'undefined') {
       window.onerror = (message, source, lineno, colno, error) => {
         this.captureError(error || new Error(String(message)), {
           component: 'window',
@@ -53,8 +59,7 @@ export class ErrorTracker {
    * @param error - Error instance or message
    * @param context - Error context
    */
-  public captureError(
-    error: Error | string,
+  public captureError(error: Error | string,
     context: Partial<ErrorTrackerContext> = {}
   ): void {
     const errorInstance = typeof error === 'string' ? new Error(error) : error;
@@ -78,8 +83,7 @@ export class ErrorTracker {
    * @param warning - Warning instance or message
    * @param context - Warning context
    */
-  public captureWarning(
-    warning: Error | string,
+  public captureWarning(warning: Error | string,
     context: Partial<ErrorTrackerContext> = {}
   ): void {
     const warningInstance = typeof warning === 'string' ? new Error(warning) : warning;
@@ -122,7 +126,7 @@ export class ErrorTracker {
     this.errorListeners.forEach((listener) => {
       try {
         listener(report);
-      } catch (error) {
+      } catch(error) {
         console.error('Error in error listener:', error);
       }
     });
@@ -179,7 +183,7 @@ export class ErrorTracker {
   private addReport(report: ErrorTrackerReport): void {
     this.reports.push(report);
 
-    if (this.reports.length > this.maxReports) {
+    if(this.reports.length > this.maxReports) {
       this.reports.shift();
     }
 
@@ -190,12 +194,11 @@ export class ErrorTracker {
     const { error, context, stackTrace } = report;
     const timestamp = new Date(context.timestamp).toISOString();
 
-    console.group(`[${timestamp}] ${context.severity.toUpperCase()}: ${error.message}`);
-    if (context.component) console.log('Component:', context.component);
-    if (context.action) console.log('Action:', context.action);
-    if (context.data) console.log('Data:', context.data);
-    if (stackTrace) console.log('Stack Trace:', stackTrace);
-    console.groupEnd();
+    console.warn(`[${timestamp}] ${context.severity.toUpperCase()}: ${error.message}`);
+    if (context.component) console.warn('Component:', context.component);
+    if (context.action) console.warn('Action:', context.action);
+    if (context.data) console.warn('Data:', context.data);
+    if (stackTrace) console.warn('Stack Trace:', stackTrace);
 
     this.notifyListeners(report);
   }

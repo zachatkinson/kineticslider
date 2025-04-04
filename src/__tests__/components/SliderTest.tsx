@@ -1,10 +1,14 @@
 import React from 'react';
-import { Slider } from './Slider';
-import type { SlideItem, SliderConfig } from '../../types/slider';
+import { Slider } from '../../components/Slider';
+import type { Slide, SliderConfig } from '../../types/slider';
+import { createSlideId } from '../../utils/id-helpers';
 
-const testItems: SlideItem[] = [
+const testSlides: Slide[] = [
   {
-    id: '1',
+    id: createSlideId('1'),
+    title: 'Slide 1',
+    image: '/images/slide1.jpg',
+    alt: 'Slide 1 description',
     content: (
       <div style={{ width: '100%', height: '400px', background: '#1a73e8', color: 'white' }}>
         Slide 1
@@ -12,7 +16,10 @@ const testItems: SlideItem[] = [
     ),
   },
   {
-    id: '2',
+    id: createSlideId('2'),
+    title: 'Slide 2',
+    image: '/images/slide2.jpg',
+    alt: 'Slide 2 description',
     content: (
       <div style={{ width: '100%', height: '400px', background: '#34a853', color: 'white' }}>
         Slide 2
@@ -20,7 +27,10 @@ const testItems: SlideItem[] = [
     ),
   },
   {
-    id: '3',
+    id: createSlideId('3'),
+    title: 'Slide 3',
+    image: '/images/slide3.jpg',
+    alt: 'Slide 3 description',
     content: (
       <div style={{ width: '100%', height: '400px', background: '#ea4335', color: 'white' }}>
         Slide 3
@@ -29,40 +39,27 @@ const testItems: SlideItem[] = [
   },
 ];
 
-const testConfig: SliderConfig = {
-  direction: 'horizontal',
-  animation: {
-    duration: 300,
-    easing: 'ease-in-out',
-  },
-  gesture: {
-    direction: 'horizontal',
-    threshold: 50,
-    velocity: 0.5,
-    resistance: 1,
-  },
+const _testConfig: SliderConfig = {
   loop: true,
-  autoplay: {
-    enabled: true,
-    interval: 3000,
-    pauseOnHover: true,
-  },
-  accessibility: {
-    ariaLabel: 'Test Slider',
-    keyboardNavigation: true,
-    announceSlide: true,
-  },
+  autoplay: true,
+  autoplayDelay: 3000,
+  gestureThreshold: 50,
+  gestureDirection: 'horizontal',
 };
 
-export const SliderTest: React.FC = () => {
+export const _SliderTest: React.FC = () => {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
       <h1>Slider Test</h1>
       <Slider
-        items={testItems}
-        config={testConfig}
+        slides={testSlides}
         className="test-slider"
         style={{ height: '400px' }}
+        infiniteLoop={true}
+        duration={0.3}
+        ease="ease-in-out"
+        enableKeyboard={true}
+        enableGestures={true}
       />
     </div>
   );

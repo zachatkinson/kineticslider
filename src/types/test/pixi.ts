@@ -8,6 +8,7 @@ import type { Mock } from 'vitest';
 
 /**
  * Mock PIXI Container interface
+ * @example Example usage
  */
 export interface MockPixiContainer {
   addChild: Mock;
@@ -15,8 +16,8 @@ export interface MockPixiContainer {
   children: unknown[];
   x: number;
   y: number;
-  width: number;
-  height: number;
+  _width: number;
+  _height: number;
   scale: {
     x: number;
     y: number;
@@ -25,11 +26,12 @@ export interface MockPixiContainer {
 
 /**
  * Mock PIXI Application interface
+ * @example Example usage
  */
 export interface MockPixiApplication {
   stage: MockPixiContainer;
   renderer: {
-    resize: (width: number, height: number) => void;
+    resize: (_width: number, _height: number) => void;
     view: HTMLCanvasElement;
   };
   destroy: () => void;
@@ -37,6 +39,7 @@ export interface MockPixiApplication {
 
 /**
  * Mock PIXI Sprite interface
+ * @example Example usage
  */
 export interface MockPixiSprite {
   texture: unknown;

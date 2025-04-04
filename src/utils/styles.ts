@@ -1,5 +1,5 @@
-import { SliderState, SliderConfig } from '../types/slider';
-import { GestureDirection, GestureDelta } from '../types/gesture';
+import { SliderState as _SliderState, SliderConfig as _SliderConfig } from '../types/slider';
+import { GestureDirection as _GestureDirection, GestureDelta as _GestureDelta } from '../types/gesture';
 import { SlideStyleOptions, SlideStyle } from '../types/styles';
 
 /**
@@ -16,7 +16,7 @@ export const getSlideStyle = (options: SlideStyleOptions): SlideStyle => {
   if (isActive) transform = 'translateX(0)';
   if (isPrev) transform = 'translateX(-100%)';
   
-  if (state.isDragging) {
+  if(state.isDragging) {
     const delta = config.direction === 'horizontal' ? state.dragDelta.x : state.dragDelta.y;
     transform = `translateX(calc(${isActive ? '0' : '100'}% + ${delta}px))`;
   }

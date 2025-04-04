@@ -3,10 +3,10 @@
  */
 import type { AnimationConfig, AnimationOptions, AnimationMetrics } from './animation';
 import type { GestureConfig, GestureDirection, GestureHandlers } from './gesture';
-import type { PerformanceMetrics } from './performance';
-import type { ErrorTypes, Slide, SliderMetrics } from './slider';
-import type { FocusTrapOptions } from './keyboard';
-import type { gsap } from 'gsap';
+import type { PerformanceMetrics as _PerformanceMetrics } from './performance';
+import type { ErrorTypes as _ErrorTypes, Slide, SliderMetrics as _SliderMetrics } from './slider';
+import type { FocusTrapOptions as _FocusTrapOptions } from './keyboard';
+import type { gsap as _gsap } from 'gsap';
 import type { UseSliderAccessibilityProps } from './accessibility';
 import type { ValidationResult } from './validation';
 import type { AnimationEvents } from './animation';
@@ -29,37 +29,39 @@ export type {
 
 /**
  * Return type for the useAnimation hook
+ * @example Example usage
  */
 export interface UseAnimationReturn {
-  /** Whether an animation is currently in progress */
+  /** Whether an animation is currently in _progress */
   isAnimating: boolean;
-  /** Animate to a specific slide index with optional speed multiplier */
-  animateToSlide: (targetIndex: number, speed?: number) => void;
+  /** Animate to a specific slide _index with optional _speed? multiplier */
+  animateToSlide: (_targetIndex: number, _speed?: number) => void;
   /** Initialize the container element with GSAP settings */
   setupContainer: (container: HTMLElement) => void;
-  /** Initialize the slides with GSAP settings */
-  setupSlides: (slides: HTMLElement[]) => void;
+  /** Initialize the _slides with GSAP settings */
+  setupSlides: (_slides: HTMLElement[]) => void;
   /** Clean up any ongoing animations */
   cleanupAnimations: () => void;
   /** Handle resize events and update positions */
   handleResize: () => void;
   /** Get the current position of the container */
   getPosition: () => number;
-  /** Start drag interaction at the given x coordinate */
-  handleDragStart: (x: number) => void;
-  /** Update drag position to the given x coordinate */
-  handleDragMove: (x: number) => void;
+  /** Start drag interaction at the given _x coordinate */
+  handleDragStart: (_x: number) => void;
+  /** Update drag position to the given _x coordinate */
+  handleDragMove: (_x: number) => void;
   /** End drag interaction and trigger momentum animation */
   handleDragEnd: () => void;
   /** Get the current drag velocity */
   getVelocity: () => number;
-  progress: number;
+  _progress: number;
   metrics: AnimationMetrics;
   events: AnimationEvents;
 }
 
 /**
  * Return type for the basic animation hook
+ * @example Example usage
  */
 export interface BasicAnimationReturn {
   play: () => void;
@@ -70,6 +72,7 @@ export interface BasicAnimationReturn {
 
 /**
  * Return type for the enhanced animation hook with GSAP integration
+ * @example Example usage
  */
 export interface UseAnimationResult extends UseAnimationReturn {
   animation: BasicAnimationReturn;
@@ -77,6 +80,7 @@ export interface UseAnimationResult extends UseAnimationReturn {
 
 /**
  * Return type for the useKeyboard hook
+ * @example Example usage
  */
 export interface UseKeyboardReturn {
   focusFirst: () => void;
@@ -87,6 +91,7 @@ export interface UseKeyboardReturn {
 
 /**
  * Return type for the usePerformance hook
+ * @example Example usage
  */
 export interface UsePerformanceReturn {
   fps: number;
@@ -104,6 +109,7 @@ export interface UsePerformanceReturn {
 
 /**
  * Return type for the useKineticSlider hook
+ * @example Example usage
  */
 export interface UseKineticSliderReturn {
   currentIndex: SlideIndex;
@@ -112,14 +118,15 @@ export interface UseKineticSliderReturn {
   dragDelta: GestureDelta;
   next: () => void;
   previous: () => void;
-  goTo: (index: SlideIndex) => void;
-  handleGestureStart: (event: GestureEvent) => void;
-  handleGestureMove: (event: GestureEvent) => void;
-  handleGestureEnd: (event: GestureEvent) => void;
+  goTo: (_index: SlideIndex) => void;
+  handleGestureStart: (_event: GestureEvent) => void;
+  handleGestureMove: (_event: GestureEvent) => void;
+  handleGestureEnd: (_event: GestureEvent) => void;
 }
 
 /**
  * Return type for the useErrorTracking hook
+ * @example Example usage
  */
 export interface UseErrorTrackingReturn {
   errors: Error[];
@@ -132,6 +139,7 @@ export interface UseErrorTrackingReturn {
 
 /**
  * Options for the usePerformance hook
+ * @example Example usage
  */
 export interface UsePerformanceOptions {
   sampleSize?: number;
@@ -141,23 +149,25 @@ export interface UsePerformanceOptions {
 
 /**
  * Options for the useAnimation hook
+ * @example Example usage
  */
 export interface UseAnimationConfig {
   duration?: number;
   easing?: string;
   delay?: number;
   onComplete?: () => void;
-  onUpdate?: (progress: number) => void;
+  onUpdate?: (_progress: number) => void;
 }
 
 /**
  * Props for the useKineticSlider hook
+ * @example Example usage
  */
 export interface UseKineticSliderProps {
-  slides: Slide[];
+  _slides: Slide[];
   duration: number;
   ease: string;
-  onSlideChange?: (index: number) => void;
+  onSlideChange?: (_index: number) => void;
   onAnimationComplete?: () => void;
   initialSlide?: number;
   infiniteLoop?: boolean;
@@ -165,6 +175,7 @@ export interface UseKineticSliderProps {
 
 /**
  * Extended GestureEvent for slider interactions
+ * @example Example usage
  */
 export interface SliderGestureEvent extends GestureEvent {
   startX: number;
@@ -173,6 +184,7 @@ export interface SliderGestureEvent extends GestureEvent {
 
 /**
  * Options for form validation hook
+ * @example Example usage
  */
 export interface FormValidationOptions {
   /** Debounce timeout in milliseconds */

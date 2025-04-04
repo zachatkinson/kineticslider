@@ -1,17 +1,33 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
   GestureConfig,
   GestureOptions,
   SwipeDirection,
   UseGesturesReturn,
-} from '@/types/gestures';
+} from '../types/gestures';
+import { createBrandedNumber } from '../types/branded';
 
 export const useGestures = (
-  config: GestureConfig = { threshold: 50, minVelocity: 0.5 }
-): UseGesturesReturn => {
+  config: Partial<GestureConfig> = { 
+    threshold: createBrandedNumber(50, 'GestureThreshold'), 
+    minVelocity: createBrandedNumber(0.5, 'GestureVelocity') 
+  }
+): UseGesturesReturn => { 
+  // Use useMemo to prevent finalConfig from being recreated on every render
+  const finalConfig = useMemo<GestureConfig>(() => ({
+    enabled: true,
+    direction: 'horizontal',
+    threshold: createBrandedNumber(50, 'GestureThreshold'),
+    minVelocity: createBrandedNumber(0.5, 'GestureVelocity'),
+    maxDistance: createBrandedNumber(200, 'GestureDistance'),
+    preventDefault: true,
+    stopPropagation: false,
+    ...config
+  }), [config]);
+
   const attach = useCallback(
-    (element: HTMLElement, options: GestureOptions) => {
+    (element: HTMLElement, options: GestureOptions): (() => void) => {
       let startX = 0;
       let startY = 0;
       let isDragging = false;
@@ -37,8 +53,8 @@ export const useGestures = (
         // Only handle horizontal swipes with sufficient velocity
         if (
           Math.abs(deltaX) > Math.abs(deltaY) &&
-          Math.abs(deltaX) > config.threshold &&
-          velocity > config.minVelocity
+          Math.abs(deltaX) > finalConfig.threshold &&
+          velocity > finalConfig.minVelocity
         ) {
           const direction: SwipeDirection = deltaX > 0 ? 'right' : 'left';
           options.onSwipe?.(direction);
@@ -47,14 +63,14 @@ export const useGestures = (
       };
 
       const handlePointerUp = (e: PointerEvent): void => {
-        if (isDragging) {
+        if(isDragging) {
           element.releasePointerCapture(e.pointerId);
           isDragging = false;
         }
       };
 
       const handlePointerCancel = (e: PointerEvent): void => {
-        if (isDragging) {
+        if(isDragging) {
           element.releasePointerCapture(e.pointerId);
           isDragging = false;
         }
@@ -72,7 +88,7 @@ export const useGestures = (
         element.removeEventListener('pointercancel', handlePointerCancel);
       };
     },
-    [config]
+    [finalConfig]
   );
 
   return { attach };

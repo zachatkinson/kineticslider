@@ -1,122 +1,111 @@
 import React, { useState } from 'react';
-
-import FocusManager from './FocusManager';
+import { FocusManager } from './FocusManager';
 
 /**
- * Example component demonstrating focus management in a modal dialog using the FocusManager component.
- * This component serves as a reference implementation for proper focus management in modal dialogs.
+ * Example component that demonstrates the usage of FocusManager for focus trapping and restoration.
+ * Shows how to integrate with modal dialogs and handle focus management properly.
  *
- * @component
- * @example
+ * @description * @example Example usage
  * ```tsx
  * <FocusRestoreExample />
  * ```
  *
- * @accessibility
- * - Implements ARIA dialog pattern
- * - Manages focus trap in modal
- * - Restores focus on close
- * - Supports keyboard navigation
- * - Uses semantic HTML structure
- * - Provides ARIA labels
+ * @description * - Demonstrates focus trapping within modal
+ * - Shows focus restoration to trigger element
+ * - Implements keyboard navigation
+ * - Handles escape key for closing modal
  *
- * @state
- * - Manages modal open/close state
- * - Controls focus state
- * - Handles dialog visibility
+ * @description * - Manages modal open/close state
+ * - Tracks previously focused element
+ * - Uses focus trap activation/deactivation
  *
- * @events
- * - Modal open/close events
- * - Focus trap activation
- * - Focus restoration
- * - Escape key handling
+ * @event onChange
+ * - onOpen: Fired when modal is opened
+ * - onClose: Fired when modal is closed
+ * - onEscape: Fired when escape key is pressed
  *
- * @performance
- * - Uses React state for modal
- * - Implements conditional rendering
- * - Manages DOM focus efficiently
+ * @description * - Uses refs for DOM access
+ * - Implements cleanup on unmount
+ * - Optimizes focus event handling
  *
- * @see {@link FocusManager} For focus management implementation
+ * @description * - Handles potential focus management edge cases
+ * - Provides fallback behaviors
+ * - Ensures keyboard accessibility
+ *
+ * @see {@link: FocusManager} For the underlying focus management component
+ * @returns React component for focus management example
  */
 export const FocusRestoreExample: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const openModal = (): void => setIsModalOpen(true);
-  const closeModal = (): void => setIsModalOpen(false);
+  // Open modal and trap focus
+  const openModal = (): void => {
+    setIsModalOpen(true);
+  };
+
+  // Close modal and restore focus
+  const closeModal = (): void => {
+    setIsModalOpen(false);
+  };
+
+  // Handle escape key
+  const handleEscape = (): void => {
+    closeModal();
+  };
 
   return (
     <div className="focus-example">
       <h2>Focus Management Example</h2>
+      
       <p>
-        This example demonstrates how to manage focus in a modal dialog using
-        the FocusManager component. When you open the modal, focus will be
-        trapped within it, and when you close it, focus will be restored to the
-        button that opened it.
+        This example demonstrates focus trapping within a modal dialog and
+        focus restoration when the dialog is closed.
       </p>
-
-      <button id="open-modal-button" onClick={openModal} aria-haspopup="dialog">
+      
+      <button 
+        id="open-modal-button" 
+        onClick={openModal}
+        className="primary-button"
+      >
         Open Modal
       </button>
-
+      
       {isModalOpen && (
-        <div className="modal-backdrop">
+        <div className="modal-overlay">
           <FocusManager
             trapFocus={true}
             autoFocus={true}
             escapeDeactivates={true}
-            initialFocus="#first-button"
-            restoreFocus={true}
             returnFocusTo="#open-modal-button"
-            onEscape={closeModal}
+            onEscape={handleEscape}
             trapOptions={{
               fallbackFocus: "#first-button"
             }}
           >
-            <div className="modal" role="dialog" aria-labelledby="modal-title">
-              <div className="modal-content">
-                <h3 id="modal-title">Focus Trapped Modal</h3>
-                <p>
-                  Focus is now trapped inside this modal dialog. You can tab
-                  through the focusable elements, but you cannot tab out of the
-                  modal. Press ESC to close the modal and restore focus to the
-                  button that opened it.
-                </p>
-
-                <div className="button-group">
-                  <button id="first-button">First Button</button>
-                  <button>Middle Button</button>
-                  <button>Last Button</button>
-                </div>
-
-                <form>
-                  <div className="form-field">
-                    <label htmlFor="name">Name:</label>
-                    <input type="text" id="name" />
-                  </div>
-
-                  <div className="form-field">
-                    <label htmlFor="email">Email:</label>
-                    <input type="email" id="email" />
-                  </div>
-                </form>
-
-                <button onClick={closeModal}>Close Modal</button>
+            <div className="modal-content" role="dialog" aria-labelledby="modal-title">
+              <h3 id="modal-title">Focus Trapped Modal</h3>
+              
+              <p>
+                Focus is trapped inside this modal. Try tabbing through the elements.
+                Focus will cycle within the modal. Press ESC to close.
+              </p>
+              
+              <div className="button-group">
+                <button id="first-button">First Button</button>
+                <button>Second Button</button>
+                <button>Third Button</button>
               </div>
+              
+              <button 
+                onClick={closeModal} 
+                className="close-button"
+              >
+                Close Modal
+              </button>
             </div>
           </FocusManager>
         </div>
       )}
-
-      <div className="other-content">
-        <h3>Other Content</h3>
-        <p>
-          This content is outside the modal. When the modal is open, you should
-          not be able to focus elements here.
-        </p>
-        <button>Outside Button 1</button>
-        <button>Outside Button 2</button>
-        <a href="https://example.com">Outside Link</a>
-      </div>
     </div>
   );
 };

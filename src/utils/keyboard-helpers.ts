@@ -3,10 +3,12 @@
  */
 
 import { FocusTrapOptions, KeyboardHandlers } from '../types/keyboard';
-import { hasFocusFunction, hasInitialFocusFunction } from './type-guards';
+import { _hasFocusFunction as hasFocusFunction, _hasInitialFocusFunction as hasInitialFocusFunction } from './type-guards';
 
 /**
  * Get all focusable elements within a container
+ * @param container - The container element to search within
+ * @returns Array of focusable elements
  */
 export function getFocusableElements(container: HTMLElement): HTMLElement[] {
   const focusableElements = container.querySelectorAll(
@@ -19,16 +21,21 @@ export function getFocusableElements(container: HTMLElement): HTMLElement[] {
 
 /**
  * Handle keyboard event based on provided handlers
+ * @param event - The keyboard event
+ * @param handlers - Map of key codes to handler functions
+ * @param _options - Configuration options
+ * @param _options.preventDefault
+ * @param _options.stopPropagation
  */
-export function handleKeyboardEvent(
+export function _handleKeyboardEvent(
   event: KeyboardEvent,
   handlers: KeyboardHandlers,
-  options: {
+  _options: {
     preventDefault?: boolean;
     stopPropagation?: boolean;
   } = {}
 ): void {
-  const { preventDefault = true, stopPropagation = false } = options;
+  const { preventDefault = true, stopPropagation = false } = _options;
   const handler = handlers[event.key];
 
   if (handler) {
@@ -44,10 +51,13 @@ export function handleKeyboardEvent(
 
 /**
  * Set up focus trap in a container
+ * @param container - The container element to trap focus within
+ * @param _options - Configuration options
+ * @returns Object containing focusable elements and initial focus element
  */
-export function setupFocusTrap(
+export function _setupFocusTrap(
   container: HTMLElement,
-  options: FocusTrapOptions = {}
+  _options: FocusTrapOptions = {}
 ): {
   focusableElements: HTMLElement[];
   initialElement: HTMLElement | null;
@@ -55,16 +65,16 @@ export function setupFocusTrap(
   const focusableElements = getFocusableElements(container);
   let initialElement: HTMLElement | null = null;
 
-  if (options.autoFocus !== false) {
-    if (options.initialFocus) {
-      if (typeof options.initialFocus === 'string') {
-        const foundElement = container.querySelector(options.initialFocus);
+  if (_options.autoFocus !== false) {
+    if (_options.initialFocus) {
+      if (typeof _options.initialFocus === 'string') {
+        const foundElement = container.querySelector(_options.initialFocus);
         initialElement = foundElement instanceof HTMLElement ? foundElement : null;
-      } else if (options.initialFocus instanceof HTMLElement) {
-        initialElement = options.initialFocus;
-      } else if (hasInitialFocusFunction(options)) {
+      } else if (_options.initialFocus instanceof HTMLElement) {
+        initialElement = _options.initialFocus;
+      } else if (hasInitialFocusFunction(_options)) {
         try {
-          const funcResult = options.initialFocus();
+          const funcResult = _options.initialFocus();
           initialElement = funcResult instanceof HTMLElement ? funcResult : null;
         } catch (error) {
           console.error('Error calling initialFocus function:', error);
@@ -86,8 +96,10 @@ export function setupFocusTrap(
 
 /**
  * Handle tab key in a focus trap
+ * @param event - The keyboard event
+ * @param focusableElements - Array of focusable elements
  */
-export function handleTabInFocusTrap(
+export function _handleTabInFocusTrap(
   event: KeyboardEvent,
   focusableElements: HTMLElement[]
 ): void {
@@ -111,8 +123,22 @@ export function handleTabInFocusTrap(
 
 /**
  * Create keyboard event handlers map
+ * @param _options - Configuration options with handler functions
+ * @param _options.onLeft
+ * @param _options.onRight
+ * @param _options.onUp
+ * @param _options.onDown
+ * @param _options.onEnter
+ * @param _options.onSpace
+ * @param _options.onEscape
+ * @param _options.onTab
+ * @param _options.onHome
+ * @param _options.onEnd
+ * @param _options.onPageUp
+ * @param _options.onPageDown
+ * @returns Map of key codes to handler functions
  */
-export function createKeyboardHandlers(options: {
+export function _createKeyboardHandlers(_options: {
   onLeft?: () => void;
   onRight?: () => void;
   onUp?: () => void;
@@ -125,27 +151,30 @@ export function createKeyboardHandlers(options: {
   onEnd?: () => void;
   onPageUp?: () => void;
   onPageDown?: () => void;
-}): KeyboardHandlers {
+} = {}): KeyboardHandlers {
   return {
-    ArrowLeft: options.onLeft,
-    ArrowRight: options.onRight,
-    ArrowUp: options.onUp,
-    ArrowDown: options.onDown,
-    Enter: options.onEnter,
-    ' ': options.onSpace,
-    Escape: options.onEscape,
-    Tab: options.onTab,
-    Home: options.onHome,
-    End: options.onEnd,
-    PageUp: options.onPageUp,
-    PageDown: options.onPageDown,
+    ArrowLeft: _options.onLeft,
+    ArrowRight: _options.onRight,
+    ArrowUp: _options.onUp,
+    ArrowDown: _options.onDown,
+    Enter: _options.onEnter,
+    ' ': _options.onSpace,
+    Escape: _options.onEscape,
+    Tab: _options.onTab,
+    Home: _options.onHome,
+    End: _options.onEnd,
+    PageUp: _options.onPageUp,
+    PageDown: _options.onPageDown,
   };
 }
 
 /**
  * Attach keyboard event listener to element
+ * @param element - The element to attach the listener to
+ * @param handler - The event handler function
+ * @returns Cleanup function to remove the listener
  */
-export function attachKeyboardListener(
+export function _attachKeyboardListener(
   element: HTMLElement,
   handler: (event: KeyboardEvent) => void
 ): () => void {

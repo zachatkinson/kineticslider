@@ -10,7 +10,7 @@ import { ImageError, ImageAnalyticsData, PreloadImageOptions } from '../types/im
  * @param options Configuration options for preloading
  * @returns A cleanup function to abort loading if needed
  */
-export const preloadImage = (src: string, options: PreloadImageOptions = {}): () => void => {
+export const preloadImage = (src: string, options: PreloadImageOptions = {}) => {
   const { onLoad, onError, onAnalytics } = options;
   const img = new Image();
   img.src = src;
@@ -29,9 +29,9 @@ export const preloadImage = (src: string, options: PreloadImageOptions = {}): ()
     error.src = src;
     
     const analyticsData: ImageAnalyticsData = {
-      eventType: 'error',
+      eventType: '_error',
       timestamp: new Date().toISOString(),
-      error,
+      _error: error,
     };
     
     onAnalytics?.(analyticsData);

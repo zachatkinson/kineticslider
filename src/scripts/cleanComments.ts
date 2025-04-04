@@ -1,26 +1,48 @@
 #!/usr/bin/env node
 
+import fs from 'fs/promises';
+import _path from 'path';
+import { glob } from 'glob';
 import { removeCommentsFromTypeScriptFiles } from '../utils/removeComments';
-import path from 'path';
 
-async function main() {
-  // Default directories to process (relative to project root)
-  const defaultDirs = ['src'];
-  
-  // Get directories from command line args or use defaults
-  const directories = process.argv.slice(2).length > 0 
-    ? process.argv.slice(2)
-    : defaultDirs;
-
-  console.log('Starting comment removal for directories:', directories);
-  
-  const results = await removeCommentsFromTypeScriptFiles(
-    directories.map(dir => path.resolve(process.cwd(), dir))
-  );
-
-  console.log('\nResults:');
-  console.log(`✓ Successfully processed: ${results.successful} files`);
-  console.log(`✗ Failed to process: ${results.failed} files`);
+/**
+ * Cleans unnecessary comments from the source code.
+ */
+async function cleanComments(): Promise<void> {
+  try {
+    const files = await glob('src/**/*.{ts,tsx}', { ignore: 'node_modules/**' });
+    
+    console.warn(`Found ${files.length} files to process...`);
+    
+    let processedCount = 0;
+    let _changedCount = 0;
+    
+    for (const file of files) {
+      try {
+        const filepath = _path.join(file.split('/')[0], file);
+        const stats = await fs.stat(filepath);
+        
+        if (stats.isFile() && (filepath.endsWith('.ts') || filepath.endsWith('.tsx'))) {
+          const _content = await fs.readFile(filepath, 'utf-8');
+          
+          // Since removeCommentsFromTypeScriptFiles works on directories, we'll call it directly
+          // with a single file and get the content from another way
+          const dirs = [filepath.split('/')[0]]; // Get the top level directory
+          const result = await removeCommentsFromTypeScriptFiles(dirs);
+          
+          processedCount++;
+          console.warn(`Processed ${processedCount}/${files.length} files (${result.successful} changed)`);
+        }
+      } catch (error) {
+        console.warn(`Error processing file ${file}:`, error);
+      }
+    }
+    
+    console.warn(`Completed: Processed ${processedCount} files.`);
+  } catch (error) {
+    console.warn('Error during comment cleaning:', error);
+  }
 }
 
-main().catch(console.error); 
+// Execute the function
+void cleanComments(); 

@@ -7,30 +7,30 @@ import { createSlideId } from '../utils/id-helpers';
 const slides: Slide[] = [
   {
     id: createSlideId('slide-1'),
-    title: 'Welcome to KineticSlider',
-    description: 'A modern, performant slider component',
+    title: 'First Slide',
+    description: 'This is the first slide of the gallery',
     image: '/images/slide1.jpg',
-    alt: 'Introduction slide',
+    alt: 'Description of the first slide'
   },
   {
     id: createSlideId('slide-2'),
-    title: 'Powerful Features',
-    description: 'Built with performance in mind',
+    title: 'Second Slide',
+    description: 'This is the second slide of the gallery',
     image: '/images/slide2.jpg',
-    alt: 'Features slide',
+    alt: 'Description of the second slide'
   },
   {
     id: createSlideId('slide-3'),
-    title: 'Get Started',
-    description: 'Easy to integrate into your project',
+    title: 'Third Slide',
+    description: 'This is the third slide of the gallery',
     image: '/images/slide3.jpg',
-    alt: 'Get started slide',
-  },
+    alt: 'Description of the third slide'
+  }
 ];
 
 const BasicExample: React.FC = () => {
   const handleSlideChange = (index: number): void => {
-    if (process.env['NODE_ENV'] !== 'production') {
+    if(process.env['NODE_ENV'] !== 'production') {
       document.dispatchEvent(
         new CustomEvent('slide-change', { detail: { index } })
       );
@@ -38,7 +38,7 @@ const BasicExample: React.FC = () => {
   };
 
   const handleAnimationComplete = (): void => {
-    if (process.env['NODE_ENV'] !== 'production') {
+    if(process.env['NODE_ENV'] !== 'production') {
       document.dispatchEvent(new CustomEvent('animation-complete'));
     }
   };

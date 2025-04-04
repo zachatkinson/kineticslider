@@ -1,7 +1,7 @@
 /* eslint-env vitest */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { slideSchema } from '../../schemas/slide.schema';
+import { _slideSchema as slideSchema } from '../../schemas/slide.schema';
 import { clearValidationCache, toSlideId } from '../../utils/validation';
 
 describe('Schema Validation', () => {

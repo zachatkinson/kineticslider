@@ -5,6 +5,7 @@ import type { FocusTrapOptions } from './keyboard';
 
 /**
  * Props for the FocusManager component
+ * @example Example usage
  */
 export interface FocusManagerProps {
   /** Child components to render */
@@ -29,10 +30,15 @@ export interface FocusManagerProps {
   onDeactivate?: () => void;
   /** Callback when escape key is pressed */
   onEscape?: () => void;
+  /** Whether the component is currently active */
+  active?: boolean;
+  /** Reference to restore focus to when component is unmounted */
+  restorePrevious?: React.RefObject<HTMLElement | null>;
 }
 
 /**
  * Accessibility configuration options
+ * @example Example usage
  */
 export interface AccessibilityConfig {
   /** Enable accessibility features */
@@ -70,6 +76,7 @@ export type AccessibilityAction =
 
 /**
  * Accessibility event data
+ * @example Example usage
  */
 export interface AccessibilityEvent {
   type: AccessibilityAction;
@@ -82,6 +89,7 @@ export interface AccessibilityEvent {
 
 /**
  * Props for slider accessibility hook
+ * @example Example usage
  */
 export interface UseSliderAccessibilityProps {
   /** Total number of slides */

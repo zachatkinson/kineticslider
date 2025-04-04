@@ -1,128 +1,96 @@
-import { Schema, ValidationResult } from '../types/validation';
-import { isValidSlideSchema } from '../utils/type-guards';
-import { ValidationErrorCode, ValidationErrorType } from '../utils/validation';
+import { Schema, ValidationResult as _ValidationResult, SchemaType, ValidationErrorCode, ValidationErrorType, ValidationError } from '../types/validation';
+import { _isValidSlideSchema as isValidSlideSchema } from '../utils/type-guards';
 
 export { isValidSlideSchema };
 
 /**
  * Schema for a Slide
  */
-export const slideSchema: Schema = {
+export const _slideSchema: Schema = {
   id: {
-    type: 'string',
+    type: SchemaType.STRING,
     options: {
       required: true,
       minLength: 3,
-      maxLength: 50,
+      maxLength: 50
     },
-    description: 'Unique identifier for the slide',
+    description: 'Unique identifier for the slide'
   },
   title: {
-    type: 'string',
+    type: SchemaType.STRING,
     options: {
       required: true,
       minLength: 1,
-      maxLength: 200,
+      maxLength: 200
     },
-    description: 'Title of the slide',
+    description: 'Title of the slide'
   },
   description: {
-    type: 'string',
+    type: SchemaType.STRING,
     options: {
       required: false,
-      maxLength: 1000,
+      maxLength: 1000
     },
-    description: 'Optional detailed description of the slide',
+    description: 'Optional detailed description of the slide'
   },
   image: {
-    type: 'string',
+    type: SchemaType.STRING,
     options: {
       required: true,
       pattern: /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i,
-      custom: async (value): Promise<ValidationResult> => {
-        // Optional: Perform additional URL validation or check if image exists
-        if (typeof value !== 'string') {
+      custom: (value): ValidationError | null => {
+        if(typeof value !== 'string') {
           return {
-            valid: false,
-            errors: [
-              {
-                type: ValidationErrorType.INVALID_TYPE,
-                code: ValidationErrorCode.INVALID_TYPE,
-                message: 'Image URL must be a string',
-                property: 'image',
-                value,
-                expected: 'string',
-              },
-            ],
+            type: ValidationErrorType.INVALID_TYPE,
+            code: ValidationErrorCode.INVALID_TYPE,
+            message: 'Image URL must be a string',
+            property: 'image',
+            value,
+            expected: 'string'
           };
         }
 
         // Basic URL validation
         try {
           new URL(value);
-          return { valid: true, errors: [] };
+          return null;
         } catch {
           return {
-            valid: false,
-            errors: [
-              {
-                type: ValidationErrorType.INVALID_FORMAT,
-                code: ValidationErrorCode.INVALID_FORMAT,
-                message: 'Invalid URL format',
-                property: 'image',
-                value,
-                expected: 'valid URL',
-              },
-            ],
+            type: ValidationErrorType.INVALID_FORMAT,
+            code: ValidationErrorCode.INVALID_FORMAT,
+            message: 'Invalid URL format',
+            property: 'image',
+            value,
+            expected: 'valid URL'
           };
         }
-      },
+      }
     },
-    description: 'URL of the slide image',
+    description: 'URL of the slide image'
   },
   alt: {
-    type: 'string',
+    type: SchemaType.STRING,
     options: {
       required: true,
       minLength: 1,
-      maxLength: 500,
+      maxLength: 500
     },
-    description: 'Alternative text for the image for accessibility',
+    description: 'Alternative text for the image for accessibility'
   },
   // Additional optional fields can be defined here
   order: {
-    type: 'number',
+    type: SchemaType.NUMBER,
     options: {
       required: false,
-      min: 0,
+      min: 0
     },
-    description: 'Optional order position of the slide',
+    description: 'Optional order position of the slide'
   },
   metadata: {
-    type: 'object',
+    type: SchemaType.OBJECT,
     options: {
-      required: false,
+      required: false
     },
-    properties: {
-      tags: {
-        type: 'array',
-        options: {
-          required: false,
-        },
-        items: {
-          type: 'string',
-        },
-        description: 'Tags associated with this slide',
-      },
-      createdAt: {
-        type: 'string',
-        options: {
-          required: false,
-          pattern: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/,
-        },
-        description: 'Creation timestamp in ISO format',
-      },
-    },
-    description: 'Additional metadata for the slide',
-  },
+    description: 'Additional metadata for the slide'
+  }
 };

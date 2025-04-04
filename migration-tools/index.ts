@@ -1,39 +1,50 @@
 /**
- * KineticSlider Migration Tools
- * 
- * This module exports all the tools needed for the phased migration 
- * from the legacy slider implementation to the new rewritten version.
+ * Re-exports feature flag management utilities
+ * @module FeatureFlags
  */
-
-// Feature flag system
 export { 
-  FeatureFlag, 
-  FeatureFlagProvider, 
-  useFeatureFlags,
-  useFeature,
-  getFeatureFlag
+    FeatureFlagProvider, 
+    useFeatureFlag 
 } from './feature-flags';
 
-// Migration dashboard for tracking progress
+/**
+ * Re-exports migration dashboard components
+ * @module MigrationDashboard
+ */
 export { 
-  MigrationDashboard,
-  MigrationPhase,
-  PhaseStatus
+    MigrationDashboard
 } from './migration-dashboard';
 
-// Performance benchmarking utilities
+/**
+ * Re-exports performance benchmarking utilities
+ * @module PerformanceBenchmark
+ */
+export { 
+    measureExecutionTime, 
+    measureAnimationSmoothness, 
+    runBenchmark,
+    loadBenchmarkResults, 
+    saveBenchmarkResults, 
+    addBenchmarkResult, 
+    clearBenchmarkResults 
+} from './performance-benchmark';
+
+/**
+ * Re-exports feature monitoring utilities
+ * @module FeatureMonitoring
+ */
 export {
-  MetricType,
-  ImplementationType,
-  measureExecutionTime,
-  measureAnimationSmoothness,
-  measureMemoryUsage,
-  measureLayoutShifts,
-  measureInteractionResponsiveness,
-  runPerformanceTestSuite,
-  compareImplementations,
-  loadBenchmarkResults,
-  saveBenchmarkResults,
-  addBenchmarkResult,
-  clearBenchmarkResults
-} from './performance-benchmark'; 
+    featureMonitoring,
+    trackFeatureUsage,
+    getFeatureMetrics
+} from './feature-monitoring';
+
+/**
+ * Re-exports error boundary components
+ * @module ErrorBoundary
+ */
+export {
+    FeatureErrorBoundary,
+    MigrationErrorBoundary,
+    withFeatureErrorBoundary
+} from './error-boundary';

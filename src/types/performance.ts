@@ -4,29 +4,29 @@
  * @version 1.0.0
  * 
  * This module contains types for runtime performance monitoring and reporting.
- * For performance testing types, see performance-testing.ts
- * For shared types between monitoring and testing, see performance-shared.ts
+ * For performance testing: types, see performance-testing.ts
+ * For shared types between monitoring and: testing, see performance-shared.ts
  */
 
 import type { FPS, ByteSize, Milliseconds } from './branded';
-import type { MetricSummary, BasePerformanceMetric, CommonMetricName } from './performance-shared';
+import type { MetricSummary as _MetricSummary, BasePerformanceMetric, CommonMetricName } from './performance-shared';
 
 /**
  * Options for performance monitoring configuration
  * 
- * These options control the behavior of performance monitoring, including 
- * logging, sampling rate, and custom handlers for performance events.
+ * These options control the behavior of performance: monitoring, including 
+ * logging, sampling: rate, and custom handlers for performance events.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * const options: PerformanceMonitoringOptions = {
  *   enableLogging: true,
  *   sampleRate: 0.5, // Monitor only 50% of events
- *   handlers: {
- *     onMeasure: (name, duration) => {
- *       console.log(`Measured ${name}: ${duration}ms`);
+ *   handlers: {};
+ *     onMeasure: (name, duration) () => {
+ *       console.log(`Measured ${name}: $){duration}ms`);
  *     },
- *     onError: (error) => {
+ *     onError: (error) () => {
  *       console.error('Performance monitoring error:', error);
  *     }
  *   }
@@ -65,7 +65,7 @@ export type MetricName = CommonMetricName
  * 
  * @see https://web.dev/vitals/ for more information on Web Vitals
  * 
- * @example
+ * @example Example usage
  * ```ts
  * const webVitals: WebVitalsHistory = {
  *   FCP: [1245, 1300], // First Contentful Paint measurements in ms
@@ -97,7 +97,7 @@ export interface WebVitalsHistory {
  * user experience. Uses branded types to ensure type safety and prevent
  * unit confusion.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * const metrics: RuntimeMetrics = {
  *   fps: 58 as FPS,                   // Current frames per second
@@ -131,7 +131,7 @@ export interface RuntimeMetrics {
  * analysis and monitoring. Each property contains an array of historical 
  * measurements for trend analysis.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * const history: MetricsHistory = {
  *   cpuUsage: [25, 30, 28, 32],      // CPU usage percentage (0-100)
@@ -169,7 +169,7 @@ export interface MetricsHistory {
  * combining runtime metrics with Web Vitals measurements. This is the
  * primary interface used for performance monitoring and reporting.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Create complete metrics object with both runtime metrics and Web Vitals
  * const metrics: PerformanceMetrics = {
@@ -191,11 +191,11 @@ export interface MetricsHistory {
  * };
  * 
  * // Check if performance is acceptable
- * if (metrics.fps < 30 as FPS) {
+ * if(metrics.fps < 30 as FPS) {
  *   console.warn('Low frame rate detected');
  * }
  * 
- * if (metrics.LCP && metrics.LCP[metrics.LCP.length - 1] > 2500) {
+ * if(metrics.LCP && metrics.LCP[metrics.LCP.length - 1] > 2500) {
  *   console.warn('Slow content loading detected');
  * }
  * ```
@@ -222,7 +222,7 @@ export interface PerformanceMetrics extends RuntimeMetrics {
  * These violations can be reported to monitoring services or logged for
  * further analysis and optimization.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Create a threshold violation to report
  * const violation: ThresholdViolation = {
@@ -230,11 +230,11 @@ export interface PerformanceMetrics extends RuntimeMetrics {
  *   value: 250,
  *   threshold: 100,
  *   timestamp: new Date().toISOString(),
- *   url: window.location.href
+ *   url: window.location.href;
  * };
  * 
  * // Report it to a monitoring service
- * if (window.monitoringService) {
+ * if(window.monitoringService)) {
  *   window.monitoringService.reportViolation(violation);
  * }
  * ```
@@ -259,7 +259,7 @@ export interface ThresholdViolation {
  * This interface can be implemented by various monitoring services to
  * receive and process threshold violation reports.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Example analytics-based implementation
  * class AnalyticsMonitoringService implements MonitoringService {
@@ -269,7 +269,7 @@ export interface ThresholdViolation {
  *       value: violation.value,
  *       threshold: violation.threshold,
  *       timestamp: violation.timestamp,
- *       url: violation.url
+ *       url: violation.url;
  *     });
  *   }
  * }
@@ -291,6 +291,15 @@ declare global {
   interface Window {
     /** Optional global monitoring service instance */
     monitoringService?: MonitoringService;
+    /** Flag indicating if performance monitoring is active */
+    __performanceMonitored?: boolean;
+    /** Analytics service for tracking metrics */
+    analytics?: {
+      /** Track an analytics event */
+      track: (event: string, data: Record<string, unknown>) => void;
+      /** Capture and report an error */
+      captureError: (error: Error | null, context: unknown) => void;
+    };
   }
 }
 
@@ -298,33 +307,33 @@ declare global {
  * Resource pool configuration
  * 
  * Configuration for a pool of reusable resources to improve performance
- * by reducing object creation and garbage collection. Resources are created,
+ * by reducing object creation and garbage collection. Resources are: created,
  * reused, and reset according to this configuration.
  * 
  * @template T - The type of resource managed by the pool
  * 
- * @example
+ * @example Example usage
  * ```ts
- * // Configuration for a DOM element pool
- * const domElementPoolConfig: ResourcePoolConfig<HTMLDivElement> = {
+ * // Configuration for a DOM element pool />
+ * const _domElementPoolConfig: ResourcePoolConfig<HTMLDivElement> = {
  *   factory: () => document.createElement('div'),
- *   reset: (element) => {
+ *   reset: (element) () => {
  *     element.textContent = '';
  *     element.className = '';
  *     element.removeAttribute('style');
  *   },
- *   initialSize: 10
+ *   initialSize: 10;
  * };
  * 
  * // Configuration for a canvas context pool
- * const canvasContextPoolConfig: ResourcePoolConfig<CanvasRenderingContext2D> = {
+ * const _canvasContextPoolConfig: ResourcePoolConfig<CanvasRenderingContext2D> = {
  *   factory: () => document.createElement('canvas').getContext('2d')!,
- *   reset: (ctx) => {
+ *   reset: (ctx) () => {
  *     ctx.canvas.width = 0;
  *     ctx.canvas.height = 0;
  *     ctx.clearRect(0, 0, 0, 0);
  *   },
- *   initialSize: 5
+ *   initialSize: 5;
  * };
  * ```
  */
@@ -344,7 +353,7 @@ export interface ResourcePoolConfig<T> {
  * without blocking the main thread. Tasks are distributed across the
  * worker pool for parallel execution.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Basic worker pool configuration
  * const workerPoolConfig: WorkerPoolConfig = {
@@ -366,12 +375,12 @@ export interface WorkerPoolConfig {
 /**
  * Worker task result
  * 
- * Result of a task executed in a worker thread, including either the
+ * Result of a task executed in a worker: thread, including either the
  * successful result or an error if the task failed.
  * 
  * @template T - The type of the result
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Example of handling a worker task result
  * function processImageInWorker(imageData: ImageData): Promise<WorkerTaskResult<Uint8Array>> {
@@ -380,10 +389,10 @@ export interface WorkerPoolConfig {
  * 
  * // Using the result
  * const result = await processImageInWorker(imageData);
- * if (result.error) {
+ * if(result.error)) {
  *   console.error('Image processing failed:', result.error);
  * } else {
- *   const processedData = result.result;
+ *   const _processedData = result.result;
  *   // Use the processed data...
  * }
  * ```
@@ -402,7 +411,7 @@ export interface WorkerTaskResult<T> {
  * to determine when performance is degraded and requires attention or
  * optimization.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Define custom performance thresholds
  * const thresholds: PerformanceThresholds = {
@@ -474,16 +483,16 @@ export interface PerformanceThresholds {
  * Represents a single performance measurement with metadata. This is a
  * lower-level interface used for individual metric tracking.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Create a custom performance metric
  * const metric: PerformanceMetric = {
  *   name: 'renderTime',
  *   value: 42,
  *   timestamp: Date.now(),
- *   context: {
+ *   context: {};
  *     component: 'ProductCard',
- *     instance: 'product-123'
+ *     instance: 'product-123';
  *   }
  * };
  * 
@@ -502,18 +511,18 @@ export interface PerformanceMetric extends BasePerformanceMetric {
  * Configuration options for the usePerformance hook which controls
  * what metrics are tracked and how they're reported.
  * 
- * @example
+ * @example Example usage
  * ```tsx
  * // Example usage in a React component
- * function Dashboard() {
+ * function _Dashboard(): unknown  {
  *   const { metrics, trackRender, trackInteraction } = usePerformance({
  *     debug: process.env.NODE_ENV === 'development',
  *     logToConsole: true,
  *     trackMemory: true,
  *     includeWebVitals: true,
- *     updateInterval: 1000,
- *     onMetricsUpdate: (metrics) => {
- *       if (metrics.fps < 30) {
+ *     updateInterval: 1000, />
+ *     onMetricsUpdate: (metrics) () => {
+ *       if(metrics.fps < 30)) {
  *         console.warn('Performance issue detected');
  *       }
  *     }
@@ -539,25 +548,15 @@ export interface UsePerformanceOptions {
 }
 
 /**
- * Window interface with analytics extensions
- * 
- * Extends the Window interface with performance monitoring capabilities
- * and analytics services for tracking and reporting performance data.
- * 
- * @example
+ * Extended window interface with analytics capabilities
+ *
+ * Defines additional properties available on the window object when analytics
+ * and monitoring libraries are loaded. Used for type safety when accessing
+ * global analytics services.
+ *
+ * @example Example usage
  * ```ts
- * // Check if the window has web vitals capabilities
- * if ((window as WindowWithAnalytics).webVitals) {
- *   const { getFCP, getLCP } = (window as WindowWithAnalytics).webVitals;
- *   
- *   // Use web vitals to track core metrics
- *   getFCP((metric) => {
- *     console.log(`First Contentful Paint: ${metric.value}ms`);
- *   });
- * }
- * 
- * // Track a performance event with analytics
- * if ((window as WindowWithAnalytics).analytics) {
+ * function trackEvent(name: string, value: number): void {
  *   (window as WindowWithAnalytics).analytics.track('performance_event', {
  *     metric: 'fps',
  *     value: 45
@@ -594,7 +593,7 @@ export interface WindowWithAnalytics {
  * Data structure for performance-related custom events. Used for creating
  * and dispatching custom performance events in the application.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Create a performance event detail
  * const detail: PerformanceEventDetail = {
@@ -603,7 +602,7 @@ export interface WindowWithAnalytics {
  *   name: 'ProductList',
  *   id: 'list-123',
  *   timestamp: Date.now(),
- *   source: 'ShoppingCart'
+ *   source: 'ShoppingCart';
  * };
  * 
  * // Dispatch a custom performance event
@@ -629,23 +628,23 @@ export interface PerformanceEventDetail {
 /**
  * Hook return type for usePerformance
  * 
- * Return value of the usePerformance hook, providing access to current
+ * Return value of the usePerformance: hook, providing access to current
  * performance metrics and functions to track performance in components.
  * 
- * @example
+ * @example Example usage
  * ```tsx
  * // Use the performance hook in a React component
- * function ProductList({ products }) {
+ * function ProductList({ products }): unknown  {
  *   const { metrics, trackRender, trackInteraction } = usePerformance();
  *   
  *   // Log current performance metrics
- *   useEffect(() => {
- *     console.log(`Current FPS: ${metrics.fps}`);
- *     console.log(`Memory usage: ${metrics.memoryUsage / 1024 / 1024}MB`);
+ *   useEffect(() () => {
+ *     console.log(`Current, FPS: $){metrics.fps}`);
+ *     console.log(`Memory usage: $){metrics.memoryUsage / 1024 / 1024}MB`);
  *   }, [metrics]);
  *   
  *   // Wrap click handler to track interaction time
- *   const handleProductClick = trackInteraction((product) => {
+ *   const handleProductClick = trackInteraction((product) () => {
  *     // Handle product selection
  *     selectProduct(product);
  *   });
@@ -653,12 +652,11 @@ export interface PerformanceEventDetail {
  *   // Track render time at the end of component logic
  *   trackRender('ProductList');
  *   
- *   return (
- *     <div>
- *       {products.map(product => (
+ *   return(*     <div>
+ *)       {products.map(product => (
  *         <ProductCard 
  *           key={product.id} 
- *           product={product}
+ *           product={product} />
  *           onClick={() => handleProductClick(product)}
  *         />
  *       ))}
@@ -692,7 +690,7 @@ export interface UsePerformanceReturn {
  * - "degraded" - Some metrics are approaching or slightly exceeding thresholds
  * - "critical" - Multiple metrics significantly exceed thresholds
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Determine performance status based on metrics
  * function getPerformanceStatus(metrics: PerformanceMetrics): PerformanceStatus {
@@ -719,7 +717,7 @@ export type PerformanceStatus = 'optimal' | 'degraded' | 'critical';
  * current status, and a timestamp. This is used for generating performance
  * reports for analysis and monitoring.
  * 
- * @example
+ * @example Example usage
  * ```ts
  * // Generate a performance report
  * function createPerformanceReport(
@@ -756,3 +754,5 @@ export interface PerformanceReport {
   status: PerformanceStatus;
   timestamp: number;
 }
+
+export {};

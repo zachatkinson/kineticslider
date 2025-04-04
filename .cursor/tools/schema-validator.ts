@@ -89,7 +89,34 @@ const ConfigFileSchema = z.object({
   rule: RuleSchema,
 });
 
+/**
+ * Schema validator for configuration files.
+ * Provides methods to validate MDC configuration files against a predefined schema.
+ * 
+ * @example
+ * ```typescript
+ * // Validate a single file
+ * const result = await SchemaValidator.validateFile('config.mdc');
+ * if (result.valid) {
+ *   console.log('Configuration is valid!');
+ * } else {
+ *   console.error('Validation errors:', result.errors);
+ * }
+ * 
+ * // Validate all files in a directory
+ * const dirResult = await SchemaValidator.validateDirectory('./configs');
+ * console.log('All files valid:', dirResult.valid);
+ * ```
+ */
 export class SchemaValidator {
+  /**
+   * Reads and parses a configuration file.
+   * Extracts YAML content between '---' separators and parses it using js-yaml.
+   * 
+   * @param filePath - Path to the configuration file
+   * @returns The parsed configuration object
+   * @throws Error if the file format is invalid or YAML content is empty
+   */
   private static async readConfigFile(filePath: string): Promise<z.infer<typeof ConfigFileSchema>> {
     const content = await fs.readFile(filePath, 'utf-8');
     const parts = content.split('---');
@@ -104,6 +131,14 @@ export class SchemaValidator {
     throw new Error(`Invalid config file format: ${filePath}`);
   }
 
+  /**
+   * Validates a single configuration file against the schema.
+   * Reads the file content and validates it using Zod schema.
+   * 
+   * @param filePath - Path to the configuration file to validate
+   * @returns Object containing validation result and any validation errors
+   * @throws Error if file reading fails for reasons other than schema validation
+   */
   static async validateFile(filePath: string): Promise<{
     valid: boolean;
     errors?: z.ZodError;
@@ -120,6 +155,13 @@ export class SchemaValidator {
     }
   }
 
+  /**
+   * Validates all configuration files in a directory.
+   * Recursively searches for .mdc files and validates each one.
+   * 
+   * @param dirPath - Path to the directory containing configuration files
+   * @returns Object containing overall validation result and individual file results
+   */
   static async validateDirectory(dirPath: string): Promise<{
     valid: boolean;
     results: Record<string, { valid: boolean; errors?: z.ZodError }>;

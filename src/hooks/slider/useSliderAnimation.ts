@@ -1,12 +1,26 @@
-import React from 'react';
+import * as React from 'react';
 import { useSlider } from '../../context/SliderContext';
 
-export function useSliderAnimation(containerRef: React.RefObject<HTMLDivElement>): {
+/**
+ * Hook for managing slider animations
+ * @param containerRef - Reference to the slider container element
+ * @returns Animation control functions
+ * @example
+ * ```tsx
+ * const { animateSlide } = useSliderAnimation(containerRef);
+ * ```
+ */
+export interface SliderAnimationHook {
   animateSlide: () => void;
-};
+}
 
-export function useSliderAnimation(containerRef: React.RefObject<HTMLDivElement>) {
-  const { state, config } = useSlider();
+/**
+ * Custom hook for slider animation functionality
+ * @param containerRef
+ * @returns Animation control functions
+ */
+export function useSliderAnimation(containerRef: React.RefObject<HTMLDivElement>): SliderAnimationHook {
+  const { state, config: _config } = useSlider();
 
   const animateSlide = React.useCallback(() => {
     if (!containerRef.current) return;
@@ -16,34 +30,36 @@ export function useSliderAnimation(containerRef: React.RefObject<HTMLDivElement>
     if (!track) return;
 
     const slides = Array.from(track.children) as HTMLElement[];
-    const currentSlide = slides[state.currentIndex];
+    const currentSlide = slides[state.currentIndex as number];
     if (!currentSlide) return;
 
-    // Calculate the animation duration based on config
-    const duration = config.animation.duration;
-    const easing = config.animation.easing;
-    const delay = config.animation.delay || 0;
-
+    // Use default animation values if not provided in config
+    const animation = {
+      duration: 300, // Default duration
+      easing: 'ease-out', // Default easing
+      delay: 0, // Default delay
+    };
+    
     // Apply animation to current slide
-    currentSlide.style.transition = `transform ${duration}ms ${easing} ${delay}ms`;
+    currentSlide.style.transition = `transform ${animation.duration}ms ${animation.easing} ${animation.delay}ms`;
     currentSlide.style.transform = 'translateX(0)';
 
     // Apply animation to adjacent slides
-    const prevSlide = slides[state.currentIndex - 1];
-    const nextSlide = slides[state.currentIndex + 1];
+    const prevSlide = slides[(state.currentIndex as number) - 1];
+    const nextSlide = slides[(state.currentIndex as number) + 1];
 
     if (prevSlide) {
-      prevSlide.style.transition = `transform ${duration}ms ${easing} ${delay}ms`;
+      prevSlide.style.transition = `transform ${animation.duration}ms ${animation.easing} ${animation.delay}ms`;
       prevSlide.style.transform = 'translateX(-100%)';
     }
 
     if (nextSlide) {
-      nextSlide.style.transition = `transform ${duration}ms ${easing} ${delay}ms`;
+      nextSlide.style.transition = `transform ${animation.duration}ms ${animation.easing} ${animation.delay}ms`;
       nextSlide.style.transform = 'translateX(100%)';
     }
 
     // Reset animation state after transition
-    const cleanup = () => {
+    const cleanup = (): void => {
       currentSlide.style.transition = '';
       if (prevSlide) prevSlide.style.transition = '';
       if (nextSlide) nextSlide.style.transition = '';
@@ -52,7 +68,7 @@ export function useSliderAnimation(containerRef: React.RefObject<HTMLDivElement>
     };
 
     currentSlide.addEventListener('transitionend', cleanup);
-  }, [state.currentIndex, config.animation]);
+  }, [state.currentIndex, containerRef]);
 
   return { animateSlide };
 } 
