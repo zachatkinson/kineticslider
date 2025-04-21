@@ -231,8 +231,15 @@ export class WorkerPool {
         this.setupWorker(worker);
         
         // Register worker with global registry if in test environment
-        if(typeof window !== 'undefined' && window.registerWorker) {
-          window.registerWorker(worker);
+        if(typeof window !== 'undefined') {
+          // Use the registerWorker function if available
+          if (window.registerWorker) {
+            window.registerWorker(worker);
+          } 
+          // Otherwise add directly to the registry if it exists
+          else if (window.__WORKER_REGISTRY__) {
+            window.__WORKER_REGISTRY__.add(worker);
+          }
         }
       } catch(error) {
         console.error('Error creating worker:', error);
@@ -251,7 +258,9 @@ export class WorkerPool {
    * @private
    */
   private setupWorker(worker: Worker): void {
-    worker.onmessage = (event) => {
+    // Worker registration is now handled in the constructor
+    
+    worker.onmessage = (event: MessageEvent): void => {
       const { result, error } = event.data;
       const task = this.taskQueue.shift();
       if(task) {
@@ -450,7 +459,7 @@ export class WorkerPool {
    * }, []);
    * ```
    */
-  terminate(): void {
+  public terminate(): void {
     try {
       // Abort all pending tasks
       this.abort();
@@ -458,6 +467,12 @@ export class WorkerPool {
       // Terminate all workers
       this.workers.forEach(worker => {
         try {
+          if (typeof window !== 'undefined') {
+            // Use the window registry cleanup methods if available
+            if (window.__WORKER_REGISTRY__) {
+              window.__WORKER_REGISTRY__.delete(worker);
+            }
+          }
           worker.terminate();
         } catch(error) {
           console.warn('Error terminating worker:', error);

@@ -2,8 +2,9 @@
  * KineticSlider gesture handling integration tests
  * These tests verify that the slider correctly responds to touch and pointer events
  * 
- * Note: Tests are currently skipped due to timeout issues. The implementation is preserved
- * for reference, but they need optimization to avoid timeouts.
+ * Note: Some tests are intentionally skipped due to JSDOM limitations around pointer events.
+ * Pointer events are not fully supported in JSDOM, making it difficult to simulate swipe gestures accurately.
+ * These tests could be enabled in an environment that supports full pointer event simulation, like Playwright.
  */
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor as _waitFor, act as _act } from '@testing-library/react';

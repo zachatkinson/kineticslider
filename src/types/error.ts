@@ -77,7 +77,12 @@ export enum ErrorType {
   /**
    * Initialization errors
    */
-  INITIALIZATION = 'initialization'
+  INITIALIZATION = 'initialization',
+  
+  /**
+   * Worker pool errors
+   */
+  WORKER_POOL = 'worker_pool'
 }
 
 /**
@@ -455,6 +460,35 @@ export interface AssetLoadingError extends ExtendedError {
 }
 
 /**
+ * Worker pool error for handling failures in web worker operations
+ * @example
+ * ```typescript
+ * const workerError: WorkerPoolError = {
+ *   message: "Worker task execution failed",
+ *   type: ErrorType.WORKER_POOL,
+ *   severity: ErrorSeverity.ERROR,
+ *   workerId: 2,
+ *   taskId: "task-123",
+ *   operation: "execute",
+ *   executionTime: 253,
+ *   timestamp: Date.now(),
+ *   stack: new Error().stack,
+ *   toErrorInfo: () => ({ ... })
+ * };
+ * ```
+ */
+export interface WorkerPoolError extends ExtendedError {
+  type: ErrorType.WORKER_POOL;
+  workerId?: number;
+  taskId?: string;
+  operation: string;
+  category?: string;
+  executionTime?: number;
+  retriesAttempted?: number;
+  priority?: number;
+}
+
+/**
  * Union type of all specific slider errors
  */
 export type SliderErrorUnion = 
@@ -468,7 +502,8 @@ export type SliderErrorUnion =
   | NetworkError
   | UserInputError
   | ConfigurationError
-  | AssetLoadingError;
+  | AssetLoadingError
+  | WorkerPoolError;
 
 /**
  * Error tracker context for error reporting

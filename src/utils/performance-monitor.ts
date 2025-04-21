@@ -36,228 +36,272 @@ import type { MetricSummary } from '../types/performance-shared';
  * ```
  */
 export class PerformanceMonitor {
-  private observers: Set<ResizeObserver | IntersectionObserver>;
-  private cleanupTasks: Set<() => void>;
-  private metrics: PerformanceResult[];
-  private isTracking: boolean;
-
+  private metrics: Array<{
+    name: string;
+    value: number;
+    timestamp: Date;
+    duration: number;
+    metricType: number;
+    implementation: number;
+    unit: string;
+  }> = [];
+  
+  private cleanupTasks: Array<() => void> = [];
+  private fpsInterval: number | null = null;
+  private memoryInterval: number | null = null;
+  private rafId: number | null = null;
+  private observers: Set<ResizeObserver | IntersectionObserver> = new Set();
+  
   /**
-   * Creates a new performance monitor instance
-   */
-  constructor() {
-    this.observers = new Set();
-    this.cleanupTasks = new Set();
-    this.metrics = [];
-    this.isTracking = false;
-  }
-
-  /**
-   * Starts tracking FPS (frames per second)
+   * Track the current frames per second
    * @returns A function to stop tracking
    */
   trackFPS(): () => void {
-    let frames = 0;
-    let lastTime = performance.now();
-    let rafId: number | null = null;
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+    }
     
-    const measure = (): void => {
+    let lastTime = performance.now();
+    let frames = 0;
+    
+    const measure = (time: number) => {
       frames++;
-      const now = performance.now();
-      const elapsed = now - lastTime;
       
-      if (elapsed >= 1000) {
-        const fps = Math.round((frames * 1000) / elapsed);
+      if (time - lastTime >= 1000) {
+        const fps = Math.round((frames * 1000) / (time - lastTime));
         this.recordMetric({
           name: 'FPS',
-          duration: elapsed,
-          timestamp: new Date(),
-          metricType: MetricType.RENDER_TIME,
-          implementation: ImplementationType.NEW,
           value: fps,
+          timestamp: new Date(),
+          duration: time - lastTime,
+          metricType: 0,
+          implementation: 0,
           unit: 'fps'
         });
         
         frames = 0;
-        lastTime = now;
+        lastTime = time;
       }
       
-      rafId = requestAnimationFrame(measure);
+      this.rafId = requestAnimationFrame(measure);
     };
     
-    // Start measuring
-    rafId = requestAnimationFrame(measure);
-    this.isTracking = true;
+    this.rafId = requestAnimationFrame(measure);
     
-    // Return a function to stop tracking
-    const stopTracking = (): void => {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
+    const stopTracking = () => {
+      if (this.rafId !== null) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
       }
-      this.isTracking = false;
     };
     
     this.addCleanupTask(stopTracking);
     return stopTracking;
   }
-
+  
   /**
-   * Starts tracking memory usage
+   * Track memory usage over time
    * @returns A function to stop tracking
    */
   trackMemory(): () => void {
-    if (!performance || !('memory' in performance)) {
-      console.warn('Memory API not available in this browser');
-      return () => {}; // No-op if not supported
+    if (this.memoryInterval !== null) {
+      clearInterval(this.memoryInterval);
     }
     
-    let intervalId: number | null = null;
+    // Check if the memory API is available
+    if (!performance.memory) {
+      console.warn('Memory API not available - memory tracking disabled');
+      return () => {}; // Return noop function
+    }
     
-    const measure = (): void => {
-      // @ts-ignore - memory is non-standard but available in Chrome
-      const memory = performance.memory;
-      
-      if (memory) {
-        this.recordMetric({
-          name: 'Memory Usage',
-          duration: 0,
-          timestamp: new Date(),
-          metricType: MetricType.MEMORY_USAGE,
-          implementation: ImplementationType.NEW,
-          memoryUsage: memory.usedJSHeapSize / (1024 * 1024),
-          value: memory.usedJSHeapSize / (1024 * 1024),
-          unit: 'MB'
-        });
+    const trackMemoryUsage = () => {
+      try {
+        const memory = performance.memory;
+        
+        if (memory) {
+          const usedHeapSize = memory.usedJSHeapSize;
+          const totalHeapSize = memory.totalJSHeapSize;
+          const usagePercentage = (usedHeapSize / totalHeapSize) * 100;
+          
+          this.recordMetric({
+            name: 'Memory Usage',
+            value: usagePercentage,
+            timestamp: new Date(),
+            duration: 0,
+            metricType: 1,
+            implementation: 0,
+            unit: '%'
+          });
+          
+          this.recordMetric({
+            name: 'Memory Used',
+            value: usedHeapSize / (1024 * 1024), // Convert to MB
+            timestamp: new Date(),
+            duration: 0,
+            metricType: 1,
+            implementation: 0,
+            unit: 'MB'
+          });
+        }
+      } catch (error) {
+        console.error('Error tracking memory:', error);
       }
     };
     
-    // Start measuring every 1s
-    intervalId = window.setInterval(measure, 1000);
-    this.isTracking = true;
+    // Track immediately
+    trackMemoryUsage();
     
-    // Return a function to stop tracking
-    const stopTracking = (): void => {
-      if (intervalId !== null) {
-        window.clearInterval(intervalId);
-        intervalId = null;
+    // Then track every second
+    this.memoryInterval = window.setInterval(trackMemoryUsage, 1000);
+    
+    const stopTracking = () => {
+      if (this.memoryInterval !== null) {
+        clearInterval(this.memoryInterval);
+        this.memoryInterval = null;
       }
-      this.isTracking = false;
     };
     
     this.addCleanupTask(stopTracking);
     return stopTracking;
   }
-
+  
   /**
-   * Records a performance metric
-   * @param metric The metric to record
+   * Record a performance metric
    */
-  private recordMetric(metric: PerformanceResult): void {
+  recordMetric(metric: {
+    name: string;
+    value: number;
+    timestamp: Date;
+    duration: number;
+    metricType: number;
+    implementation: number;
+    unit: string;
+  }): void {
     this.metrics.push(metric);
     
-    // Limit the number of stored metrics to avoid memory issues
+    // Limit the number of stored metrics to prevent memory bloat
     if (this.metrics.length > 1000) {
-      this.metrics.shift();
+      this.metrics = this.metrics.slice(-1000);
     }
   }
-
+  
   /**
-   * Returns all recorded metrics
-   * @returns Array of performance metrics
+   * Get all recorded metrics
    */
-  getMetrics(): PerformanceResult[] {
-    return [...this.metrics];
+  getMetrics(): Array<{
+    name: string;
+    value: number;
+    timestamp: Date;
+    duration: number;
+    metricType: number;
+    implementation: number;
+    unit: string;
+  }> {
+    return this.metrics;
   }
-
+  
   /**
-   * Gets benchmark results based on recorded metrics
-   * @returns Benchmark results
+   * Get benchmark summaries calculated from metrics
    */
-  getBenchmarks(): BenchmarkResult[] {
-    // Group metrics by name
-    const metricsByName: Record<string, PerformanceResult[]> = {};
+  getBenchmarks(): Array<{
+    name: string;
+    summary: {
+      min: number;
+      max: number;
+      avg: number;
+      p95?: number;
+      count: number;
+    };
+  }> {
+    const benchmarks: Record<string, {
+      values: number[];
+      name: string;
+    }> = {};
     
+    // Group metrics by name
     for (const metric of this.metrics) {
-      if (!metricsByName[metric.name]) {
-        metricsByName[metric.name] = [];
+      if (!benchmarks[metric.name]) {
+        benchmarks[metric.name] = {
+          values: [],
+          name: metric.name
+        };
       }
       
-      metricsByName[metric.name].push(metric);
+      benchmarks[metric.name].values.push(metric.value);
     }
     
-    // Calculate summary for each metric group
-    return Object.entries(metricsByName).map(([name, metrics]) => {
-      const values = metrics.map(m => m.value || 0);
-      
-      // Calculate summary statistics
-      const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+    // Calculate summaries
+    return Object.values(benchmarks).map(benchmark => {
+      const values = benchmark.values;
       const min = Math.min(...values);
       const max = Math.max(...values);
+      const sum = values.reduce((a, b) => a + b, 0);
+      const avg = sum / values.length;
       
-      // Sort values for percentile calculations
-      const sortedValues = [...values].sort((a, b) => a - b);
-      const medianIdx = Math.floor(sortedValues.length / 2);
-      const median = sortedValues.length % 2 === 0
-        ? (sortedValues[medianIdx - 1] + sortedValues[medianIdx]) / 2
-        : sortedValues[medianIdx];
-      
-      const p95Idx = Math.floor(sortedValues.length * 0.95);
-      const p95 = sortedValues[p95Idx];
-      
-      // Calculate standard deviation
-      const squaredDiffs = values.map(val => Math.pow(val - avg, 2));
-      const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length;
-      const stdDev = Math.sqrt(variance);
-      
-      const summary: MetricSummary = {
-        avg,
-        min,
-        max,
-        median,
-        p95,
-        stdDev,
-        count: values.length
-      };
+      // Calculate p95 if there are enough values
+      const p95 = values.length > 10 
+        ? values.sort((a, b) => a - b)[Math.floor(values.length * 0.95)]
+        : undefined;
       
       return {
-        name,
-        summary,
-        timestamp: new Date()
+        name: benchmark.name,
+        summary: {
+          min,
+          max,
+          avg,
+          p95,
+          count: values.length
+        }
       };
     });
   }
-
+  
   /**
-   * Add a cleanup task to be executed when cleanup() is called
-   * @param task Function to execute during cleanup
+   * Add a task to be executed during cleanup
    */
   addCleanupTask(task: () => void): void {
-    this.cleanupTasks.add(task);
+    this.cleanupTasks.push(task);
   }
-
+  
   /**
-   * Cleanup all observers and registered tasks
+   * Clean up all resources and stop tracking
    */
   cleanup(): void {
-    // Disconnect all observers
-    this.observers.forEach(observer => {
-      if (observer && typeof observer.disconnect === 'function') {
-        observer.disconnect();
-      }
-    });
-    
     // Execute all cleanup tasks
-    this.cleanupTasks.forEach(task => {
+    for (const task of this.cleanupTasks) {
       try {
         task();
       } catch (error) {
-        console.error('Error executing cleanup task:', error);
+        console.error('Error during cleanup task:', error);
       }
-    });
-    
-    // Clear collections
+    }
+    this.cleanupTasks = [];
+
+    // Disconnect all observers
+    for (const observer of this.observers) {
+      try {
+        observer.disconnect();
+      } catch (error) {
+        console.error('Error disconnecting observer:', error);
+      }
+    }
     this.observers.clear();
-    this.cleanupTasks.clear();
-    this.isTracking = false;
+
+    // Clear intervals and animation frames
+    if (this.fpsInterval !== null) {
+      clearInterval(this.fpsInterval);
+      this.fpsInterval = null;
+    }
+    if (this.memoryInterval !== null) {
+      clearInterval(this.memoryInterval);
+      this.memoryInterval = null;
+    }
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+
+    // Clear metrics
+    this.metrics = [];
   }
 } 
