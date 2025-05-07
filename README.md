@@ -96,6 +96,18 @@ KineticSlider is built with accessibility in mind:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Worker Build & Test Workflow
+
+- The production worker script (`src/workers/pool-worker.ts`) is built to `dist/workers/pool-worker.js` using Vite.
+- The worker is automatically built before running any tests (see the `pretest` script in `package.json`).
+- To manually build the worker, run:
+
+```bash
+pnpm build:worker
+```
+
+- Integration tests require the built worker. Unit tests use a mock worker and do not require the real worker build.
+
 ## License
 
 MIT 

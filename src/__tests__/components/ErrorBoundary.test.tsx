@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { act } from 'react-dom/test-utils';
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { waitFor } from '@testing-library/react';
+import { act } from 'react';
 
 import { ErrorBoundary } from '../../components/ErrorBoundary';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -429,13 +429,17 @@ describe('ErrorBoundary Component', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
     
     // Now set recovery to true
-    if (window.setErrorBoundaryRecovery) {
-      window.setErrorBoundaryRecovery(true);
-    }
+    act(() => {
+      if (window.setErrorBoundaryRecovery) {
+        window.setErrorBoundaryRecovery(true);
+      }
+    });
     
     // Trigger retry
-    const retryButton = screen.getByRole('button', { name: 'Retry' });
-    fireEvent.click(retryButton);
+    act(() => {
+      const retryButton = screen.getByRole('button', { name: 'Retry' });
+      fireEvent.click(retryButton);
+    });
     
     // Verify component is now rendered
     expect(screen.getByTestId('recovered')).toBeInTheDocument();
@@ -701,14 +705,18 @@ describe('ErrorBoundary Component', () => {
     expect(errorButton).toBeInTheDocument();
 
     // Trigger the error
-    fireEvent.click(errorButton);
+    act(() => {
+      fireEvent.click(errorButton);
+    });
 
     // Verify error caught and handled
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('Toggled error')).toBeInTheDocument();
     
     // Click retry button 
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    });
     
     // Verify component recovered (button appears again)
     expect(screen.getByTestId('trigger-error-btn')).toBeInTheDocument();

@@ -4,6 +4,7 @@ import { render, screen, waitFor as _waitFor, fireEvent } from '@testing-library
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { act } from 'react';
 
 // Declare unused variables with underscore prefix
 const _userEvent = userEvent;
@@ -217,7 +218,9 @@ describe('KineticSlider', () => {
     const prevButton = getByRole('button', { name: /previous slide/i });
     
     // Click the previous button
-    fireEvent.click(prevButton);
+    act(() => {
+      fireEvent.click(prevButton);
+    });
     
     // Verify callbacks
     expect(mockProps.onSlideChange).toHaveBeenCalledWith(createBrandedNumber(0, 'SlideIndex'));
@@ -238,7 +241,9 @@ describe('KineticSlider', () => {
     );
     
     // Press right arrow key on window (component uses window-level listeners)
-    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    act(() => {
+      fireEvent.keyDown(window, { key: 'ArrowRight' });
+    });
     
     // Verify callbacks
     expect(onSlideChange).toHaveBeenCalledWith(createBrandedNumber(1, 'SlideIndex'));

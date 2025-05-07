@@ -1,22 +1,23 @@
 import '@testing-library/jest-dom';
-import { expect, afterEach, vi } from 'vitest';
+import { vi, afterEach, beforeEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import * as matchers from '@testing-library/jest-dom/matchers';
+import './worker-loader';
+import { MockWorker } from './mocks/mock-worker';
 
-// Extend Vitest's expect method with testing-library matchers
-expect.extend(matchers);
+// Extend vitest's expect method with testing-library methods
+expect.extend({});
 
-// Cleanup after each test case
+// Cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
   cleanup();
 });
 
 // Mock ResizeObserver which is not available in test environment
-global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
+class MockResizeObserver implements ResizeObserver {
+  observe(target: Element) {}
+  unobserve(target: Element) {}
   disconnect() {}
-};
+}
 
 // Mock IntersectionObserver which is not available in test environment
 class MockIntersectionObserver implements IntersectionObserver {
@@ -25,16 +26,17 @@ class MockIntersectionObserver implements IntersectionObserver {
   readonly thresholds: ReadonlyArray<number> = [];
 
   constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {}
-  
-  observe(): void {}
-  unobserve(): void {}
+
+  observe(target: Element): void {}
+  unobserve(target: Element): void {}
   disconnect(): void {}
   takeRecords(): IntersectionObserverEntry[] { return []; }
 }
 
+global.ResizeObserver = MockResizeObserver;
 global.IntersectionObserver = MockIntersectionObserver;
 
-// Mock window.matchMedia
+// Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
@@ -49,29 +51,37 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Suppress console errors during tests
-console.error = vi.fn();
-
-// Mock window object for tests
-declare global {
-  interface Window {
-    __WORKER_REGISTRY__: Set<any>;
-    registerWorker: (worker: any) => void;
-  }
-}
-
-// Create global worker registry for testing
-if (typeof window !== 'undefined') {
-  window.__WORKER_REGISTRY__ = new Set();
-  window.registerWorker = vi.fn((worker: any) => {
-    window.__WORKER_REGISTRY__.add(worker);
-  });
-}
-
-// Reset mocks between each test
+// Suppress console.error during tests
+const originalError = console.error;
 beforeEach(() => {
-  if (typeof window !== 'undefined') {
-    window.__WORKER_REGISTRY__.clear();
-  }
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('Warning: ReactDOM.render is no longer supported')
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterEach(() => {
+  console.error = originalError;
+});
+
+// Create a global worker registry for testing
+const workerRegistry = new Map<string, Worker>();
+
+// Mock Worker globally
+global.Worker = MockWorker as any;
+
+// Reset mocks between tests
+beforeEach(() => {
+  workerRegistry.clear();
   vi.clearAllMocks();
+  
+  // Reset worker registry
+  if (typeof window !== 'undefined') {
+    window.__WORKER_REGISTRY__ = new Set();
+  }
 }); 

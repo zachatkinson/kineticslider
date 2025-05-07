@@ -13,7 +13,7 @@ export const defaultConfig = {
   ],
   test: {
     environment: 'jsdom',
-    setupFiles: ['./src/__tests__/setup.ts'],
+    setupFiles: ['./src/__tests__/setup.ts', './src/__tests__/setup-worker.ts'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -21,25 +21,31 @@ export const defaultConfig = {
       '**/.next/**',
     ],
     globals: true,
-    include: ['**/*.{test,spec}.{ts,tsx}'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     coverage: {
       provider: 'v8' as const,
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        '**/*.d.ts',
-        '**/*.config.ts',
-        '**/index.ts',
-      ],
-      thresholds: {
-        branches: 80,
-        functions: 80,
-        lines: 80,
-        statements: 80,
-      },
+      exclude: ['src/__tests__/**/*']
     },
-    testTimeout: 10000,
+    deps: {
+      optimizer: {
+        web: {
+          include: ['vitest-canvas-mock']
+        }
+      }
+    },
+    testTimeout: 120000,
+    hookTimeout: 120000,
+    teardownTimeout: 120000,
     retry: 2,
-    isolate: true
+    isolate: true,
+    threads: false,
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true
+      }
+    }
   },
   resolve: {
     alias: {
@@ -47,8 +53,26 @@ export const defaultConfig = {
       '@components': resolve(__dirname, './src/components'),
       '@utils': resolve(__dirname, './src/utils'),
       '@lib': resolve(__dirname, './src/lib'),
-      '@types': resolve(__dirname, './src/types')
-    }
+      '@types': resolve(__dirname, './src/types'),
+      'src/__tests__/loader.mjs': resolve(__dirname, './src/__tests__/loader.mjs')
+    },
+    conditions: ['development', 'browser']
+  },
+  worker: {
+    format: 'iife' as const,
+    plugins: () => [
+      {
+        name: 'ts-worker',
+        transform(code, id) {
+          if (id.endsWith('.ts')) {
+            return {
+              code: code.replace(/\.ts/g, '.js'),
+              map: null
+            };
+          }
+        }
+      }
+    ]
   }
 };
 

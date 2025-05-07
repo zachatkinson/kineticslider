@@ -64,10 +64,14 @@ describe('useKeyboard Hook', () => {
     });
 
     // Use fireEvent to simulate keyDown events
-    fireEvent.keyDown(container, { key: 'ArrowLeft' });
+    act(() => {
+      fireEvent.keyDown(container, { key: 'ArrowLeft' });
+    });
     expect(onLeft).toHaveBeenCalledTimes(1);
     
-    fireEvent.keyDown(container, { key: 'ArrowRight' });
+    act(() => {
+      fireEvent.keyDown(container, { key: 'ArrowRight' });
+    });
     expect(onRight).toHaveBeenCalledTimes(1);
   });
 

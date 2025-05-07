@@ -467,25 +467,36 @@ export interface AssetLoadingError extends ExtendedError {
  *   message: "Worker task execution failed",
  *   type: ErrorType.WORKER_POOL,
  *   severity: ErrorSeverity.ERROR,
- *   workerId: 2,
- *   taskId: "task-123",
+ *   workerId: "worker-1",
+ *   error: "Task execution failed",
+ *   timestamp: new Date().toISOString(),
  *   operation: "execute",
- *   executionTime: 253,
- *   timestamp: Date.now(),
- *   stack: new Error().stack,
- *   toErrorInfo: () => ({ ... })
+ *   category: "worker_error",
+ *   stackTrace: new Error().stack,
+ *   code: "WORKER_ERROR",
+ *   details: {
+ *     taskId: "task-123",
+ *     errorTime: Date.now(),
+ *     workerId: "worker-1"
+ *   }
  * };
  * ```
  */
 export interface WorkerPoolError extends ExtendedError {
   type: ErrorType.WORKER_POOL;
-  workerId?: number;
-  taskId?: string;
+  workerId: string;
+  error: string;
+  timestamp: string;
   operation: string;
-  category?: string;
-  executionTime?: number;
-  retriesAttempted?: number;
-  priority?: number;
+  category: string;
+  stackTrace: string;
+  severity: ErrorSeverity;
+  code: string;
+  details: {
+    taskId?: string;
+    errorTime: number;
+    workerId: string;
+  };
 }
 
 /**

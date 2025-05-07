@@ -225,7 +225,9 @@ export class WorkerPool {
     
     for(let i = 0; i < size; i++) {
       try {
-        const worker = new Worker(new URL('../workers/pool-worker.ts', import.meta.url));
+        // Use the provided workerScript if available (for tests), otherwise use the built JS worker for production/integration
+        const workerScript = options.workerScript || new URL('../../dist/workers/pool-worker.js', import.meta.url);
+        const worker = new Worker(workerScript, { type: 'module' });
         this.workers.push(worker);
         this.availableWorkers.push(worker);
         this.setupWorker(worker);
