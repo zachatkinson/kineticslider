@@ -33,7 +33,7 @@ export interface GsapTimeline extends GsapTween {
   fromTo: (
     target: Element | string | object,
     fromVars: GsapVars,
-    toVars: GsapVars
+    toVars: GsapVars,
   ) => GsapTimeline;
   set: (target: Element | string | object, vars: GsapVars) => GsapTimeline;
   add: (child: GsapTimeline | GsapTween) => GsapTimeline;
@@ -49,7 +49,7 @@ export interface GsapTimelineDefaults {
   force3D?: boolean;
   lazy?: boolean;
   clearProps?: string;
-  overwrite?: boolean | 'auto';
+  overwrite?: boolean | "auto";
   immediateRender?: boolean;
   onComplete?: () => void;
 }
@@ -64,7 +64,7 @@ export interface GsapInstance {
   fromTo: (
     target: Element | string | object,
     fromVars: GsapVars,
-    toVars: GsapVars
+    toVars: GsapVars,
   ) => GsapTween;
   set: (target: Element | string | object, vars: GsapVars) => void;
   timeline: (vars?: GsapTimelineDefaults) => GsapTimeline;
@@ -83,7 +83,7 @@ export interface GsapInstance {
       inMax: number,
       outMin: number,
       outMax: number,
-      value: number
+      value: number,
     ) => number;
     clamp: (min: number, max: number, value: number) => number;
     getUnit: (value: string) => string;
@@ -107,7 +107,7 @@ export interface GsapInstance {
   quickTo: (
     target: Element | string,
     property: string,
-    vars?: GsapVars
+    vars?: GsapVars,
   ) => (value: number) => void;
   registerEffect: (effectConfig: Record<string, unknown>) => void;
   matchMedia: (mediaQuery: string) => {
@@ -124,12 +124,12 @@ export interface GsapInstance {
   delayedCall: (
     delay: number,
     callback: () => void,
-    params?: unknown[]
+    params?: unknown[],
   ) => GsapTween;
   isTweening: (target: Element | string) => boolean;
   quickSetter: (
     target: Element | string,
     property: string,
-    unit?: string
+    unit?: string,
   ) => (value: number | string) => void;
 }

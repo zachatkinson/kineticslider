@@ -1,17 +1,17 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import BasicExample from './examples/BasicExample';
-import './index.css';
+import BasicExample from "./examples/BasicExample";
+import "./index.css";
 
 // Replace non-null assertion with a safer approach
-const rootElement = document.getElementById('root');
-if(rootElement) {
+const rootElement = document.getElementById("root");
+if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <BasicExample />
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 } else {
-  console.error('Root element not found');
+  console.error("Root element not found");
 }

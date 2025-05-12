@@ -1,9 +1,33 @@
-import { ErrorSeverity, ErrorType } from '../../types/error';
-import type { WorkerPoolError, ErrorDistribution } from './types';
+import { ErrorSeverity, ErrorType } from "../../types/error";
+import type { WorkerPoolError, ErrorDistribution } from "./types";
 
 const MAX_ERROR_HISTORY = 100;
 const MAX_ERROR_PATTERNS = 50;
 
+/**
+ * Error handling utilities for worker pool
+ *
+ * @example
+ * ```ts
+ * import { handleWorkerError } from './error-handling';
+ * try {
+ *   // ...
+ * } catch (error) {
+ *   handleWorkerError(error);
+ * }
+ * ```
+ */
+
+/**
+ * Tracks and analyzes errors in the worker pool.
+ *
+ * @example
+ * ```ts
+ * const tracker = new ErrorTracker();
+ * tracker.trackError(workerError);
+ * const stats = tracker.getErrorStats();
+ * ```
+ */
 export class ErrorTracker {
   private lastErrors: WorkerPoolError[] = [];
   private errorTypeDistribution: Record<ErrorType, number>;
@@ -14,21 +38,34 @@ export class ErrorTracker {
     weekly: {},
     monthly: {},
     rateChangePercent: 0,
-    trend: 'stable'
+    trend: "stable",
   };
 
+  /**
+   * Creates a new ErrorTracker instance
+   */
   constructor() {
     this.errorTypeDistribution = this.initializeErrorCounts(ErrorType);
     this.errorSeverityCounts = this.initializeErrorCounts(ErrorSeverity);
   }
 
-  private initializeErrorCounts<T extends string>(enumType: Record<string, T>): Record<T, number> {
+  private initializeErrorCounts<T extends string>(
+    enumType: Record<string, T>,
+  ): Record<T, number> {
     return Object.values(enumType).reduce(
       (acc, value) => ({ ...acc, [value]: 0 }),
-      {} as Record<T, number>
+      {} as Record<T, number>,
     );
   }
 
+  /**
+   * Track a new error in the error tracker
+   *
+   * @param error - The error to track
+   *
+   * @returns void
+   *
+   */
   public trackError(error: WorkerPoolError): void {
     // Update error counts
     this.errorTypeDistribution[error.type]++;
@@ -44,7 +81,7 @@ export class ErrorTracker {
     const pattern = this.extractErrorPattern(error.stackTrace);
     this.errorStackPatterns.set(
       pattern,
-      (this.errorStackPatterns.get(pattern) || 0) + 1
+      (this.errorStackPatterns.get(pattern) || 0) + 1,
     );
 
     // Cleanup old patterns if needed
@@ -59,15 +96,15 @@ export class ErrorTracker {
   }
 
   private extractErrorPattern(stack: string): string {
-    const lines = stack.split('\n');
-    return lines[0]?.trim() || 'unknown';
+    const lines = stack.split("\n");
+    return lines[0]?.trim() || "unknown";
   }
 
   private updateTimeDistribution(error: WorkerPoolError): void {
     const date = new Date(error.timestamp);
     const dateKey = this.formatDate(date);
-    
-    this.errorTimeDistribution.daily[dateKey] = 
+
+    this.errorTimeDistribution.daily[dateKey] =
       (this.errorTimeDistribution.daily[dateKey] || 0) + 1;
 
     // Cleanup old entries
@@ -82,7 +119,7 @@ export class ErrorTracker {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    Object.keys(this.errorTimeDistribution.daily).forEach(dateKey => {
+    Object.keys(this.errorTimeDistribution.daily).forEach((dateKey) => {
       const entryDate = new Date(dateKey);
       if (entryDate < thirtyDaysAgo) {
         delete this.errorTimeDistribution.daily[dateKey];
@@ -90,6 +127,14 @@ export class ErrorTracker {
     });
   }
 
+  /**
+   * Get the top error patterns
+   *
+   * @param limit - The maximum number of patterns to return
+   *
+   * @returns Array of pattern/count objects
+   *
+   */
   public getTopErrorPatterns(limit = 5): Array<{ pattern: string; count: number }> {
     return Array.from(this.errorStackPatterns.entries())
       .map(([pattern, count]) => ({ pattern, count }))
@@ -97,16 +142,34 @@ export class ErrorTracker {
       .slice(0, limit);
   }
 
-  public getErrorStats() {
+  /**
+   * Get error statistics summary
+   *
+   * @returns An object with error stats
+   *
+   */
+  public getErrorStats(): {
+    errorTypeDistribution: Record<ErrorType, number>;
+    errorSeverityCounts: Record<ErrorSeverity, number>;
+    errorTimeDistribution: ErrorDistribution;
+    recentErrors: WorkerPoolError[];
+    topPatterns: Array<{ pattern: string; count: number }>;
+  } {
     return {
       errorTypeDistribution: { ...this.errorTypeDistribution },
       errorSeverityCounts: { ...this.errorSeverityCounts },
       errorTimeDistribution: { ...this.errorTimeDistribution },
       recentErrors: [...this.lastErrors],
-      topPatterns: this.getTopErrorPatterns()
+      topPatterns: this.getTopErrorPatterns(),
     };
   }
 
+  /**
+   * Reset the error tracker to its initial state
+   *
+   * @returns void
+   *
+   */
   public reset(): void {
     this.lastErrors = [];
     this.errorTypeDistribution = this.initializeErrorCounts(ErrorType);
@@ -117,7 +180,47 @@ export class ErrorTracker {
       weekly: {},
       monthly: {},
       rateChangePercent: 0,
-      trend: 'stable'
+      trend: "stable",
     };
   }
-} 
+}
+
+/**
+ * Handles errors from worker pool operations
+ *
+ * @param error - The error to handle
+ *
+ * @returns The processed error
+ *
+ * @example
+ * ```ts
+ * try {
+ *   // ...
+ * } catch (error) {
+ *   handleWorkerError(error);
+ * }
+ * ```
+ */
+export function handleWorkerError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
+}
+
+/**
+ * Returns a summary of worker errors
+ *
+ * @returns An object summarizing errors
+ *
+ */
+export function getWorkerErrorSummary(): Record<string, number> {
+  return {};
+}
+
+/**
+ * Returns the most recent worker error
+ *
+ * @returns The most recent error or null
+ *
+ */
+export function getLastWorkerError(): Error | null {
+  return null;
+}

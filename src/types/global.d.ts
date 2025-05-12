@@ -1,8 +1,8 @@
 /**
  * Global type augmentations
  */
-import type { GsapInstance as _GsapInstance } from './gsap';
-import type { WindowWithAnalytics as _WindowWithAnalytics } from './performance';
+import type { GsapInstance as _GsapInstance } from "./gsap";
+import type { WindowWithAnalytics as _WindowWithAnalytics } from "./performance";
 
 // All global type declarations have been moved to src/types/global.ts
 // This file is kept for declaration merging and re-exports
@@ -25,6 +25,6 @@ declare global {
 // Environment type declarations
 declare namespace _NodeJS {
   interface ProcessEnv {
-    NODE_ENV: 'development' | 'production' | 'test';
+    NODE_ENV: "development" | "production" | "test";
   }
 }

@@ -1,10 +1,12 @@
 /**
  * Event types for the KineticSlider component
+ *
  * @example Example usage
  */
 
 /**
- * Base event interface for all slider events 
+ * Base event interface for all slider events
+ *
  * @example
  * ```typescript
  * const handleSliderEvent = (event: BaseSliderEvent) => {
@@ -22,10 +24,10 @@ export interface BaseSliderEvent {
 }
 
 /** Touch event types */
-export type TouchEventType = 'touchstart' | 'touchmove' | 'touchend';
+export type TouchEventType = "touchstart" | "touchmove" | "touchend";
 
 /** Mouse event types */
-export type MouseEventType = 'mousedown' | 'mousemove' | 'mouseup';
+export type MouseEventType = "mousedown" | "mousemove" | "mouseup";
 
 /** Combined event types */
 export type SliderEventType = TouchEventType | MouseEventType;
@@ -37,4 +39,4 @@ export type SliderEventHandler = (event: BaseSliderEvent) => void;
 export type KeyboardEventHandler = (event: KeyboardEvent) => void;
 
 /** Focus event handler type */
-export type FocusEventHandler = (event: FocusEvent) => void; 
+export type FocusEventHandler = (event: FocusEvent) => void;

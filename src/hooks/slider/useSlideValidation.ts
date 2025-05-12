@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import type { ValidationError, ValidationResult } from '../../types/validation';
-import { getFieldClass, getErrorForField } from '../../utils/validation';
+import { useState } from "react";
+import type { ValidationError, ValidationResult } from "../../types/validation";
+import { getFieldClass, getErrorForField } from "../../utils/validation";
 
 interface SlideValidationOptions {
   validateOnMount?: boolean;
@@ -9,13 +9,17 @@ interface SlideValidationOptions {
 
 /**
  * Custom hook for slide validation
+ *
  * @param data The data to validate
+ *
  * @param _options Validation options
+ *
  * @returns Validation state and utility functions
+ *
  */
 export function useSlideValidation(
   data: unknown,
-  _options: SlideValidationOptions = {}
+  _options: SlideValidationOptions = {},
 ): {
   validationResult: ValidationResult;
   validating: boolean;
@@ -28,7 +32,7 @@ export function useSlideValidation(
 } {
   const [validationResult, setValidationResult] = useState<ValidationResult>({
     valid: true,
-    errors: []
+    errors: [],
   });
   const [validating, setValidating] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -38,9 +42,11 @@ export function useSlideValidation(
     validating,
     submitted,
     setSubmitted,
-    getErrorForField: (fieldName: string) => getErrorForField(validationResult.errors, fieldName),
-    getFieldClass: (fieldName: string) => getFieldClass(validationResult.errors, fieldName),
+    getErrorForField: (fieldName: string) =>
+      getErrorForField(validationResult.errors, fieldName),
+    getFieldClass: (fieldName: string) =>
+      getFieldClass(validationResult.errors, fieldName),
     setValidating,
-    setValidationResult
+    setValidationResult,
   };
-} 
+}

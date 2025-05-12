@@ -1,11 +1,12 @@
 /**
  * Types for test fixtures
  */
-import type { GestureEvent, SwipeDirection } from '../gestures';
-import type { Slide } from '../slider';
+import type { GestureEvent, SwipeDirection } from "../gestures";
+import type { Slide } from "../slider";
 
 /**
  * Mock event interface
+ *
  * @example
  * ```typescript
  * const mockEvent: MockEvent = {
@@ -32,6 +33,7 @@ export interface MockEvent {
 
 /**
  * Mock gesture event with direction
+ *
  * @example
  * ```typescript
  * const swipeEvent: MockGestureEvent = {
@@ -44,15 +46,16 @@ export interface MockEvent {
  * };
  * ```
  */
-export interface MockGestureEvent extends Omit<GestureEvent, 'type'> {
-  type: 'swipe';
+export interface MockGestureEvent extends Omit<GestureEvent, "type"> {
+  type: "swipe";
   direction: SwipeDirection;
 }
 
-export { type TouchOptions as TouchInit } from './mocks';
+export { type TouchOptions as TouchInit } from "./mocks";
 
 /**
  * Test Data Fixtures
+ *
  * @example Example usage
  */
 export interface TestSlide extends Slide {
@@ -62,6 +65,7 @@ export interface TestSlide extends Slide {
 
 /**
  * Test Event Fixtures
+ *
  * @example Example usage
  */
 export interface TestEvent {
@@ -72,4 +76,4 @@ export interface TestEvent {
   clientX?: number;
   clientY?: number;
   touches?: { clientX: number; clientY: number }[];
-} 
+}

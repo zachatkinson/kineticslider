@@ -1,23 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   FocusTrapOptions,
   KeyboardOptions,
   UseKeyboardReturn,
-} from '../types/keyboard';
+} from "../types/keyboard";
 import {
   _handleKeyboardEvent as handleKeyboardEvent,
   _setupFocusTrap as setupFocusTrap,
   _handleTabInFocusTrap as handleTabInFocusTrap,
   _createKeyboardHandlers as createKeyboardHandlers,
-  _attachKeyboardListener as attachKeyboardListener
-} from '../utils/keyboard-helpers';
+  _attachKeyboardListener as attachKeyboardListener,
+} from "../utils/keyboard-helpers";
 
 /**
  * Hook for handling keyboard navigation and accessibility
  *
  * @param options - Configuration with keyboard event handlers
+ *
  * @returns Keyboard controller methods
+ *
  */
 export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
   const {
@@ -48,20 +50,22 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
   const focusableElementsRef = useRef<HTMLElement[]>([]);
 
   // Create keyboard handlers map
-  const handlersRef = useRef(createKeyboardHandlers({
-    onLeft,
-    onRight,
-    onUp,
-    onDown,
-    onEnter,
-    onSpace,
-    onEscape,
-    onTab,
-    onHome,
-    onEnd,
-    onPageUp,
-    onPageDown,
-  }));
+  const handlersRef = useRef(
+    createKeyboardHandlers({
+      onLeft,
+      onRight,
+      onUp,
+      onDown,
+      onEnter,
+      onSpace,
+      onEscape,
+      onTab,
+      onHome,
+      onEnd,
+      onPageUp,
+      onPageDown,
+    }),
+  );
 
   // Update handlers when props change
   useEffect(() => {
@@ -99,7 +103,7 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
     (event: KeyboardEvent): void => {
       if (!enabled) return;
 
-      if(isFocusTrapped && event.key === 'Tab') {
+      if (isFocusTrapped && event.key === "Tab") {
         handleTabInFocusTrap(event, focusableElementsRef.current);
         return;
       }
@@ -109,16 +113,19 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
         stopPropagation,
       });
     },
-    [enabled, isFocusTrapped, preventDefault, stopPropagation]
+    [enabled, isFocusTrapped, preventDefault, stopPropagation],
   );
 
   // Set up focus trap
   const trapFocus = useCallback(
-    (container: HTMLElement | null, options: FocusTrapOptions = {}): (() => void) | undefined => {
+    (
+      container: HTMLElement | null,
+      options: FocusTrapOptions = {},
+    ): (() => void) | undefined => {
       if (!container) return;
 
       // Store previous focus if needed
-      if(options.returnFocusOnDeactivate !== false) {
+      if (options.returnFocusOnDeactivate !== false) {
         previousFocusRef.current = document.activeElement as HTMLElement;
       }
 
@@ -129,7 +136,10 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
       };
 
       // Set up focus trap
-      const { focusableElements } = setupFocusTrap(container, trapOptionsRef.current);
+      const { focusableElements } = setupFocusTrap(
+        container,
+        trapOptionsRef.current,
+      );
       focusableElementsRef.current = focusableElements;
 
       // Activate the trap
@@ -141,7 +151,7 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
       elementRef.current = container;
       return cleanup;
     },
-    [handleKeyDown]
+    [handleKeyDown],
   );
 
   // Release focus trap
@@ -149,7 +159,8 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
     setIsFocusTrapped(false);
     trapOptionsRef.current.onDeactivate?.();
 
-    if(trapOptionsRef.current.returnFocusOnDeactivate !== false &&
+    if (
+      trapOptionsRef.current.returnFocusOnDeactivate !== false &&
       previousFocusRef.current &&
       previousFocusRef.current instanceof HTMLElement
     ) {
@@ -161,8 +172,8 @@ export function useKeyboard(options: KeyboardOptions = {}): UseKeyboardReturn {
   // Clean up event listeners
   useEffect(() => {
     return () => {
-      if(elementRef.current) {
-        elementRef.current.removeEventListener('keydown', handleKeyDown);
+      if (elementRef.current) {
+        elementRef.current.removeEventListener("keydown", handleKeyDown);
         elementRef.current = null;
       }
     };

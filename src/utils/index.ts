@@ -3,12 +3,16 @@
  */
 
 // Import error types for re-export
-import { ValidationErrorType, ValidationErrorCode, ValidationErrorSeverity } from '../types/validation';
+import {
+  ValidationErrorType,
+  ValidationErrorCode,
+  ValidationErrorSeverity,
+} from "../types/validation";
 
 // Import slide validator functions
-import { _validateSlidesWithSchema as validateSlides } from './slide-validator';
+import { _validateSlidesWithSchema as validateSlides } from "./slide-validator";
 // Import animation validator functions
-import { _validateAnimationConfig as validateAnimationConfig } from './animation-validator';
+import { _validateAnimationConfig as validateAnimationConfig } from "./animation-validator";
 
 // Import validation functions from validation.ts
 import {
@@ -16,15 +20,15 @@ import {
   validateErrorInfo as _validateErrorInfo,
   validateAccessibility as _validateAccessibility,
   validatePerformanceConfig as _validatePerformanceConfig,
-  validateImageExists as _validateImageExists
-} from './validation';
+  validateImageExists as _validateImageExists,
+} from "./validation";
 
 // Form utilities
 export {
   getFeedbackClass,
   hasFieldCriticalError,
   hasFormCriticalErrors,
-} from './form-helpers';
+} from "./form-helpers";
 
 // Common utilities
 export {
@@ -37,7 +41,7 @@ export {
   deepClone,
   shallowMerge,
   getNestedValue,
-} from './common';
+} from "./common";
 
 // Performance utilities
 export {
@@ -46,7 +50,7 @@ export {
   createPerformanceMonitor,
   _calculateMetricSummary as calculateMetricSummary,
   trackInteraction as trackPerformanceInteraction,
-} from './performance';
+} from "./performance";
 
 // Validation utilities
 export {
@@ -63,7 +67,7 @@ export {
   composeValidators,
   composeAsyncValidators,
   createValidationError,
-} from './validation';
+} from "./validation";
 
 // Slide validation utilities
 export { validateSlides, validateAnimationConfig };
@@ -73,14 +77,14 @@ export {
   createValidator,
   safeGet as safeGetProp, // Rename to avoid conflict with safeGet from json.ts
   _createValidationError as createTestValidationError, // Rename to avoid conflict
-} from './validation-extras';
+} from "./validation-extras";
 
 // Validation guard functions
 export {
   isValidSlide,
   isValidProps,
   isValidErrorInfo,
-} from './validation-guards';
+} from "./validation-guards";
 
 // Re-export validation enums
 export { ValidationErrorType, ValidationErrorCode, ValidationErrorSeverity };
@@ -102,7 +106,7 @@ export {
   _isAnimationConfig as isAnimationConfig,
   _hasFocusFunction as hasFocusFunction,
   _hasInitialFocusFunction as hasInitialFocusFunction,
-} from './type-checks';
+} from "./type-checks";
 
 // String utilities
 export {
@@ -111,12 +115,10 @@ export {
   _kebabToCamel as kebabToCamel,
   truncate,
   _isEmptyString as isEmptyString,
-} from './string';
+} from "./string";
 
 // JSON utilities
-export {
-  safeGet as safeGetJson,
-} from './json';
+export { safeGet as safeGetJson } from "./json";
 
 // Math utilities
 export {
@@ -131,7 +133,7 @@ export {
   randomBetween,
   _randomIntBetween as randomIntBetween,
   _safeArithmetic as safeArithmetic,
-} from './math';
+} from "./math";
 
 // Animation utilities
 export {
@@ -142,22 +144,20 @@ export {
   createBasicAnimation,
   createFadeAnimation,
   createSlideAnimation,
-} from './animation';
+} from "./animation";
 
 // Image utilities
-export {
-  preloadImage,
-} from './image';
+export { preloadImage } from "./image";
 
 // Cache utilities
 export {
   Cache,
   ValidationCache,
   _globalValidationCache as globalValidationCache,
-} from './cache';
+} from "./cache";
 
 // Export types from type definitions
-export type { CacheOptions } from '../types/cache';
+export type { CacheOptions } from "../types/cache";
 
 // Validation helpers
 export {
@@ -165,7 +165,7 @@ export {
   validateNumberConstraints,
   _validateRequiredFields as validateRequiredFields,
   validateAgainstSchemaField,
-} from './validation-helpers';
+} from "./validation-helpers";
 
 // Validation checks
 export {
@@ -175,4 +175,4 @@ export {
   _getMostSevereError as getMostSevereError,
   _hasErrorsWithProperties as hasErrorsWithProperties,
   _getErrorsForProperties as getErrorsForProperties,
-} from './validation-checks';
+} from "./validation-checks";

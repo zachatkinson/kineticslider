@@ -1,7 +1,7 @@
 /**
  * Storybook type definitions and interfaces
  */
-import type { Meta as ComponentMeta, StoryObj } from '@storybook/react';
+import type { Meta as ComponentMeta, StoryObj } from "@storybook/react";
 
 /**
  * Story type helper
@@ -15,6 +15,7 @@ export type Meta<T> = ComponentMeta<T>;
 
 /**
  * Story arguments interface
+ *
  * @example Example usage
  */
 export interface StoryArgs {
@@ -23,6 +24,7 @@ export interface StoryArgs {
 
 /**
  * Story context interface
+ *
  * @example Example usage
  */
 export interface StoryContext<T = Record<string, unknown>> {
@@ -30,5 +32,5 @@ export interface StoryContext<T = Record<string, unknown>> {
   argTypes: Record<string, unknown>;
   parameters: Record<string, unknown>;
   globals: Record<string, unknown>;
-  viewMode: 'story' | 'docs';
-} 
+  viewMode: "story" | "docs";
+}

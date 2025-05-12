@@ -1,32 +1,36 @@
-import { useState, useEffect, useCallback } from 'react';
-import { DEFAULT_VALIDATION_DEBOUNCE } from '../constants/validation';
+import { useState, useEffect, useCallback } from "react";
+import { DEFAULT_VALIDATION_DEBOUNCE } from "../constants/validation";
 import {
   FormValidationOptions,
   FormValidationState,
-} from '../types/form-validation';
+} from "../types/form-validation";
 import {
   getFieldClass as getFieldClassName,
   getFieldError,
   hasFormCriticalErrors,
-} from '../utils/form-helpers';
-import type { ValidationError, ValidationResult } from '../types/validation';
+} from "../utils/form-helpers";
+import type { ValidationError, ValidationResult } from "../types/validation";
 import {
   validateFormData,
-  createDebouncedValidator as _createDebouncedValidator
-} from '../utils/validation-helpers';
+  createDebouncedValidator as _createDebouncedValidator,
+} from "../utils/validation-helpers";
 
 /**
  * Hook for handling form validation with debounce
  *
  * @param formData - The form data to validate
+ *
  * @param validationFn - Optional custom validation function
+ *
  * @param options - Validation options
+ *
  * @returns Object containing validation: state, result and helper functions
+ *
  */
 export function useFormValidation<T>(
   formData: T,
   validationFn?: (data: T) => Promise<ValidationResult>,
-  options?: FormValidationOptions
+  options?: FormValidationOptions,
 ): FormValidationState<T> {
   const debounceMs = options?.debounceMs ?? DEFAULT_VALIDATION_DEBOUNCE;
   const validateOnChange = options?.validateOnChange ?? true;
@@ -45,14 +49,14 @@ export function useFormValidation<T>(
         formData,
         validationFn,
         setValidating,
-        setValidationResult
+        setValidationResult,
       );
     }
   }, [formData, validationFn]);
 
   // Validate on mount if enabled
   useEffect(() => {
-    if(options?.validateOnMount && validationFn) {
+    if (options?.validateOnMount && validationFn) {
       validate();
     }
   }, [options?.validateOnMount, validationFn, formData, validate]);
@@ -97,4 +101,4 @@ export function useFormValidation<T>(
     setValidating,
     setValidationResult,
   };
-} 
+}

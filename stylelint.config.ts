@@ -1,5 +1,6 @@
 /**
  * Stylelint configuration
+ *
  * @type {import('stylelint').Config}
  */
 import type { Config } from 'stylelint';

@@ -1,20 +1,23 @@
 /**
  * Test-related type definitions and interfaces
+ *
  * @module
  * @version 1.0.0
  * @description This module contains types used only for testing purposes
  */
 
-export type * from './pixi';
-export type * from './gsap';
-export type * from './vitest';
+export type * from "./pixi";
+export type * from "./gsap";
+export type * from "./vitest";
 
 /**
  * Common test utility types
+ *
  * @description */
 
 /**
  * Mock event interface
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -35,6 +38,7 @@ export interface MockEvent {
 
 /**
  * Mock touch event interface
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -61,6 +65,7 @@ export interface MockTouchEvent extends MockEvent {
 
 /**
  * Mock mouse event interface
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -83,6 +88,7 @@ export interface MockMouseEvent extends MockEvent {
 
 /**
  * Mock intersection observer entry
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -109,6 +115,7 @@ export interface MockIntersectionObserverEntry {
 
 /**
  * Mock resize observer entry
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -131,14 +138,16 @@ export interface MockResizeObserverEntry {
 
 /**
  * Test result type
+ *
  * @description */
 export type MockResult<T> = {
-  type: 'return' | 'throw';
+  type: "return" | "throw";
   value: T;
 };
 
 /**
  * Test configuration interface
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -152,11 +161,12 @@ export type MockResult<T> = {
 export interface TestConfig {
   timeout?: number;
   retries?: number;
-  mockBehavior?: 'strict' | 'loose';
+  mockBehavior?: "strict" | "loose";
 }
 
 /**
  * Test event configuration interface
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -177,5 +187,6 @@ export interface TestEventConfig {
 
 /**
  * Mock function type
+ *
  * @description */
-export type Mock = jest.Mock; 
+export type Mock = jest.Mock;

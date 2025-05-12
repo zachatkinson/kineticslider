@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FocusManager } from './FocusManager';
+import React, { useState } from "react";
+import { FocusManager } from "./FocusManager";
 
 /**
  * Example component that demonstrates the usage of FocusManager for focus trapping and restoration.
@@ -34,6 +34,7 @@ import { FocusManager } from './FocusManager';
  *
  * @see {@link: FocusManager} For the underlying focus management component
  * @returns React component for focus management example
+ *
  */
 export const FocusRestoreExample: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,20 +57,20 @@ export const FocusRestoreExample: React.FC = () => {
   return (
     <div className="focus-example">
       <h2>Focus Management Example</h2>
-      
+
       <p>
-        This example demonstrates focus trapping within a modal dialog and
-        focus restoration when the dialog is closed.
+        This example demonstrates focus trapping within a modal dialog and focus
+        restoration when the dialog is closed.
       </p>
-      
-      <button 
-        id="open-modal-button" 
+
+      <button
+        id="open-modal-button"
         onClick={openModal}
         className="primary-button"
       >
         Open Modal
       </button>
-      
+
       {isModalOpen && (
         <div className="modal-overlay">
           <FocusManager
@@ -79,27 +80,28 @@ export const FocusRestoreExample: React.FC = () => {
             returnFocusTo="#open-modal-button"
             onEscape={handleEscape}
             trapOptions={{
-              fallbackFocus: "#first-button"
+              fallbackFocus: "#first-button",
             }}
           >
-            <div className="modal-content" role="dialog" aria-labelledby="modal-title">
+            <div
+              className="modal-content"
+              role="dialog"
+              aria-labelledby="modal-title"
+            >
               <h3 id="modal-title">Focus Trapped Modal</h3>
-              
+
               <p>
-                Focus is trapped inside this modal. Try tabbing through the elements.
-                Focus will cycle within the modal. Press ESC to close.
+                Focus is trapped inside this modal. Try tabbing through the
+                elements. Focus will cycle within the modal. Press ESC to close.
               </p>
-              
+
               <div className="button-group">
                 <button id="first-button">First Button</button>
                 <button>Second Button</button>
                 <button>Third Button</button>
               </div>
-              
-              <button 
-                onClick={closeModal} 
-                className="close-button"
-              >
+
+              <button onClick={closeModal} className="close-button">
                 Close Modal
               </button>
             </div>

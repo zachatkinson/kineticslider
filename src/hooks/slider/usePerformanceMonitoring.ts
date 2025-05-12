@@ -1,39 +1,41 @@
-import { useEffect, useRef } from 'react';
-import { useSlider } from '../../context/SliderContext';
-import { createPerformanceMonitor } from '../../utils/performance';
-import type { PerformanceMetrics } from '../../types/performance';
-import type { FPS, Milliseconds, ByteSize } from '../../types/branded';
-import type { SliderContextValue } from '../../types/slider';
+import { useEffect, useRef } from "react";
+import { useSlider } from "../../context/SliderContext";
+import { createPerformanceMonitor } from "../../utils/performance";
+import type { PerformanceMetrics } from "../../types/performance";
+import type { FPS, Milliseconds, ByteSize } from "../../types/branded";
+import type { SliderContextValue } from "../../types/slider";
 
 /**
  * Custom hook for monitoring performance metrics in a slider component.
- * 
+ *
  * This hook automatically tracks key performance metrics during slider interactions:
  * - FPS (frames per second) monitoring
  * - Transition duration measurement
  * - Gesture latency calculation
  * - Memory usage tracking
- * 
+ *
  * It integrates with the slider context to accurately measure timings for
  * animations and user interactions.
- * 
+ *
  * @returns An object containing the getMetrics function that returns current performance metrics.
- * 
+ *
  * @example Example usage
  * ```tsx
  * function _SliderComponent() {
  *   const { getMetrics } = usePerformanceMonitoring();
- *   
+ *
  *   // Log metrics when needed
  *   const _logPerformance = () => {
  *     console.log('Performance metrics:', getMetrics());
  *   };
- *   
+ *
  *   return <div>Slider content</div>;
  * }
  * ```
  */
-export function usePerformanceMonitoring(): { getMetrics: () => PerformanceMetrics } {
+export function usePerformanceMonitoring(): {
+  getMetrics: () => PerformanceMetrics;
+} {
   const { state } = useSlider() as SliderContextValue;
   const metricsRef = useRef<PerformanceMetrics>({
     fps: 0 as FPS,
@@ -52,7 +54,7 @@ export function usePerformanceMonitoring(): { getMetrics: () => PerformanceMetri
         };
       },
       trackMemory: true,
-      updateInterval: 1000
+      updateInterval: 1000,
     });
 
     return () => {
@@ -62,22 +64,24 @@ export function usePerformanceMonitoring(): { getMetrics: () => PerformanceMetri
 
   // Track transition duration
   useEffect(() => {
-    if(state.isAnimating) {
+    if (state.isAnimating) {
       const startTime = performance.now();
 
       return () => {
-        metricsRef.current.transitionDuration = (performance.now() - startTime) as Milliseconds;
+        metricsRef.current.transitionDuration = (performance.now() -
+          startTime) as Milliseconds;
       };
     }
   }, [state.isAnimating]);
 
   // Track gesture latency
   useEffect(() => {
-    if(state.isDragging) {
+    if (state.isDragging) {
       const startTime = performance.now();
 
       return () => {
-        metricsRef.current.gestureLatency = (performance.now() - startTime) as Milliseconds;
+        metricsRef.current.gestureLatency = (performance.now() -
+          startTime) as Milliseconds;
       };
     }
   }, [state.isDragging]);
@@ -85,4 +89,4 @@ export function usePerformanceMonitoring(): { getMetrics: () => PerformanceMetri
   return {
     getMetrics: () => ({ ...metricsRef.current }),
   };
-} 
+}

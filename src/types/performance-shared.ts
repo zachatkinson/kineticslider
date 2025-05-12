@@ -1,5 +1,6 @@
 /**
  * Shared performance type definitions used across monitoring and testing
+ *
  * @module
  * @version 1.0.0
  */
@@ -7,7 +8,7 @@
 /**
  * Basic metric summary statistics
  * Contains statistical values calculated from a series of metric measurements
- * 
+ *
  * @interface
  * @example Example usage
  * ```typescript
@@ -25,36 +26,36 @@
  * ```
  */
 export interface MetricSummary {
-  /** 
+  /**
    * Average (mean) value of the metric
    */
   avg: number;
-  
+
   /**
    * Median value of the metric (middle value in the sorted data)
    */
   median?: number;
-  
+
   /**
    * Standard deviation of the metric (measure of dispersion)
    */
   stdDev?: number;
-  
+
   /**
    * 95th percentile value (value below which 95% of observations fall)
    */
   p95: number;
-  
+
   /**
    * Minimum recorded value
    */
   min: number;
-  
+
   /**
    * Maximum recorded value
    */
   max: number;
-  
+
   /**
    * Number of measurements included in these statistics
    */
@@ -64,7 +65,7 @@ export interface MetricSummary {
 /**
  * Base performance metric structure
  * Core structure for all performance measurements
- * 
+ *
  * @interface
  * @example Example usage
  * ```typescript
@@ -82,29 +83,29 @@ export interface BasePerformanceMetric {
    * Identifier for the metric
    */
   name: string;
-  
+
   /**
    * Numerical value of the measurement
    */
   value: number;
-  
+
   /**
    * When the measurement was taken
    */
   timestamp: number | Date;
-  
+
   /**
    * Unit of measurement
    */
-  unit?: 'ms' | 'fps' | 'bytes' | 'score';
+  unit?: "ms" | "fps" | "bytes" | "score";
 }
 
 /**
  * Common metric names shared across performance monitoring components
- * 
+ *
  * Defines standard metric names that are recognized by the performance
  * monitoring system for consistent identification and reporting.
- * 
+ *
  * @example Example usage
  * ```ts
  * function logMetric(name: CommonMetricName, value: number): void {
@@ -116,22 +117,22 @@ export interface BasePerformanceMetric {
  * }
  * ```
  */
-export type CommonMetricName = 
+export type CommonMetricName =
   /** First Contentful Paint (ms) */
-  | 'FCP'
+  | "FCP"
   /** Largest Contentful Paint (ms) */
-  | 'LCP'
+  | "LCP"
   /** First Input Delay (ms) */
-  | 'FID'
+  | "FID"
   /** Cumulative Layout Shift (unitless) */
-  | 'CLS'
+  | "CLS"
   /** Time to Interactive (ms) */
-  | 'TTI'
+  | "TTI"
   /** Total Blocking Time (ms) */
-  | 'TBT'
+  | "TBT"
   /** Frames Per Second */
-  | 'fps'
+  | "fps"
   /** Memory Usage (bytes or %) */
-  | 'memoryUsage'
+  | "memoryUsage"
   /** CPU Utilization (%) */
-  | 'cpuUsage'; 
+  | "cpuUsage";

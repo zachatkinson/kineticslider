@@ -26,6 +26,7 @@ export interface KeyboardOptions {
 
 /**
  * Options for focus trap behavior
+ *
  * @example Example usage
  */
 export interface FocusTrapOptions {
@@ -49,6 +50,7 @@ export interface FocusTrapOptions {
 
 /**
  * Keyboard navigation configuration
+ *
  * @example Example usage
  */
 export interface KeyboardConfig {
@@ -70,7 +72,9 @@ export interface KeyboardConfig {
 /**
  * Type for keyboard event handler functions
  */
-export type KeyboardEventHandler = (() => void) | ((event: KeyboardEvent) => void);
+export type KeyboardEventHandler =
+  | (() => void)
+  | ((event: KeyboardEvent) => void);
 
 /**
  * Type for keyboard event handlers map
@@ -79,11 +83,15 @@ export type KeyboardHandlers = Record<string, KeyboardEventHandler | undefined>;
 
 /**
  * Return type for useKeyboard hook
+ *
  * @example Example usage
  */
 export interface UseKeyboardReturn {
   /** Trap focus within a container */
-  trapFocus: (container: HTMLElement | null, options?: FocusTrapOptions) => void;
+  trapFocus: (
+    container: HTMLElement | null,
+    options?: FocusTrapOptions,
+  ) => void;
   /** Release focus trap */
   releaseFocus: () => void;
   /** Whether focus is currently trapped */

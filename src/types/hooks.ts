@@ -1,17 +1,29 @@
 /**
  * Internal types used by hooks but needed for component parameters
  */
-import type { AnimationConfig, AnimationOptions, AnimationMetrics } from './animation';
-import type { GestureConfig, GestureDirection, GestureHandlers } from './gesture';
-import type { PerformanceMetrics as _PerformanceMetrics } from './performance';
-import type { ErrorTypes as _ErrorTypes, Slide, SliderMetrics as _SliderMetrics } from './slider';
-import type { FocusTrapOptions as _FocusTrapOptions } from './keyboard';
-import type { gsap as _gsap } from 'gsap';
-import type { UseSliderAccessibilityProps } from './accessibility';
-import type { ValidationResult } from './validation';
-import type { AnimationEvents } from './animation';
-import type { GestureEvent, GestureDelta } from './gesture';
-import type { SlideIndex } from './branded';
+import type {
+  AnimationConfig,
+  AnimationOptions,
+  AnimationMetrics,
+} from "./animation";
+import type {
+  GestureConfig,
+  GestureDirection,
+  GestureHandlers,
+} from "./gesture";
+import type { PerformanceMetrics as _PerformanceMetrics } from "./performance";
+import type {
+  ErrorTypes as _ErrorTypes,
+  Slide,
+  SliderMetrics as _SliderMetrics,
+} from "./slider";
+import type { FocusTrapOptions as _FocusTrapOptions } from "./keyboard";
+import type { gsap as _gsap } from "gsap";
+import type { UseSliderAccessibilityProps } from "./accessibility";
+import type { ValidationResult } from "./validation";
+import type { AnimationEvents } from "./animation";
+import type { GestureEvent, GestureDelta } from "./gesture";
+import type { SlideIndex } from "./branded";
 
 // Re-export types needed by components
 export type {
@@ -29,6 +41,7 @@ export type {
 
 /**
  * Return type for the useAnimation hook
+ *
  * @example Example usage
  */
 export interface UseAnimationReturn {
@@ -61,6 +74,7 @@ export interface UseAnimationReturn {
 
 /**
  * Return type for the basic animation hook
+ *
  * @example Example usage
  */
 export interface BasicAnimationReturn {
@@ -72,6 +86,7 @@ export interface BasicAnimationReturn {
 
 /**
  * Return type for the enhanced animation hook with GSAP integration
+ *
  * @example Example usage
  */
 export interface UseAnimationResult extends UseAnimationReturn {
@@ -80,6 +95,7 @@ export interface UseAnimationResult extends UseAnimationReturn {
 
 /**
  * Return type for the useKeyboard hook
+ *
  * @example Example usage
  */
 export interface UseKeyboardReturn {
@@ -91,6 +107,7 @@ export interface UseKeyboardReturn {
 
 /**
  * Return type for the usePerformance hook
+ *
  * @example Example usage
  */
 export interface UsePerformanceReturn {
@@ -109,6 +126,7 @@ export interface UsePerformanceReturn {
 
 /**
  * Return type for the useKineticSlider hook
+ *
  * @example Example usage
  */
 export interface UseKineticSliderReturn {
@@ -126,6 +144,7 @@ export interface UseKineticSliderReturn {
 
 /**
  * Return type for the useErrorTracking hook
+ *
  * @example Example usage
  */
 export interface UseErrorTrackingReturn {
@@ -139,6 +158,7 @@ export interface UseErrorTrackingReturn {
 
 /**
  * Options for the usePerformance hook
+ *
  * @example Example usage
  */
 export interface UsePerformanceOptions {
@@ -149,6 +169,7 @@ export interface UsePerformanceOptions {
 
 /**
  * Options for the useAnimation hook
+ *
  * @example Example usage
  */
 export interface UseAnimationConfig {
@@ -161,6 +182,7 @@ export interface UseAnimationConfig {
 
 /**
  * Props for the useKineticSlider hook
+ *
  * @example Example usage
  */
 export interface UseKineticSliderProps {
@@ -175,6 +197,7 @@ export interface UseKineticSliderProps {
 
 /**
  * Extended GestureEvent for slider interactions
+ *
  * @example Example usage
  */
 export interface SliderGestureEvent extends GestureEvent {
@@ -184,6 +207,7 @@ export interface SliderGestureEvent extends GestureEvent {
 
 /**
  * Options for form validation hook
+ *
  * @example Example usage
  */
 export interface FormValidationOptions {

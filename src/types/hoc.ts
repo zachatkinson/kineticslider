@@ -1,18 +1,19 @@
 /**
  * Higher-order component type definitions
+ *
  * @module
  * @version 1.0.0
  */
 
-import type { ComponentType, FC } from 'react';
-import type { ErrorBoundaryProps } from './components';
+import type { ComponentType, FC } from "react";
+import type { ErrorBoundaryProps } from "./components";
 
 /**
  * Type for a component wrapped with an error boundary
  */
 export type WithErrorBoundary = <P extends object>(
   Component: ComponentType<P>,
-  errorBoundaryProps: Omit<ErrorBoundaryProps, 'children'>
+  errorBoundaryProps: Omit<ErrorBoundaryProps, "children">,
 ) => FC<P>;
 
 /**
@@ -24,5 +25,5 @@ export type WithPerformanceMonitoring = <P extends object>(
     measureRender?: boolean;
     measureEffects?: boolean;
     measureUpdates?: boolean;
-  }
-) => FC<P>; 
+  },
+) => FC<P>;

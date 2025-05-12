@@ -1,5 +1,5 @@
-import { SliderState } from './slider';
-import { GestureDirection } from './gesture';
+import { SliderState } from "./slider";
+import { GestureDirection } from "./gesture";
 
 export interface SlideStyleOptions {
   index: number;
@@ -16,4 +16,4 @@ export interface SlideStyleOptions {
 export interface SlideStyle {
   transform: string;
   transition: string;
-} 
+}

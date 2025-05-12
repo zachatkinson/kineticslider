@@ -101,8 +101,11 @@ export const measureAnimationSmoothness = async (startAnimationFn: () => void, d
 
 /**
  * Runs a benchmark with specified configuration
+ *
  * @param config - Test configuration
+ *
  * @returns Performance result data with timing information
+ *
  */
 export async function runBenchmark(config: TestConfig): Promise<PerformanceResult> {
     const results: number[] = [];
@@ -145,8 +148,11 @@ export async function runBenchmark(config: TestConfig): Promise<PerformanceResul
 
 /**
  * Runs a single test iteration
+ *
  * @param _config - Test configuration
+ *
  * @returns Duration of the test in milliseconds
+ *
  */
 async function runTest(_config: TestConfig): Promise<number> {
     const start = performance.now();
@@ -163,8 +169,11 @@ async function runTest(_config: TestConfig): Promise<number> {
 
 /**
  * Calculates the average of an array of numbers
+ *
  * @param numbers - Array of numbers to average
+ *
  * @returns The calculated average value
+ *
  */
 function calculateAverage(numbers: number[]): number {
     return numbers.reduce((sum, num) => sum + num, 0) / numbers.length;

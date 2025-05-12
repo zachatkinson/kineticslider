@@ -6,10 +6,10 @@ import {
   FrameRequestCallback,
   NormalizedPointerEvent,
   ResizeObserverCallback,
-} from '../types/browser';
+} from "../types/browser";
 
 // Check for ResizeObserver support
-export const hasResizeObserver = typeof ResizeObserver !== 'undefined';
+export const hasResizeObserver = typeof ResizeObserver !== "undefined";
 
 // Check for passive event listener support
 export const _supportsPassiveEvents = (() => {
@@ -25,8 +25,8 @@ export const _supportsPassiveEvents = (() => {
       },
     } as AddEventListenerOptions;
 
-    window.addEventListener('testPassive', noop, options);
-    window.removeEventListener('testPassive', noop, options);
+    window.addEventListener("testPassive", noop, options);
+    window.removeEventListener("testPassive", noop, options);
   } catch {
     passiveSupported = false;
   }
@@ -35,18 +35,18 @@ export const _supportsPassiveEvents = (() => {
 })();
 
 // Check for touch events support
-export const _hasTouchEvents = 
-  'ontouchstart' in window || navigator.maxTouchPoints > 0;
+export const _hasTouchEvents =
+  "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
 // Check for pointer events support
 export const _hasPointerEvents = window.PointerEvent !== undefined;
 
 // Check for requestAnimationFrame support
-export const hasRAF = typeof requestAnimationFrame === 'function';
+export const hasRAF = typeof requestAnimationFrame === "function";
 
 // Fallback for requestAnimationFrame
 export const requestFrame = (callback: FrameRequestCallback): number => {
-  if(hasRAF) {
+  if (hasRAF) {
     return requestAnimationFrame(callback);
   }
   return setTimeout(callback, 1000 / 60) as unknown as number;
@@ -54,7 +54,7 @@ export const requestFrame = (callback: FrameRequestCallback): number => {
 
 // Fallback for cancelAnimationFrame
 export const cancelFrame = (handle: number): void => {
-  if(hasRAF) {
+  if (hasRAF) {
     cancelAnimationFrame(handle);
   } else {
     clearTimeout(handle);
@@ -65,6 +65,7 @@ export const cancelFrame = (handle: number): void => {
 /**
  * Fallback implementation of ResizeObserver for browsers that don't support it natively.
  * Provides similar API to the native ResizeObserver with observe, unobserve, and disconnect methods.
+ *
  * @example Example usage
  */
 export class ResizeObserverFallback {
@@ -87,6 +88,7 @@ export class ResizeObserverFallback {
   /**
    *
    * @param element
+   *
    */
   observe(element: Element): void {
     if (this.elements.has(element)) return;
@@ -97,7 +99,7 @@ export class ResizeObserverFallback {
       height: element.clientHeight,
     });
 
-    if(this.elements.size === 1) {
+    if (this.elements.size === 1) {
       this.startObserving();
     }
   }
@@ -105,12 +107,13 @@ export class ResizeObserverFallback {
   /**
    *
    * @param element
+   *
    */
   unobserve(element: Element): void {
     this.elements.delete(element);
     this.sizes.delete(element);
 
-    if(this.elements.size === 0) {
+    if (this.elements.size === 0) {
       this.stopObserving();
     }
   }
@@ -126,19 +129,19 @@ export class ResizeObserverFallback {
 
   private startObserving(): void {
     this.checkSizes();
-    window.addEventListener('resize', this.checkSizes);
+    window.addEventListener("resize", this.checkSizes);
   }
 
   private stopObserving(): void {
-    if(this.rafId !== null) {
+    if (this.rafId !== null) {
       cancelFrame(this.rafId);
       this.rafId = null;
     }
-    window.removeEventListener('resize', this.checkSizes);
+    window.removeEventListener("resize", this.checkSizes);
   }
 
   private checkSizes(): void {
-    if(this.rafId !== null) {
+    if (this.rafId !== null) {
       cancelFrame(this.rafId);
     }
 
@@ -154,8 +157,9 @@ export class ResizeObserverFallback {
           height: element.clientHeight,
         };
 
-        if(oldSize.width !== newSize.width ||
-           oldSize.height !== newSize.height
+        if (
+          oldSize.width !== newSize.width ||
+          oldSize.height !== newSize.height
         ) {
           this.sizes.set(element, newSize);
           entries.push({
@@ -183,7 +187,7 @@ export class ResizeObserverFallback {
         }
       });
 
-      if(entries.length > 0) {
+      if (entries.length > 0) {
         this.callback(entries, this as unknown as ResizeObserver);
       }
 
@@ -194,7 +198,7 @@ export class ResizeObserverFallback {
 
 // Get the appropriate ResizeObserver implementation
 export const _getResizeObserver = (
-  callback: ResizeObserverCallback
+  callback: ResizeObserverCallback,
 ): ResizeObserver => {
   return hasResizeObserver
     ? new ResizeObserver(callback)
@@ -203,11 +207,11 @@ export const _getResizeObserver = (
 
 // Touch event normalization
 export const _normalizePointerEvent = (
-  event: TouchEvent | MouseEvent | PointerEvent
+  event: TouchEvent | MouseEvent | PointerEvent,
 ): NormalizedPointerEvent => {
-  if('touches' in event) {
+  if ("touches" in event) {
     const touch = event.touches[0] || event.changedTouches[0];
-    if(!touch) {
+    if (!touch) {
       return {
         clientX: 0,
         clientY: 0,

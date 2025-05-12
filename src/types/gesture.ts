@@ -1,7 +1,11 @@
 /**
  * Gesture-related type definitions and interfaces
  */
-import type { GestureDistance, GestureVelocity, GestureThreshold } from './branded';
+import type {
+  GestureDistance,
+  GestureVelocity,
+  GestureThreshold,
+} from "./branded";
 
 // Re-export for backward compatibility
 export type { GestureDistance, GestureVelocity, GestureThreshold };
@@ -9,21 +13,28 @@ export type { GestureDistance, GestureVelocity, GestureThreshold };
 /**
  * Gesture direction type
  */
-export type GestureDirection = 'horizontal' | 'vertical' | 'both';
+export type GestureDirection = "horizontal" | "vertical" | "both";
 
 /**
  * Gesture state type
  */
-export type GestureState = 'idle' | 'start' | 'move' | 'end';
+export type GestureState = "idle" | "start" | "move" | "end";
 
 /**
  * Gesture _event data
+ *
  * @example Example usage
  */
 export interface GestureEvent {
   clientX: number;
   clientY: number;
-  type: 'touchstart' | 'touchmove' | 'touchend' | 'mousedown' | 'mousemove' | 'mouseup';
+  type:
+    | "touchstart"
+    | "touchmove"
+    | "touchend"
+    | "mousedown"
+    | "mousemove"
+    | "mouseup";
   startX?: number;
   startY?: number;
   preventDefault?: () => void;
@@ -31,6 +42,7 @@ export interface GestureEvent {
 
 /**
  * Gesture configuration
+ *
  * @example Example usage
  */
 export interface GestureConfig {
@@ -52,6 +64,7 @@ export interface GestureConfig {
 
 /**
  * Gesture handler return type
+ *
  * @example Example usage
  */
 export interface UseGestureReturn {
@@ -73,4 +86,4 @@ export interface GestureHandlers {
   onGestureStart?: (_event: GestureEvent) => void;
   onGestureMove?: (_event: GestureEvent) => void;
   onGestureEnd?: (_event: GestureEvent) => void;
-} 
+}

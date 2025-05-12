@@ -30,7 +30,7 @@
     "lint:fix": "eslint --config eslint.config.ts --fix .",
     "style": "stylelint --config stylelint.config.ts \"**/*.{css,scss}\"",
     "style:fix": "stylelint --config stylelint.config.ts --fix \"**/*.{css,scss}\"",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format": "tsx src/scripts/format.ts",
     "validate": "pnpm run lint && pnpm run style && pnpm run test",
     "commit": "cz",
     "types:check": "tsc --noEmit",
@@ -56,7 +56,8 @@
     "build:worker": "vite build --config vite.worker.config.ts",
     "pretest": "pnpm build:worker",
     "preview": "vite preview",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test:browser": "vitest run --config vitest.browser.config.ts"
   },
   "keywords": [
     "react",
@@ -144,6 +145,7 @@
     "eslint-plugin-vitest": "^0.5.4",
     "glob": "11.0.1",
     "globals": "^16.0.0",
+    "globby": "14.1.0",
     "gsap": "^3.12.7",
     "husky": "^9.1.7",
     "jest-axe": "^10.0.0",

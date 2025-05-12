@@ -1,11 +1,14 @@
-import { ErrorSeverity, ErrorType } from './error';
+import { ErrorSeverity, ErrorType } from "./error";
 
 export interface WorkerPoolOptions {
   maxWorkers?: number;
   workerScript?: string;
   initialWorkers?: number;
   timeout?: number;
-  errorHandler?: (error: Error, context: { taskId?: string; operation?: string }) => void;
+  errorHandler?: (
+    error: Error,
+    context: { taskId?: string; operation?: string },
+  ) => void;
 }
 
 export interface WorkerTask<TData = unknown, TResult = unknown> {
@@ -47,7 +50,7 @@ export interface WorkerPoolStats {
 
 export interface WorkerStats {
   id: string;
-  status: 'idle' | 'busy';
+  status: "idle" | "busy";
   taskCount: number;
   errorCount: number;
   avgProcessingTime: number;
@@ -82,4 +85,4 @@ export interface WorkerPool {
   terminate(): void;
   execute<T = unknown, R = unknown>(data: T): Promise<R>;
   getStatistics(): WorkerPoolStats;
-} 
+}

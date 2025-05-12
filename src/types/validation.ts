@@ -1,57 +1,58 @@
 /**
  * Validation type definitions and interfaces
+ *
  * @module
  * @version 1.0.0
  */
 
-import { ValidationErrorSeverity } from './error';
+import { ValidationErrorSeverity } from "./error";
 
 /**
  * Validation error types
  */
 export enum ValidationErrorType {
-  REQUIRED = 'required',
-  REQUIRED_PROP = 'required_prop',
-  TYPE = 'type',
-  INVALID_TYPE = 'invalid_type',
-  FORMAT = 'format',
-  INVALID_FORMAT = 'invalid_format',
-  PATTERN = 'pattern',
-  RANGE = 'range',
-  INVALID_RANGE = 'invalid_range',
-  CUSTOM = 'custom',
-  CUSTOM_VALIDATION_FAILED = 'custom_validation_failed',
-  ASYNC_VALIDATION_FAILED = 'async_validation_failed',
-  NETWORK_ERROR = 'network_error'
+  REQUIRED = "required",
+  REQUIRED_PROP = "required_prop",
+  TYPE = "type",
+  INVALID_TYPE = "invalid_type",
+  FORMAT = "format",
+  INVALID_FORMAT = "invalid_format",
+  PATTERN = "pattern",
+  RANGE = "range",
+  INVALID_RANGE = "invalid_range",
+  CUSTOM = "custom",
+  CUSTOM_VALIDATION_FAILED = "custom_validation_failed",
+  ASYNC_VALIDATION_FAILED = "async_validation_failed",
+  NETWORK_ERROR = "network_error",
 }
 
 /**
  * Validation error codes
  */
 export enum ValidationErrorCode {
-  REQUIRED_FIELD = 'REQUIRED_FIELD',
-  REQUIRED_PROP = 'REQUIRED_PROP',
-  INVALID_TYPE = 'INVALID_TYPE',
-  INVALID_FORMAT = 'INVALID_FORMAT',
-  PATTERN_MISMATCH = 'PATTERN_MISMATCH',
-  OUT_OF_RANGE = 'OUT_OF_RANGE',
-  INVALID_RANGE = 'INVALID_RANGE',
-  CUSTOM_ERROR = 'CUSTOM_ERROR',
-  CUSTOM_VALIDATION_FAILED = 'CUSTOM_VALIDATION_FAILED',
-  ASYNC_VALIDATION_FAILED = 'ASYNC_VALIDATION_FAILED',
-  NETWORK_ERROR = 'NETWORK_ERROR'
+  REQUIRED_FIELD = "REQUIRED_FIELD",
+  REQUIRED_PROP = "REQUIRED_PROP",
+  INVALID_TYPE = "INVALID_TYPE",
+  INVALID_FORMAT = "INVALID_FORMAT",
+  PATTERN_MISMATCH = "PATTERN_MISMATCH",
+  OUT_OF_RANGE = "OUT_OF_RANGE",
+  INVALID_RANGE = "INVALID_RANGE",
+  CUSTOM_ERROR = "CUSTOM_ERROR",
+  CUSTOM_VALIDATION_FAILED = "CUSTOM_VALIDATION_FAILED",
+  ASYNC_VALIDATION_FAILED = "ASYNC_VALIDATION_FAILED",
+  NETWORK_ERROR = "NETWORK_ERROR",
 }
 
 /**
  * Schema field types
  */
 export enum SchemaType {
-  STRING = 'string',
-  NUMBER = 'number',
-  BOOLEAN = 'boolean',
-  OBJECT = 'object',
-  ARRAY = 'array',
-  ANY = 'any'
+  STRING = "string",
+  NUMBER = "number",
+  BOOLEAN = "boolean",
+  OBJECT = "object",
+  ARRAY = "array",
+  ANY = "any",
 }
 
 /**
@@ -61,6 +62,7 @@ export type ComponentId = string & { readonly __brand: symbol };
 
 /**
  * Schema validation options
+ *
  * @example Example usage
  */
 export interface SchemaValidationOptions {
@@ -82,6 +84,7 @@ export interface SchemaValidationOptions {
 
 /**
  * Schema field definition
+ *
  * @example Example usage
  */
 export interface SchemaField {
@@ -93,6 +96,7 @@ export interface SchemaField {
 
 /**
  * Schema definition
+ *
  * @example Example usage
  */
 export interface Schema {
@@ -101,6 +105,7 @@ export interface Schema {
 
 /**
  * Validation error interface
+ *
  * @example Example usage
  */
 export interface ValidationError {
@@ -122,6 +127,7 @@ export interface ValidationError {
 
 /**
  * Validation context
+ *
  * @example Example usage
  */
 export interface ValidationContext {
@@ -133,6 +139,7 @@ export interface ValidationContext {
 
 /**
  * Validation result interface
+ *
  * @example Example usage
  */
 export interface ValidationResult {
@@ -145,12 +152,18 @@ export interface ValidationResult {
 /**
  * Synchronous validator function type
  */
-export type Validator<T = unknown> = (_value: T, context?: ValidationContext) => ValidationResult;
+export type Validator<T = unknown> = (
+  _value: T,
+  context?: ValidationContext,
+) => ValidationResult;
 
 /**
  * Asynchronous validator function type
  */
-export type AsyncValidator<T = unknown> = (_value: T, context?: ValidationContext) => Promise<ValidationResult>;
+export type AsyncValidator<T = unknown> = (
+  _value: T,
+  context?: ValidationContext,
+) => Promise<ValidationResult>;
 
 /**
  * Generic validation function type(sync or async)
@@ -176,16 +189,17 @@ export type KeyGenerator<T> = (_value: T) => string;
  * Types of validation that can be performed
  */
 export enum ValidationType {
-  STRING = 'string',
-  NUMBER = 'number',
-  BOOLEAN = 'boolean',
-  OBJECT = 'object',
-  ARRAY = 'array',
+  STRING = "string",
+  NUMBER = "number",
+  BOOLEAN = "boolean",
+  OBJECT = "object",
+  ARRAY = "array",
 }
 
 /**
  * Base validation options interface
  * Common validation options reused across validators
+ *
  * @example
  * ```typescript
  * const options: ValidationOptions = {
@@ -211,22 +225,22 @@ export interface ValidationOptions {
    * Whether to fail on first error
    */
   failFast?: boolean;
-  
+
   /**
    * Custom validation function
    */
   custom?: (value: unknown) => ValidationError | null;
-  
+
   /**
    * Whether to enforce strict validation rules
    */
   strict?: boolean;
-  
+
   /**
    * Whether to allow unknown fields in objects
    */
   allowUnknownFields?: boolean;
-  
+
   /**
    * Context information for the validation
    */
@@ -236,6 +250,7 @@ export interface ValidationOptions {
 /**
  * Validator cache options
  * Controls the caching behavior for validation results
+ *
  * @example
  * ```typescript
  * const cacheOptions: ValidatorCacheOptions = {
@@ -243,7 +258,7 @@ export interface ValidationOptions {
  *   maxSize: 1000,
  *   ttl: 60000 // 1 minute cache time
  * };
- * 
+ *
  * const validatorWithCache = createCachedValidator(validator, cacheOptions);
  * ```
  */
@@ -252,12 +267,12 @@ export interface ValidatorCacheOptions {
    * Whether to enable caching
    */
   enabled?: boolean;
-  
+
   /**
    * Maximum size of the cache
    */
   maxSize?: number;
-  
+
   /**
    * Time to live for cache entries in milliseconds
    */
@@ -267,6 +282,7 @@ export interface ValidatorCacheOptions {
 /**
  * String validation options
  * Options specific to string validation
+ *
  * @example
  * ```typescript
  * const stringOptions: StringValidationOptions = {
@@ -277,7 +293,7 @@ export interface ValidatorCacheOptions {
  *   message: 'Please enter a valid alphanumeric string between 5-100 characters',
  *   failFast: true
  * };
- * 
+ *
  * const result = validateString('Hello World', stringOptions);
  * ```
  */
@@ -286,22 +302,22 @@ export interface StringValidationOptions extends ValidationOptions {
    * Minimum string length
    */
   minLength?: number;
-  
+
   /**
    * Maximum string length
    */
   maxLength?: number;
-  
+
   /**
    * Regular expression pattern to match
    */
   pattern?: RegExp;
-  
+
   /**
    * Whether to trim the string before validation
    */
   trim?: boolean;
-  
+
   /**
    * Custom error message for the validation
    */
@@ -311,6 +327,7 @@ export interface StringValidationOptions extends ValidationOptions {
 /**
  * Number validation options
  * Options specific to number validation
+ *
  * @example
  * ```typescript
  * const numberOptions: NumberValidationOptions = {
@@ -321,7 +338,7 @@ export interface StringValidationOptions extends ValidationOptions {
  *   integer: true,
  *   failFast: true
  * };
- * 
+ *
  * const result = validateNumber(42, numberOptions);
  * ```
  */
@@ -330,22 +347,22 @@ export interface NumberValidationOptions extends ValidationOptions {
    * Minimum value
    */
   min?: number;
-  
+
   /**
    * Maximum value
    */
   max?: number;
-  
+
   /**
    * Whether to allow NaN values
    */
   allowNaN?: boolean;
-  
+
   /**
    * Whether to allow Infinity values
    */
   allowInfinity?: boolean;
-  
+
   /**
    * Whether to require integers only
    */
@@ -354,6 +371,7 @@ export interface NumberValidationOptions extends ValidationOptions {
 
 /**
  * Options for validating array items
+ *
  * @example
  * ```typescript
  * const arrayOptions: ArrayValidationOptions = {
@@ -362,7 +380,7 @@ export interface NumberValidationOptions extends ValidationOptions {
  *   itemValidator: (item) => validateString(item, { minLength: 2 }),
  *   failFast: false
  * };
- * 
+ *
  * const result = validateArray(['apple', 'banana', 'cherry'], arrayOptions);
  * ```
  */

@@ -1,31 +1,37 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createPerformanceMonitor,
   trackInteraction as performanceTrackInteraction,
   trackRenderTime,
-  _createPerformanceComponentId as createPerformanceComponentId
-} from '../utils/performance';
+  _createPerformanceComponentId as createPerformanceComponentId,
+} from "../utils/performance";
 import type {
   PerformanceMetrics,
   UsePerformanceOptions,
-  UsePerformanceReturn
-} from '../types/performance';
-import type { FPS, ByteSize, Milliseconds } from '../types/branded';
+  UsePerformanceReturn,
+} from "../types/performance";
+import type { FPS, ByteSize, Milliseconds } from "../types/branded";
 
 /**
  * Custom hook for measuring and reporting performance metrics.
- * 
+ *
  * @param options - Configuration options for performance monitoring
+ *
  * @param options.debug - Enable debug mode to log additional details
+ *
  * @param options.logToConsole - Output metrics to console when updated
+ *
  * @param options.trackMemory - Collect memory usage metrics if available
+ *
  * @param options.includeWebVitals - Include web vitals metrics when available
+ *
  * @param options.updateInterval - How often to update metrics (in milliseconds)
+ *
  * @param options.onMetricsUpdate - Optional callback when metrics are updated
- * 
+ *
  * @returns Object containing metrics (fps, memoryUsage, etc.), trackRender function
  * to measure render times, and trackInteraction function to wrap event handlers
- * 
+ *
  * @example Example usage
  * ```tsx
  * function _MyComponent(): unknown  {
@@ -35,12 +41,12 @@ import type { FPS, ByteSize, Milliseconds } from '../types/branded';
  *       analytics.track('performance', metrics);
  *     }
  *   });
- *   
+ *
  *   // Track render time automatically
  *   useEffect(() => {
  *     trackRender('initial');
  *   }, []);
- *   
+ *
  *   return (
  *     <div>
  *       <p>Current FPS: {metrics.fps.toFixed(1)}</p>
@@ -51,7 +57,7 @@ import type { FPS, ByteSize, Milliseconds } from '../types/branded';
  * ```
  */
 export const usePerformance = (
-  options: UsePerformanceOptions = {}
+  options: UsePerformanceOptions = {},
 ): UsePerformanceReturn => {
   const {
     debug = false,
@@ -84,7 +90,7 @@ export const usePerformance = (
         renderStartTime.current,
         componentId.current,
         label,
-        logToConsole
+        logToConsole,
       );
 
       setMetrics((prev) => ({
@@ -94,28 +100,33 @@ export const usePerformance = (
 
       renderStartTime.current = performance.now();
     },
-    [logToConsole]
+    [logToConsole],
   );
-  
+
   // Wrap trackInteraction to match the expected type
-  const wrappedTrackInteraction = useCallback(<T extends (...args: unknown[]) => void>(fn: T): T => {
-    return ((...args: unknown[]) => {
-      const startTime = performance.now();
-      const result = fn(...args);
-      const duration = performance.now() - startTime;
-      
-      performanceTrackInteraction('interaction', duration as Milliseconds, {
-        component: componentId.current
-      });
-      
-      setMetrics((prev) => ({
-        ...prev,
-        interactionTime: prev.interactionTime ? [...prev.interactionTime, duration as Milliseconds] : [duration as Milliseconds],
-      }));
-      
-      return result;
-    }) as T;
-  }, []);
+  const wrappedTrackInteraction = useCallback(
+    <T extends (...args: unknown[]) => void>(fn: T): T => {
+      return ((...args: unknown[]) => {
+        const startTime = performance.now();
+        const result = fn(...args);
+        const duration = performance.now() - startTime;
+
+        performanceTrackInteraction("interaction", duration as Milliseconds, {
+          component: componentId.current,
+        });
+
+        setMetrics((prev) => ({
+          ...prev,
+          interactionTime: prev.interactionTime
+            ? [...prev.interactionTime, duration as Milliseconds]
+            : [duration as Milliseconds],
+        }));
+
+        return result;
+      }) as T;
+    },
+    [],
+  );
 
   // Set up performance monitoring
   useEffect(() => {
@@ -128,7 +139,7 @@ export const usePerformance = (
       includeWebVitals,
       updateInterval,
       debug,
-      logToConsole
+      logToConsole,
     });
 
     return cleanup;
@@ -138,12 +149,12 @@ export const usePerformance = (
     updateInterval,
     debug,
     logToConsole,
-    onMetricsUpdate
+    onMetricsUpdate,
   ]);
 
   return {
     metrics,
     trackRender,
-    trackInteraction: wrappedTrackInteraction
+    trackInteraction: wrappedTrackInteraction,
   };
 };

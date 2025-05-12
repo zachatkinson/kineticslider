@@ -33,6 +33,7 @@ class FeatureMonitoring {
      * Tracks a new feature event and updates metrics
      * 
      * @param event - The feature event to track
+     *
      */
     trackEvent(event: FeatureEvent): void {
         this.events.push(event);
@@ -43,6 +44,7 @@ class FeatureMonitoring {
      * Updates metrics based on the event type
      * 
      * @param event - The feature event to process
+     *
      */
     private updateMetrics(event: FeatureEvent): void {
         const feature = event.feature;
@@ -76,7 +78,9 @@ class FeatureMonitoring {
      * Retrieves metrics for a specific feature
      * 
      * @param feature - The feature flag to get metrics for
+     *
      * @returns The metrics for the specified feature
+     *
      */
     getMetrics(feature: FeatureFlag): FeatureMetrics {
         return this.metrics.get(feature) || {
@@ -92,7 +96,9 @@ class FeatureMonitoring {
      * Retrieves all events for a specific feature
      * 
      * @param feature - The feature flag to get events for
+     *
      * @returns Array of events for the specified feature
+     *
      */
     getEvents(feature: FeatureFlag): FeatureEvent[] {
         return this.events.filter(event => event.feature === feature);
@@ -127,6 +133,7 @@ export function trackFeatureUsage(event: FeatureEvent): void {
  * Retrieves metrics for a specific feature
  * 
  * @param featureName - The feature flag to get metrics for
+ *
  * @returns The metrics for the specified feature
  * 
  * @example

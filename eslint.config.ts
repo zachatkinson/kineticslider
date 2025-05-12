@@ -83,6 +83,9 @@ const config: any = tseslint.config(
       'jsdoc/require-param-type': 'off',
       'jsdoc/require-returns': ['error', {
         checkGetters: true,
+        checkConstructors: false,
+        forceRequireReturn: false,
+        forceReturnsWithAsync: true,
       }],
       'jsdoc/require-returns-type': 'off',
       'jsdoc/valid-types': 'error',
@@ -92,6 +95,14 @@ const config: any = tseslint.config(
       'jsdoc/check-param-names': 'error',
       'jsdoc/require-example': ['warn', {
         contexts: ['TSInterfaceDeclaration', 'ClassDeclaration']
+      }],
+      'jsdoc/tag-lines': ['error', 'any', {
+        startLines: 1,
+        endLines: 1,
+        tags: {
+          returns: { lines: 'always' },
+          param: { lines: 'always' },
+        },
       }],
 
       // TypeScript rules
@@ -115,8 +126,8 @@ const config: any = tseslint.config(
       '@typescript-eslint/no-misused-promises': 'error',
 
       // React rules
-      'react/prop-types': 'off', // TypeScript handles props validation
-      'react/react-in-jsx-scope': 'off', // Not needed with React 17+
+      'react/prop-types': 'off',
+      'react/react-in-jsx-scope': 'off',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
 

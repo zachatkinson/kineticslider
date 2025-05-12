@@ -1,5 +1,6 @@
 /**
  * Re-exports feature flag management utilities
+ *
  * @module FeatureFlags
  */
 export { 
@@ -9,6 +10,7 @@ export {
 
 /**
  * Re-exports migration dashboard components
+ *
  * @module MigrationDashboard
  */
 export { 
@@ -17,6 +19,7 @@ export {
 
 /**
  * Re-exports performance benchmarking utilities
+ *
  * @module PerformanceBenchmark
  */
 export { 
@@ -31,6 +34,7 @@ export {
 
 /**
  * Re-exports feature monitoring utilities
+ *
  * @module FeatureMonitoring
  */
 export {
@@ -41,6 +45,7 @@ export {
 
 /**
  * Re-exports error boundary components
+ *
  * @module ErrorBoundary
  */
 export {

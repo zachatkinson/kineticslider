@@ -114,7 +114,9 @@ export class SchemaValidator {
    * Extracts YAML content between '---' separators and parses it using js-yaml.
    * 
    * @param filePath - Path to the configuration file
+   *
    * @returns The parsed configuration object
+   *
    * @throws Error if the file format is invalid or YAML content is empty
    */
   private static async readConfigFile(filePath: string): Promise<z.infer<typeof ConfigFileSchema>> {
@@ -136,7 +138,9 @@ export class SchemaValidator {
    * Reads the file content and validates it using Zod schema.
    * 
    * @param filePath - Path to the configuration file to validate
+   *
    * @returns Object containing validation result and any validation errors
+   *
    * @throws Error if file reading fails for reasons other than schema validation
    */
   static async validateFile(filePath: string): Promise<{
@@ -160,7 +164,9 @@ export class SchemaValidator {
    * Recursively searches for .mdc files and validates each one.
    * 
    * @param dirPath - Path to the directory containing configuration files
+   *
    * @returns Object containing overall validation result and individual file results
+   *
    */
   static async validateDirectory(dirPath: string): Promise<{
     valid: boolean;

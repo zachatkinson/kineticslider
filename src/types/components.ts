@@ -1,14 +1,20 @@
-import { ErrorInfo as _ErrorInfo, ReactNode as _ReactNode } from 'react';
-import type { Slide as _Slide, KineticSliderProps as _KineticSliderProps, SlideItem as _SlideItem, SliderConfig as _SliderConfig } from './slider';
-import type { AnimationConfig as _AnimationConfig } from './animation';
-import type { GestureConfig as _GestureConfig } from './gestures';
+import { ErrorInfo as _ErrorInfo, ReactNode as _ReactNode } from "react";
+import type {
+  Slide as _Slide,
+  KineticSliderProps as _KineticSliderProps,
+  SlideItem as _SlideItem,
+  SliderConfig as _SliderConfig,
+} from "./slider";
+import type { AnimationConfig as _AnimationConfig } from "./animation";
+import type { GestureConfig as _GestureConfig } from "./gestures";
 // Commented out imports with errors
 // import type { FocusTrapOptions as _FocusTrapOptions } from './accessibility';
 // import type { FocusManagerProps as _FocusManagerProps } from './focus-management';
-import type { SlideFormProps } from './form';
+import type { SlideFormProps } from "./form";
 
 /**
  * Props for the fallback render function
+ *
  * @example
  * ```tsx
  * const fallbackComponent = ({ error, resetErrorBoundary }) => (
@@ -27,9 +33,10 @@ export interface FallbackProps {
 
 /**
  * Props for error boundary components
+ *
  * @example
  * ```tsx
- * <ErrorBoundary 
+ * <ErrorBoundary
  *   fallback={<FallbackComponent />}
  *   onError={(error) => logError(error)}
  * >
@@ -41,7 +48,9 @@ export interface ErrorBoundaryProps {
   /** Child components to render */
   children: React.ReactNode;
   /** Optional fallback UI to render when an error occurs */
-  fallback?: React.ReactNode | ((error: Error, resetErrorBoundary: () => void) => React.ReactNode);
+  fallback?:
+    | React.ReactNode
+    | ((error: Error, resetErrorBoundary: () => void) => React.ReactNode);
   /** Callback fired when an error occurs */
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   /** Maximum number of retry attempts */
@@ -54,6 +63,7 @@ export interface ErrorBoundaryProps {
 
 /**
  * State for error boundary components
+ *
  * @example
  * ```tsx
  * this.state = {
@@ -77,6 +87,7 @@ export interface ErrorBoundaryState {
 
 /**
  * Props for Pixi-specific error boundary
+ *
  * @example
  * ```tsx
  * <PixiErrorBoundary
@@ -98,6 +109,7 @@ export interface PixiErrorBoundaryProps {
 
 /**
  * State for Pixi-specific error boundary
+ *
  * @example
  * ```tsx
  * this.state = {
@@ -115,10 +127,10 @@ export interface PixiErrorBoundaryState {
 
 /**
  * Props for the base slider component
- * 
+ *
  * @example
  * ```tsx
- * <BaseSlider 
+ * <BaseSlider
  *   slides={[{id: '1', content: <div>Slide 1</div>}]}
  *   slideWidth={300}
  *   slideHeight={200}

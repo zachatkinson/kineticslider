@@ -1,31 +1,44 @@
 /**
  * Core slider types and interfaces
  */
-import type { GestureConfig as _GestureConfig, GestureEvent as _GestureEvent, GestureDelta, GestureDirection } from './gesture';
-import type { AnimationConfig as _AnimationConfig, AnimationEvents as _AnimationEvents, AnimationMetrics as _AnimationMetrics } from './animation';
-import type { ErrorType, SliderError as _SliderError, SliderErrorInfo } from './error';
-import type { 
-  SlideIndex, 
-  GestureDistance, 
-  GestureVelocity, 
+import type {
+  GestureConfig as _GestureConfig,
+  GestureEvent as _GestureEvent,
+  GestureDelta,
+  GestureDirection,
+} from "./gesture";
+import type {
+  AnimationConfig as _AnimationConfig,
+  AnimationEvents as _AnimationEvents,
+  AnimationMetrics as _AnimationMetrics,
+} from "./animation";
+import type {
+  ErrorType,
+  SliderError as _SliderError,
+  SliderErrorInfo,
+} from "./error";
+import type {
+  SlideIndex,
+  GestureDistance,
+  GestureVelocity,
   GestureThreshold,
-  SliderId 
-} from './branded';
-import type { SliderEventHandler as _SliderEventHandler } from './events';
+  SliderId,
+} from "./branded";
+import type { SliderEventHandler as _SliderEventHandler } from "./events";
 
 // Re-export branded types for backward compatibility
-export type { 
-  SlideIndex, 
-  GestureDistance, 
-  GestureVelocity, 
+export type {
+  SlideIndex,
+  GestureDistance,
+  GestureVelocity,
   GestureThreshold,
   SliderId,
   ErrorType,
-  SliderErrorInfo
+  SliderErrorInfo,
 };
 
 // Export _error types from errors.ts
-export { ErrorType as ErrorTypes};
+export { ErrorType as ErrorTypes };
 
 // Core slide types
 export interface Slide {
@@ -92,6 +105,8 @@ export interface SliderState {
   isDragging: boolean;
   dragDelta: GestureDelta;
   isAnimating: boolean;
+  infiniteLoop: boolean;
+  items: SlideItem[];
 }
 
 // Context value type
@@ -112,21 +127,21 @@ export interface SliderContextValue {
 /**
  * Action types for slider state management
  */
-export type SliderAction = 
-  | { type: 'NEXT' }
-  | { type: 'PREVIOUS' }
-  | { type: 'GO_TO', _index: SlideIndex }
-  | { type: 'START_ANIMATION' }
-  | { type: 'END_ANIMATION' }
-  | { type: 'START_DRAG' }
-  | { type: 'UPDATE_DRAG', _delta: GestureDelta }
-  | { type: 'END_DRAG' };
+export type SliderAction =
+  | { type: "NEXT" }
+  | { type: "PREVIOUS" }
+  | { type: "GO_TO"; _index: SlideIndex }
+  | { type: "START_ANIMATION" }
+  | { type: "END_ANIMATION" }
+  | { type: "START_DRAG" }
+  | { type: "UPDATE_DRAG"; _delta: GestureDelta }
+  | { type: "END_DRAG" };
 
 export interface SliderMetrics {
   currentIndex: number;
   totalSlides: number;
   progress: number;
-  direction: 'forward' | 'backward';
+  direction: "forward" | "backward";
   isAnimating: boolean;
 }
 
@@ -139,6 +154,7 @@ export interface SlideAnimation {
 
 /**
  * Props for the KineticSlider component
+ *
  * @example Example usage
  */
 export interface KineticSliderProps {
@@ -168,6 +184,10 @@ export interface KineticSliderProps {
   infiniteLoop?: boolean;
   /** Enable lazy loading of slides */
   lazyLoad?: boolean;
+  /** Animation state */
+  "data-animating"?: boolean;
+  /** Hide navigation buttons */
+  hideNavigation?: boolean;
 }
 
 /** Alias for backward compatibility */
@@ -192,7 +212,9 @@ export const _initialState: SliderState = {
   isAnimating: false,
   isDragging: false,
   dragDelta: {
-    x: 0 as GestureDistance, 
-    y: 0 as GestureDistance
-  }
+    x: 0 as GestureDistance,
+    y: 0 as GestureDistance,
+  },
+  infiniteLoop: true,
+  items: [],
 };

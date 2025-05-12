@@ -1,6 +1,6 @@
-import React from 'react';
-import { _sanitizeErrorForClient as sanitizeErrorForClient } from '../utils/error-sanitizer';
-import { AnalyticsManager } from '../utils/analytics';
+import React from "react";
+import { _sanitizeErrorForClient as sanitizeErrorForClient } from "../utils/error-sanitizer";
+import { AnalyticsManager } from "../utils/analytics";
 
 // Extend Window interface for test utilities
 declare global {
@@ -15,32 +15,37 @@ export interface ErrorBoundaryProps {
    * The content to render normally (when no error occurs)
    */
   children: React.ReactNode;
-  
+
   /**
    * Either a React element or a function that returns a React element
    * If a function, it will receive the error and a retry function as arguments
    */
-  fallback?: React.ReactNode | ((error: Error, retry: () => void) => React.ReactNode);
-  
+  fallback?:
+    | React.ReactNode
+    | ((error: Error, retry: () => void) => React.ReactNode);
+
   /**
    * Callback fired when an error is caught
    */
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-  
+
   /**
    * Maximum number of automatic retry attempts
+   *
    * @default 3
    */
   maxRetries?: number;
-  
+
   /**
    * Skip the automatic recovery UI
+   *
    * @default false
    */
   skipRecoveryUi?: boolean;
-  
+
   /**
    * Used for testing to identify nested boundaries
+   *
    * @internal
    */
   nestLevel?: string;
@@ -65,7 +70,7 @@ export interface ErrorBoundaryState {
  * <ErrorBoundary>
  *   <YourComponent />
  * </ErrorBoundary>
- * 
+ *
  * // With custom fallback
  * <ErrorBoundary
  *   fallback={(error, retry) => (
@@ -80,14 +85,20 @@ export interface ErrorBoundaryState {
  * </ErrorBoundary>
  * ```
  */
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   private retryTimeoutId: number | null = null;
   private hasHandledError = false;
 
   /**
    * Creates an ErrorBoundary instance
+   *
    * @param props - The component props
+   *
    * @returns A new ErrorBoundary instance
+   *
    */
   constructor(props: ErrorBoundaryProps) {
     super(props);
@@ -101,8 +112,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   /**
    * React lifecycle method called when an error occurs during rendering
+   *
    * @param error - The error that occurred
+   *
    * @returns Partial state to update with error information
+   *
    */
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return {
@@ -113,16 +127,20 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   /**
    * React lifecycle method called after an error has been caught
+   *
    * @param error - The error that occurred
+   *
    * @param errorInfo - Additional information about the error
+   *
    * @returns void
+   *
    */
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     // Prevent multiple calls for the same error
     if (this.hasHandledError) return;
-    
+
     this.hasHandledError = true;
-    
+
     // Call onError callback if provided
     this.props.onError?.(error, errorInfo);
 
@@ -133,7 +151,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     });
 
     // Store errorInfo and increment retry count
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       errorInfo,
       retryCount: prevState.retryCount + 1,
     }));
@@ -144,12 +162,15 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       this.scheduleRecovery();
     } else {
       // Log an error for max retries
-      console.error(`Max retries (${maxRetries}) reached for error:`, error.message);
-      
+      console.error(
+        `Max retries (${maxRetries}) reached for error:`,
+        error.message,
+      );
+
       // For tests: dispatch an event when max retries reached
-      if (process.env.NODE_ENV === 'test') {
-        const event = new CustomEvent('ERROR_MAX_RETRIES', {
-          detail: { error, maxRetries }
+      if (process.env.NODE_ENV === "test") {
+        const event = new CustomEvent("ERROR_MAX_RETRIES", {
+          detail: { error, maxRetries },
         });
         window.dispatchEvent(event);
       }
@@ -159,7 +180,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   /**
    * React lifecycle method called before component unmounts
    * Cleans up any pending recovery attempts
+   *
    * @returns void
+   *
    */
   componentWillUnmount(): void {
     if (this.retryTimeoutId !== null) {
@@ -170,34 +193,34 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   scheduleRecoveryAttempt = (): void => {
     // Use a very small delay in tests to make them run faster
-    const delay = process.env.NODE_ENV === 'test' ? 0 : 1000;
-    
+    const delay = process.env.NODE_ENV === "test" ? 0 : 1000;
+
     if (this.retryTimeoutId !== null) {
       window.clearTimeout(this.retryTimeoutId);
     }
-    
+
     this.retryTimeoutId = window.setTimeout(() => {
       this.retryTimeoutId = null;
-      this.setState({ 
-        hasError: false, 
+      this.setState({
+        hasError: false,
         error: null,
         errorInfo: null,
       });
       this.hasHandledError = false;
     }, delay);
-  }
+  };
 
   scheduleRecovery = (): void => {
     if (!this.props.skipRecoveryUi) {
       this.scheduleRecoveryAttempt();
     }
-  }
+  };
 
   handleRetry = (): void => {
     // In test mode, this sets hasError to false so we bypass error state
     // This helps tests that rely on clicking the retry button
-    this.setState({ 
-      hasError: false, 
+    this.setState({
+      hasError: false,
       error: null,
       errorInfo: null,
       retryCount: this.state.retryCount + 1,
@@ -205,24 +228,26 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     this.hasHandledError = false;
 
     // For tests, emit a retry event that tests can listen for
-    if (process.env.NODE_ENV === 'test') {
-      const retryEvent = new CustomEvent('ERROR_BOUNDARY_RETRY', {
-        detail: { timestamp: Date.now() }
+    if (process.env.NODE_ENV === "test") {
+      const retryEvent = new CustomEvent("ERROR_BOUNDARY_RETRY", {
+        detail: { timestamp: Date.now() },
       });
       window.dispatchEvent(retryEvent);
     }
-  }
+  };
 
   /**
    * Renders either the children or fallback UI based on error state
+   *
    * @returns React nodes to render
+   *
    */
   render(): React.ReactNode {
     const { children, fallback } = this.props;
     const { hasError, error } = this.state;
 
     // Special case for auto-recovery test in test environment
-    if (process.env.NODE_ENV === 'test' && window.shouldRecover === true) {
+    if (process.env.NODE_ENV === "test" && window.shouldRecover === true) {
       window.shouldRecover = false; // Reset for next test
       return children;
     }
@@ -230,31 +255,33 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     // Render children normally when no error
     if (!hasError) {
       // Always wrap in test environment for data-testid lookup
-      if (process.env.NODE_ENV === 'test') {
+      if (process.env.NODE_ENV === "test") {
         // Use a more unique testid to avoid duplication in nested boundaries
-        const nestLevel = this.props.nestLevel || 'root';
-        return (
-          <div data-testid={`outer-content-${nestLevel}`}>
-            {children}
-          </div>
-        );
+        const nestLevel = this.props.nestLevel || "root";
+        return <div data-testid={`outer-content-${nestLevel}`}>{children}</div>;
       }
       return children;
     }
 
     // Determine which fallback UI to render
     let fallbackUI: React.ReactNode;
-    
-    if (typeof fallback === 'function') {
-      fallbackUI = fallback(error || new Error('Unknown error'), this.handleRetry);
+
+    if (typeof fallback === "function") {
+      fallbackUI = fallback(
+        error || new Error("Unknown error"),
+        this.handleRetry,
+      );
     } else if (React.isValidElement(fallback)) {
       fallbackUI = fallback;
     } else {
       // Default fallback UI
       fallbackUI = (
-        <div className="error-boundary-fallback" data-testid="error-boundary-fallback">
+        <div
+          className="error-boundary-fallback"
+          data-testid="error-boundary-fallback"
+        >
           <h2>Something went wrong</h2>
-          <p>{error?.message || 'An unexpected error occurred'}</p>
+          <p>{error?.message || "An unexpected error occurred"}</p>
           <button
             type="button"
             onClick={this.handleRetry}
@@ -263,7 +290,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           >
             Retry
           </button>
-          {process.env.NODE_ENV === 'development' && error && (
+          {process.env.NODE_ENV === "development" && error && (
             <details>
               <summary>Error details</summary>
               <pre data-testid="error-details">{error.stack}</pre>
@@ -283,39 +310,43 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 }
 
 // For tests we need to make shouldRecover global
-if (process.env.NODE_ENV === 'test') {
+if (process.env.NODE_ENV === "test") {
   window.shouldRecover = false;
-  window.setErrorBoundaryRecovery = function(value: boolean) {
+  window.setErrorBoundaryRecovery = function (value: boolean) {
     window.shouldRecover = value;
   };
 }
 
 /**
  * Higher-order component that wraps a component with an ErrorBoundary
- * 
+ *
  * @param Component - The component to wrap with an error boundary
+ *
  * @param errorBoundaryProps - Props to pass to the ErrorBoundary
+ *
  * @returns A new component wrapped with an ErrorBoundary
+ *
  */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps: Omit<ErrorBoundaryProps, 'children'>
+  errorBoundaryProps: Omit<ErrorBoundaryProps, "children">,
 ): React.ComponentType<P> {
   const WrappedComponent = (props: P): React.ReactElement => (
     <ErrorBoundary {...errorBoundaryProps}>
       <Component {...props} />
     </ErrorBoundary>
   );
-  
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name || 'Component'})`;
-  
+
+  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name || "Component"})`;
+
   return WrappedComponent;
 }
 
 /**
  * Extended version of ErrorBoundary for testing purposes
- * 
+ *
  * Provides additional methods to trigger error recovery for unit tests.
+ *
  * @example
  * ```tsx
  * // Example for testing

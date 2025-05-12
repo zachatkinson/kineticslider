@@ -1,5 +1,6 @@
 /**
  * Performance resource pooling and worker types
+ *
  * @module
  * @version 1.0.0
  */
@@ -7,7 +8,7 @@
 /**
  * Represents a task in the worker pool queue
  * Contains the task function and resolve/reject callbacks for the Promise
- * 
+ *
  * @template T - The return type of the task function
  * @interface
  * @example Example usage
@@ -26,12 +27,12 @@ export interface WorkerTask<T> {
    * Should be serializable to be sent to a Web Worker
    */
   task: () => T;
-  
+
   /**
    * Function to call when the task is completed successfully
    */
   resolve: (_value: T) => void;
-  
+
   /**
    * Function to call when the task fails with an _error
    */
@@ -41,7 +42,7 @@ export interface WorkerTask<T> {
 /**
  * Configuration options for resource pools
  * Defines how resources are: created, managed, and recycled
- * 
+ *
  * @template T - The type of resources managed by the pool
  * @interface
  * @example Example usage
@@ -65,23 +66,25 @@ export interface ResourcePoolOptions<T> {
    * Called when the pool needs to create a new resource instance
    */
   factory: () => T;
-  
+
   /**
    * Function to reset a resource before returning it to the pool
    * Ensures resources are in a clean state when reused
    */
   reset: (resource: T) => void;
-  
+
   /**
    * Initial size of the resource pool
    * Number of resources to create when the pool is initialized
+   *
    * @default 0
    */
   initialSize?: number;
-  
+
   /**
    * Maximum size of the resource pool (0 for unlimited)
    * Limits how many resources can be stored in the pool
+   *
    * @default 0
    */
   maxSize?: number;
@@ -90,8 +93,9 @@ export interface ResourcePoolOptions<T> {
 /**
  * Factory function to create a DOM element resource
  * Used for DOM element resource pools
- * 
+ *
  * @returns {HTMLElement} A new DOM element instance
+ *
  * @example Example usage
  * ```typescript
  * const _divFactory: DOMElementFactory = () => {
@@ -106,8 +110,9 @@ export type DOMElementFactory = () => HTMLElement;
 /**
  * Factory function to create a canvas context resource
  * Used for canvas rendering context resource pools
- * 
+ *
  * @returns {CanvasRenderingContext2D | null} A new 2D canvas context or null if creation fails
+ *
  * @example Example usage
  * ```typescript
  * const _contextFactory: CanvasContextFactory = () => {
@@ -123,13 +128,13 @@ export type CanvasContextFactory = () => CanvasRenderingContext2D | null;
 /**
  * Typed resource pool identifier keys
  * Used to identify different types of resource pools in a map
- * 
+ *
  * @type {unknown}
  * @example Example usage
  * ```typescript
  * // Creating a map of resource pools
  * const pools = new Map<ResourcePoolKey, ResourcePool<any>>();
- * 
+ *
  * // Adding a DOM element pool
  * pools.set('dom', new ResourcePool<HTMLDivElement>(
  *   () => document.createElement('div'),
@@ -138,4 +143,4 @@ export type CanvasContextFactory = () => CanvasRenderingContext2D | null;
  * ));
  * ```
  */
-export type ResourcePoolKey = 'dom' | 'canvas' | 'image' | 'audio' | 'worker'; 
+export type ResourcePoolKey = "dom" | "canvas" | "image" | "audio" | "worker";

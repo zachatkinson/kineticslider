@@ -1,14 +1,16 @@
 /**
  * GSAP-related test type definitions
+ *
  * @module
  * @version 1.0.0
  * @description This module contains mock GSAP types used only for testing purposes
  */
 
-import type { Mock } from 'vitest';
+import type { Mock } from "vitest";
 
 /**
  * Mock GSAP interface for testing
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -37,6 +39,7 @@ export interface MockGsap {
 
 /**
  * Mock GSAP Timeline interface
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -67,6 +70,7 @@ export interface MockGsapTimeline {
 
 /**
  * Mock GSAP Tween interface
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -85,4 +89,4 @@ export interface MockGsapTween {
   progress: Mock;
   kill: Mock;
   vars: Record<string, unknown>;
-} 
+}

@@ -4,6 +4,7 @@
 
 /**
  * Mock PIXI.js types
+ *
  * @example Example usage
  */
 export interface MockPixiApplication {
@@ -62,11 +63,16 @@ export interface MockPixiAssets {
 
 /**
  * Mock GSAP types
+ *
  * @example Example usage
  */
 export interface MockGsap {
   to: (target: unknown, vars: Record<string, unknown>) => unknown;
-  fromTo: (target: unknown, fromVars: Record<string, unknown>, toVars: Record<string, unknown>) => unknown;
+  fromTo: (
+    target: unknown,
+    fromVars: Record<string, unknown>,
+    toVars: Record<string, unknown>,
+  ) => unknown;
   timeline: (vars?: Record<string, unknown>) => unknown;
   ticker: {
     add: (callback: () => void) => void;
@@ -79,11 +85,13 @@ export interface MockGsap {
   utils: {
     toArray: (selector: unknown) => unknown[];
   };
-  config: {
-    autoSleep?: number;
-    force3D?: boolean;
-    nullTargetWarn?: boolean;
-  } | ((options: Record<string, unknown>) => void);
+  config:
+    | {
+        autoSleep?: number;
+        force3D?: boolean;
+        nullTargetWarn?: boolean;
+      }
+    | ((options: Record<string, unknown>) => void);
 }
 
 /**
@@ -100,6 +108,7 @@ export type MockResult<T> = {
 
 /**
  * Mock touch event options that matches browser's TouchInit interface
+ *
  * @example Example usage
  */
 export interface TouchOptions {
@@ -119,6 +128,7 @@ export interface TouchOptions {
 
 /**
  * Mock ResizeObserver type
+ *
  * @example Example usage
  */
 export interface MockResizeObserver {
@@ -129,6 +139,7 @@ export interface MockResizeObserver {
 
 /**
  * Mock IntersectionObserver type
+ *
  * @example Example usage
  */
 export interface MockIntersectionObserver extends IntersectionObserver {
@@ -141,4 +152,7 @@ export interface MockIntersectionObserver extends IntersectionObserver {
 /**
  * Mock function type
  */
-export type MockFunction<T extends (...args: unknown[]) => unknown> = jest.Mock<ReturnType<T>, Parameters<T>>; 
+export type MockFunction<T extends (...args: unknown[]) => unknown> = jest.Mock<
+  ReturnType<T>,
+  Parameters<T>
+>;

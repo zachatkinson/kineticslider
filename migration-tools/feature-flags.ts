@@ -41,7 +41,9 @@ export const FeatureFlagProvider = React.memo<FeatureFlagProviderProps>(({ child
      * Updates a specific feature flag
      * 
      * @param flag - The feature flag to update
+     *
      * @param value - The new value for the flag
+     *
      */
     const setFlag = (flag: FeatureFlag, value: boolean): void => {
         setFlags(prev => ({ ...prev, [flag]: value }));
@@ -51,6 +53,7 @@ export const FeatureFlagProvider = React.memo<FeatureFlagProviderProps>(({ child
      * Sets all feature flags to the same value
      * 
      * @param value - The value to set for all flags
+     *
      */
     const setAllFlags = (value: boolean): void => {
         const newFlags = Object.keys(flags).reduce((acc, flag) => ({
@@ -87,6 +90,7 @@ export const FeatureFlagProvider = React.memo<FeatureFlagProviderProps>(({ child
  * Hook to access a specific feature flag's value
  * 
  * @param flag - The feature flag to check
+ *
  * @returns The current value of the feature flag (defaults to false if not found)
  * 
  * @example

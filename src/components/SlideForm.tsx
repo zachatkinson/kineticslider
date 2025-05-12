@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { DEFAULT_SLIDE } from '../constants/slides';
-import { DEFAULT_VALIDATION_DEBOUNCE } from '../constants/validation';
-import '../styles/SlideForm.css';
-import type { Slide, SliderId } from '../types/slider';
-import type { SlideFormProps } from '../types/components';
-import type { ValidationError } from '../types/validation';
-import { getFeedbackClass, validateAndSubmit } from '../utils/form-helpers';
-import { useSlideValidation } from '../hooks/slider/useSlideValidation';
-import { _validateSlide as validateSlide } from '../utils/validation-helpers';
-import { ValidationErrorSeverity } from '../types/validation';
-import type { ValidationResult as _ValidationResult } from '../types/validation';
+import { DEFAULT_SLIDE } from "../constants/slides";
+import { DEFAULT_VALIDATION_DEBOUNCE } from "../constants/validation";
+import "../styles/SlideForm.css";
+import type { Slide, SliderId } from "../types/slider";
+import type { SlideFormProps } from "../types/components";
+import type { ValidationError } from "../types/validation";
+import { getFeedbackClass, validateAndSubmit } from "../utils/form-helpers";
+import { useSlideValidation } from "../hooks/slider/useSlideValidation";
+import { _validateSlide as validateSlide } from "../utils/validation-helpers";
+import { ValidationErrorSeverity } from "../types/validation";
+import type { ValidationResult as _ValidationResult } from "../types/validation";
 
 /**
  * A form component for creating and editing slider slides with validation and accessibility support.
@@ -62,7 +62,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
 }): React.ReactElement => {
   // Merge initial values with defaults and ensure id is present
   const [slide, setSlide] = useState<Slide>({
-    id: initialSlide.id || (('temp-' + Date.now()) as SliderId),
+    id: initialSlide.id || (("temp-" + Date.now()) as SliderId),
     ...DEFAULT_SLIDE,
     ...initialSlide,
   } as Slide);
@@ -84,7 +84,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
 
   // Handle form field changes
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ): void => {
     const { name, value } = e.target;
     setSlide((prev) => ({ ...prev, [name]: value }));
@@ -100,7 +100,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
       onSave,
       setValidating,
       setValidationResult,
-      setSubmitted
+      setSubmitted,
     );
   };
 
@@ -108,7 +108,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
     <form onSubmit={handleSubmit} className="slide-form">
       <div
         className="form-loading-overlay"
-        style={{ display: validating ? 'flex' : 'none' }}
+        style={{ display: validating ? "flex" : "none" }}
       >
         <div className="spinner">Validating...</div>
       </div>
@@ -121,13 +121,15 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           name="title"
           value={slide.title}
           onChange={handleChange}
-          className={getFieldClass('title')}
+          className={getFieldClass("title")}
           aria-describedby="titleHelp"
           required
         />
-        {getErrorForField('title') && (
-          <div className={getFeedbackClass(getErrorForField('title') || undefined)}>
-            {getErrorForField('title')?.message}
+        {getErrorForField("title") && (
+          <div
+            className={getFeedbackClass(getErrorForField("title") || undefined)}
+          >
+            {getErrorForField("title")?.message}
           </div>
         )}
         <small id="titleHelp" className="form-text text-muted">
@@ -142,16 +144,20 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           name="description"
           value={slide.description}
           onChange={handleChange}
-          className={getFieldClass('description')}
+          className={getFieldClass("description")}
           rows={3}
         />
-        {getErrorForField('description') && (
-          <div className={getFeedbackClass(getErrorForField('description') || undefined)}>
-            {getErrorForField('description')?.message}
-            {getErrorForField('description')?.suggestion && (
+        {getErrorForField("description") && (
+          <div
+            className={getFeedbackClass(
+              getErrorForField("description") || undefined,
+            )}
+          >
+            {getErrorForField("description")?.message}
+            {getErrorForField("description")?.suggestion && (
               <span className="suggestion">
-                <strong>Suggestion:</strong>{' '}
-                {getErrorForField('description')?.suggestion}
+                <strong>Suggestion:</strong>{" "}
+                {getErrorForField("description")?.suggestion}
               </span>
             )}
           </div>
@@ -166,13 +172,15 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           name="image"
           value={slide.image}
           onChange={handleChange}
-          className={getFieldClass('image')}
+          className={getFieldClass("image")}
           placeholder="https://example.com/image.jpg"
           required
         />
-        {getErrorForField('image') && (
-          <div className={getFeedbackClass(getErrorForField('image') || undefined)}>
-            {getErrorForField('image')?.message}
+        {getErrorForField("image") && (
+          <div
+            className={getFeedbackClass(getErrorForField("image") || undefined)}
+          >
+            {getErrorForField("image")?.message}
           </div>
         )}
       </div>
@@ -185,13 +193,15 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           name="alt"
           value={slide.alt}
           onChange={handleChange}
-          className={getFieldClass('alt')}
+          className={getFieldClass("alt")}
           aria-describedby="altHelp"
           required
         />
-        {getErrorForField('alt') && (
-          <div className={getFeedbackClass(getErrorForField('alt') || undefined)}>
-            {getErrorForField('alt')?.message}
+        {getErrorForField("alt") && (
+          <div
+            className={getFeedbackClass(getErrorForField("alt") || undefined)}
+          >
+            {getErrorForField("alt")?.message}
           </div>
         )}
         <small id="altHelp" className="form-text text-muted">
@@ -200,20 +210,22 @@ export const SlideForm: React.FC<SlideFormProps> = ({
       </div>
 
       {submitted && validationResult.errors.length > 0 && (
-        <div 
-          className={`alert alert-warning ${validationResult.valid ? 'has-warnings' : ''}`} 
+        <div
+          className={`alert alert-warning ${validationResult.valid ? "has-warnings" : ""}`}
           data-testid="validation-summary"
         >
           <strong>Please review the form for issues: </strong>
           <ul>
-            {validationResult.errors.map((error: ValidationError, index: number) => (
-              <li
-                key={index}
-                className={`text-${error.severity === ValidationErrorSeverity.WARNING ? 'warning' : 'danger'}`}
-              >
-                {error.message}
-              </li>
-            ))}
+            {validationResult.errors.map(
+              (error: ValidationError, index: number) => (
+                <li
+                  key={index}
+                  className={`text-${error.severity === ValidationErrorSeverity.WARNING ? "warning" : "danger"}`}
+                >
+                  {error.message}
+                </li>
+              ),
+            )}
           </ul>
         </div>
       )}
@@ -227,7 +239,7 @@ export const SlideForm: React.FC<SlideFormProps> = ({
           Cancel
         </button>
         <button type="submit" className="btn btn-primary" disabled={validating}>
-          {validating ? 'Validating...' : 'Save Slide'}
+          {validating ? "Validating..." : "Save Slide"}
         </button>
       </div>
     </form>

@@ -1,22 +1,24 @@
 /**
  * Context type definitions and interfaces
+ *
  * @module
  * @version 1.0.0
  */
 
-import type { ReactNode } from 'react';
-import type { 
-  SliderContextValue, 
-  SliderConfig, 
-  SliderState as _SliderState, 
+import type { ReactNode } from "react";
+import type {
+  SliderContextValue,
+  SliderConfig,
+  SliderState as _SliderState,
   SlideItem as _SlideItem,
   SliderAction as _SliderAction,
-  SlideIndex as _SlideIndex
-} from './slider';
-import type { GestureDelta as _GestureDelta } from './gesture';
+  SlideIndex as _SlideIndex,
+} from "./slider";
+import type { GestureDelta as _GestureDelta } from "./gesture";
 
 /**
  * Props for the SliderProvider component
+ *
  * @version 1.0.0
  * @example Example usage
  */
@@ -31,6 +33,7 @@ export interface SliderProviderProps {
 
 /**
  * Props for _context consumers using render prop pattern
+ *
  * @example Example usage
  */
 export interface ContextConsumerProps<T> {
@@ -39,12 +42,15 @@ export interface ContextConsumerProps<T> {
 
 /**
  * Slider-specific _context consumer props
+ *
  * @example Example usage
  */
-export interface SliderConsumerProps extends ContextConsumerProps<SliderContextValue> {}
+export interface SliderConsumerProps
+  extends ContextConsumerProps<SliderContextValue> {}
 
 /**
  * Props for components wrapped with slider _context
+ *
  * @example Example usage
  */
 export interface WithSliderProps {
@@ -53,4 +59,4 @@ export interface WithSliderProps {
 }
 
 // Re-export slider _context types
-export type { SliderContextValue }; 
+export type { SliderContextValue };

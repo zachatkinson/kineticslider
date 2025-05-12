@@ -1,22 +1,27 @@
 /**
  * Runtime performance monitoring type definitions
+ *
  * @module
  * @version 1.0.0
- * 
+ *
  * This module contains types for runtime performance monitoring and reporting.
  * For performance testing: types, see performance-testing.ts
  * For shared types between monitoring and: testing, see performance-shared.ts
  */
 
-import type { FPS, ByteSize, Milliseconds } from './branded';
-import type { MetricSummary as _MetricSummary, BasePerformanceMetric, CommonMetricName } from './performance-shared';
+import type { FPS, ByteSize, Milliseconds } from "./branded";
+import type {
+  MetricSummary as _MetricSummary,
+  BasePerformanceMetric,
+  CommonMetricName,
+} from "./performance-shared";
 
 /**
  * Options for performance monitoring configuration
- * 
- * These options control the behavior of performance: monitoring, including 
+ *
+ * These options control the behavior of performance: monitoring, including
  * logging, sampling: rate, and custom handlers for performance events.
- * 
+ *
  * @example Example usage
  * ```ts
  * const options: PerformanceMonitoringOptions = {
@@ -46,25 +51,26 @@ export interface PerformanceMonitoringOptions {
 }
 
 /** Extended metric names specific to runtime monitoring */
-export type MetricName = CommonMetricName
-  | 'renderTime'
-  | 'transitionTime'
-  | 'resizeTime'
-  | 'cleanupMemory'
-  | 'interactionTime'
-  | 'averageFrameTime'
-  | 'droppedFrames'
-  | 'gestureProcessingTime';
+export type MetricName =
+  | CommonMetricName
+  | "renderTime"
+  | "transitionTime"
+  | "resizeTime"
+  | "cleanupMemory"
+  | "interactionTime"
+  | "averageFrameTime"
+  | "droppedFrames"
+  | "gestureProcessingTime";
 
 /**
  * Core Web Vitals metrics history
- * 
- * Tracks historical values of key user experience metrics as defined by Google's 
+ *
+ * Tracks historical values of key user experience metrics as defined by Google's
  * Web Vitals initiative. These metrics are critical for measuring and improving
  * user experience.
- * 
+ *
  * @see https://web.dev/vitals/ for more information on Web Vitals
- * 
+ *
  * @example Example usage
  * ```ts
  * const webVitals: WebVitalsHistory = {
@@ -92,11 +98,11 @@ export interface WebVitalsHistory {
 
 /**
  * Current runtime metrics with branded types
- * 
+ *
  * Core metrics tracked during application runtime that directly impact
  * user experience. Uses branded types to ensure type safety and prevent
  * unit confusion.
- * 
+ *
  * @example Example usage
  * ```ts
  * const metrics: RuntimeMetrics = {
@@ -126,11 +132,11 @@ export interface RuntimeMetrics {
 
 /**
  * Additional performance metrics history
- * 
+ *
  * Detailed performance metrics captured over time for more comprehensive
- * analysis and monitoring. Each property contains an array of historical 
+ * analysis and monitoring. Each property contains an array of historical
  * measurements for trend analysis.
- * 
+ *
  * @example Example usage
  * ```ts
  * const history: MetricsHistory = {
@@ -164,11 +170,11 @@ export interface MetricsHistory {
 
 /**
  * Combined performance metrics type
- * 
+ *
  * Comprehensive set of performance metrics tracked by the application,
  * combining runtime metrics with Web Vitals measurements. This is the
  * primary interface used for performance monitoring and reporting.
- * 
+ *
  * @example Example usage
  * ```ts
  * // Create complete metrics object with both runtime metrics and Web Vitals
@@ -178,23 +184,23 @@ export interface MetricsHistory {
  *   memoryUsage: 32000000 as ByteSize,
  *   transitionDuration: 220 as Milliseconds,
  *   gestureLatency: 35 as Milliseconds,
- *   
+ *
  *   // Web Vitals (historical values)
  *   FCP: [1200, 1250],
  *   LCP: [2100, 2050],
  *   FID: [80, 75],
  *   CLS: [0.05, 0.04],
- *   
+ *
  *   // History arrays for trend analysis
  *   renderTime: [12, 15, 14, 13],
  *   interactionTime: [40, 38, 42]
  * };
- * 
+ *
  * // Check if performance is acceptable
  * if(metrics.fps < 30 as FPS) {
  *   console.warn('Low frame rate detected');
  * }
- * 
+ *
  * if(metrics.LCP && metrics.LCP[metrics.LCP.length - 1] > 2500) {
  *   console.warn('Slow content loading detected');
  * }
@@ -217,11 +223,11 @@ export interface PerformanceMetrics extends RuntimeMetrics {
 
 /**
  * Performance threshold violation
- * 
+ *
  * Represents a case when a performance metric exceeds defined thresholds.
  * These violations can be reported to monitoring services or logged for
  * further analysis and optimization.
- * 
+ *
  * @example Example usage
  * ```ts
  * // Create a threshold violation to report
@@ -232,7 +238,7 @@ export interface PerformanceMetrics extends RuntimeMetrics {
  *   timestamp: new Date().toISOString(),
  *   url: window.location.href;
  * };
- * 
+ *
  * // Report it to a monitoring service
  * if(window.monitoringService)) {
  *   window.monitoringService.reportViolation(violation);
@@ -254,11 +260,11 @@ export interface ThresholdViolation {
 
 /**
  * Performance monitoring service interface
- * 
+ *
  * Service responsible for collecting and reporting performance violations.
  * This interface can be implemented by various monitoring services to
  * receive and process threshold violation reports.
- * 
+ *
  * @example Example usage
  * ```ts
  * // Example analytics-based implementation
@@ -273,7 +279,7 @@ export interface ThresholdViolation {
  *     });
  *   }
  * }
- * 
+ *
  * // Register the service globally
  * window.monitoringService = new AnalyticsMonitoringService();
  * ```
@@ -281,7 +287,9 @@ export interface ThresholdViolation {
 export interface MonitoringService {
   /**
    * Report a performance threshold violation
+   *
    * @param violation - The threshold violation details
+   *
    */
   reportViolation(violation: ThresholdViolation): void;
 }
@@ -305,13 +313,13 @@ declare global {
 
 /**
  * Resource pool configuration
- * 
+ *
  * Configuration for a pool of reusable resources to improve performance
  * by reducing object creation and garbage collection. Resources are: created,
  * reused, and reset according to this configuration.
- * 
+ *
  * @template T - The type of resource managed by the pool
- * 
+ *
  * @example Example usage
  * ```ts
  * // Configuration for a DOM element pool />
@@ -324,7 +332,7 @@ declare global {
  *   },
  *   initialSize: 10;
  * };
- * 
+ *
  * // Configuration for a canvas context pool
  * const _canvasContextPoolConfig: ResourcePoolConfig<CanvasRenderingContext2D> = {
  *   factory: () => document.createElement('canvas').getContext('2d')!,
@@ -348,11 +356,11 @@ export interface ResourcePoolConfig<T> {
 
 /**
  * Worker pool configuration
- * 
+ *
  * Configuration for a pool of worker threads to handle CPU-intensive tasks
  * without blocking the main thread. Tasks are distributed across the
  * worker pool for parallel execution.
- * 
+ *
  * @example Example usage
  * ```ts
  * // Basic worker pool configuration
@@ -360,7 +368,7 @@ export interface ResourcePoolConfig<T> {
  *   size: navigator.hardwareConcurrency - 1, // Use all cores except one
  *   taskTimeout: 5000 // 5 second timeout for tasks
  * };
- * 
+ *
  * // Create a worker pool with the configuration
  * const workerPool = new WorkerPool(workerPoolConfig);
  * ```
@@ -374,19 +382,19 @@ export interface WorkerPoolConfig {
 
 /**
  * Worker task result
- * 
+ *
  * Result of a task executed in a worker: thread, including either the
  * successful result or an error if the task failed.
- * 
+ *
  * @template T - The type of the result
- * 
+ *
  * @example Example usage
  * ```ts
  * // Example of handling a worker task result
  * function processImageInWorker(imageData: ImageData): Promise<WorkerTaskResult<Uint8Array>> {
  *   return workerPool.runTask('processImage', { data: imageData });
  * }
- * 
+ *
  * // Using the result
  * const result = await processImageInWorker(imageData);
  * if(result.error)) {
@@ -406,11 +414,11 @@ export interface WorkerTaskResult<T> {
 
 /**
  * Performance thresholds configuration
- * 
+ *
  * Defines acceptable ranges for each performance metric. Thresholds are used
  * to determine when performance is degraded and requires attention or
  * optimization.
- * 
+ *
  * @example Example usage
  * ```ts
  * // Define custom performance thresholds
@@ -422,14 +430,14 @@ export interface WorkerTaskResult<T> {
  *   CLS: 0.1,       // Cumulative Layout Shift (unitless)
  *   TTI: 3800,      // Time to Interactive (ms)
  *   TBT: 300,       // Total Blocking Time (ms)
- *   
+ *
  *   // Runtime thresholds
  *   fps: 30,                // Minimum acceptable FPS
  *   memoryUsage: 100000000, // 100MB maximum memory usage
  *   cpuUsage: 80,           // 80% maximum CPU usage
  *   renderTime: 50,         // 50ms maximum render time
  *   transitionTime: 300,    // 300ms maximum transition time
- *   
+ *
  *   // Additional thresholds
  *   resizeTime: 50,              // 50ms maximum resize time
  *   cleanupMemory: 1048576,      // 1MB maximum cleanup memory
@@ -479,10 +487,10 @@ export interface PerformanceThresholds {
 
 /**
  * Single performance metric measurement
- * 
+ *
  * Represents a single performance measurement with metadata. This is a
  * lower-level interface used for individual metric tracking.
- * 
+ *
  * @example Example usage
  * ```ts
  * // Create a custom performance metric
@@ -495,7 +503,7 @@ export interface PerformanceThresholds {
  *     instance: 'product-123';
  *   }
  * };
- * 
+ *
  * // Track the metric
  * performanceMonitor.track(metric);
  * ```
@@ -507,10 +515,10 @@ export interface PerformanceMetric extends BasePerformanceMetric {
 
 /**
  * Performance monitoring options
- * 
+ *
  * Configuration options for the usePerformance hook which controls
  * what metrics are tracked and how they're reported.
- * 
+ *
  * @example Example usage
  * ```tsx
  * // Example usage in a React component
@@ -527,7 +535,7 @@ export interface PerformanceMetric extends BasePerformanceMetric {
  *       }
  *     }
  *   });
- *   
+ *
  *   // Component implementation...
  * }
  * ```
@@ -589,10 +597,10 @@ export interface WindowWithAnalytics {
 
 /**
  * Performance event detail
- * 
+ *
  * Data structure for performance-related custom events. Used for creating
  * and dispatching custom performance events in the application.
- * 
+ *
  * @example Example usage
  * ```ts
  * // Create a performance event detail
@@ -604,7 +612,7 @@ export interface WindowWithAnalytics {
  *   timestamp: Date.now(),
  *   source: 'ShoppingCart';
  * };
- * 
+ *
  * // Dispatch a custom performance event
  * const event = new CustomEvent('performance-measurement', { detail });
  * window.dispatchEvent(event);
@@ -627,35 +635,35 @@ export interface PerformanceEventDetail {
 
 /**
  * Hook return type for usePerformance
- * 
+ *
  * Return value of the usePerformance: hook, providing access to current
  * performance metrics and functions to track performance in components.
- * 
+ *
  * @example Example usage
  * ```tsx
  * // Use the performance hook in a React component
  * function ProductList({ products }): unknown  {
  *   const { metrics, trackRender, trackInteraction } = usePerformance();
- *   
+ *
  *   // Log current performance metrics
  *   useEffect(() () => {
  *     console.log(`Current, FPS: $){metrics.fps}`);
  *     console.log(`Memory usage: $){metrics.memoryUsage / 1024 / 1024}MB`);
  *   }, [metrics]);
- *   
+ *
  *   // Wrap click handler to track interaction time
  *   const handleProductClick = trackInteraction((product) () => {
  *     // Handle product selection
  *     selectProduct(product);
  *   });
- *   
+ *
  *   // Track render time at the end of component logic
  *   trackRender('ProductList');
- *   
+ *
  *   return(*     <div>
  *)       {products.map(product => (
- *         <ProductCard 
- *           key={product.id} 
+ *         <ProductCard
+ *           key={product.id}
  *           product={product} />
  *           onClick={() => handleProductClick(product)}
  *         />
@@ -668,12 +676,12 @@ export interface PerformanceEventDetail {
 export interface UsePerformanceReturn {
   /** Current performance metrics */
   metrics: PerformanceMetrics;
-  /** 
+  /**
    * Function to track interaction time
    * Wraps a function and measures its execution time
    */
   trackInteraction: <T extends (...args: unknown[]) => void>(fn: T) => T;
-  /** 
+  /**
    * Function to manually track render time
    * Call at the end of component logic to measure render duration
    */
@@ -682,14 +690,14 @@ export interface UsePerformanceReturn {
 
 /**
  * Performance status types
- * 
+ *
  * Qualitative assessment of performance based on metric values and thresholds.
  * Used for high-level reporting and visualization of performance status.
- * 
+ *
  * - "optimal" - All metrics are well within acceptable thresholds
  * - "degraded" - Some metrics are approaching or slightly exceeding thresholds
  * - "critical" - Multiple metrics significantly exceed thresholds
- * 
+ *
  * @example Example usage
  * ```ts
  * // Determine performance status based on metrics
@@ -702,21 +710,21 @@ export interface UsePerformanceReturn {
  *     return 'optimal';
  *   }
  * }
- * 
+ *
  * // Use the status for reporting or UI indicators
  * const status = getPerformanceStatus(currentMetrics);
  * updateStatusIndicator(status);
  * ```
  */
-export type PerformanceStatus = 'optimal' | 'degraded' | 'critical';
+export type PerformanceStatus = "optimal" | "degraded" | "critical";
 
 /**
  * Performance report structure
- * 
+ *
  * Comprehensive performance report that includes metrics, thresholds,
  * current status, and a timestamp. This is used for generating performance
  * reports for analysis and monitoring.
- * 
+ *
  * @example Example usage
  * ```ts
  * // Generate a performance report
@@ -726,15 +734,15 @@ export type PerformanceStatus = 'optimal' | 'degraded' | 'critical';
  * ): PerformanceReport {
  *   // Determine overall status
  *   let status: PerformanceStatus = 'optimal';
- *   
- *   if (metrics.fps < thresholds.fps * 0.5 || 
+ *
+ *   if (metrics.fps < thresholds.fps * 0.5 ||
  *       metrics.memoryUsage > thresholds.memoryUsage * 1.5) {
  *     status = 'critical';
- *   } else if (metrics.fps < thresholds.fps * 0.8 || 
+ *   } else if (metrics.fps < thresholds.fps * 0.8 ||
  *              metrics.memoryUsage > thresholds.memoryUsage * 1.2) {
  *     status = 'degraded';
  *   }
- *   
+ *
  *   return {
  *     metrics,
  *     thresholds,
@@ -742,7 +750,7 @@ export type PerformanceStatus = 'optimal' | 'degraded' | 'critical';
  *     timestamp: Date.now()
  *   };
  * }
- * 
+ *
  * // Create and send a report
  * const report = createPerformanceReport(currentMetrics, defaultThresholds);
  * sendPerformanceReport(report);

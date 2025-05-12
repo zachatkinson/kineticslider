@@ -132,7 +132,9 @@ class PerformanceBenchmark {
 export const benchmark = PerformanceBenchmark.getInstance();
 /**
  * Collects performance metrics
+ *
  * @returns Array of performance metrics
+ *
  */
 export function collectMetrics(): TestPerformanceMetric[] {
     const metrics: TestPerformanceMetric[] = [];
@@ -153,8 +155,11 @@ export function collectMetrics(): TestPerformanceMetric[] {
 }
 /**
  * Analyzes benchmark data
+ *
  * @param metrics - Array of performance metrics to analyze
+ *
  * @returns Benchmark result with statistical analysis
+ *
  */
 export function analyzeBenchmark(metrics: TestPerformanceMetric[]): BenchmarkResult {
     const values = metrics.map(m => m.value);
@@ -175,7 +180,9 @@ export function analyzeBenchmark(metrics: TestPerformanceMetric[]): BenchmarkRes
 }
 /**
  * Calculates frames per second
+ *
  * @returns Calculated FPS value
+ *
  */
 function calculateFPS(): number {
     return 60;

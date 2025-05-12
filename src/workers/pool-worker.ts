@@ -4,5 +4,5 @@
 
 self.onmessage = (event) => {
   // Echo the message back for now; extend as needed
-  self.postMessage({ type: 'result', data: event.data });
-}; 
+  self.postMessage({ type: "result", data: event.data });
+};

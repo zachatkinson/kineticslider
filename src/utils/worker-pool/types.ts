@@ -1,9 +1,11 @@
-import { ErrorType, ErrorSeverity } from '../../types/error';
+import { ErrorType, ErrorSeverity } from "../../types/error";
 
 export interface WorkerPoolOptions {
   workerScript: string;
   maxWorkers?: number;
   initialWorkers?: number;
+  timeout?: number;
+  errorHandler?: (error: Error, context: { taskId?: string; operation?: string }) => void;
 }
 
 export interface WorkerTask<T = unknown, R = unknown> {
@@ -16,7 +18,7 @@ export interface WorkerTask<T = unknown, R = unknown> {
 
 export interface WorkerStats {
   id: string;
-  status: 'available' | 'busy';
+  status: "available" | "busy";
   tasksProcessed: number;
   lastActive: number;
   errors: number;
@@ -27,9 +29,33 @@ export interface ErrorDistribution {
   weekly: Record<string, number>;
   monthly: Record<string, number>;
   rateChangePercent: number;
-  trend: 'increasing' | 'decreasing' | 'stable';
+  trend: "increasing" | "decreasing" | "stable";
 }
 
+/**
+ * Custom error class for worker pool related errors
+ *
+ * @example
+ * ```ts
+ * throw new WorkerPoolError({
+ *   message: 'Worker failed to process task',
+ *   type: ErrorType.WORKER_ERROR,
+ *   severity: ErrorSeverity.ERROR,
+ *   workerId: 'worker-1',
+ *   error: new Error('Task processing failed'),
+ *   timestamp: new Date().toISOString(),
+ *   operation: 'processTask',
+ *   category: 'worker',
+ *   stackTrace: new Error().stack || '',
+ *   code: 'WORKER_ERROR',
+ *   details: {
+ *     taskId: 'task-1',
+ *     errorTime: Date.now(),
+ *     workerId: 'worker-1'
+ *   }
+ * });
+ * ```
+ */
 export class WorkerPoolError extends Error {
   public readonly type: ErrorType;
   public readonly severity: ErrorSeverity;
@@ -46,6 +72,40 @@ export class WorkerPoolError extends Error {
     workerId: string;
   };
 
+  /**
+   * Creates a new WorkerPoolError instance
+   *
+   * @param {object} message - Error details object
+   *
+   * @param {string} message.message - Error message
+   *
+   * @param {ErrorType} message.type - Type of error
+   *
+   * @param {ErrorSeverity} message.severity - Error severity level
+   *
+   * @param {string} message.workerId - ID of the worker that caused the error
+   *
+   * @param {Error} message.error - Original error object
+   *
+   * @param {string} message.timestamp - When the error occurred
+   *
+   * @param {string} message.operation - Operation that failed
+   *
+   * @param {string} message.category - Error category
+   *
+   * @param {string} message.stackTrace - Error stack trace
+   *
+   * @param {string} message.code - Error code
+   *
+   * @param {object} message.details - Additional error details
+   *
+   * @param {string} [message.details.taskId] - ID of the task that caused the error
+   *
+   * @param {number} message.details.errorTime - Timestamp when the error occurred
+   *
+   * @param {string} message.details.workerId - ID of the worker that caused the error
+   *
+   */
   constructor({
     message,
     type,
@@ -57,7 +117,7 @@ export class WorkerPoolError extends Error {
     category,
     stackTrace,
     code,
-    details
+    details,
   }: {
     message: string;
     type: ErrorType;
@@ -76,7 +136,7 @@ export class WorkerPoolError extends Error {
     };
   }) {
     super(message);
-    this.name = 'WorkerPoolError';
+    this.name = "WorkerPoolError";
     this.type = type;
     this.severity = severity;
     this.workerId = workerId;
@@ -111,4 +171,4 @@ export interface WorkerPoolStats {
     topErrorPatterns: string[];
     errorTimeDistribution: ErrorDistribution;
   };
-} 
+}

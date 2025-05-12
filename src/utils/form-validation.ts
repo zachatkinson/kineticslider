@@ -1,10 +1,16 @@
-import { useState } from 'react';
-import { ValidationError, ValidationResult } from '../types/validation';
-import { validateAndSubmit, getFeedbackClass, getFieldClass } from './form-helpers';
+import { useState } from "react";
+import { ValidationError, ValidationResult } from "../types/validation";
+import {
+  validateAndSubmit,
+  getFeedbackClass,
+  getFieldClass,
+} from "./form-helpers";
 
 /**
  * Custom hook for slide form validation
+ *
  * @returns The form validation object
+ *
  */
 export function useSlideValidation(): {
   validationResult: ValidationResult;
@@ -18,16 +24,22 @@ export function useSlideValidation(): {
   hasFieldCriticalError: (fieldName: string) => boolean;
   hasCriticalErrors: () => boolean;
 } {
-  const [validationResult, setValidationResult] = useState<ValidationResult>({ errors: [], valid: true });
+  const [validationResult, setValidationResult] = useState<ValidationResult>({
+    errors: [],
+    valid: true,
+  });
   const [validating, setValidating] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const getErrorForField = (errors: ValidationError[], fieldName: string): ValidationError | undefined => {
-    return errors.find(error => error.field === fieldName);
+  const getErrorForField = (
+    errors: ValidationError[],
+    fieldName: string,
+  ): ValidationError | undefined => {
+    return errors.find((error) => error.field === fieldName);
   };
 
   const hasCriticalErrors = (errors: ValidationError[]): boolean => {
-    return errors.some(error => error.severity === 'error');
+    return errors.some((error) => error.severity === "error");
   };
 
   return {
@@ -37,15 +49,17 @@ export function useSlideValidation(): {
     setValidationResult,
     setValidating,
     setSubmitted,
-    getErrorForField: (fieldName: string) => getErrorForField(validationResult.errors, fieldName),
-    getFieldClass: (fieldName: string) => getFieldClass(validationResult.errors, fieldName),
+    getErrorForField: (fieldName: string) =>
+      getErrorForField(validationResult.errors, fieldName),
+    getFieldClass: (fieldName: string) =>
+      getFieldClass(validationResult.errors, fieldName),
     hasFieldCriticalError: (fieldName: string) => {
       const error = getErrorForField(validationResult.errors, fieldName);
-      return error?.severity === 'error';
+      return error?.severity === "error";
     },
-    hasCriticalErrors: () => hasCriticalErrors(validationResult.errors)
+    hasCriticalErrors: () => hasCriticalErrors(validationResult.errors),
   };
 }
 
 // Re-export these functions for use in components
-export { validateAndSubmit, getFeedbackClass, getFieldClass }; 
+export { validateAndSubmit, getFeedbackClass, getFieldClass };

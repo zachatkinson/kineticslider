@@ -1,27 +1,28 @@
 /**
  * Analytics-related type definitions and interfaces
  */
-import type { SlideIndex, SliderId } from './branded';
-import type { ErrorType } from './slider';
+import type { SlideIndex, SliderId } from "./branded";
+import type { ErrorType } from "./slider";
 
 /**
  * Types of events that can be tracked
  */
 export type SliderEventType =
-  | 'slide_change'
-  | 'animation_start'
-  | 'animation_complete'
-  | 'gesture_start'
-  | 'gesture_end'
-  | 'gesture_detected'
-  | 'error'
-  | 'view'
-  | 'interaction'
-  | 'performance_metric'
-  | 'accessibility_action';
+  | "slide_change"
+  | "animation_start"
+  | "animation_complete"
+  | "gesture_start"
+  | "gesture_end"
+  | "gesture_detected"
+  | "error"
+  | "view"
+  | "interaction"
+  | "performance_metric"
+  | "accessibility_action";
 
 /**
  * Base event data interface
+ *
  * @example Example usage
  */
 interface BaseEventData {
@@ -33,10 +34,11 @@ interface BaseEventData {
 
 /**
  * Event-specific data interfaces
+ *
  * @example Example usage
  */
 interface SlideChangeEventData extends BaseEventData {
-  type: 'slide_change';
+  type: "slide_change";
   fromIndex: SlideIndex;
   toIndex: SlideIndex;
   slideId: SliderId;
@@ -44,48 +46,48 @@ interface SlideChangeEventData extends BaseEventData {
 }
 
 interface AnimationEventData extends BaseEventData {
-  type: 'animation_start' | 'animation_complete';
+  type: "animation_start" | "animation_complete";
   duration: number;
-  direction: 'forward' | 'backward';
+  direction: "forward" | "backward";
 }
 
 interface GestureEventData extends BaseEventData {
-  type: 'gesture_start' | 'gesture_end' | 'gesture_detected';
-  direction: 'horizontal' | 'vertical';
+  type: "gesture_start" | "gesture_end" | "gesture_detected";
+  direction: "horizontal" | "vertical";
   distance: number;
   velocity: number;
 }
 
 interface ErrorEventData extends BaseEventData {
-  type: 'error';
+  type: "error";
   errorType: ErrorType;
   message: string;
   stack?: string;
 }
 
 interface ViewEventData extends BaseEventData {
-  type: 'view';
+  type: "view";
   slideId: SliderId;
   duration: number;
   isVisible: boolean;
 }
 
 interface InteractionEventData extends BaseEventData {
-  type: 'interaction';
-  action: 'click' | 'hover' | 'focus';
+  type: "interaction";
+  action: "click" | "hover" | "focus";
   target: string;
   slideId?: SliderId;
 }
 
 interface PerformanceEventData extends BaseEventData {
-  type: 'performance_metric';
+  type: "performance_metric";
   metricName: string;
   value: number;
   unit: string;
 }
 
 interface AccessibilityEventData extends BaseEventData {
-  type: 'accessibility_action';
+  type: "accessibility_action";
   action: string;
   element: string;
   role: string;
@@ -106,6 +108,7 @@ export type SliderEventData =
 
 /**
  * Analytics configuration
+ *
  * @example Example usage
  */
 interface AnalyticsConfig {
@@ -126,6 +129,7 @@ interface AnalyticsConfig {
 
 /**
  * Analytics provider interface
+ *
  * @example Example usage
  */
 export interface AnalyticsProvider {
@@ -137,15 +141,16 @@ export interface AnalyticsProvider {
 
 /** All possible slider event types for analytics */
 export type SliderAnalyticsEventType =
-  | 'slide_change'
-  | 'animation_complete'
-  | 'gesture_detected'
-  | 'error'
-  | 'interaction'
-  | 'performance_metric'
-  | 'accessibility_action';
+  | "slide_change"
+  | "animation_complete"
+  | "gesture_detected"
+  | "error"
+  | "interaction"
+  | "performance_metric"
+  | "accessibility_action";
 
-/** Base analytics data interface 
+/** Base analytics data interface
+ *
  * @example Example usage
  */
 interface BaseAnalyticsData {
@@ -155,42 +160,46 @@ interface BaseAnalyticsData {
   sessionId?: string;
 }
 
-/** Analytics data for slide changes 
+/** Analytics data for slide changes
+ *
  * @example Example usage
  */
 interface SlideChangeAnalytics extends BaseAnalyticsData {
-  eventType: 'slide_change';
+  eventType: "slide_change";
   fromIndex: SlideIndex;
   toIndex: SlideIndex;
   slideId: SliderId;
   isAutoplay: boolean;
 }
 
-/** Analytics data for animation completion 
+/** Analytics data for animation completion
+ *
  * @example Example usage
  */
 interface AnimationCompleteAnalytics extends BaseAnalyticsData {
-  eventType: 'animation_complete';
+  eventType: "animation_complete";
   duration: number;
-  direction: 'forward' | 'backward';
+  direction: "forward" | "backward";
 }
 
-/** Analytics data for gesture detection 
+/** Analytics data for gesture detection
+ *
  * @example Example usage
  */
 interface GestureAnalytics extends BaseAnalyticsData {
-  eventType: 'gesture_detected';
+  eventType: "gesture_detected";
   gestureType: string;
-  direction: 'horizontal' | 'vertical';
+  direction: "horizontal" | "vertical";
   distance: number;
   velocity: number;
 }
 
-/** Analytics data for errors 
+/** Analytics data for errors
+ *
  * @example Example usage
  */
 interface ErrorAnalytics extends BaseAnalyticsData {
-  eventType: 'error';
+  eventType: "error";
   error: Error;
   errorType: ErrorType;
   componentInfo?: {
@@ -202,9 +211,9 @@ interface ErrorAnalytics extends BaseAnalyticsData {
 
 /** Union type for all slider analytics data */
 export type SliderAnalyticsData =
-  | SlideChangeAnalytics 
-  | AnimationCompleteAnalytics 
-  | GestureAnalytics 
+  | SlideChangeAnalytics
+  | AnimationCompleteAnalytics
+  | GestureAnalytics
   | ErrorAnalytics;
 
 // Export all types
@@ -223,5 +232,5 @@ export type {
   SlideChangeAnalytics,
   AnimationCompleteAnalytics,
   GestureAnalytics,
-  ErrorAnalytics
+  ErrorAnalytics,
 };

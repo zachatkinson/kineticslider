@@ -4,6 +4,7 @@
 
 /**
  * Options for addEventListener
+ *
  * @example Example usage
  */
 export interface AddEventListenerOptions {
@@ -22,11 +23,12 @@ export type FrameRequestCallback = (time: number) => void;
  */
 export type ResizeObserverCallback = (
   entries: ResizeObserverEntry[],
-  observer: ResizeObserver
+  observer: ResizeObserver,
 ) => void;
 
 /**
  * Normalized pointer event interface to handle: touch, mouse and pointer events uniformly
+ *
  * @example Example usage
  */
 export interface NormalizedPointerEvent {

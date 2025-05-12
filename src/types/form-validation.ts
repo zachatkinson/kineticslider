@@ -1,7 +1,8 @@
-import type { ValidationError, ValidationResult } from './validation';
+import type { ValidationError, ValidationResult } from "./validation";
 
 /**
  * Form validation options
+ *
  * @example Example usage
  */
 export interface FormValidationOptions {
@@ -15,6 +16,7 @@ export interface FormValidationOptions {
 
 /**
  * Form validation state
+ *
  * @example Example usage
  */
 export interface FormValidationState<_T> {

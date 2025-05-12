@@ -2,10 +2,11 @@
  * Types related to Pixi.js components and functionality
  */
 
-import type { Application, Container, Sprite, Texture } from 'pixi.js';
+import type { Application, Container, Sprite, Texture } from "pixi.js";
 
 /**
  * Represents the data for a slide
+ *
  * @example Example usage
  */
 export interface SlideData {
@@ -19,6 +20,7 @@ export interface SlideData {
 
 /**
  * Props for the PixiApp component
+ *
  * @example Example usage
  */
 export interface PixiAppProps {
@@ -40,6 +42,7 @@ export interface PixiAppProps {
 
 /**
  * Represents a slide in the Pixi.js context
+ *
  * @example Example usage
  */
 export interface PixiSlide {

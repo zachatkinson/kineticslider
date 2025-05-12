@@ -1,10 +1,11 @@
 /**
  * Accessibility-related type definitions and interfaces
  */
-import type { FocusTrapOptions } from './keyboard';
+import type { FocusTrapOptions } from "./keyboard";
 
 /**
  * Props for the FocusManager component
+ *
  * @example Example usage
  */
 export interface FocusManagerProps {
@@ -38,6 +39,7 @@ export interface FocusManagerProps {
 
 /**
  * Accessibility configuration options
+ *
  * @example Example usage
  */
 export interface AccessibilityConfig {
@@ -67,15 +69,16 @@ export interface AccessibilityConfig {
  * Accessibility action types
  */
 export type AccessibilityAction =
-  | 'focus'
-  | 'blur'
-  | 'keyPress'
-  | 'announcement'
-  | 'roleChange'
-  | 'stateChange';
+  | "focus"
+  | "blur"
+  | "keyPress"
+  | "announcement"
+  | "roleChange"
+  | "stateChange";
 
 /**
  * Accessibility event data
+ *
  * @example Example usage
  */
 export interface AccessibilityEvent {
@@ -89,6 +92,7 @@ export interface AccessibilityEvent {
 
 /**
  * Props for slider accessibility hook
+ *
  * @example Example usage
  */
 export interface UseSliderAccessibilityProps {

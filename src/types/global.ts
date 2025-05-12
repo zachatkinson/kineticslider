@@ -1,6 +1,6 @@
-import gsap from 'gsap';
-import type { GsapInstance } from './gsap';
-import type { WindowWithAnalytics } from './performance';
+import gsap from "gsap";
+import type { GsapInstance } from "./gsap";
+import type { WindowWithAnalytics } from "./performance";
 
 /**
  * Global type declarations for the application
@@ -9,6 +9,7 @@ import type { WindowWithAnalytics } from './performance';
 declare global {
   /**
    * Window interface extensions
+   *
    * @example Example usage
    */
   interface Window extends WindowWithAnalytics {
@@ -39,4 +40,4 @@ declare global {
   }
 }
 
-export {}; 
+export {};

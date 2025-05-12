@@ -1,4 +1,4 @@
-import type { Slide } from './slider';
+import type { Slide } from "./slider";
 
 /**
  * Form-related type definitions and interfaces
@@ -6,6 +6,7 @@ import type { Slide } from './slider';
 
 /**
  * Props for the SlideForm component
+ *
  * @example Example usage
  */
 export interface SlideFormProps {
@@ -19,13 +20,14 @@ export interface SlideFormProps {
 
 /**
  * Form field configuration
+ *
  * @example Example usage
  */
 export interface FormFieldConfig {
   /** Field label */
   label: string;
   /** Field type */
-  type: 'text' | 'number' | 'textarea' | 'select' | 'checkbox';
+  type: "text" | "number" | "textarea" | "select" | "checkbox";
   /** Whether field is required */
   required?: boolean;
   /** Field validation rules */
@@ -40,4 +42,4 @@ export interface FormFieldConfig {
     label: string;
     value: string | number;
   }>;
-} 
+}

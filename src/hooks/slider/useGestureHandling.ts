@@ -1,8 +1,8 @@
-import * as React from 'react';
-import { useCallback, useRef } from 'react';
-import { useSlider } from '../../context/SliderContext';
-import { createBrandedNumber } from '../../types/branded';
-import type { SliderContextValue } from '../../types/slider';
+import * as React from "react";
+import { useCallback, useRef } from "react";
+import { useSlider } from "../../context/SliderContext";
+import { createBrandedNumber } from "../../types/branded";
+import type { SliderContextValue } from "../../types/slider";
 
 interface GestureStateRef {
   startX: number;
@@ -13,9 +13,13 @@ interface GestureStateRef {
 /**
  *
  * @param _containerRef The reference to the container element
+ *
  * @returns {unknown} The function return value
+ *
  */
-export function useGestureHandling(_containerRef: React.RefObject<HTMLDivElement>): unknown  {
+export function useGestureHandling(
+  _containerRef: React.RefObject<HTMLDivElement>,
+): unknown {
   const { state, config, actions } = useSlider() as SliderContextValue;
   const gestureState = useRef<GestureStateRef>({
     startX: 0,
@@ -23,35 +27,59 @@ export function useGestureHandling(_containerRef: React.RefObject<HTMLDivElement
     isDragging: false,
   });
 
-  const handleGestureStart = useCallback((clientX: number, clientY: number) => {
-    if (state.isAnimating) return;
+  const handleGestureStart = useCallback(
+    (clientX: number, clientY: number) => {
+      if (state.isAnimating) return;
 
-    gestureState.current = {
-      startX: clientX,
-      startY: clientY,
-      isDragging: true,
-    };
-  }, [state.isAnimating]);
+      gestureState.current = {
+        startX: clientX,
+        startY: clientY,
+        isDragging: true,
+      };
+    },
+    [state.isAnimating],
+  );
 
-  const handleGestureMove = useCallback((clientX: number, clientY: number) => {
-    if (!gestureState.current.isDragging) return;
+  const handleGestureMove = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!gestureState.current.isDragging) return;
 
-    const deltaX = clientX - gestureState.current.startX;
-    const deltaY = clientY - gestureState.current.startY;
+      const deltaX = clientX - gestureState.current.startX;
+      const deltaY = clientY - gestureState.current.startY;
 
-    // Apply resistance to the drag (default to 1 if not specified)
-    const resistance = 1;
-    const resistedDeltaX = createBrandedNumber(deltaX * resistance, 'GestureDistance');
-    const resistedDeltaY = createBrandedNumber(deltaY * resistance, 'GestureDistance');
+      // Apply resistance to the drag (default to 1 if not specified)
+      const resistance = 1;
+      const resistedDeltaX = createBrandedNumber(
+        deltaX * resistance,
+        "GestureDistance",
+      );
+      const resistedDeltaY = createBrandedNumber(
+        deltaY * resistance,
+        "GestureDistance",
+      );
 
-    // Update drag delta based on direction
-    if(config.gestureDirection === 'horizontal' || config.gestureDirection === 'both') {
-      actions.updateDragDelta({ x: resistedDeltaX, y: createBrandedNumber(0, 'GestureDistance') });
-    }
-    if(config.gestureDirection === 'vertical' || config.gestureDirection === 'both') {
-      actions.updateDragDelta({ x: createBrandedNumber(0, 'GestureDistance'), y: resistedDeltaY });
-    }
-  }, [config.gestureDirection, actions]);
+      // Update drag delta based on direction
+      if (
+        config.gestureDirection === "horizontal" ||
+        config.gestureDirection === "both"
+      ) {
+        actions.updateDragDelta({
+          x: resistedDeltaX,
+          y: createBrandedNumber(0, "GestureDistance"),
+        });
+      }
+      if (
+        config.gestureDirection === "vertical" ||
+        config.gestureDirection === "both"
+      ) {
+        actions.updateDragDelta({
+          x: createBrandedNumber(0, "GestureDistance"),
+          y: resistedDeltaY,
+        });
+      }
+    },
+    [config.gestureDirection, actions],
+  );
 
   const handleGestureEnd = useCallback(() => {
     if (!gestureState.current.isDragging) return;
@@ -65,13 +93,15 @@ export function useGestureHandling(_containerRef: React.RefObject<HTMLDivElement
     gestureState.current.isDragging = false;
 
     // Determine if the gesture should trigger a slide change
-    const isHorizontalSwipe = Math.abs(deltaX as number) > Math.abs(deltaY as number);
+    const isHorizontalSwipe =
+      Math.abs(deltaX as number) > Math.abs(deltaY as number);
     const threshold = config.gestureThreshold ?? 50;
     const velocityThreshold = 0.5;
-    const meetsThreshold = Math.abs(deltaX as number) > threshold || velocity > velocityThreshold;
+    const meetsThreshold =
+      Math.abs(deltaX as number) > threshold || velocity > velocityThreshold;
 
-    if(isHorizontalSwipe && meetsThreshold) {
-      if(deltaX as number > 0) {
+    if (isHorizontalSwipe && meetsThreshold) {
+      if ((deltaX as number) > 0) {
         actions.previous();
       } else {
         actions.next();
@@ -79,33 +109,45 @@ export function useGestureHandling(_containerRef: React.RefObject<HTMLDivElement
     }
 
     // Reset drag delta
-    actions.updateDragDelta({ 
-      x: createBrandedNumber(0, 'GestureDistance'), 
-      y: createBrandedNumber(0, 'GestureDistance') 
+    actions.updateDragDelta({
+      x: createBrandedNumber(0, "GestureDistance"),
+      y: createBrandedNumber(0, "GestureDistance"),
     });
   }, [state.dragDelta, config.gestureThreshold, actions]);
 
-  const handleTouchStart = useCallback((event: React.TouchEvent) => {
-    const touch = event.touches[0];
-    handleGestureStart(touch.clientX, touch.clientY);
-  }, [handleGestureStart]);
+  const handleTouchStart = useCallback(
+    (event: React.TouchEvent) => {
+      const touch = event.touches[0];
+      handleGestureStart(touch.clientX, touch.clientY);
+    },
+    [handleGestureStart],
+  );
 
-  const handleTouchMove = useCallback((event: React.TouchEvent) => {
-    const touch = event.touches[0];
-    handleGestureMove(touch.clientX, touch.clientY);
-  }, [handleGestureMove]);
+  const handleTouchMove = useCallback(
+    (event: React.TouchEvent) => {
+      const touch = event.touches[0];
+      handleGestureMove(touch.clientX, touch.clientY);
+    },
+    [handleGestureMove],
+  );
 
   const handleTouchEnd = useCallback(() => {
     handleGestureEnd();
   }, [handleGestureEnd]);
 
-  const handleMouseDown = useCallback((event: React.MouseEvent) => {
-    handleGestureStart(event.clientX, event.clientY);
-  }, [handleGestureStart]);
+  const handleMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      handleGestureStart(event.clientX, event.clientY);
+    },
+    [handleGestureStart],
+  );
 
-  const handleMouseMove = useCallback((event: React.MouseEvent) => {
-    handleGestureMove(event.clientX, event.clientY);
-  }, [handleGestureMove]);
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      handleGestureMove(event.clientX, event.clientY);
+    },
+    [handleGestureMove],
+  );
 
   const handleMouseUp = useCallback(() => {
     handleGestureEnd();
@@ -119,4 +161,4 @@ export function useGestureHandling(_containerRef: React.RefObject<HTMLDivElement
     handleMouseMove,
     handleMouseUp,
   };
-} 
+}

@@ -3,6 +3,7 @@
 
 /**
  * Custom test matchers for Vitest
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -17,7 +18,7 @@
  *     };
  *   }
  * });
- * 
+ *
  * // Using the custom matcher
  * expect(mockGestureHandler).toHaveBeenCalledWithDirection('left');
  * ```
@@ -28,6 +29,7 @@ export interface CustomMatchers<R = unknown> {
 
 /**
  * Extended assertion interface with custom matchers
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -35,7 +37,7 @@ export interface CustomMatchers<R = unknown> {
  * const customExpect = (value: unknown): ExtendedAssertion => {
  *   return expect(value) as ExtendedAssertion;
  * };
- * 
+ *
  * // Using the extended assertion
  * customExpect(mockGestureHandler).toHaveBeenCalledWithDirection('right');
  * customExpect(value).toBe(expectedValue);
@@ -47,6 +49,7 @@ export interface ExtendedAssertion<T = unknown> extends CustomMatchers<T> {
 
 /**
  * Extended asymmetric matchers interface
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -58,7 +61,7 @@ export interface ExtendedAssertion<T = unknown> extends CustomMatchers<T> {
  *   toString: () => `HasDirection(${direction})`,
  *   toJSON: () => `HasDirection(${direction})`
  * });
- * 
+ *
  * // Using the asymmetric matcher
  * expect({ direction: 'left', distance: 100 }).toEqual(expect.objectContaining({
  *   direction: hasDirection('left')
@@ -71,6 +74,7 @@ export interface ExtendedAsymmetricMatchers extends CustomMatchers {
 
 /**
  * Extended mock interface for testing
+ *
  * @description * @example Example usage
  * @example
  * ```typescript
@@ -79,7 +83,7 @@ export interface ExtendedAsymmetricMatchers extends CustomMatchers {
  *   .mockImplementation((event) => {
  *     return event.type === 'swipe' ? true : false;
  *   });
- * 
+ *
  * // Using the mock
  * mockHandler({ type: 'swipe', direction: 'left' });
  * expect(mockHandler).toHaveBeenCalled();
@@ -100,4 +104,4 @@ export interface ExtendedMock<_T = unknown> {
     invocationCallOrder: number[];
     results: { type: string; value: unknown }[];
   };
-} 
+}

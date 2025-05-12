@@ -2,10 +2,11 @@
  * Accessibility utilities for screen reader announcements and focus management
  * Provides a singleton announcer class and helper functions for ARIA announcements
  */
-import { AnnouncementPriority, AnnouncerOptions } from '../types/a11y';
+import { AnnouncementPriority, AnnouncerOptions } from "../types/a11y";
 
 /**
  * AriaAnnouncer class for managing screen reader announcements
+ *
  * @example Example usage
  */
 export class AriaAnnouncer {
@@ -17,9 +18,9 @@ export class AriaAnnouncer {
 
   private constructor(options: AnnouncerOptions = {}) {
     this.options = {
-      politeLiveRegionId: options.politeLiveRegionId || 'aria-announcer-polite',
+      politeLiveRegionId: options.politeLiveRegionId || "aria-announcer-polite",
       assertiveLiveRegionId:
-        options.assertiveLiveRegionId || 'aria-announcer-assertive',
+        options.assertiveLiveRegionId || "aria-announcer-assertive",
       createRegions:
         options.createRegions !== undefined ? options.createRegions : true,
       politeDuration: options.politeDuration || 5000,
@@ -27,18 +28,21 @@ export class AriaAnnouncer {
     };
 
     // Initialize live regions on client side only
-    if(typeof document !== 'undefined') {
+    if (typeof document !== "undefined") {
       this.initLiveRegions();
     }
   }
 
   /**
    * Gets or creates the singleton instance of AriaAnnouncer
+   *
    * @param options Configuration options for the announcer
+   *
    * @returns {AriaAnnouncer} The singleton AriaAnnouncer instance
+   *
    */
   public static getInstance(options?: AnnouncerOptions): AriaAnnouncer {
-    if(!AriaAnnouncer.instance) {
+    if (!AriaAnnouncer.instance) {
       AriaAnnouncer.instance = new AriaAnnouncer(options);
     }
     return AriaAnnouncer.instance;
@@ -46,33 +50,36 @@ export class AriaAnnouncer {
 
   /**
    * Make an announcement to screen readers
+   *
    * @param message The message to announce
+   *
    * @param priority The announcement priority (polite or assertive)
+   *
    */
   public announce(
     message: string,
-    priority: AnnouncementPriority = AnnouncementPriority.POLITE
+    priority: AnnouncementPriority = AnnouncementPriority.POLITE,
   ): void {
-    if (typeof document === 'undefined') return;
+    if (typeof document === "undefined") return;
 
-    const region = 
+    const region =
       priority === AnnouncementPriority.ASSERTIVE
         ? this.assertiveRegion
         : this.politeRegion;
 
-    if(!region) {
-      console.warn('Live region not available for screen reader announcement');
+    if (!region) {
+      console.warn("Live region not available for screen reader announcement");
       return;
     }
 
     // Clear any existing timeout for this region
     const timeoutId = this.clearTimeouts.get(priority);
-    if(timeoutId) {
+    if (timeoutId) {
       window.clearTimeout(timeoutId);
     }
 
     // To ensure announcement is: made, we first clear the region
-    region.textContent = '';
+    region.textContent = "";
 
     // Then set the message after a short delay - this ensures screen readers detect the change
     setTimeout(() => {
@@ -81,11 +88,11 @@ export class AriaAnnouncer {
       // Clear message after duration to avoid repeated announcements
       const clearTimeout = window.setTimeout(
         () => {
-          if (region) region.textContent = '';
+          if (region) region.textContent = "";
         },
         priority === AnnouncementPriority.ASSERTIVE
           ? this.options.assertiveDuration
-          : this.options.politeDuration
+          : this.options.politeDuration,
       );
 
       this.clearTimeouts.set(priority, clearTimeout);
@@ -98,25 +105,25 @@ export class AriaAnnouncer {
   private initLiveRegions(): void {
     // First try to find existing regions
     this.politeRegion = document.getElementById(
-      this.options.politeLiveRegionId
+      this.options.politeLiveRegionId,
     );
     this.assertiveRegion = document.getElementById(
-      this.options.assertiveLiveRegionId
+      this.options.assertiveLiveRegionId,
     );
 
     // Create regions if needed
-    if(!this.politeRegion && this.options.createRegions) {
+    if (!this.politeRegion && this.options.createRegions) {
       this.politeRegion = this.createLiveRegion(
         this.options.politeLiveRegionId,
-        AnnouncementPriority.POLITE
+        AnnouncementPriority.POLITE,
       );
       document.body.appendChild(this.politeRegion);
     }
 
-    if(!this.assertiveRegion && this.options.createRegions) {
+    if (!this.assertiveRegion && this.options.createRegions) {
       this.assertiveRegion = this.createLiveRegion(
         this.options.assertiveLiveRegionId,
-        AnnouncementPriority.ASSERTIVE
+        AnnouncementPriority.ASSERTIVE,
       );
       document.body.appendChild(this.assertiveRegion);
     }
@@ -124,30 +131,34 @@ export class AriaAnnouncer {
 
   /**
    * Creates a live region element with appropriate ARIA attributes
+   *
    * @param id The ID to assign to the live region
+   *
    * @param priority The announcement priority (polite or assertive)
+   *
    * @returns {HTMLElement} The created live region element
+   *
    */
   private createLiveRegion(
     id: string,
-    priority: AnnouncementPriority
+    priority: AnnouncementPriority,
   ): HTMLElement {
-    const region = document.createElement('div');
+    const region = document.createElement("div");
     region.id = id;
-    region.setAttribute('aria-live', priority);
-    region.setAttribute('aria-atomic', 'true');
-    region.setAttribute('role', 'status');
+    region.setAttribute("aria-live", priority);
+    region.setAttribute("aria-atomic", "true");
+    region.setAttribute("role", "status");
 
     // Visually hide but keep available to screen readers
     Object.assign(region.style, {
-      position: 'absolute',
-      width: '1px',
-      height: '1px',
-      padding: '0',
-      overflow: 'hidden',
-      clip: 'rect(0, 0, 0, 0)',
-      whiteSpace: 'nowrap',
-      border: '0',
+      position: "absolute",
+      width: "1px",
+      height: "1px",
+      padding: "0",
+      overflow: "hidden",
+      clip: "rect(0, 0, 0, 0)",
+      whiteSpace: "nowrap",
+      border: "0",
     });
 
     return region;
@@ -159,11 +170,11 @@ export class AriaAnnouncer {
   public dispose(): void {
     this.clearTimeouts.forEach((id) => window.clearTimeout(id));
 
-    if(this.politeRegion?.parentNode && this.options.createRegions) {
+    if (this.politeRegion?.parentNode && this.options.createRegions) {
       this.politeRegion.parentNode.removeChild(this.politeRegion);
     }
 
-    if(this.assertiveRegion?.parentNode && this.options.createRegions) {
+    if (this.assertiveRegion?.parentNode && this.options.createRegions) {
       this.assertiveRegion.parentNode.removeChild(this.assertiveRegion);
     }
   }
@@ -174,42 +185,53 @@ export const announcer = AriaAnnouncer.getInstance();
 
 /**
  * Announce a message to screen readers
+ *
  * @param message Message to announce
+ *
  * @param priority Priority of the announcement
+ *
  */
 export function announce(
   message: string,
-  priority: AnnouncementPriority = AnnouncementPriority.POLITE
+  priority: AnnouncementPriority = AnnouncementPriority.POLITE,
 ): void {
   announcer.announce(message, priority);
 }
 
 /**
  * Announce errors to screen readers in an assertive manner
+ *
  * @param error Error to announce
+ *
  * @returns {ReturnType} The return value
+ *
  */
 export function _announceError(error: Error | string): void {
-  const message = typeof error === 'string' ? error : error.message;
+  const message = typeof error === "string" ? error : error.message;
   announcer.announce(`Error: ${message}`, AnnouncementPriority.ASSERTIVE);
 }
 
 /**
  * Announce slide changes to screen readers
+ *
  * @param slideIndex Current slide index
+ *
  * @param totalSlides Total number of slides
+ *
  * @param slideTitle Optional slide title
+ *
  * @returns {ReturnType} The return value
+ *
  */
 export function _announceSlideChange(
   slideIndex: number,
   totalSlides: number,
-  slideTitle?: string
+  slideTitle?: string,
 ): void {
   const slideNumber = slideIndex + 1;
   let message = `Slide ${slideNumber} of ${totalSlides}`;
 
-  if(slideTitle) {
+  if (slideTitle) {
     message += `, ${slideTitle}`;
   }
 

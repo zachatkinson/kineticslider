@@ -1,13 +1,15 @@
 /**
  * PIXI-related test type definitions
+ *
  * @module
  * @version 1.0.0
  */
 
-import type { Mock } from 'vitest';
+import type { Mock } from "vitest";
 
 /**
  * Mock PIXI Container interface
+ *
  * @example Example usage
  */
 export interface MockPixiContainer {
@@ -26,6 +28,7 @@ export interface MockPixiContainer {
 
 /**
  * Mock PIXI Application interface
+ *
  * @example Example usage
  */
 export interface MockPixiApplication {
@@ -39,6 +42,7 @@ export interface MockPixiApplication {
 
 /**
  * Mock PIXI Sprite interface
+ *
  * @example Example usage
  */
 export interface MockPixiSprite {
@@ -58,4 +62,4 @@ export interface MockPixiSprite {
   alpha: number;
   visible: boolean;
   destroy: () => void;
-} 
+}

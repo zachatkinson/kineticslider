@@ -1,11 +1,12 @@
 /**
  * Error type definitions and error handling interfaces
+ *
  * @module
  * @version 1.0.0
  */
 
-import { SliderId, SlideIndex } from './branded';
-import type { ValidationResult } from './validation';
+import { SliderId, SlideIndex } from "./branded";
+import type { ValidationResult } from "./validation";
 
 // Re-export ValidationResult for backward compatibility
 export type { ValidationResult };
@@ -15,74 +16,74 @@ export type { ValidationResult };
  */
 export enum ErrorType {
   /** Errors that occur during component rendering */
-  RENDER = 'render',
+  RENDER = "render",
   /** Errors that occur during asynchronous operations */
-  ASYNC = 'async',
+  ASYNC = "async",
   /** Errors that occur during animations */
-  ANIMATION = 'animation',
+  ANIMATION = "animation",
   /** Errors that occur during data validation */
-  VALIDATION = 'validation',
+  VALIDATION = "validation",
   /** Errors that occur during resource loading */
-  RESOURCE = 'resource',
+  RESOURCE = "resource",
   /** Errors that occur during user interactions */
-  INTERACTION = 'interaction',
+  INTERACTION = "interaction",
   /** Errors that occur during state updates */
-  STATE = 'state',
+  STATE = "state",
   /** Generic operation errors */
-  OPERATION = 'operation',
+  OPERATION = "operation",
   /** Gesture handling errors */
-  GESTURE = 'gesture',
+  GESTURE = "gesture",
   /** Navigation errors */
-  NAVIGATION = 'navigation',
+  NAVIGATION = "navigation",
   /**
    * Animation errors
    */
-  ANIMATION_ERROR = 'animation_error',
-  
+  ANIMATION_ERROR = "animation_error",
+
   /**
    * Asset loading errors
    */
-  ASSET_LOADING = 'asset_loading',
-  
+  ASSET_LOADING = "asset_loading",
+
   /**
    * Image loading errors
    */
-  IMAGE_LOAD_ERROR = 'image_load_error',
-  
+  IMAGE_LOAD_ERROR = "image_load_error",
+
   /**
    * Network errors
    */
-  NETWORK = 'network',
-  
+  NETWORK = "network",
+
   /**
    * User input errors
    */
-  USER_INPUT = 'user_input',
-  
+  USER_INPUT = "user_input",
+
   /**
    * Configuration errors
    */
-  CONFIGURATION = 'configuration',
-  
+  CONFIGURATION = "configuration",
+
   /**
    * Unknown or unspecified errors
    */
-  UNKNOWN = 'unknown',
-  
+  UNKNOWN = "unknown",
+
   /**
    * Performance-related errors
    */
-  PERFORMANCE = 'performance',
-  
+  PERFORMANCE = "performance",
+
   /**
    * Initialization errors
    */
-  INITIALIZATION = 'initialization',
-  
+  INITIALIZATION = "initialization",
+
   /**
    * Worker pool errors
    */
-  WORKER_POOL = 'worker_pool'
+  WORKER_POOL = "worker_pool",
 }
 
 /**
@@ -90,17 +91,18 @@ export enum ErrorType {
  */
 export enum ErrorSeverity {
   /** Informational issues that don't affect functionality */
-  INFO = 'info',
+  INFO = "info",
   /** Minor issues that don't significantly impact functionality */
-  WARNING = 'warning',
+  WARNING = "warning",
   /** Serious issues that affect core functionality */
-  ERROR = 'error',
+  ERROR = "error",
   /** Critical issues that prevent the application from functioning */
-  CRITICAL = 'critical'
+  CRITICAL = "critical",
 }
 
 /**
  * Base error interface for all application errors
+ *
  * @example Example usage
  */
 export interface BaseError {
@@ -113,6 +115,7 @@ export interface BaseError {
 
 /**
  * Base slider error information interface
+ *
  * @example Example usage
  */
 export interface SliderErrorInfo {
@@ -127,6 +130,7 @@ export interface SliderErrorInfo {
 
 /**
  * Base slider error interface
+ *
  * @example Example usage
  */
 export interface SliderError extends Error {
@@ -138,6 +142,7 @@ export interface SliderError extends Error {
 
 /**
  * Structure of a tracked error event
+ *
  * @example Example usage
  */
 export interface ErrorEvent extends BaseError {
@@ -152,6 +157,7 @@ export interface ErrorInfo {
 
 /**
  * Extended Error interface with additional properties
+ *
  * @example Example usage
  */
 export interface ExtendedError extends Error {
@@ -159,32 +165,32 @@ export interface ExtendedError extends Error {
    * Error code
    */
   code?: string;
-  
+
   /**
    * Error context
    */
   context?: Record<string, unknown>;
-  
+
   /**
    * Error stack
    */
   stack?: string;
-  
+
   /**
    * Error timestamp
    */
   timestamp?: string;
-  
+
   /**
    * Whether the error has been handled
    */
   handled?: boolean;
-  
+
   /**
    * Number of error occurrences
    */
   occurrences?: number;
-  
+
   /**
    * Convert to standardized error info
    */
@@ -193,6 +199,7 @@ export interface ExtendedError extends Error {
 
 /**
  * Extended Error interface with additional context
+ *
  * @example Example usage
  */
 export interface ComponentError extends Error {
@@ -225,6 +232,7 @@ export interface ComponentError extends Error {
 
 /**
  * Error boundary state interface
+ *
  * @example Example usage
  */
 export interface ErrorBoundaryState {
@@ -236,6 +244,7 @@ export interface ErrorBoundaryState {
 
 /**
  * Error tracking configuration options
+ *
  * @example Example usage
  */
 export interface ErrorTrackingOptions {
@@ -258,6 +267,7 @@ export interface ErrorTrackingOptions {
 
 /**
  * Represents a sanitized error object safe for client display
+ *
  * @example Example usage
  */
 export interface SanitizedError {
@@ -272,13 +282,14 @@ export interface SanitizedError {
  * Represents the severity level of a validation error
  */
 export enum ValidationErrorSeverity {
-  WARNING = 'warning',
-  ERROR = 'error',
-  CRITICAL = 'critical'
+  WARNING = "warning",
+  ERROR = "error",
+  CRITICAL = "critical",
 }
 
 /**
  * Animation error for slider transitions
+ *
  * @example Example usage
  */
 export interface AnimationError extends ExtendedError {
@@ -293,6 +304,7 @@ export interface AnimationError extends ExtendedError {
 
 /**
  * Gesture error for touch/mouse interactions
+ *
  * @example Example usage
  */
 export interface GestureError extends BaseError {
@@ -308,6 +320,7 @@ export interface GestureError extends BaseError {
 
 /**
  * Navigation error for slide transitions
+ *
  * @example Example usage
  */
 export interface NavigationError extends BaseError {
@@ -315,12 +328,13 @@ export interface NavigationError extends BaseError {
   details: {
     fromSlide: SlideIndex;
     toSlide: SlideIndex;
-    direction: 'next' | 'prev';
+    direction: "next" | "prev";
   };
 }
 
 /**
  * Render error for component failures
+ *
  * @example Example usage
  */
 export interface RenderError extends ExtendedError {
@@ -333,6 +347,7 @@ export interface RenderError extends ExtendedError {
 
 /**
  * Validation error interface with improved structure
+ *
  * @example Example usage
  */
 export interface ValidationError extends ExtendedError {
@@ -347,6 +362,7 @@ export interface ValidationError extends ExtendedError {
 
 /**
  * Resource error for asset loading failures
+ *
  * @example Example usage
  */
 export interface ResourceError extends BaseError {
@@ -361,6 +377,7 @@ export interface ResourceError extends BaseError {
 
 /**
  * Operation error for general failures
+ *
  * @example Example usage
  */
 export interface OperationError extends BaseError {
@@ -374,6 +391,7 @@ export interface OperationError extends BaseError {
 
 /**
  * Network error
+ *
  * @example
  * ```typescript
  * const networkError: NetworkError = {
@@ -396,6 +414,7 @@ export interface NetworkError extends ExtendedError {
 
 /**
  * User input error
+ *
  * @example
  * ```typescript
  * const inputError: UserInputError = {
@@ -417,6 +436,7 @@ export interface UserInputError extends ExtendedError {
 
 /**
  * Configuration error
+ *
  * @example
  * ```typescript
  * const configError: ConfigurationError = {
@@ -438,6 +458,7 @@ export interface ConfigurationError extends ExtendedError {
 
 /**
  * Asset loading error
+ *
  * @example
  * ```typescript
  * const assetError: AssetLoadingError = {
@@ -461,6 +482,7 @@ export interface AssetLoadingError extends ExtendedError {
 
 /**
  * Worker pool error for handling failures in web worker operations
+ *
  * @example
  * ```typescript
  * const workerError: WorkerPoolError = {
@@ -502,10 +524,10 @@ export interface WorkerPoolError extends ExtendedError {
 /**
  * Union type of all specific slider errors
  */
-export type SliderErrorUnion = 
-  | AnimationError 
-  | GestureError 
-  | NavigationError 
+export type SliderErrorUnion =
+  | AnimationError
+  | GestureError
+  | NavigationError
   | RenderError
   | ValidationError
   | ResourceError
@@ -518,6 +540,7 @@ export type SliderErrorUnion =
 
 /**
  * Error tracker context for error reporting
+ *
  * @example Example usage
  */
 export interface ErrorTrackerContext {
@@ -526,7 +549,7 @@ export interface ErrorTrackerContext {
   /** Action being performed when error occurred */
   action?: string;
   /** Error severity level */
-  severity: 'error' | 'warning' | 'info';
+  severity: "error" | "warning" | "info";
   /** Timestamp when error occurred */
   timestamp: number;
   /** Additional error data */
@@ -535,6 +558,7 @@ export interface ErrorTrackerContext {
 
 /**
  * Error report structure for error tracking
+ *
  * @example Example usage
  */
 export interface ErrorTrackerReport {
@@ -552,6 +576,7 @@ export interface ErrorTrackerReport {
 
 /**
  * Component error handling options
+ *
  * @example
  * ```typescript
  * const errorOptions: ErrorHandlingOptions = {
@@ -576,17 +601,17 @@ export interface ErrorHandlingOptions {
    * Whether to retry on error
    */
   retry?: boolean;
-  
+
   /**
    * Number of retry attempts
    */
   retryAttempts?: number;
-  
+
   /**
    * Delay between retries in ms
    */
   retryDelay?: number;
-  
+
   /**
    * Error boundary options
    */
@@ -595,12 +620,12 @@ export interface ErrorHandlingOptions {
      * Whether to use error boundary
      */
     enabled?: boolean;
-    
+
     /**
      * Error callback
      */
     onError?: (error: ComponentError) => void;
-    
+
     /**
      * Recovery callback
      */

@@ -26,7 +26,9 @@ export class FeatureErrorBoundary extends Component<MigrationErrorBoundaryProps,
      * Static lifecycle method to update state when an error occurs
      * 
      * @param error - The error that was thrown
+     *
      * @returns Updated state object with error information
+     *
      */
     public static getDerivedStateFromError(error: Error): MigrationErrorBoundaryState {
         return { hasError: true, error };
@@ -37,7 +39,9 @@ export class FeatureErrorBoundary extends Component<MigrationErrorBoundaryProps,
      * Handles error logging and calls the onError callback if provided
      * 
      * @param error - The error that was caught
+     *
      * @param errorInfo - Additional information about the error
+     *
      */
     public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
         console.error('Feature Error Boundary caught an error:', error, errorInfo);
@@ -59,6 +63,7 @@ export class FeatureErrorBoundary extends Component<MigrationErrorBoundaryProps,
      * Renders the default fallback UI when an error occurs
      * 
      * @returns React node with error information and retry button
+     *
      */
     private renderDefaultFallback(): React.ReactNode {
         return (
@@ -83,6 +88,7 @@ export class FeatureErrorBoundary extends Component<MigrationErrorBoundaryProps,
      * Renders either the error UI or the children components
      * 
      * @returns React node with either fallback UI or children
+     *
      */
     public render(): React.ReactNode {
         if (this.state.hasError) {
@@ -96,8 +102,11 @@ export class FeatureErrorBoundary extends Component<MigrationErrorBoundaryProps,
  * Higher-order component that wraps a component with FeatureErrorBoundary
  * 
  * @param WrappedComponent - Component to wrap with error boundary
+ *
  * @param feature - Feature flag identifier
+ *
  * @param fallback - Optional custom fallback UI
+ *
  * @returns Wrapped component with error boundary
  * 
  * @example
@@ -143,7 +152,9 @@ export class MigrationErrorBoundary extends Component<MigrationErrorBoundaryProp
      * Static lifecycle method to update state when an error occurs
      * 
      * @param error - The error that was thrown
+     *
      * @returns Updated state object with error information
+     *
      */
     public static getDerivedStateFromError(error: Error): MigrationErrorBoundaryState {
         return { hasError: true, error };
@@ -154,7 +165,9 @@ export class MigrationErrorBoundary extends Component<MigrationErrorBoundaryProp
      * Handles error logging and calls the onError callback if provided
      * 
      * @param error - The error that was caught
+     *
      * @param errorInfo - Additional information about the error
+     *
      */
     public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
         console.error('Migration Error Boundary caught an error:', error, errorInfo);
@@ -165,6 +178,7 @@ export class MigrationErrorBoundary extends Component<MigrationErrorBoundaryProp
      * Renders either the error UI or the children components
      * 
      * @returns React node with either fallback UI or children
+     *
      */
     public render(): React.ReactNode {
         if (this.state.hasError) {

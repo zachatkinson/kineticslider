@@ -1,57 +1,50 @@
-import { vi } from 'vitest';
-import type { MockGsap } from '../../types/test/mocks';
+/**
+ * Mock implementations for GSAP animations
+ */
+import { vi } from "vitest";
 
-// Mock functions for GSAP animations
-const mockTo = vi.fn().mockImplementation((target: any, config: any) => {
-  if(config && config.onComplete) {
-    config.onComplete();
-  }
-  return { kill: vi.fn() };
-});
-
-const mockFromTo = vi.fn().mockImplementation((target: any, fromVars: any, toVars: any) => {
-  if(toVars && toVars.onComplete) {
-    toVars.onComplete();
-  }
-  return { kill: vi.fn() };
-});
-
+// Mock GSAP timeline
 const mockTimeline = vi.fn().mockImplementation(() => ({
-  to: mockTo,
-  fromTo: mockFromTo,
-  add: vi.fn(),
+  to: vi.fn().mockReturnThis(),
+  from: vi.fn().mockReturnThis(),
+  fromTo: vi.fn().mockReturnThis(),
+  set: vi.fn().mockReturnThis(),
+  add: vi.fn().mockReturnThis(),
   kill: vi.fn(),
   play: vi.fn(),
   pause: vi.fn(),
+  resume: vi.fn(),
   progress: vi.fn(),
-  clear: vi.fn(),
 }));
 
-// Create the consolidated mockGsap object
-const mockGsap: MockGsap = {
-  to: mockTo,
-  fromTo: mockFromTo,
+// Mock GSAP object
+const mockGsap = {
   timeline: mockTimeline,
+  to: vi.fn().mockImplementation((target: any, config: any) => {
+    if (config?.onComplete) {
+      setTimeout(() => config.onComplete(), 0);
+    }
+    return { kill: vi.fn() };
+  }),
+  from: vi.fn().mockImplementation((target: any, config: any) => {
+    if (config?.onComplete) {
+      setTimeout(() => config.onComplete(), 0);
+    }
+    return { kill: vi.fn() };
+  }),
+  fromTo: vi
+    .fn()
+    .mockImplementation((target: any, fromVars: any, toVars: any) => {
+      if (toVars?.onComplete) {
+        setTimeout(() => toVars.onComplete(), 0);
+      }
+      return { kill: vi.fn() };
+    }),
   set: vi.fn(),
   killTweensOf: vi.fn(),
   getProperty: vi.fn().mockReturnValue(0),
-  registerPlugin: vi.fn(),
-  ticker: {
-    add: vi.fn(),
-    remove: vi.fn()
-  },
-  utils: {
-    toArray: vi.fn().mockImplementation((selector: any) => 
-      Array.isArray(selector) ? selector : [selector]
-    )
-  },
-  config: {
-    autoSleep: 120,
-    force3D: true,
-    nullTargetWarn: false
-  }
+  getTweensOf: vi.fn().mockReturnValue([]),
+  config: vi.fn(),
 };
 
-// Export the mock and its helper functions
 export default mockGsap;
-export { mockGsap, mockTo, mockFromTo, mockTimeline };

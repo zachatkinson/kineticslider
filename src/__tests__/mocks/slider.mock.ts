@@ -1,93 +1,110 @@
-/**
- * Mock slider data and props for testing
- * @returns {ReturnType} The return value
- */
-import { vi } from 'vitest';
-import type { Slide } from '../../types/slider';
-import type { KineticSliderProps } from '../../types/slider';
-import type { AnimationConfig } from '../../types/animation';
-import type { SliderId as _SliderId, SlideIndex } from '../../types/branded';
-import { createSlideId } from '../helpers/testHelpers';
-import type { gsap } from 'gsap';
+import { vi } from "vitest";
+import type { Slide } from "@/types/slider";
 
-/**
- * Mock slides data
- */
-export const mockSlides: Slide[] = [
-  { id: createSlideId('1'), title: 'Slide 1', image: '/slide1.jpg', alt: 'Slide 1 description' },
-  { id: createSlideId('2'), title: 'Slide 2', image: '/slide2.jpg', alt: 'Slide 2 description' },
-  { id: createSlideId('3'), title: 'Slide 3', image: '/slide3.jpg', alt: 'Slide 3 description' },
-];
-
-/**
- * Mock slider props
- */
-export const _mockSliderProps: Partial<KineticSliderProps> = {
-  slides: mockSlides,
-  initialSlide: 0 as SlideIndex,
+// Mock functions that can be accessed and reset
+export const mockFunctions = {
+  next: vi.fn(),
+  previous: vi.fn(),
+  goToSlide: vi.fn(),
+  trackError: vi.fn(),
   onSlideChange: vi.fn(),
-  enableKeyboard: true,
-  infiniteLoop: false,
+  onAnimationComplete: vi.fn(),
+  onError: vi.fn(),
 };
 
-/**
- * Mock animation configuration
- */
-export const _mockAnimationConfig: Partial<AnimationConfig> = {
-  target: {} as gsap.TweenTarget,
-  duration: 0.5,
-  ease: 'power2.out',
-  stagger: 0.1
+// Mock error tracking
+export const useErrorTrackingMock = {
+  trackError: (error: Error, type: string) => {
+    mockFunctions.trackError(error, type);
+  },
+  ERROR_TYPES: {
+    NAVIGATION: "navigation",
+    ANIMATION: "animation",
+    RENDER: "render",
+  },
 };
 
-/**
- * Mock gesture events
- */
-export const _mockGestureEvents = {
-  onDragStart: vi.fn(),
-  onDragEnd: vi.fn(),
-  onDrag: vi.fn(),
-  onSwipeLeft: vi.fn(),
-  onSwipeRight: vi.fn()
+// Mock animation hooks
+export const useSliderAnimationMock = {
+  animateSlide: vi.fn(),
 };
 
-/**
- * Mock keyboard events
- */
-export const _mockKeyboardEvents = {
-  onArrowLeft: vi.fn(),
-  onArrowRight: vi.fn(),
-  onEscape: vi.fn()
+// Mock gesture handling
+export const useGestureHandlingMock = {
+  handleTouchStart: vi.fn(),
+  handleTouchMove: vi.fn(),
+  handleTouchEnd: vi.fn(),
+  handleMouseDown: vi.fn(),
+  handleMouseMove: vi.fn(),
+  handleMouseUp: vi.fn(),
 };
 
+// Mock keyboard navigation
+export const useKeyboardNavigationMock = {
+  handleKeyDown: (event: KeyboardEvent) => {
+    if (event.key === "ArrowRight") {
+      mockFunctions.next();
+    } else if (event.key === "ArrowLeft") {
+      mockFunctions.previous();
+    }
+  },
+};
+
+// Mock slider context
 /**
- * Create a new mock slide
- * @param id
- * @param title
- * @param image
- * @returns {unknown} - The return value
+ * Creates a mock slider context for testing purposes.
+ *
+ * @param testSlides - Array of slides to use in the mock context
+ *
+ * @returns {Object} A mock slider context object
+ *
  */
-export function _createMockSlide(id: string, title = `Slide ${id}`, image = `/slide${id}.jpg`): Slide {
-  return {
-    id: createSlideId(id),
-    title,
-    image,
-    alt: `${title} description`
+export const createSliderContextMock = (testSlides: Slide[]): {
+  state: {
+    currentIndex: number;
+    isAnimating: boolean;
+    isDragging: boolean;
+    dragDelta: { x: number; y: number };
+    infiniteLoop: boolean;
+    items: Slide[];
   };
+  config: Record<string, unknown>;
+  items: Slide[];
+  actions: {
+    next: ReturnType<typeof vi.fn>;
+    previous: ReturnType<typeof vi.fn>;
+    goTo: ReturnType<typeof vi.fn>;
+    startAutoplay: ReturnType<typeof vi.fn>;
+    stopAutoplay: ReturnType<typeof vi.fn>;
+    updateDragDelta: ReturnType<typeof vi.fn>;
+  };
+} => ({
+  state: {
+    currentIndex: 0,
+    isAnimating: false,
+    isDragging: false,
+    dragDelta: { x: 0, y: 0 },
+    infiniteLoop: true,
+    items: testSlides,
+  },
+  config: {},
+  items: testSlides,
+  actions: {
+    next: mockFunctions.next,
+    previous: mockFunctions.previous,
+    goTo: mockFunctions.goToSlide,
+    startAutoplay: vi.fn(),
+    stopAutoplay: vi.fn(),
+    updateDragDelta: vi.fn(),
+  },
+});
+
+// Reset all mocks
+/**
+ *
+ */
+export function resetSliderMocks(): void {
+  Object.values(mockFunctions).forEach((mock) => mock.mockClear());
+  useSliderAnimationMock.animateSlide.mockClear();
+  Object.values(useGestureHandlingMock).forEach((mock) => mock.mockClear());
 }
-
-/**
- * Create a mock slider callback
- * @returns {unknown} The function return value
- */
-export function _createMockSliderCallback(): {
-  onSlideChange: ReturnType<typeof vi.fn>;
-  onInit: ReturnType<typeof vi.fn>;
-  onError: ReturnType<typeof vi.fn>;
-} {
-  return {
-    onSlideChange: vi.fn(),
-    onInit: vi.fn(),
-    onError: vi.fn()
-  };
-} 
