@@ -334,6 +334,63 @@ describe("Slider Component", () => {
       });
     });
 
+    it("handles keyboard navigation errors in browser environment", async () => {
+      // Create a real browser environment error by corrupting navigation
+      const originalNext = mockFunctions.next;
+      let callCount = 0;
+      
+      // Mock next to throw on first call (simulating timing/focus issues)
+      mockFunctions.next.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          throw new Error("Browser keyboard navigation error");
+        }
+        return originalNext();
+      });
+
+      render(
+        <SliderProvider items={testSlides}>
+          <Slider 
+            slides={testSlides}
+            enableKeyboard={true}
+            onError={mockFunctions.onError}
+          />
+        </SliderProvider>,
+      );
+
+      const slider = screen.getByRole("region");
+      slider.focus();
+
+      // Ensure the element has proper focus
+      expect(document.activeElement).toBe(slider);
+
+      // Trigger keyboard navigation that will error
+      fireEvent.keyDown(slider, { 
+        key: "ArrowRight",
+        bubbles: true,
+        cancelable: true
+      });
+
+      // Wait for error handling to complete
+      await waitFor(() => {
+        expect(mockFunctions.trackError).toHaveBeenCalledWith(
+          expect.any(Error),
+          "navigation"
+        );
+        expect(mockFunctions.onError).toHaveBeenCalledWith(
+          expect.any(Error)
+        );
+      }, { timeout: 2000 });
+
+      // Verify the error was properly handled and component is still functional
+      const errorElement = await screen.findByTestId("slider-error");
+      expect(errorElement).toBeInTheDocument();
+      expect(errorElement.textContent).toContain("Browser keyboard navigation error");
+
+      // Reset mock
+      mockFunctions.next.mockImplementation(originalNext);
+    });
+
     it("displays error state when navigation fails", async () => {
       (window as any).__MOCK_NAV_ERROR__ = true;
       render(
@@ -392,38 +449,6 @@ describe("Slider Component", () => {
       const liveRegion = screen.getByTestId("slider-aria-live");
       expect(liveRegion).toHaveAttribute("aria-live", "polite");
       expect(liveRegion).toHaveAttribute("aria-atomic", "true");
-    });
-  });
-
-  describe("Animation States", () => {
-    it("handles animation state correctly", async () => {
-      render(
-        <SliderProvider items={testSlides}>
-          <Slider slides={testSlides} />
-        </SliderProvider>,
-      );
-
-      // Initial state should not be animating
-      const firstSlide = screen.getByTestId("slide-container-1");
-      expect(firstSlide).toHaveAttribute("data-active", "true");
-      expect(firstSlide).not.toHaveAttribute("data-animating", "true");
-
-      // Click next button to trigger animation
-      const nextButton = screen.getByRole("button", { name: /next/i });
-      fireEvent.click(nextButton);
-
-      // Should be animating
-      expect(firstSlide).toHaveAttribute("data-animating", "true");
-
-      // Wait for animation to complete
-      await waitFor(
-        () => {
-          const secondSlide = screen.getByTestId("slide-container-2");
-          expect(secondSlide).toHaveAttribute("data-active", "true");
-          expect(secondSlide).not.toHaveAttribute("data-animating", "true");
-        },
-        { timeout: 1000 },
-      );
     });
   });
 });

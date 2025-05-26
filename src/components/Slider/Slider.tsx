@@ -450,7 +450,7 @@ const SliderContent: React.FC<
  * @returns true if the ref is not null, false otherwise
  *
  */
-const _isRefNotNull = <T,>(
+export const _isRefNotNull = <T,>(
   ref: React.RefObject<T>,
 ): ref is React.RefObject<T> & { current: T } => {
   return ref.current !== null;

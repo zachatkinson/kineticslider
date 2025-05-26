@@ -118,7 +118,7 @@ import {
   fireEvent,
 } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { Slider } from "@/components/Slider/Slider";
+import { Slider, _isRefNotNull } from "@/components/Slider/Slider";
 import { SliderProvider } from "@/context/SliderContext";
 import type { Slide } from "@/types/slider";
 import { createSlideId } from "@/utils/test-utils";
@@ -268,5 +268,68 @@ describe("Slider", () => {
       </SliderProvider>,
     );
     expect(container).toBeInTheDocument();
+  });
+
+  it("handles mock navigation error for testing", async () => {
+    // Set up the mock navigation error flag
+    const mockWindow = window as any;
+    mockWindow.__MOCK_NAV_ERROR__ = true;
+
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockOnAnimationComplete}
+        onError={mockOnError}
+      />,
+    );
+
+    // Trigger navigation to hit the mock error path
+    const nextButton = screen.getByTestId("next-button");
+    fireEvent.click(nextButton);
+
+    // The mock error should trigger error handling
+    expect(mockOnError).toHaveBeenCalledWith(expect.any(Error));
+    expect(mockTrackError).toHaveBeenCalledWith(expect.any(Error), "navigation");
+
+    // Clean up
+    delete mockWindow.__MOCK_NAV_ERROR__;
+  });
+
+  it("exports _isRefNotNull utility function", () => {
+    // Test the utility function for coverage
+    expect(typeof _isRefNotNull).toBe("function");
+    
+    // Test with null ref
+    const nullRef = { current: null };
+    expect(_isRefNotNull(nullRef)).toBe(false);
+    
+    // Test with non-null ref
+    const validRef = { current: document.createElement("div") };
+    expect(_isRefNotNull(validRef)).toBe(true);
+  });
+
+  it("handles keyboard events with unsupported keys", () => {
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockOnAnimationComplete}
+        onError={mockOnError}
+        enableKeyboard={true}
+      />,
+    );
+
+    const slider = screen.getByTestId("slider-container");
+    slider.focus();
+
+    // Test unsupported key (should hit default case)
+    fireEvent.keyDown(slider, { key: "Enter" });
+    fireEvent.keyDown(slider, { key: "Space" });
+    fireEvent.keyDown(slider, { key: "Escape" });
+
+    // No navigation should happen for unsupported keys
+    expect(mockNext).not.toHaveBeenCalled();
+    expect(mockPrevious).not.toHaveBeenCalled();
   });
 });
