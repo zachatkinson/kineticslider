@@ -66,11 +66,7 @@ export class WorkerPoolError extends Error {
   public readonly category: string;
   public readonly stackTrace: string;
   public readonly code: string;
-  public readonly details: {
-    taskId?: string;
-    errorTime: number;
-    workerId: string;
-  };
+  public readonly details: WorkerPoolErrorDetails;
 
   /**
    * Creates a new WorkerPoolError instance
@@ -129,11 +125,7 @@ export class WorkerPoolError extends Error {
     category: string;
     stackTrace: string;
     code: string;
-    details: {
-      taskId?: string;
-      errorTime: number;
-      workerId: string;
-    };
+    details: WorkerPoolErrorDetails;
   }) {
     super(message);
     this.name = "WorkerPoolError";
@@ -171,4 +163,12 @@ export interface WorkerPoolStats {
     topErrorPatterns: string[];
     errorTimeDistribution: ErrorDistribution;
   };
+}
+
+export interface WorkerPoolErrorDetails {
+  errorTime?: number;
+  workerId?: string;
+  taskId?: string;
+  taskData?: any;
+  timeout?: number;
 }

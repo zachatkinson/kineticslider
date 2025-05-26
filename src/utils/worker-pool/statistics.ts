@@ -136,13 +136,16 @@ export class StatisticsTracker {
     const avgExecutionTime = this.calculateAverage(this.executionTimes);
     const throughput = this.calculateThroughput(now);
 
+    // Calculate pending tasks as sum of queued and in-progress tasks
+    const pendingTasks = queueSize + busyWorkers;
+
     return {
       queueSize,
       activeWorkers: totalWorkers,
       totalWorkers,
       availableWorkers,
       busyWorkers,
-      pendingTasks: queueSize,
+      pendingTasks,
       maxWorkers,
       utilization,
       completedTasks: this.completedTasks,
