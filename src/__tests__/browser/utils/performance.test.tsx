@@ -7,7 +7,7 @@
 
 import { render, fireEvent } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
-import { KineticSlider } from "@/components/KineticSlider";
+import { KineticSlider } from "@/components/KineticSlider/KineticSlider";
 import { createSlideId } from "@/utils/id-helpers";
 import type { Slide } from "@/types/slider";
 import { setupBrowserApiMocks } from "../../mocks/browser-apis.mock";
@@ -16,6 +16,13 @@ import {
   resetPerformanceMocks,
 } from "../../mocks/performance.mock";
 import { createMockPerformanceMonitor } from "../../mocks/performance-monitor.mock";
+// Commented out unused imports to fix linting
+// import { trackPerformance } from "@/utils/performance";
+// import { trackAnimation } from "@/utils/animation";
+// import { trackCacheMetrics } from "@/utils/cache";
+// import { trackMemoryUsage } from "@/utils/memory-tracker";
+// import { trackWorkerMetrics } from "@/utils/worker-pool";
+// import { _testableGestures } from "@/hooks/useGestures";
 
 // Mock the PerformanceMonitor class
 vi.mock("../../../utils/performance-monitor", () => ({

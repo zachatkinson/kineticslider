@@ -131,4 +131,48 @@ describe("PixiSlider Unit Tests", () => {
     const retryButton = screen.getByTestId("pixi-retry-button");
     expect(retryButton).toBeInTheDocument();
   });
+
+  it("re-throws errors from PixiSliderApp initialization", () => {
+    // Test the uncovered lines 451-452: error re-throwing in PixiSliderComponent
+    const onError = vi.fn();
+    
+    // Mock console.error to avoid noise
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // This should trigger the error path in PixiSliderComponent
+    // The error boundary will catch the re-thrown error and show fallback
+    render(
+      <PixiSlider 
+        width={800} 
+        height={600} 
+        slides={[]} // Empty slides will cause initialization error
+        onError={onError} 
+      />
+    );
+    
+    // The error boundary should show the fallback
+    expect(screen.getByTestId("pixi-error-fallback")).toBeInTheDocument();
+    
+    // The onError callback should have been called before re-throwing
+    expect(onError).toHaveBeenCalled();
+    
+    consoleSpy.mockRestore();
+  });
+
+  it("handles error boundary fallback update logic", () => {
+    // Test the uncovered lines 504-505: error boundary fallback update
+    render(<PixiSlider width={800} height={600} slides={[]} />);
+
+    // The error boundary should render the fallback
+    const errorFallback = screen.getByTestId("pixi-error-fallback");
+    expect(errorFallback).toBeInTheDocument();
+    
+    // Check that the error message is displayed
+    const errorText = errorFallback.querySelector("p");
+    expect(errorText).toBeInTheDocument();
+    
+    // This tests the error boundary's onError callback which updates the fallback
+    // The fallback should show an error message
+    expect(errorText?.textContent).toBeTruthy();
+  });
 });

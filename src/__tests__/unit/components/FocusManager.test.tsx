@@ -95,4 +95,149 @@ describe("FocusManager Component", () => {
 
     expect(mockOnEscape).toHaveBeenCalled();
   });
+
+  it("calls onActivate and onDeactivate callbacks when focus trap is activated", () => {
+    // Test lines 112-113: onActivate and onDeactivate callback execution
+    const mockOnActivate = vi.fn();
+    const mockOnDeactivate = vi.fn();
+
+    render(
+      <FocusManager
+        trapFocus={true}
+        onActivate={mockOnActivate}
+        onDeactivate={mockOnDeactivate}
+      >
+        <div>Content</div>
+      </FocusManager>,
+    );
+
+    // Verify that the mock was called with options including our callbacks
+    expect(mockTrapFocus).toHaveBeenCalledWith(
+      expect.any(HTMLElement),
+      expect.objectContaining({
+        onActivate: mockOnActivate,
+        onDeactivate: mockOnDeactivate,
+      })
+    );
+  });
+
+  it("handles focus restoration with returnFocusTo as string selector", () => {
+    // Test lines 139-164: Focus restoration logic for string selector
+    const targetButton = document.createElement("button");
+    targetButton.id = "target-button";
+    targetButton.focus = vi.fn();
+    document.body.appendChild(targetButton);
+
+    const { unmount } = render(
+      <FocusManager
+        trapFocus={false}
+        returnFocusTo="#target-button"
+        restoreFocus={true}
+      >
+        <div>Content</div>
+      </FocusManager>,
+    );
+
+    // Trigger unmount to test focus restoration
+    unmount();
+
+    expect(targetButton.focus).toHaveBeenCalled();
+  });
+
+  it("handles focus restoration with returnFocusTo as HTMLElement", () => {
+    // Test lines 139-164: Focus restoration logic for HTMLElement
+    const targetButton = document.createElement("button");
+    targetButton.focus = vi.fn();
+    document.body.appendChild(targetButton);
+
+    const { unmount } = render(
+      <FocusManager
+        trapFocus={false}
+        returnFocusTo={targetButton}
+        restoreFocus={true}
+      >
+        <div>Content</div>
+      </FocusManager>,
+    );
+
+    // Trigger unmount to test focus restoration
+    unmount();
+
+    expect(targetButton.focus).toHaveBeenCalled();
+  });
+
+  it("handles focus restoration with returnFocusTo as function", () => {
+    // Test lines 139-164: Focus restoration logic for function
+    const targetButton = document.createElement("button");
+    targetButton.focus = vi.fn();
+    document.body.appendChild(targetButton);
+
+    const returnFocusFunction = vi.fn().mockReturnValue(targetButton);
+
+    const { unmount } = render(
+      <FocusManager
+        trapFocus={false}
+        returnFocusTo={returnFocusFunction}
+        restoreFocus={true}
+      >
+        <div>Content</div>
+      </FocusManager>,
+    );
+
+    // Trigger unmount to test focus restoration
+    unmount();
+
+    expect(returnFocusFunction).toHaveBeenCalled();
+    expect(targetButton.focus).toHaveBeenCalled();
+  });
+
+  it("handles focus restoration failure gracefully", () => {
+    // Test lines 139-164: Error handling in focus restoration
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    
+    const faultyElement = {
+      focus: vi.fn().mockImplementation(() => {
+        throw new Error("Focus failed");
+      })
+    };
+
+    const { unmount } = render(
+      <FocusManager
+        trapFocus={false}
+        returnFocusTo={() => faultyElement as any}
+        restoreFocus={true}
+      >
+        <div>Content</div>
+      </FocusManager>,
+    );
+
+    // Trigger unmount to test error handling
+    unmount();
+
+    expect(consoleSpy).toHaveBeenCalledWith("Failed to restore focus:", expect.any(Error));
+    
+    consoleSpy.mockRestore();
+  });
+
+  it("sets initialFocus option when provided", () => {
+    // Test lines 112-113: Setting initialFocus option
+    const mockInitialFocus = "#initial-focus-element";
+
+    render(
+      <FocusManager
+        trapFocus={true}
+        initialFocus={mockInitialFocus}
+      >
+        <div>Content</div>
+      </FocusManager>,
+    );
+
+    // Verify that the mock was called with options including initialFocus
+    expect(mockTrapFocus).toHaveBeenCalledWith(
+      expect.any(HTMLElement),
+      expect.objectContaining({
+        initialFocus: mockInitialFocus,
+      })
+    );
+  });
 });

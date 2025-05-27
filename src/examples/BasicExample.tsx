@@ -1,6 +1,6 @@
 import React from "react";
 
-import { KineticSlider } from "../components/KineticSlider";
+import { KineticSlider } from "../components/KineticSlider/KineticSlider";
 import type { Slide } from "../types";
 import { createSlideId } from "../utils/id-helpers";
 

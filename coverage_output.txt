@@ -1,0 +1,269 @@
+
+> kineticslider@0.1.0 test:coverage /Users/zach/CursorProjects/kineticslider
+> gtimeout 120s vitest run --coverage --run --silent
+
+
+ RUN  v3.0.9 /Users/zach/CursorProjects/kineticslider
+      Coverage enabled with v8
+
+ ✓ src/__tests__/unit/utils/validation.test.ts (32 tests) 8ms
+ ✓ src/__tests__/unit/utils/worker-pool/core.test.ts (18 tests) 581ms
+ ✓ src/__tests__/browser/components/Slider.test.tsx (11 tests) 455ms
+   ✓ Slider Component > Navigation > handles animation state correctly 312ms
+ ✓ src/__tests__/unit/components/KineticSlider.test.tsx (9 tests) 56ms
+ ✓ src/__tests__/unit/components/Slider.test.tsx (9 tests) 24ms
+ ✓ src/__tests__/unit/utils/business-rules.test.ts (12 tests) 2ms
+ ✓ src/__tests__/unit/components/ErrorBoundary.test.tsx (9 tests) 26ms
+ ✓ src/__tests__/browser/hooks/useGestures.test.tsx (5 tests) 6ms
+ ✓ src/__tests__/unit/utils/validation-core.test.ts (10 tests) 2ms
+ ✓ src/__tests__/browser/utils/performance.test.tsx (8 tests) 38ms
+ ✓ src/__tests__/unit/hooks/useFormValidation.test.tsx (8 tests) 8ms
+ ✓ src/__tests__/unit/components/SlideForm.test.tsx (4 tests) 75ms
+ ✓ src/__tests__/browser/mocks/resource-management.test.ts (17 tests) 19ms
+ ✓ src/__tests__/browser/components/gesture-handling.test.tsx (4 tests) 22ms
+ ✓ src/__tests__/browser/utils/a11y-utils.test.ts (9 tests) 4ms
+ ✓ src/__tests__/browser/utils/performance-monitor.test.ts (4 tests) 3ms
+ ✓ src/__tests__/unit/utils/schema-validation.test.ts (18 tests) 3ms
+ ✓ src/__tests__/browser/hooks/useKeyboard.test.tsx (5 tests) 8ms
+ ✓ src/__tests__/browser/utils/memory-tracker.test.ts (5 tests) 1ms
+ ✓ src/__tests__/browser/components/KineticSlider.test.tsx (4 tests) 230ms
+ ✓ src/__tests__/browser/components/pixi/PixiSlider.test.tsx (5 tests) 13ms
+ ✓ src/__tests__/unit/components/pixi/PixiSlider.test.tsx (5 tests) 10ms
+ ✓ src/__tests__/unit/components/FocusRestoreExample.test.tsx (5 tests) 11ms
+ ✓ src/__tests__/unit/hooks/usePerformance.test.tsx (5 tests) 5ms
+ ✓ src/__tests__/unit/utils/performance-monitor.test.ts (5 tests) 3ms
+ ✓ src/__tests__/browser/utils/workerPool.test.ts (8 tests) 20ms
+ ✓ src/__tests__/unit/hooks/useKineticSlider.test.tsx (5 tests) 5ms
+ ✓ src/__tests__/unit/utils/test-utils.test.ts (10 tests) 6ms
+ ✓ src/__tests__/unit/components/gesture-handling.test.tsx (3 tests) 22ms
+ ✓ src/__tests__/unit/components/FocusManager.test.tsx (5 tests) 5ms
+ ✓ src/__tests__/browser/utils/analytics.test.ts (4 tests) 1ms
+ ✓ src/__tests__/unit/components/Loading.test.tsx (3 tests) 6ms
+ ✓ src/__tests__/unit/hooks/useAnimation.test.tsx (3 tests) 3ms
+
+ Test Files  33 passed (33)
+      Tests  267 passed (267)
+   Start at  14:38:24
+   Duration  3.77s (transform 410ms, setup 143ms, collect 602ms, tests 1.68s, environment 289ms, prepare 42ms)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    27.7 |    73.55 |   47.78 |    27.7 |                   
+ kineticslider     |       0 |       60 |      60 |       0 |                   
+  babel.config.ts  |       0 |      100 |     100 |       0 | 3-95              
+  ...int.config.ts |       0 |      100 |     100 |       0 | 3-111             
+  eslint.config.ts |       0 |      100 |     100 |       0 | 2-155             
+  lighthouserc.js  |       0 |        0 |       0 |       0 | 1-34              
+  ...ged.config.ts |       0 |      100 |     100 |       0 | 3-58              
+  ...ght.config.ts |       0 |        0 |       0 |       0 | 1-44              
+  ...css.config.ts |       0 |      100 |     100 |       0 | 3-45              
+  ...ier.config.ts |       0 |      100 |     100 |       0 | 3-114             
+  ...int.config.ts |       0 |      100 |     100 |       0 | 8-23              
+  test.js          |       0 |        0 |       0 |       0 | 1-3               
+  vite.config.ts   |       0 |      100 |     100 |       0 | 3-106             
+  ...ker.config.ts |       0 |        0 |       0 |       0 | 1-17              
+  ...ser.config.ts |       0 |        0 |       0 |       0 | 1-39              
+  vitest.config.ts |       0 |      100 |     100 |       0 | 2-79              
+  ...ing.config.ts |       0 |        0 |       0 |       0 | 1-18              
+ .../.cursor/tools |       0 |        0 |       0 |       0 |                   
+  ...-validator.ts |       0 |        0 |       0 |       0 | 1-221             
+  ...te-configs.js |       0 |        0 |       0 |       0 | 1-247             
+ ...github/scripts |       0 |        0 |       0 |       0 |                   
+  ...lighthouse.js |       0 |        0 |       0 |       0 | 1-206             
+  ...e-coverage.js |       0 |        0 |       0 |       0 | 1-161             
+  ...re-metrics.js |       0 |        0 |       0 |       0 | 1-125             
+  ...tor-errors.js |       0 |        0 |       0 |       0 | 1-121             
+ ...der/.storybook |       0 |      100 |     100 |       0 |                   
+  main.ts          |       0 |      100 |     100 |       0 | 3-34              
+  preview.ts       |       0 |      100 |     100 |       0 | 2-49              
+ ...r/dist/workers |       0 |        0 |       0 |       0 |                   
+  pool-worker.js   |       0 |        0 |       0 |       0 | 1-3               
+ ...er/docs/assets |       0 |        0 |       0 |       0 |                   
+  hierarchy.js     |       0 |        0 |       0 |       0 | 1                 
+  icons.js         |       0 |        0 |       0 |       0 | 1-18              
+  main.js          |       0 |        0 |       0 |       0 | 1-60              
+  navigation.js    |       0 |        0 |       0 |       0 | 1                 
+  search.js        |       0 |        0 |       0 |       0 | 1                 
+ .../jsdoc/scripts |       0 |        0 |       0 |       0 |                   
+  linenumber.js    |       0 |        0 |       0 |       0 | 1-25              
+ ...ripts/prettify |       0 |        0 |       0 |       0 |                   
+  lang-css.js      |       0 |        0 |       0 |       0 | 1-2               
+  prettify.js      |       0 |        0 |       0 |       0 | 1-28              
+ ...igration-tools |       0 |    33.33 |   33.33 |       0 |                   
+  ...-boundary.tsx |       0 |        0 |       0 |       0 | 1-189             
+  feature-flags.ts |       0 |        0 |       0 |       0 | 1-143             
+  ...monitoring.ts |       0 |      100 |     100 |       0 | 21-147            
+  index.ts         |       0 |      100 |     100 |       0 | 6-51              
+  ...dashboard.tsx |       0 |        0 |       0 |       0 | 1-418             
+  ...dashboard.tsx |       0 |        0 |       0 |       0 | 1-261             
+  ...-benchmark.ts |       0 |      100 |     100 |       0 | 2-180             
+  ...benchmarks.ts |       0 |        0 |       0 |       0 | 1-189             
+  ...e-monitor.tsx |       0 |        0 |       0 |       0 | 1-135             
+ kineticslider/src |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 | 1-6               
+  main.tsx         |       0 |        0 |       0 |       0 | 1-17              
+  setupTests.ts    |       0 |        0 |       0 |       0 | 1                 
+  worker-pool.ts   |       0 |        0 |       0 |       0 | 1                 
+ ...src/components |   84.72 |    72.07 |   72.72 |   84.72 |                   
+  ...rBoundary.tsx |   79.62 |    67.64 |   83.33 |   79.62 | ...16-317,363-364 
+  FocusManager.tsx |   72.83 |       70 |     100 |   72.83 | 112-113,139-164   
+  ...reExample.tsx |     100 |      100 |     100 |     100 |                   
+  ...ticSlider.tsx |   85.75 |       80 |   46.15 |   85.75 | ...65-367,371-375 
+  SlideForm.tsx    |   88.48 |    52.94 |     100 |   88.48 | ...80-184,201-205 
+ .../KineticSlider |       0 |       50 |      50 |       0 |                   
+  ...r.stories.tsx |       0 |      100 |     100 |       0 | 2-123             
+  ...ticSlider.tsx |       0 |        0 |       0 |       0 | 1-661             
+ ...onents/Loading |     100 |      100 |     100 |     100 |                   
+  Loading.tsx      |     100 |      100 |     100 |     100 |                   
+ ...ponents/Slider |   97.92 |    91.48 |     100 |   97.92 |                   
+  ...dule.css.d.ts |       0 |      100 |     100 |       0 | 10                
+  Slider.tsx       |    98.6 |    91.11 |     100 |    98.6 | 332-335           
+  index.ts         |       0 |      100 |     100 |       0 | 16                
+ ...omponents/pixi |    69.6 |    72.34 |      64 |    69.6 |                   
+  PixiApp.tsx      |   70.92 |       70 |   57.14 |   70.92 | ...51-452,504-505 
+  ...rBoundary.tsx |    61.7 |    85.71 |     100 |    61.7 | 127-147           
+ ...der/src/config |       0 |      100 |     100 |       0 |                   
+  sentry.ts        |       0 |      100 |     100 |       0 | 34-60             
+ .../src/constants |   96.42 |      100 |       0 |   96.42 |                   
+  slides.ts        |     100 |      100 |     100 |     100 |                   
+  validation.ts    |   95.45 |      100 |       0 |   95.45 | 71                
+ ...er/src/context |       0 |      100 |     100 |       0 |                   
+  ...erContext.tsx |       0 |      100 |     100 |       0 | 30-333            
+ ...r/src/examples |       0 |      100 |     100 |       0 |                   
+  BasicExample.tsx |       0 |      100 |     100 |       0 | 3-60              
+ ...ider/src/hooks |   88.63 |    84.93 |      75 |   88.63 |                   
+  useAnimation.ts  |     100 |      100 |     100 |     100 |                   
+  ...Validation.ts |   95.23 |      100 |      75 |   95.23 | 84-86             
+  useGestures.ts   |     100 |    92.85 |     100 |     100 | 62                
+  useKeyboard.ts   |     100 |    85.71 |     100 |     100 | 104,125           
+  ...eticSlider.ts |   64.13 |     64.7 |   33.33 |   64.13 | ...49-154,167-188 
+  ...erformance.ts |   95.34 |    77.77 |      50 |   95.34 | 122,135-137       
+ ...src/hooks/pixi |       0 |        0 |       0 |       0 |                   
+  ...essibility.ts |       0 |        0 |       0 |       0 | 1-98              
+ ...c/hooks/slider |       0 |    28.57 |   28.57 |       0 |                   
+  ...orTracking.ts |       0 |        0 |       0 |       0 | 1-40              
+  ...reHandling.ts |       0 |      100 |     100 |       0 | 2-164             
+  ...Navigation.ts |       0 |      100 |     100 |       0 | 2-49              
+  ...eticSlider.ts |       0 |        0 |       0 |       0 | 1-197             
+  ...Monitoring.ts |       0 |        0 |       0 |       0 | 1-92              
+  ...Validation.ts |       0 |        0 |       0 |       0 | 1-52              
+  ...rAnimation.ts |       0 |        0 |       0 |       0 | 1-84              
+ ...slider/src/lib |       0 |        0 |       0 |       0 |                   
+  query.ts         |       0 |        0 |       0 |       0 | 1-28              
+ ...er/src/schemas |   72.41 |      100 |       0 |   72.41 |                   
+  slide.schema.ts  |   72.41 |      100 |       0 |   72.41 | 49-74             
+ ...er/src/scripts |       0 |       60 |      60 |       0 |                   
+  cleanComments.ts |       0 |      100 |     100 |       0 | 3-58              
+  ...oc-returns.js |       0 |        0 |       0 |       0 | 1-191             
+  format.ts        |       0 |        0 |       0 |       0 | 1-42              
+  ...rate-jsdoc.ts |       0 |      100 |     100 |       0 | 12-549            
+  ...te-typedoc.ts |       0 |      100 |     100 |       0 | 17-184            
+ ...r/src/services |       0 |      100 |     100 |       0 |                   
+  ...management.ts |       0 |      100 |     100 |       0 | 43-527            
+ ...ider/src/store |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 | 1-39              
+ ...lider/src/test |       0 |        0 |       0 |       0 |                   
+  setup.ts         |       0 |        0 |       0 |       0 | 1-12              
+ ...ider/src/types |   44.88 |      100 |   95.23 |   44.88 |                   
+  a11y.ts          |       0 |      100 |     100 |       0 | 5-7               
+  accessibility.ts |       0 |        0 |       0 |       0 |                   
+  analytics.ts     |       0 |        0 |       0 |       0 |                   
+  animation.ts     |     100 |      100 |     100 |     100 |                   
+  branded.ts       |   58.33 |      100 |      50 |   58.33 | 44-48,95-99       
+  browser.ts       |       0 |        0 |       0 |       0 |                   
+  cache.ts         |       0 |        0 |       0 |       0 |                   
+  common.ts        |       0 |      100 |     100 |       0 | 48-89             
+  components.ts    |       0 |        0 |       0 |       0 |                   
+  context.ts       |       0 |        0 |       0 |       0 |                   
+  error.ts         |     100 |      100 |     100 |     100 |                   
+  events.ts        |       0 |        0 |       0 |       0 |                   
+  feature-flags.ts |     100 |      100 |     100 |     100 |                   
+  ...monitoring.ts |       0 |        0 |       0 |       0 |                   
+  ...validation.ts |       0 |        0 |       0 |       0 |                   
+  form.ts          |       0 |        0 |       0 |       0 |                   
+  gesture.ts       |       0 |        0 |       0 |       0 |                   
+  gestures.ts      |       0 |        0 |       0 |       0 |                   
+  global.d.ts      |       0 |        0 |       0 |       0 |                   
+  global.ts        |       0 |        0 |       0 |       0 |                   
+  gsap.ts          |       0 |        0 |       0 |       0 |                   
+  hoc.ts           |       0 |        0 |       0 |       0 |                   
+  hooks.ts         |       0 |        0 |       0 |       0 |                   
+  image.ts         |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |      100 |     100 |       0 | 6-110             
+  interactable.ts  |       0 |        0 |       0 |       0 |                   
+  keyboard.ts      |       0 |        0 |       0 |       0 |                   
+  migration.ts     |       0 |      100 |     100 |       0 | 25-102            
+  ...-resources.ts |       0 |        0 |       0 |       0 |                   
+  ...nce-shared.ts |       0 |        0 |       0 |       0 |                   
+  ...ce-testing.ts |       0 |      100 |     100 |       0 | 23-40             
+  performance.ts   |       0 |        0 |       0 |       0 |                   
+  pixi.ts          |       0 |        0 |       0 |       0 |                   
+  slider.ts        |       0 |      100 |     100 |       0 | 199-220           
+  store.ts         |       0 |        0 |       0 |       0 |                   
+  storybook.ts     |       0 |        0 |       0 |       0 |                   
+  styles.ts        |       0 |        0 |       0 |       0 |                   
+  test.ts          |       0 |        0 |       0 |       0 |                   
+  ...tion-enums.ts |       0 |      100 |     100 |       0 | 11-49             
+  validation.ts    |     100 |      100 |     100 |     100 |                   
+  vitest.d.ts      |       0 |        0 |       0 |       0 |                   
+  worker-pool.ts   |       0 |        0 |       0 |       0 |                   
+  worker.ts        |       0 |        0 |       0 |       0 |                   
+ ...src/types/test |       0 |        0 |       0 |       0 |                   
+  fixtures.ts      |       0 |        0 |       0 |       0 |                   
+  gsap.ts          |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  mocks.ts         |       0 |        0 |       0 |       0 |                   
+  pixi.ts          |       0 |        0 |       0 |       0 |                   
+  vitest.ts        |       0 |        0 |       0 |       0 |                   
+ ...ider/src/utils |   27.69 |    72.89 |   34.93 |   27.69 |                   
+  a11y.ts          |       0 |      100 |     100 |       0 | 5-239             
+  analytics.ts     |    30.3 |       75 |      20 |    30.3 | ...00-301,314-326 
+  ...-validator.ts |       0 |      100 |     100 |       0 | 5-93              
+  animation.ts     |   34.85 |    28.57 |   11.76 |   34.85 | ...59-466,481-486 
+  ...serSupport.ts |       0 |      100 |     100 |       0 | 12-238            
+  cache.ts         |       0 |      100 |     100 |       0 | 49-229            
+  common.ts        |    22.6 |       75 |   13.33 |    22.6 | ...54-283,292-293 
+  debounce.ts      |       0 |      100 |     100 |       0 | 23-74             
+  ...r-handling.ts |       0 |      100 |     100 |       0 | 2-220             
+  ...-sanitizer.ts |   16.92 |       50 |      20 |   16.92 | 31-108,121-130    
+  error-tracker.ts |       0 |        0 |       0 |       0 | 1-263             
+  ...r-tracking.ts |       0 |      100 |     100 |       0 | 22-77             
+  errors.ts        |   20.27 |      100 |    8.33 |   20.27 | ...36-371,386-401 
+  form-helpers.ts  |   19.16 |      100 |   22.22 |   19.16 | ...00-215,228-241 
+  ...validation.ts |       0 |        0 |       0 |       0 | 1-62              
+  hoc.ts           |       0 |        0 |       0 |       0 | 1-24              
+  id-helpers.ts    |   44.44 |      100 |   16.66 |   44.44 | ...63,74-75,86-87 
+  image.ts         |   46.87 |      100 |   33.33 |   46.87 | 30-35,38-50       
+  index.ts         |       0 |      100 |     100 |       0 | 6-171             
+  json.ts          |       0 |      100 |     100 |       0 | 39-119            
+  ...rd-helpers.ts |   76.63 |    71.42 |     100 |   76.63 | ...38-142,225-226 
+  math.ts          |   22.22 |      100 |       0 |   22.22 | ...90-192,206-216 
+  ...ce-monitor.ts |    77.9 |       60 |    92.3 |    77.9 | ...30-332,334-336 
+  performance.ts   |   10.16 |      100 |    7.14 |   10.16 | ...02-507,520-539 
+  ...veComments.ts |       0 |        0 |       0 |       0 | 1-98              
+  ...-validator.ts |   11.19 |        0 |       0 |   11.19 | ...38-382,395-402 
+  string.ts        |       0 |      100 |     100 |       0 | 13-67             
+  styles.ts        |   78.94 |    83.33 |     100 |   78.94 | 29-32             
+  test-utils.ts    |   10.56 |      100 |    8.33 |   10.56 | ...60-261,279-289 
+  type-checks.ts   |   20.83 |      100 |       0 |   20.83 | ...71-276,287-294 
+  type-guards.ts   |   24.39 |      100 |    7.69 |   24.39 | ...39-346,371-372 
+  types.ts         |       0 |      100 |     100 |       0 | 5                 
+  ...ion-checks.ts |       0 |      100 |     100 |       0 | 8-156             
+  ...ation-core.ts |     100 |      100 |     100 |     100 |                   
+  ...ion-extras.ts |       0 |      100 |     100 |       0 | 9-176             
+  ...ion-guards.ts |       0 |      100 |     100 |       0 | 10-64             
+  ...on-helpers.ts |       0 |      100 |     100 |       0 | 10-591            
+  validation.ts    |   61.35 |    71.42 |      80 |   61.35 | ...-996,1000-1002 
+  ...r-registry.ts |       0 |      100 |     100 |       0 | 8-143             
+  worker-pool.ts   |   82.89 |       68 |      80 |   82.89 | ...19-233,237-251 
+ ...ls/worker-pool |   66.04 |    69.87 |   41.86 |   66.04 |                   
+  core.ts          |   85.28 |    68.49 |   91.66 |   85.28 | ...74-291,433-437 
+  ...r-handling.ts |   34.57 |      100 |   15.38 |   34.57 | ...15-216,225-226 
+  index.ts         |       0 |        0 |       0 |       0 | 1                 
+  statistics.ts    |   31.85 |       80 |      25 |   31.85 | ...38-239,248-249 
+  types.ts         |     100 |      100 |     100 |     100 |                   
+ ...er/src/workers |       0 |      100 |     100 |       0 |                   
+  pool-worker.ts   |       0 |      100 |     100 |       0 | 5-8               
+-------------------|---------|----------|---------|---------|-------------------

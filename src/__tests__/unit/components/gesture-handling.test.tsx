@@ -1,8 +1,7 @@
-import React from "react";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-import { KineticSlider } from "@/components/KineticSlider";
+import React from "react";
+import { KineticSlider } from "@/components/KineticSlider/KineticSlider";
 import type { Slide } from "@/types";
 import { createSlideId } from "@/utils/id-helpers";
 
@@ -77,7 +76,7 @@ describe("KineticSlider - Gesture Handling (Unit)", () => {
 
     // Verify basic rendering - use role selector instead of data-testid
     expect(
-      screen.getByRole("region", { name: "Slideshow" }),
+      screen.getByRole("region", { name: "Image slider" }),
     ).toBeInTheDocument();
   });
 
@@ -86,7 +85,7 @@ describe("KineticSlider - Gesture Handling (Unit)", () => {
 
     // Verify basic rendering - use role selector instead of data-testid
     expect(
-      screen.getByRole("region", { name: "Slideshow" }),
+      screen.getByRole("region", { name: "Image slider" }),
     ).toBeInTheDocument();
   });
 
@@ -94,9 +93,9 @@ describe("KineticSlider - Gesture Handling (Unit)", () => {
     render(<KineticSlider slides={mockSlides} enableGestures={true} />);
 
     // Verify that navigation buttons are present
-    expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Next slide" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /previous/i }),
+      screen.getByRole("button", { name: "Previous slide" }),
     ).toBeInTheDocument();
   });
 });

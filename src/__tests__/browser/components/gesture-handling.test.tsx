@@ -8,11 +8,11 @@
  */
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import React from "react";
 
-import { KineticSlider } from "@/components/KineticSlider";
-import type { Slide } from "@/types";
+import { KineticSlider } from "@/components/KineticSlider/KineticSlider";
+import type { Slide } from "@/types/slider";
 import { createSlideId } from "@/utils/id-helpers";
 import type { GestureOptions } from "@/types/gestures";
 
@@ -85,9 +85,7 @@ describe("KineticSlider - Gesture Handling", () => {
     mockSlides = createMockSlides(5);
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+
 
   // Test that gestures can be disabled
   it("should not respond to swipe gestures when disabled", async () => {
@@ -103,7 +101,7 @@ describe("KineticSlider - Gesture Handling", () => {
     );
 
     // Find the slider element using the class name instead of data-testid
-    const _sliderContainer = screen.getByRole("region", { name: "Slideshow" });
+    const _sliderContainer = screen.getByRole("region", { name: "Image slider" });
 
     // Try to simulate a swipe event (which should be ignored)
     fireEvent.touchStart(_sliderContainer, {
@@ -132,7 +130,7 @@ describe("KineticSlider - Gesture Handling", () => {
     render(<KineticSlider slides={mockSlides} enableGestures={true} />);
 
     // Find the slider element using the class name instead of data-testid
-    const _sliderContainer = screen.getByRole("region", { name: "Slideshow" });
+    const _sliderContainer = screen.getByRole("region", { name: "Image slider" });
 
     // Fire custom touchmove event
     // Note: We can't directly test this through fireEvent because it doesn't let us
@@ -165,7 +163,7 @@ describe("KineticSlider - Gesture Handling", () => {
 
     // Verify the slider is in the document and rendered correctly
     expect(
-      screen.getByRole("region", { name: "Slideshow" }),
+      screen.getByRole("region", { name: "Image slider" }),
     ).toBeInTheDocument();
 
     // Note: In a real e2e test environment, we would test the actual click behavior

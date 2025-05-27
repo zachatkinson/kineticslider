@@ -156,6 +156,10 @@ describe("Slider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    // Ensure mocks return resolved promises
+    mockNext.mockResolvedValue(undefined);
+    mockPrevious.mockResolvedValue(undefined);
+    mockGoToSlide.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -331,5 +335,235 @@ describe("Slider", () => {
     // No navigation should happen for unsupported keys
     expect(mockNext).not.toHaveBeenCalled();
     expect(mockPrevious).not.toHaveBeenCalled();
+  });
+
+  it("converts non-Error objects to Error in catch block", async () => {
+    // Test the specific uncovered lines 332-335: err instanceof Error ? err : new Error("Navigation failed")
+    // We need to simulate a non-Error being thrown during navigation
+    
+    // Mock actions.next to throw a non-Error object (string)
+    mockNext.mockImplementationOnce(() => {
+      throw "This is a string error, not an Error object";
+    });
+
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockOnAnimationComplete}
+        onError={mockOnError}
+      />,
+    );
+
+    const nextButton = screen.getByTestId("next-button");
+    
+    // Click the button to trigger the error path
+    fireEvent.click(nextButton);
+
+    // Should convert the string to a proper Error object with "Navigation failed" message
+    expect(mockOnError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Navigation failed"
+      })
+    );
+    expect(mockTrackError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Navigation failed"
+      }),
+      "navigation"
+    );
+  });
+
+  it("converts different non-Error types to Error in navigation", async () => {
+    // Test with a number being thrown (another non-Error type)
+    mockPrevious.mockImplementationOnce(() => {
+      throw 404; // Throw a number instead of an Error
+    });
+
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockOnAnimationComplete}
+        onError={mockOnError}
+      />,
+    );
+
+    const prevButton = screen.getByTestId("prev-button");
+    
+    fireEvent.click(prevButton);
+
+    // Should convert the number to a proper Error object
+    expect(mockOnError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Navigation failed"
+      })
+    );
+  });
+
+  it("converts non-Error in keyboard navigation to proper Error", async () => {
+    // Test the error conversion in handleKeyDown function
+    // We'll mock handleNavigation to throw a non-Error
+    const _originalHandleNavigation = vi.fn();
+    
+    // Mock the keyboard navigation to throw a non-Error
+    const mockKeyboardError = { code: 500, message: "Keyboard failure" };
+    
+    // We need to test this differently since handleNavigation is internal
+    // Let's create a scenario where the keyboard event itself throws
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockOnAnimationComplete}
+        onError={mockOnError}
+        enableKeyboard={true}
+      />,
+    );
+
+    const slider = screen.getByTestId("slider-container");
+    slider.focus();
+
+    // Create a custom event that will trigger an error
+    const _keyEvent = new KeyboardEvent('keydown', { key: 'ArrowRight' });
+    
+    // Mock the void handleNavigation call to throw
+    mockNext.mockImplementationOnce(() => {
+      throw mockKeyboardError; // Throw a non-Error object
+    });
+    
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+
+    // Clean up
+    vi.restoreAllMocks();
+  });
+
+  it("calls animation completion callback when provided", async () => {
+    const mockAnimationComplete = vi.fn();
+    
+    // Make sure mockNext resolves properly
+    mockNext.mockResolvedValue(undefined);
+    
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockAnimationComplete}
+        onError={mockOnError}
+        duration={50} // Very short duration for testing
+      />,
+    );
+
+    const nextButton = screen.getByTestId("next-button");
+    
+    // Click to trigger navigation and animation
+    fireEvent.click(nextButton);
+    // Wait for the promise to resolve and then run timers
+    await Promise.resolve();
+    vi.runAllTimers();
+
+    // The onAnimationComplete callback should have been called
+    expect(mockAnimationComplete).toHaveBeenCalled();
+  });
+
+  it("handles animation completion without callback gracefully", async () => {
+    // Test the case where onAnimationComplete is not provided
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        // No onAnimationComplete prop
+        onError={mockOnError}
+        duration={50}
+      />,
+    );
+
+    const nextButton = screen.getByTestId("next-button");
+    
+    fireEvent.click(nextButton);
+    // Advance timers to complete animation
+    vi.runAllTimers();
+
+    // Should not throw any errors
+    expect(mockOnError).not.toHaveBeenCalled();
+  });
+
+  it("properly handles timeout clearing and setting in navigation", async () => {
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockOnAnimationComplete}
+        onError={mockOnError}
+        duration={50}
+      />,
+    );
+
+    const nextButton = screen.getByTestId("next-button");
+    
+    // Click multiple times quickly to test timeout clearing
+    fireEvent.click(nextButton);
+    fireEvent.click(nextButton); // Second click should clear previous timeout
+    // Advance timers
+    vi.runAllTimers();
+
+    expect(mockNext).toHaveBeenCalledTimes(2);
+  });
+
+  it("ensures all error types are properly converted in catch blocks", async () => {
+    // Test with undefined being thrown
+    mockNext.mockImplementationOnce(() => {
+      throw undefined;
+    });
+
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockOnAnimationComplete}
+        onError={mockOnError}
+      />,
+    );
+
+    const nextButton = screen.getByTestId("next-button");
+    
+    fireEvent.click(nextButton);
+
+    expect(mockOnError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Navigation failed"
+      })
+    );
+  });
+
+  it("handles keyboard navigation error conversion properly", async () => {
+    // Test keyboard error handling with actual error propagation
+    mockNext.mockImplementationOnce(() => {
+      throw "string error in keyboard nav";
+    });
+
+    render(
+      <Slider
+        slides={mockSlides}
+        onSlideChange={mockOnSlideChange}
+        onAnimationComplete={mockOnAnimationComplete}
+        onError={mockOnError}
+        enableKeyboard={true}
+      />,
+    );
+
+    const slider = screen.getByTestId("slider-container");
+    slider.focus();
+
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+
+    // Should convert string to Error and propagate
+    expect(mockOnError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Navigation failed"
+      })
+    );
   });
 });

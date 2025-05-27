@@ -93,13 +93,7 @@ export class WorkerPoolError extends Error {
    *
    * @param {string} message.code - Error code
    *
-   * @param {object} message.details - Additional error details
-   *
-   * @param {string} [message.details.taskId] - ID of the task that caused the error
-   *
-   * @param {number} message.details.errorTime - Timestamp when the error occurred
-   *
-   * @param {string} message.details.workerId - ID of the worker that caused the error
+   * @param {WorkerPoolErrorDetails} message.details - Additional error details
    *
    */
   constructor({
@@ -169,6 +163,6 @@ export interface WorkerPoolErrorDetails {
   errorTime?: number;
   workerId?: string;
   taskId?: string;
-  taskData?: any;
+  taskData?: unknown;
   timeout?: number;
 }

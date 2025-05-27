@@ -1,3 +1,5 @@
+// Form validation hook tests
+
 import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { useFormValidation } from "@/hooks/useFormValidation";
@@ -30,12 +32,14 @@ describe("useFormValidation Hook", () => {
   // Reset all mocks before each test
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.clearAllTimers();
     vi.useFakeTimers();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllTimers();
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it("should initialize with default state", () => {

@@ -27,16 +27,16 @@ export class WorkerPool extends EventEmitter {
   private workers: Worker[] = [];
   private taskQueue: Array<{
     task: WorkerTask;
-    resolve: (value: any) => void;
-    reject: (error: any) => void;
+    resolve: (value: unknown) => void;
+    reject: (error: unknown) => void;
   }> = [];
   private isShuttingDown = false;
   private completedTasks = 0;
   private failedTasks = 0;
   private inFlightTasks = new Map<Worker, {
     task: WorkerTask;
-    resolve: (value: any) => void;
-    reject: (error: any) => void;
+    resolve: (value: unknown) => void;
+    reject: (error: unknown) => void;
   }>();
   private idleWorkers: Set<Worker> = new Set();
   private options: Required<WorkerPoolOptions>;
@@ -46,7 +46,7 @@ export class WorkerPool extends EventEmitter {
   private isInitialized = false;
   private isProcessingQueue = false;
   private taskTimeouts = new Map<string, NodeJS.Timeout>();
-  private taskPromises = new Map<string, { resolve: (value: unknown) => void; reject: (reason?: any) => void }>();
+  private taskPromises = new Map<string, { resolve: (value: unknown) => void; reject: (reason?: unknown) => void }>();
   private startTime = Date.now();
   private handledWorkers = new Set<Worker>();
 
@@ -97,6 +97,8 @@ export class WorkerPool extends EventEmitter {
   /**
    * Creates a new worker and adds it to the pool.
    * 
+   * @param isReplacement
+   *
    * @returns The newly created worker
    *
    */
@@ -196,7 +198,7 @@ export class WorkerPool extends EventEmitter {
           newWorkerId: String(newWorker.threadId ?? '')
         });
         this.emit('error', poolError);
-      } catch (err) {
+      } catch {
         // Defensive: don't let error handler throw
       }
     });
@@ -234,8 +236,8 @@ export class WorkerPool extends EventEmitter {
           taskData.reject(poolError);
         }
         // Always clean up timeout for this worker's task
-        if (!taskId && 'currentTaskId' in worker && typeof (worker as any).currentTaskId === 'string') {
-          taskId = (worker as any).currentTaskId;
+        if (!taskId && 'currentTaskId' in worker && typeof (worker as unknown as { currentTaskId?: string }).currentTaskId === 'string') {
+          taskId = (worker as unknown as { currentTaskId: string }).currentTaskId;
         }
         if (taskId) this.cleanupTask(taskId);
         // Remove exited worker and create replacement
@@ -335,7 +337,7 @@ export class WorkerPool extends EventEmitter {
         this.inFlightTasks.set(worker, taskData);
         // Ensure the worker knows about the task ID
         if ('currentTaskId' in worker) {
-          (worker as any).currentTaskId = taskData.task.id;
+          (worker as unknown as { currentTaskId: string }).currentTaskId = taskData.task.id;
         }
         worker.postMessage(taskData.task);
       }
@@ -402,6 +404,9 @@ export class WorkerPool extends EventEmitter {
 
   /**
    * Resets the worker pool to its initial state.
+   * 
+   * @returns Promise that resolves when reset is complete
+   *
    */
   public async reset(): Promise<void> {
     this.isShuttingDown = true;
@@ -492,8 +497,8 @@ export class WorkerPool extends EventEmitter {
     }
     // Clear currentTaskId on all workers that have it set to this taskId
     for (const worker of this.workers) {
-      if ('currentTaskId' in worker && (worker as any).currentTaskId === taskId) {
-        (worker as any).currentTaskId = undefined;
+      if ('currentTaskId' in worker && (worker as unknown as { currentTaskId?: string }).currentTaskId === taskId) {
+        (worker as unknown as { currentTaskId?: string }).currentTaskId = undefined;
       }
     }
   }

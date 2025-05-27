@@ -26,13 +26,13 @@ vi.mock('worker_threads', () => {
       window.__WORKER_REGISTRY__.add(this);
     }
 
-    on(event: string, handler: (...args: any[]) => void) {
+    on(event: string, handler: (...args: any[]) => void): void {
       if (event === 'message') this._onMessage = handler;
       else if (event === 'error') this._onError = handler;
       else if (event === 'exit') this._onExit = handler;
     }
 
-    async simulateMessage(data: any, taskId?: string) {
+    async simulateMessage(data: any, taskId?: string): Promise<void> {
       if (this._isTerminated) return;
       await Promise.resolve();
       if (this._onMessage) {
@@ -46,7 +46,7 @@ vi.mock('worker_threads', () => {
       }
     }
 
-    async simulateError(error: Error, taskId?: string) {
+    async simulateError(error: Error, taskId?: string): Promise<void> {
       if (this._isTerminated) return;
       await Promise.resolve();
       if (taskId) {
@@ -58,7 +58,7 @@ vi.mock('worker_threads', () => {
       await this.simulateExit();
     }
 
-    async simulateExit() {
+    async simulateExit(): Promise<void> {
       if (this._isTerminated) return;
       this._isTerminated = true;
       await Promise.resolve();
@@ -108,8 +108,8 @@ describe('WorkerPool', () => {
     window.__WORKER_REGISTRY__ = new Set();
   });
 
-  afterEach(() => {
-    workerPool.reset();
+  afterEach(async () => {
+    await workerPool.reset();
     window.__WORKER_REGISTRY__ = new Set();
   });
 
@@ -339,7 +339,7 @@ describe('WorkerPool', () => {
     it('should register workers in global registry', async () => {
       expect(window.__WORKER_REGISTRY__?.size).toBe(2);
       
-      workerPool.reset();
+      await workerPool.reset();
       expect(window.__WORKER_REGISTRY__?.size).toBe(0);
     });
   });
@@ -387,7 +387,7 @@ describe('WorkerPool', () => {
       ] as WorkerTask[];
       const workers = (pool as any).workers as any[];
       const promises = tasks.map(task => pool.execute(task));
-      promises.forEach(p => p.catch(() => {}));
+      promises.forEach((p) => { void p.catch(() => {}); });
       // Simulate first worker failure
       await workers[0].simulateError(new Error('fail1'), tasks[0].id);
       await new Promise(r => setTimeout(r, 20));
@@ -417,7 +417,7 @@ describe('WorkerPool', () => {
       errPromise.catch(() => {});
       // Wait until the timeout is set for the error task
       await new Promise(resolve => {
-        const check = () => {
+        const check = (): void => {
           if ((pool as any).taskTimeouts.has(errTask.id)) {
             resolve(undefined);
           } else {
