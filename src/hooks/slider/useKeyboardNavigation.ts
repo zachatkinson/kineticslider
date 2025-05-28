@@ -2,10 +2,7 @@ import React from "react";
 import { useCallback } from "react";
 import { useSlider } from "../../context/SliderContext";
 import { createBrandedNumber } from "../../types/branded";
-
-interface KeyboardNavigationHook {
-  handleKeyDown: (event: React.KeyboardEvent) => void;
-}
+import type { KeyboardNavigationHook } from "../../types/hooks";
 
 /**
  *

@@ -55,8 +55,14 @@ export type {
   UseErrorTrackingReturn,
   UsePerformanceOptions,
   UseAnimationConfig,
-  UseKineticSliderProps,
+  KineticSliderHookProps,
+  SliderGestureEvent,
   FormValidationOptions,
+  GestureStateRef,
+  KeyboardNavigationHook,
+  SliderAnimationHook,
+  SlideValidationOptions,
+  KineticSliderHookResult,
 } from "./hooks";
 
 // Interactable elements types

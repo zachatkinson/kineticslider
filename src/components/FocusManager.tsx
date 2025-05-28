@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
 import { useKeyboard } from "../hooks/useKeyboard";
+import { useFocusRestoration } from "../hooks/useFocusRestoration";
 import { FocusManagerProps } from "../types/accessibility";
 import { FocusTrapOptions } from "../types/keyboard";
 
@@ -93,6 +94,13 @@ export const FocusManager: React.FC<FocusManagerProps> = ({
     onEscape: onEscape,
   });
 
+  // Use focus restoration hook
+  const { restoreFocus: _restoreFocusFromHook } = useFocusRestoration({
+    enabled: restoreFocus && !trapFocus,
+    restoreOnUnmount: true,
+    returnFocusTo,
+  });
+
   // Set up focus trap
   useEffect(() => {
     const container = containerRef.current;
@@ -132,39 +140,6 @@ export const FocusManager: React.FC<FocusManagerProps> = ({
     releaseFocus,
     trapOptions,
   ]);
-
-  // Handle focus restoration on unmount if not using focus trap
-  useEffect(() => {
-    if (!trapFocus && returnFocusTo && restoreFocus) {
-      return () => {
-        try {
-          // Handle different types for returnFocusTo
-          let elementToFocus: HTMLElement | null = null;
-
-          if (typeof returnFocusTo === "string") {
-            // If it's a selector, use querySelector
-            elementToFocus = document.querySelector(
-              returnFocusTo,
-            ) as HTMLElement;
-          } else if (returnFocusTo instanceof HTMLElement) {
-            // If it's an HTMLElement, use directly
-            elementToFocus = returnFocusTo;
-          } else if (typeof returnFocusTo === "function") {
-            // If it's a function, call it
-            elementToFocus = returnFocusTo();
-          }
-
-          if (elementToFocus && typeof elementToFocus.focus === "function") {
-            elementToFocus.focus();
-          }
-        } catch (e) {
-          console.warn("Failed to restore focus:", e);
-        }
-      };
-    }
-
-    return undefined;
-  }, [trapFocus, returnFocusTo, restoreFocus]);
 
   return (
     <div ref={containerRef} className="focus-manager">

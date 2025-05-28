@@ -1,11 +1,7 @@
 import { useState } from "react";
 import type { ValidationError, ValidationResult } from "../../types/validation";
 import { getFieldClass, getErrorForField } from "../../utils/validation";
-
-interface SlideValidationOptions {
-  validateOnMount?: boolean;
-  debounceMs?: number;
-}
+import type { SlideValidationOptions } from "../../types/hooks";
 
 /**
  * Custom hook for slide validation

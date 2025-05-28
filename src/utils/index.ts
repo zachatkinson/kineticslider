@@ -176,3 +176,29 @@ export {
   _hasErrorsWithProperties as hasErrorsWithProperties,
   _getErrorsForProperties as getErrorsForProperties,
 } from "./validation-checks";
+
+// Slide helper utilities
+export {
+  shouldPreloadSlide,
+  createSliderGestureEvent,
+  calculateSlideTransform,
+  generateSlideAriaLabel,
+  calculateNextSlideIndex,
+  calculatePreviousSlideIndex,
+} from "./slide-helpers";
+
+// Navigation helper utilities
+export {
+  calculateNextIndex,
+  calculatePreviousIndex,
+  validateSlideIndex,
+  canNavigate,
+  generateNavigationAnnouncement,
+} from "./navigation-helpers";
+
+// React ref helper utilities
+export {
+  isRefNotNull,
+  safeRefAccess,
+  withRef,
+} from "./ref-helpers";

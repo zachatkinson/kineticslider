@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import type { KeyboardOptions } from "@/types/keyboard";
+import { createConsoleMocks } from "@/__tests__/mocks";
 
 // Declare all mock variables and the escapeCallback at the top
 const mockTrapFocus = vi.fn();
@@ -193,7 +194,7 @@ describe("FocusManager Component", () => {
 
   it("handles focus restoration failure gracefully", () => {
     // Test lines 139-164: Error handling in focus restoration
-    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const consoleMocks = createConsoleMocks();
     
     const faultyElement = {
       focus: vi.fn().mockImplementation(() => {
@@ -214,9 +215,9 @@ describe("FocusManager Component", () => {
     // Trigger unmount to test error handling
     unmount();
 
-    expect(consoleSpy).toHaveBeenCalledWith("Failed to restore focus:", expect.any(Error));
+    expect(consoleMocks.spies.warn).toHaveBeenCalledWith("Failed to restore focus:", expect.any(Error));
     
-    consoleSpy.mockRestore();
+    consoleMocks.restore();
   });
 
   it("sets initialFocus option when provided", () => {

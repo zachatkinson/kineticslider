@@ -1,26 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
+import type { PixiErrorBoundaryProps } from "../../types/components";
 import type { PixiErrorBoundaryState } from "../../types/components";
-
-/**
- * Props for Pixi-specific error boundary
- *
- * @example
- * ```tsx
- * const props: PixiErrorBoundaryProps = {
- *   children: <PixiComponent />,
- *   fallback: <ErrorFallback />,
- *   onError: (error, errorInfo) => console.error(error, errorInfo)
- * };
- * ```
- */
-export interface PixiErrorBoundaryProps {
-  /** Child components to render */
-  children: React.ReactNode;
-  /** Fallback UI to render when an error occurs */
-  fallback?: React.ReactNode;
-  /** Callback fired when an error occurs */
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-}
 
 /**
  * Error boundary component specifically designed for Pixi.js related errors in the slider.

@@ -6,23 +6,13 @@ import {
   ValidationErrorType,
   ValidationResult,
   ValidationContext,
-  Validator as _ValidationTypeValidator,
-  AsyncValidator as _ValidationTypeAsyncValidator,
+  Validator,
+  AsyncValidator,
 } from "../types/validation";
 import { createSchemaValidator } from "../utils/validation";
 import { composeAsyncValidators, memoizeValidator } from "../utils/validation";
 import { ValidationError } from "./errors";
 import type { SlideItem } from "../types/slider";
-
-// Define validator types that accept unknown input but are generic over the expected type
-type Validator<_T> = (
-  value: unknown,
-  context?: ValidationContext,
-) => ValidationResult;
-type AsyncValidator<_T> = (
-  value: unknown,
-  context?: ValidationContext,
-) => Promise<ValidationResult>;
 
 // Local implementation of createSchemaValidator for tests
 // This will only be used if the imported one is not available
@@ -53,7 +43,7 @@ function localCreateSchemaValidator<_T>(
 /**
  * Create a validator for slides using our schema system
  */
-export const validateSlideWithSchema: Validator<Slide> = (
+export const validateSlideWithSchema: Validator<unknown> = (
   typeof createSchemaValidator === "function"
     ? createSchemaValidator
     : localCreateSchemaValidator
@@ -67,13 +57,13 @@ export const validateSlideWithSchema: Validator<Slide> = (
  * @returns {Promise<ValidationResult>} Async validation result
  *
  */
-export const asyncValidateSlide: AsyncValidator<Slide> = async (
+export const asyncValidateSlide: AsyncValidator<unknown> = async (
   value: unknown,
   context?: ValidationContext,
 ): Promise<ValidationResult> => {
   // Implementation will just forward to the local validator for now
   const result = await Promise.resolve(
-    localCreateSchemaValidator<Slide>({})(value, context),
+    localCreateSchemaValidator<unknown>({})(value, context),
   );
   return result;
 };
@@ -202,9 +192,9 @@ export const _validateSlidesWithSchema = async (
 };
 
 // Local implementation of composeAsyncValidators for tests
-function localComposeAsyncValidators<_T>(
-  ...validators: AsyncValidator<_T>[]
-): AsyncValidator<_T> {
+function localComposeAsyncValidators(
+  ...validators: AsyncValidator<unknown>[]
+): AsyncValidator<unknown> {
   return async (
     value: unknown,
     context?: ValidationContext,

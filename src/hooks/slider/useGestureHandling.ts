@@ -3,12 +3,7 @@ import { useCallback, useRef } from "react";
 import { useSlider } from "../../context/SliderContext";
 import { createBrandedNumber } from "../../types/branded";
 import type { SliderContextValue } from "../../types/slider";
-
-interface GestureStateRef {
-  startX: number;
-  startY: number;
-  isDragging: boolean;
-}
+import type { GestureStateRef } from "../../types/hooks";
 
 /**
  *
@@ -22,8 +17,12 @@ export function useGestureHandling(
 ): unknown {
   const { state, config, actions } = useSlider() as SliderContextValue;
   const gestureState = useRef<GestureStateRef>({
+    isTracking: false,
     startX: 0,
     startY: 0,
+    currentX: 0,
+    currentY: 0,
+    startTime: Date.now(),
     isDragging: false,
   });
 
@@ -32,8 +31,12 @@ export function useGestureHandling(
       if (state.isAnimating) return;
 
       gestureState.current = {
+        isTracking: true,
         startX: clientX,
         startY: clientY,
+        currentX: clientX,
+        currentY: clientY,
+        startTime: Date.now(),
         isDragging: true,
       };
     },
@@ -43,6 +46,10 @@ export function useGestureHandling(
   const handleGestureMove = useCallback(
     (clientX: number, clientY: number) => {
       if (!gestureState.current.isDragging) return;
+
+      // Update current position
+      gestureState.current.currentX = clientX;
+      gestureState.current.currentY = clientY;
 
       const deltaX = clientX - gestureState.current.startX;
       const deltaY = clientY - gestureState.current.startY;
@@ -91,6 +98,7 @@ export function useGestureHandling(
 
     // Reset gesture state
     gestureState.current.isDragging = false;
+    gestureState.current.isTracking = false;
 
     // Determine if the gesture should trigger a slide change
     const isHorizontalSwipe =

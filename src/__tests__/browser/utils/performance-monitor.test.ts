@@ -9,34 +9,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PerformanceMonitor } from "../../../utils/performance-monitor";
 
-// Mock dependencies
-vi.mock("../../../services/resource-management", () => {
-  const mockTerminate = vi.fn();
-
-  return {
-    ResourcePool: vi.fn().mockImplementation(() => ({
-      acquire: vi.fn(),
-      release: vi.fn(),
-      releaseAll: vi.fn(),
-    })),
-    WorkerPool: vi.fn().mockImplementation(() => ({
-      execute: vi
-        .fn()
-        .mockImplementation((task: () => unknown) =>
-          Promise.resolve(typeof task === "function" ? task() : null),
-        ),
-      terminate: mockTerminate,
-    })),
-  };
+// Use centralized mocks instead of duplicating
+vi.mock("../../../services/resource-management", async () => {
+  const { WorkerPool, ResourcePool } = await import("../../mocks/resource-management.mock");
+  return { WorkerPool, ResourcePool };
 });
 
-// Mock for the WorkerPool
-vi.mock("../../../utils/worker-pool", () => {
-  return {
-    WorkerPool: class MockWorkerPool {
-      terminate = vi.fn();
-    },
-  };
+vi.mock("../../../utils/worker-pool", async () => {
+  const { WorkerPool } = await import("../../mocks/resource-management.mock");
+  return { WorkerPool };
 });
 
 // Extend the PerformanceMonitor class for testing

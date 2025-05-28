@@ -13,6 +13,16 @@ import type { GestureConfig as _GestureConfig } from "./gestures";
 import type { SlideFormProps } from "./form";
 
 /**
+ * Component-related type definitions
+ *
+ * This module contains type definitions for React components,
+ * including props, state, and component-specific interfaces.
+ *
+ * @module Components
+ * @version 1.0.0
+ */
+
+/**
  * Props for the fallback render function
  *
  * @example
@@ -28,45 +38,68 @@ export interface FallbackProps {
 }
 
 /**
- * Types related to React components
- */
-
-/**
- * Props for error boundary components
+ * Error boundary component props
  *
+ * @interface ErrorBoundaryProps
  * @example
- * ```tsx
- * <ErrorBoundary
- *   fallback={<FallbackComponent />}
- *   onError={(error) => logError(error)}
- * >
- *   <ComponentThatMightError />
- * </ErrorBoundary>
+ * ```typescript
+ * const errorBoundaryProps: ErrorBoundaryProps = {
+ *   children: <MyComponent />,
+ *   fallback: (error, retry) => <ErrorFallback error={error} onRetry={retry} />,
+ *   onError: (error, errorInfo) => console.error('Component error:', error),
+ *   maxRetries: 3,
+ *   skipRecoveryUi: false
+ * };
  * ```
  */
 export interface ErrorBoundaryProps {
-  /** Child components to render */
+  /**
+   * The content to render normally (when no error occurs)
+   */
   children: React.ReactNode;
-  /** Optional fallback UI to render when an error occurs */
+
+  /**
+   * Either a React element or a function that returns a React element
+   * If a function, it will receive the error and a retry function as arguments
+   */
   fallback?:
     | React.ReactNode
-    | ((error: Error, resetErrorBoundary: () => void) => React.ReactNode);
-  /** Callback fired when an error occurs */
+    | ((error: Error, retry: () => void) => React.ReactNode);
+
+  /**
+   * Callback fired when an error is caught
+   */
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-  /** Maximum number of retry attempts */
+
+  /**
+   * Maximum number of automatic retry attempts
+   *
+   * @default 3
+   */
   maxRetries?: number;
-  /** Skip showing the recovery UI in test environment for tests that need to see the error UI immediately */
+
+  /**
+   * Skip the automatic recovery UI
+   *
+   * @default false
+   */
   skipRecoveryUi?: boolean;
-  /** Used in testing to avoid duplicate data-testid in nested error boundaries */
+
+  /**
+   * Used for testing to identify nested boundaries
+   *
+   * @internal
+   */
   nestLevel?: string;
 }
 
 /**
- * State for error boundary components
+ * Error boundary component state
  *
+ * @interface ErrorBoundaryState
  * @example
- * ```tsx
- * this.state = {
+ * ```typescript
+ * const initialState: ErrorBoundaryState = {
  *   hasError: false,
  *   error: null,
  *   errorInfo: null,
@@ -75,54 +108,67 @@ export interface ErrorBoundaryProps {
  * ```
  */
 export interface ErrorBoundaryState {
-  /** Whether an error has occurred */
   hasError: boolean;
-  /** The error that: occurred, if any */
   error: Error | null;
-  /** Additional error information from React */
   errorInfo: React.ErrorInfo | null;
-  /** Number of retry attempts made */
   retryCount: number;
 }
 
 /**
- * Props for Pixi-specific error boundary
+ * PIXI error boundary component props
  *
+ * @interface PixiErrorBoundaryProps
  * @example
- * ```tsx
- * <PixiErrorBoundary
- *   fallback={<div>An error occurred in the Pixi component</div>}
- *   onError={(error) => sendErrorToAnalytics(error)}
- * >
- *   <PixiComponent />
- * </PixiErrorBoundary>
+ * ```typescript
+ * const pixiErrorBoundaryProps: PixiErrorBoundaryProps = {
+ *   children: <PixiComponent />,
+ *   onError: (error) => console.error('PIXI error:', error),
+ *   fallback: <div>PIXI component failed to load</div>
+ * };
  * ```
  */
 export interface PixiErrorBoundaryProps {
-  /** Child components to render */
   children: React.ReactNode;
-  /** Optional fallback UI to render when an error occurs */
-  fallback?: React.ReactNode;
-  /** Callback fired when an error occurs */
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  fallback?: React.ReactNode;
 }
 
 /**
- * State for Pixi-specific error boundary
+ * PIXI error boundary component state
  *
+ * @interface PixiErrorBoundaryState
  * @example
- * ```tsx
- * this.state = {
- *   hasError: true,
- *   error: new Error('Pixi.js initialization failed')
- * }
+ * ```typescript
+ * const initialState: PixiErrorBoundaryState = {
+ *   hasError: false,
+ *   error: null
+ * };
  * ```
  */
 export interface PixiErrorBoundaryState {
-  /** Whether an error has occurred */
   hasError: boolean;
-  /** The error that was caught, if any */
   error: Error | null;
+}
+
+/**
+ * Window interface extensions for testing utilities
+ *
+ * @interface WindowExtensions
+ * @example
+ * ```typescript
+ * // Usage in tests
+ * window.setErrorBoundaryRecovery?.(true);
+ * window.shouldRecover = false;
+ * ```
+ */
+export interface WindowExtensions {
+  setErrorBoundaryRecovery?: (value: boolean) => void;
+  shouldRecover?: boolean;
+}
+
+// Extend global Window interface
+declare global {
+  interface Window extends WindowExtensions {}
 }
 
 /**

@@ -1,6 +1,13 @@
 /**
- * Internal types used by hooks but needed for component parameters
+ * Hook-related type definitions
+ *
+ * This module contains type definitions for React hooks,
+ * including hook return types, options, and hook-specific interfaces.
+ *
+ * @module Hooks
+ * @version 1.0.0
  */
+
 import type {
   AnimationConfig,
   AnimationOptions,
@@ -17,13 +24,13 @@ import type {
   Slide,
   SliderMetrics as _SliderMetrics,
 } from "./slider";
+import type { SlideIndex } from "./branded";
 import type { FocusTrapOptions as _FocusTrapOptions } from "./keyboard";
 import type { gsap as _gsap } from "gsap";
 import type { UseSliderAccessibilityProps } from "./accessibility";
 import type { ValidationResult } from "./validation";
 import type { AnimationEvents } from "./animation";
-import type { GestureEvent, GestureDelta } from "./gesture";
-import type { SlideIndex } from "./branded";
+import type React from "react";
 
 // Re-export types needed by components
 export type {
@@ -36,38 +43,34 @@ export type {
 };
 
 /**
- * Types for React hook returns and configurations
- */
-
-/**
  * Return type for the useAnimation hook
  *
  * @example Example usage
  */
 export interface UseAnimationReturn {
-  /** Whether an animation is currently in _progress */
+  /** Whether an animation is currently in progress */
   isAnimating: boolean;
-  /** Animate to a specific slide _index with optional _speed? multiplier */
-  animateToSlide: (_targetIndex: number, _speed?: number) => void;
+  /** Animate to a specific slide index with optional speed multiplier */
+  animateToSlide: (targetIndex: number, speed?: number) => void;
   /** Initialize the container element with GSAP settings */
   setupContainer: (container: HTMLElement) => void;
-  /** Initialize the _slides with GSAP settings */
-  setupSlides: (_slides: HTMLElement[]) => void;
+  /** Initialize the slides with GSAP settings */
+  setupSlides: (slides: HTMLElement[]) => void;
   /** Clean up any ongoing animations */
   cleanupAnimations: () => void;
   /** Handle resize events and update positions */
   handleResize: () => void;
   /** Get the current position of the container */
   getPosition: () => number;
-  /** Start drag interaction at the given _x coordinate */
-  handleDragStart: (_x: number) => void;
-  /** Update drag position to the given _x coordinate */
-  handleDragMove: (_x: number) => void;
+  /** Start drag interaction at the given x coordinate */
+  handleDragStart: (x: number) => void;
+  /** Update drag position to the given x coordinate */
+  handleDragMove: (x: number) => void;
   /** End drag interaction and trigger momentum animation */
   handleDragEnd: () => void;
   /** Get the current drag velocity */
   getVelocity: () => number;
-  _progress: number;
+  progress: number;
   metrics: AnimationMetrics;
   events: AnimationEvents;
 }
@@ -127,19 +130,30 @@ export interface UsePerformanceReturn {
 /**
  * Return type for the useKineticSlider hook
  *
- * @example Example usage
+ * @interface UseKineticSliderReturn
+ * @example
+ * ```typescript
+ * const {
+ *   currentSlide,
+ *   isAnimating,
+ *   next,
+ *   prev,
+ *   goToSlide,
+ *   handleGesture,
+ *   sliderRef,
+ *   metrics
+ * } = useKineticSlider(props);
+ * ```
  */
 export interface UseKineticSliderReturn {
-  currentIndex: SlideIndex;
+  currentSlide: number;
   isAnimating: boolean;
-  isDragging: boolean;
-  dragDelta: GestureDelta;
   next: () => void;
-  previous: () => void;
-  goTo: (_index: SlideIndex) => void;
-  handleGestureStart: (_event: GestureEvent) => void;
-  handleGestureMove: (_event: GestureEvent) => void;
-  handleGestureEnd: (_event: GestureEvent) => void;
+  prev: () => void;
+  goToSlide: (slideIndex: number) => void;
+  handleGesture: (event: SliderGestureEvent) => void;
+  sliderRef: React.RefObject<HTMLDivElement>;
+  metrics: _SliderMetrics;
 }
 
 /**
@@ -177,7 +191,7 @@ export interface UseAnimationConfig {
   easing?: string;
   delay?: number;
   onComplete?: () => void;
-  onUpdate?: (_progress: number) => void;
+  onUpdate?: (progress: number) => void;
 }
 
 /**
@@ -185,13 +199,13 @@ export interface UseAnimationConfig {
  *
  * @example Example usage
  */
-export interface UseKineticSliderProps {
-  _slides: Slide[];
-  duration: number;
-  ease: string;
-  onSlideChange?: (_index: number) => void;
+export interface KineticSliderHookProps {
+  slides: Slide[];
+  initialSlide: SlideIndex;
+  onSlideChange?: (index: SlideIndex) => void;
   onAnimationComplete?: () => void;
-  initialSlide?: number;
+  duration?: number;
+  ease?: string;
   infiniteLoop?: boolean;
 }
 
@@ -200,9 +214,13 @@ export interface UseKineticSliderProps {
  *
  * @example Example usage
  */
-export interface SliderGestureEvent extends GestureEvent {
+export interface SliderGestureEvent {
+  type: string;
+  clientX: number;
+  clientY: number;
   startX: number;
   startY: number;
+  preventDefault?: () => void;
 }
 
 /**
@@ -217,4 +235,147 @@ export interface FormValidationOptions {
   validateOnMount?: boolean;
   /** Auto-validate on field change */
   validateOnChange?: boolean;
+}
+
+/**
+ * Gesture state reference interface
+ *
+ * @example Basic keyboard navigation setup
+ */
+export interface GestureStateRef {
+  isTracking: boolean;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+  startTime: number;
+  isDragging: boolean;
+}
+
+/**
+ * Keyboard navigation hook interface
+ *
+ * @example Basic keyboard navigation setup
+ */
+export interface KeyboardNavigationHook {
+  handleKeyDown: (event: React.KeyboardEvent) => void;
+  isEnabled?: boolean;
+  enableKeyboard?: () => void;
+  disableKeyboard?: () => void;
+}
+
+/**
+ * Slider animation hook interface
+ *
+ * @example Animation hook implementation
+ */
+export interface SliderAnimationHook {
+  animateToSlide: (slideIndex: number) => Promise<void>;
+  isAnimating: boolean;
+  currentSlide: number;
+  duration: number;
+  easing: string;
+}
+
+/**
+ * Slide validation options interface
+ *
+ * @example Validation configuration options
+ */
+export interface SlideValidationOptions {
+  validateOnMount?: boolean;
+  validateOnChange?: boolean;
+  strictMode?: boolean;
+  debounceMs?: number;
+  customValidators?: Array<(slide: unknown) => boolean>;
+}
+
+/**
+ * Kinetic slider hook result interface
+ *
+ * @example Hook return value structure
+ */
+export interface KineticSliderHookResult {
+  currentSlide: SlideIndex;
+  isAnimating: boolean;
+  next: () => Promise<void>;
+  prev: () => Promise<void>;
+  handleGesture: (direction: string) => void;
+  sliderRef: React.RefObject<HTMLDivElement | null>;
+}
+
+// Touch Gestures Hook Types
+export interface UseTouchGesturesOptions {
+  threshold?: number;
+  enabled?: boolean;
+  onInteraction?: (gestureType: string) => void;
+  onGestureEvent?: (event: SliderGestureEvent) => void;
+  onNext?: () => void;
+  onPrev?: () => void;
+}
+
+export interface UseTouchGesturesReturn {
+  handleTouchStart: (event: React.TouchEvent) => void;
+  handleTouchMove: (event: React.TouchEvent) => void;
+  handleTouchEnd: (event: React.TouchEvent) => void;
+}
+
+// Image Preloading Hook Types
+export interface UseImagePreloadingOptions {
+  lazyLoad?: boolean;
+  onError?: (error: import("../types/image").ImageError) => void;
+  onAnalytics?: () => void;
+}
+
+export interface UseImagePreloadingReturn {
+  preloadedImages: Set<string>;
+  loadingStates: Record<string, boolean>;
+  preloadImagesForSlide: (currentSlide: number, slides: Array<{ image?: string }>) => void;
+}
+
+// Container Resize Hook Types
+export interface UseContainerResizeOptions {
+  debounceDelay?: number;
+  trackWidth?: boolean;
+  trackHeight?: boolean;
+  initialWidth?: string;
+  initialHeight?: string;
+}
+
+export interface UseContainerResizeReturn {
+  containerWidth: string;
+  containerHeight: string;
+  recalculateSize: () => void;
+}
+
+// Error State Hook Types
+export interface UseErrorStateOptions {
+  initialError?: Error | null;
+  initialIsError?: boolean;
+  onParentError?: (error: Error | null) => void;
+  onParentIsError?: (isError: boolean) => void;
+  onError?: (error: Error) => void;
+  enableTracking?: boolean;
+}
+
+export interface UseErrorStateReturn {
+  error: Error | null;
+  isError: boolean;
+  setError: (error: Error | null) => void;
+  setIsError: (isError: boolean) => void;
+  propagateError: (error: Error, errorType?: import("../types/error").ErrorType) => void;
+  clearError: () => void;
+}
+
+// Focus Restoration Hook Types
+export interface UseFocusRestorationOptions {
+  enabled?: boolean;
+  restoreOnUnmount?: boolean;
+  returnFocusTo?: HTMLElement | string | (() => HTMLElement | null) | null;
+}
+
+export interface UseFocusRestorationReturn {
+  previousFocusRef: React.MutableRefObject<HTMLElement | null>;
+  restoreFocus: () => void;
+  storeFocus: () => void;
 }

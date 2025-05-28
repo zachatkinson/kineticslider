@@ -1,8 +1,9 @@
 /**
- * Mock implementations for resource management in browser tests.
+ * Consolidated mock implementations for resource management
+ * Shared between unit and browser tests to eliminate duplication
  *
  * @example
- * import { WorkerPool, ResourcePool } from './resource-management.mock';
+ * import { WorkerPool, ResourcePool, mockTerminate } from '@/__tests__/mocks';
  * const pool = new WorkerPool({ maxWorkers: 2 });
  * await pool.execute(() => doWork());
  * pool.terminate();
@@ -12,19 +13,24 @@ import { EventEmitter } from "events";
 import type {
   WorkerPoolOptions,
   WorkerPoolStats,
-} from "../../../types/worker-pool";
-import { ErrorSeverity, ErrorType } from "../../../types/error";
+} from "../../types/worker-pool";
+import { ErrorSeverity, ErrorType } from "../../types/error";
 
+/**
+ * Shared mock terminate function
+ */
 export const mockTerminate = vi.fn();
 
 /**
- * Mock implementation of a worker pool for resource management in tests.
+ * Mock implementation of a worker pool for resource management tests.
+ * Works in both unit and browser test environments.
  *
  * @example
  * const pool = new WorkerPool({ maxWorkers: 2 });
  * await pool.execute(() => doWork());
  * pool.terminate();
- * @returns {WorkerPool} The mock worker pool instance.
+ *
+ * @returns WorkerPool instance
  *
  */
 export class WorkerPool extends EventEmitter {
@@ -44,6 +50,9 @@ export class WorkerPool extends EventEmitter {
   private peakQueueSize = 0;
 
   /**
+   * Creates a new WorkerPool instance
+   *
+   * @param options Configuration options for the worker pool
    *
    */
   constructor(options: WorkerPoolOptions = {}) {
@@ -55,23 +64,20 @@ export class WorkerPool extends EventEmitter {
       timeout: options.timeout || 30000,
       errorHandler: options.errorHandler || this.defaultErrorHandler.bind(this),
     };
-
-    // Initialize immediately
-    void this.initialize();
   }
 
   /**
-   * Default error handler for worker errors.
+   * Default error handler for worker errors
    *
    * @param error The error object
    *
    * @param context Context for the error
    *
-   * @param context.taskId Optional task identifier
+   * @param context.taskId
    *
-   * @param context.operation Optional operation name
+   * @param context.operation
    *
-   * @returns {void}
+   * @returns void
    *
    */
   private defaultErrorHandler(
@@ -83,11 +89,11 @@ export class WorkerPool extends EventEmitter {
   }
 
   /**
-   * Execute a task in the worker pool.
+   * Execute a task in the worker pool
    *
    * @param task The task function to execute
    *
-   * @returns {Promise<T>} The result of the task
+   * @returns Promise that resolves with the task result
    *
    */
   async execute<T>(task: () => T | Promise<T>): Promise<T> {
@@ -101,7 +107,6 @@ export class WorkerPool extends EventEmitter {
     this.peakQueueSize = Math.max(this.peakQueueSize, this.taskQueue.length);
 
     return new Promise<T>((resolve, reject) => {
-      // Wrap the task execution to handle errors properly
       const wrappedTask = async (): Promise<unknown> => {
         try {
           const result = await task();
@@ -109,7 +114,6 @@ export class WorkerPool extends EventEmitter {
           return result;
         } catch (error) {
           this.taskCompletionTimes[taskId] = Date.now();
-          // Call error handler directly here
           if (this.options.errorHandler) {
             this.options.errorHandler(error as Error, { taskId });
           }
@@ -117,14 +121,12 @@ export class WorkerPool extends EventEmitter {
         }
       };
 
-      // Add task to queue
       this.taskQueue.push({
         task: wrappedTask,
         resolve: (value: unknown) => resolve(value as T),
         reject,
       });
 
-      // Process queue in the next tick to avoid stack overflow
       setTimeout(() => {
         void this.processQueue();
       }, 0);
@@ -132,24 +134,18 @@ export class WorkerPool extends EventEmitter {
   }
 
   /**
-   * Process the task queue and assign tasks to available workers.
+   * Process the task queue and assign tasks to available workers
    *
-   * @returns {Promise<void>}
+   * @returns Promise that resolves when processing is complete
    *
    */
   private async processQueue(): Promise<void> {
-    if (this.taskQueue.length === 0 || this.availableWorkers.length === 0) {
-      return;
-    }
-
-    // Process all tasks that can be processed
     while (this.taskQueue.length > 0 && this.availableWorkers.length > 0) {
       const task = this.taskQueue.shift();
       if (!task) continue;
 
       const worker = this.availableWorkers.shift();
       if (!worker) {
-        // If no worker is available, put the task back and exit
         this.taskQueue.unshift(task);
         break;
       }
@@ -160,22 +156,20 @@ export class WorkerPool extends EventEmitter {
       } catch (error) {
         task.reject(error);
       } finally {
-        // Return the worker to the available pool
         this.availableWorkers.push(worker);
       }
     }
   }
 
   /**
-   * Initialize the worker pool.
+   * Initialize the worker pool
    *
-   * @returns {Promise<void>}
+   * @returns Promise that resolves when initialization is complete
    *
    */
   private async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
-    // Create initial workers
     const workerCount = Math.min(
       this.options.initialWorkers || 1,
       this.options.maxWorkers,
@@ -189,43 +183,40 @@ export class WorkerPool extends EventEmitter {
   }
 
   /**
-   * Create a new worker and add it to the pool.
+   * Create a new worker and add it to the pool
    *
-   * @returns {Promise<void>}
+   * @returns Promise that resolves when worker is created
    *
    */
   private async createWorker(): Promise<void> {
-    // Create a fake worker for testing
-    const worker = {} as Worker;
+    const worker = {
+      terminate: vi.fn(),
+      postMessage: vi.fn(),
+    } as unknown as Worker;
 
-    // Add it to our pools
     this.workers.push(worker);
     this.availableWorkers.push(worker);
   }
 
   /**
-   * Terminate all workers and reset the pool.
+   * Terminate all workers and reset the pool
    *
-   * @returns {void}
+   * @returns void
    *
    */
   terminate(): void {
     mockTerminate();
+    this.workers.forEach((worker) => worker.terminate());
     this.workers = [];
     this.availableWorkers = [];
     this.taskQueue = [];
     this.isInitialized = false;
-    this.errorCount = 0;
-    this.taskStartTimes = {};
-    this.taskCompletionTimes = {};
-    this.queueSizeHistory = [];
-    this.peakQueueSize = 0;
   }
 
   /**
-   * Get statistics about the worker pool.
+   * Get statistics about the worker pool
    *
-   * @returns {WorkerPoolStats} The statistics object
+   * @returns The statistics object
    *
    */
   getStatistics(): WorkerPoolStats {
@@ -238,16 +229,19 @@ export class WorkerPool extends EventEmitter {
     };
 
     const emptyErrorTrends = {
-      daily: {} as Record<string, number>,
-      weekly: {} as Record<string, number>,
-      monthly: {} as Record<string, number>,
+      daily: {},
+      weekly: {},
+      monthly: {},
     };
 
-    const avgWaitTime =
-      this.queueSizeHistory.length > 0
-        ? this.queueSizeHistory.reduce((a, b) => a + b, 0) /
-          this.queueSizeHistory.length
-        : 0;
+    // Calculate average wait time
+    const waitTimes = Object.values(this.taskCompletionTimes).map((completion, index) => {
+      const start = Object.values(this.taskStartTimes)[index];
+      return start ? completion - start : 0;
+    });
+    const avgWaitTime = waitTimes.length > 0 
+      ? waitTimes.reduce((sum, time) => sum + time, 0) / waitTimes.length 
+      : 0;
 
     return {
       totalWorkers: this.workers.length,
@@ -268,14 +262,12 @@ export class WorkerPool extends EventEmitter {
 }
 
 /**
- * Mock implementation of a resource pool for tests.
+ * Mock implementation of a resource pool for testing
  *
  * @example
  * const pool = new ResourcePool({ maxResources: 5 });
  * const resource = await pool.acquire();
  * await pool.release(resource);
- * @returns {ResourcePool} The mock resource pool instance.
- *
  */
 export class ResourcePool {
   private _activeCount = 0;
@@ -285,17 +277,24 @@ export class ResourcePool {
   private _timeouts: Map<unknown, ReturnType<typeof setTimeout>> = new Map();
 
   /**
+   * Creates a new ResourcePool instance
+   *
+   * @param options Configuration options
+   *
+   * @param options.maxResources Maximum number of resources to allow
+   *
+   * @param options.timeout Timeout for resource operations
    *
    */
   constructor(options: { maxResources?: number; timeout?: number } = {}) {
     this._maxResources = options.maxResources || 10;
-    this._timeout = options.timeout || 30000;
+    this._timeout = options.timeout || 5000;
   }
 
   /**
-   * Get the number of active resources.
+   * Get the current active resource count
    *
-   * @returns {number} The active resource count
+   * @returns The number of active resources
    *
    */
   get activeCount(): number {
@@ -303,9 +302,9 @@ export class ResourcePool {
   }
 
   /**
-   * Acquire a resource from the pool.
+   * Acquire a resource from the pool
    *
-   * @returns {Promise<unknown>} The acquired resource
+   * @returns Promise that resolves with the acquired resource
    *
    */
   async acquire(): Promise<unknown> {
@@ -313,28 +312,29 @@ export class ResourcePool {
       throw new Error("Resource pool exhausted");
     }
 
-    const resource = {};
+    const resource = {
+      id: Math.random().toString(36).substring(2, 9),
+      acquired: Date.now(),
+    };
+
     this._resources.add(resource);
     this._activeCount++;
 
-    // Set timeout for resource
-    const timeoutId = setTimeout(() => {
-      if (this._resources.has(resource)) {
-        void this.release(resource);
-      }
+    // Set a timeout for the resource
+    const timeout = setTimeout(() => {
+      this.release(resource).catch(console.error);
     }, this._timeout);
-
-    this._timeouts.set(resource, timeoutId);
+    this._timeouts.set(resource, timeout);
 
     return resource;
   }
 
   /**
-   * Release a resource back to the pool.
+   * Release a resource back to the pool
    *
    * @param resource The resource to release
    *
-   * @returns {Promise<void>}
+   * @returns Promise that resolves when resource is released
    *
    */
   async release(resource: unknown): Promise<void> {
@@ -342,62 +342,80 @@ export class ResourcePool {
       throw new Error("Resource not found in pool");
     }
 
-    const timeoutId = this._timeouts.get(resource);
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+    this._resources.delete(resource);
+    this._activeCount = Math.max(0, this._activeCount - 1);
+
+    // Clear the timeout
+    const timeout = this._timeouts.get(resource);
+    if (timeout) {
+      clearTimeout(timeout);
       this._timeouts.delete(resource);
     }
-
-    this._resources.delete(resource);
-    this._activeCount--;
   }
 }
 
 /**
- * Create a mock resource management object.
+ * Creates a complete resource management mock setup
  *
- * @example
- * const mock = createResourceManagementMock();
- * @returns {object} The mock resource management object
+ * @param _options - Configuration options for the mock
+ *
+ * @param _options.maxResources - Maximum number of resources to allow
+ *
+ * @param _options.timeout - Timeout for resource operations
+ *
+ * @returns Object containing all resource management mocks
  *
  */
-export const createResourceManagementMock = (): object => {
-  // Implementation of createResourceManagementMock function
-  return {};
-};
+export function createResourceManagementMock(_options: {
+  maxResources?: number;
+  timeout?: number;
+} = {}): {
+  WorkerPool: typeof WorkerPool;
+  ResourcePool: typeof ResourcePool;
+  mockTerminate: typeof mockTerminate;
+  allocate: typeof allocateResources;
+  deallocate: typeof deallocateResources;
+  cleanup: typeof cleanupResources;
+} {
+  return {
+    WorkerPool,
+    ResourcePool,
+    mockTerminate,
+    cleanup: cleanupResources,
+    allocate: allocateResources,
+    deallocate: deallocateResources,
+  };
+}
 
 /**
- * Mock function for resource cleanup.
+ * Clean up all resources and reset state
  *
- * @example
- * cleanupResources();
- * @returns {void}
+ * @returns void
  *
  */
 export const cleanupResources = (): void => {
-  // Implementation of cleanupResources function
+  mockTerminate.mockReset();
+  // Additional cleanup logic can be added here
 };
 
 /**
- * Mock function for resource allocation.
+ * Allocate test resources
  *
- * @example
- * await allocateResources();
- * @returns {Promise<void>}
+ * @returns Promise that resolves when allocation is complete
  *
  */
 export const allocateResources = async (): Promise<void> => {
-  // Implementation of allocateResources function
+  // Mock resource allocation logic
+  await new Promise(resolve => setTimeout(resolve, 10));
 };
 
 /**
- * Mock function for resource deallocation.
+ * Deallocate test resources
  *
- * @example
- * deallocateResources();
- * @returns {void}
+ * @returns void
  *
  */
 export const deallocateResources = (): void => {
-  // Implementation of deallocateResources function
-};
+  // Mock resource deallocation logic
+  cleanupResources();
+}; 

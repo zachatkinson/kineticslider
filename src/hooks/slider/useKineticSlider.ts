@@ -1,9 +1,7 @@
 import React, { useState, useCallback } from "react";
-import type { Slide } from "../../types/slider";
-import { createBrandedNumber } from "../../types/branded";
-import type { SlideIndex } from "../../types/branded";
-import type { UseKineticSliderProps as _UseKineticSliderProps } from "../../types/hooks";
+import type { KineticSliderHookProps, KineticSliderHookResult } from "../../types/hooks";
 import { useErrorTracking } from "./useErrorTracking";
+import { createBrandedNumber } from "../../types/branded";
 
 /**
  * A hook for creating touch and draggable slider functionality with momentum effects
@@ -50,23 +48,19 @@ import { useErrorTracking } from "./useErrorTracking";
 /**
  * A hook for controlling a kinetic slider
  *
- * @param {Object} props - The props object
+ * @param props - The props object
  *
- * @param {Slide[]} props.slides - The slides to display
+ * @param props.slides - The slides to display
  *
- * @param {SlideIndex} props.initialSlide - The initial slide index
+ * @param props.initialSlide - The initial slide index
  *
- * @param {Function} props.onSlideChange - Callback when slide changes
+ * @param props.onSlideChange - Callback when slide changes
  *
- * @param {Function} props.onAnimationComplete - Callback when animation completes
+ * @param props.onAnimationComplete - Callback when animation completes
  *
- * @param {number} props.duration - Animation duration
+ * @param props.infiniteLoop - Whether to loop infinitely
  *
- * @param {string} props.ease - Animation easing function
- *
- * @param {boolean} props.infiniteLoop - Whether to loop infinitely
- *
- * @returns {Object} The slider state and controls
+ * @returns The slider state and controls
  *
  * @example
  * ```tsx
@@ -78,25 +72,6 @@ import { useErrorTracking } from "./useErrorTracking";
  * });
  * ```
  */
-interface KineticSliderHookProps {
-  slides: Slide[];
-  initialSlide: SlideIndex;
-  onSlideChange?: (index: SlideIndex) => void;
-  onAnimationComplete?: () => void;
-  duration?: number;
-  ease?: string;
-  infiniteLoop?: boolean;
-}
-
-interface KineticSliderHookResult {
-  currentSlide: SlideIndex;
-  isAnimating: boolean;
-  next: () => Promise<void>;
-  prev: () => Promise<void>;
-  handleGesture: (direction: string) => void;
-  sliderRef: React.RefObject<HTMLDivElement | null>;
-}
-
 const useKineticSlider = ({
   slides,
   initialSlide,

@@ -15,6 +15,7 @@ import {
   _calculatePercentile as calculatePercentile,
 } from "./math";
 import { debounce, throttle } from "./common";
+import type { PerformanceSample, FrameCallback } from "../types/utils";
 
 /**
  * Performance sample data structure
@@ -30,19 +31,11 @@ import { debounce, throttle } from "./common";
  *   }
  * };
  */
-interface PerformanceSample {
-  timestamp: number;
-  fps: number;
-  memory?: {
-    used: number;
-    limit: number;
-  };
-}
 
 /**
  * Frame callback function type
  */
-type FrameCallback = (timestamp: number) => void;
+// type FrameCallback = (timestamp: number) => void;
 
 /**
  * Options for performance monitoring configuration

@@ -2,24 +2,13 @@ import { gsap } from "gsap";
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useGestures } from "./useGestures";
 import type { KineticSliderProps, SliderMetrics } from "../types/slider";
-import type { SliderGestureEvent } from "../types/hooks";
 import type { SwipeDirection } from "../types/gestures";
+import type { UseKineticSliderReturn, SliderGestureEvent } from "../types/hooks";
 import {
   createBrandedNumber,
   SlideIndex as _SlideIndex,
 } from "../types/branded";
-
-// Define missing types
-interface UseKineticSliderReturn {
-  currentSlide: number;
-  isAnimating: boolean;
-  next: () => void;
-  prev: () => void;
-  goToSlide: (slideIndex: number) => void;
-  handleGesture: (event: SliderGestureEvent) => void;
-  sliderRef: React.RefObject<HTMLDivElement>;
-  metrics: SliderMetrics;
-}
+import { validateSlideIndex } from "../utils/navigation-helpers";
 
 export const useKineticSlider = ({
   slides,
@@ -128,10 +117,7 @@ export const useKineticSlider = ({
       if (isAnimating) return;
 
       // Validate slide index is within bounds
-      const validatedIndex = Math.max(
-        0,
-        Math.min(slideIndex, slides.length - 1),
-      );
+      const validatedIndex = validateSlideIndex(slideIndex, slides.length);
 
       // Only animate if we're changing slides
       if (validatedIndex !== currentSlide) {

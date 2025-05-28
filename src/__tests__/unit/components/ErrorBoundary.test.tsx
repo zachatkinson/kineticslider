@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { ErrorBoundary, withErrorBoundary, _TestableErrorBoundary } from "@/components/ErrorBoundary";
+import { setupConsoleMocks } from "../../mocks";
 
 // Track these mocks outside the mock definition so we can access them
 const trackEventMock = vi.fn();
@@ -47,21 +48,18 @@ const ErrorThrowingComponent = ({
 };
 
 describe("ErrorBoundary Component", () => {
+  let consoleMocks: ReturnType<typeof setupConsoleMocks>;
+
   // Silence console errors during tests
   beforeEach(() => {
-    vi.spyOn(console, "error").mockImplementation(() => {
-      return;
-    });
-    vi.spyOn(console, "warn").mockImplementation(() => {
-      return;
-    });
+    consoleMocks = setupConsoleMocks();
 
     // Reset mocks before each test
     vi.clearAllMocks();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    consoleMocks.restore();
   });
 
   it("renders children when no error is thrown", () => {

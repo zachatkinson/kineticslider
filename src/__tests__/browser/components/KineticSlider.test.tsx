@@ -1,14 +1,14 @@
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
 import { KineticSlider } from "@/components/KineticSlider/KineticSlider";
 import { createSlideId } from "@/utils/id-helpers";
 import type { Slide } from "@/types/slider";
 import {
-  mockFunctions,
-  createBasicKineticSliderMock,
   useKineticSliderMock,
   resetKineticSliderMocks,
+  createBasicKineticSliderMock,
   createHomeEndKineticSliderMock,
+  mockFunctions,
 } from "../../mocks/kinetic-slider.mock";
 
 // Mock the useKineticSlider hook - must be at the top level
@@ -156,7 +156,7 @@ describe("KineticSlider (Browser)", () => {
   });
 
   it("handles image loading states in renderLoading function", async () => {
-    // Test the uncovered lines 566-567: onLoad and onError handlers in renderLoading
+    // Test the new hook-based image preloading behavior
     const slides = [
       {
         id: createSlideId("slide-1"),
@@ -173,35 +173,14 @@ describe("KineticSlider (Browser)", () => {
       />,
     );
 
-    // Find the hidden preloading image
-    const preloadImage = document.querySelector('img[alt="Preloading"]') as HTMLImageElement;
-    expect(preloadImage).toBeInTheDocument();
-    expect(preloadImage.style.display).toBe('none');
+    // With the new hook-based architecture, image preloading is handled internally
+    // We can verify that the component renders correctly and shows loading states
+    const sliderElement = screen.getByRole('region');
+    expect(sliderElement).toBeInTheDocument();
 
-    // Test the onLoad handler (line 566-567)
-    fireEvent.load(preloadImage);
-
-    // Test the onError handler (line 566-567) 
-    const errorSlides = [
-      {
-        id: createSlideId("slide-error"),
-        title: "Error Slide",
-        image: "/invalid-image.jpg",
-        alt: "Error image",
-      },
-    ];
-
-    render(
-      <KineticSlider
-        slides={errorSlides}
-        lazyLoad={true}
-      />,
-    );
-
-    const errorPreloadImage = document.querySelector('img[alt="Preloading"]') as HTMLImageElement;
-    if (errorPreloadImage) {
-      fireEvent.error(errorPreloadImage);
-    }
+    // The loading indicator should be shown for images that aren't preloaded yet
+    const loadingIndicators = document.querySelectorAll('.kinetic-slider__loading');
+    expect(loadingIndicators.length).toBeGreaterThan(0);
 
     expect(true).toBe(true); // Test passes if no errors occur
   });

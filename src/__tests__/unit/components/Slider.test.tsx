@@ -118,11 +118,16 @@ import {
   fireEvent,
 } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { Slider, _isRefNotNull } from "@/components/Slider/Slider";
+import { Slider } from "@/components/Slider/Slider";
 import { SliderProvider } from "@/context/SliderContext";
 import type { Slide } from "@/types/slider";
 import { createSlideId } from "@/utils/test-utils";
 import { FeatureFlag } from "@/types/feature-flags";
+import { isRefNotNull } from "@/utils/ref-helpers";
+import {
+  setupBrowserApiMocks as _setupBrowserApiMocks,
+  createConsoleMocks as _createConsoleMocks,
+} from "../../mocks";
 
 describe("Slider", () => {
   const mockSlides: Slide[] = [
@@ -302,15 +307,15 @@ describe("Slider", () => {
 
   it("exports _isRefNotNull utility function", () => {
     // Test the utility function for coverage
-    expect(typeof _isRefNotNull).toBe("function");
+    expect(typeof isRefNotNull).toBe("function");
     
     // Test with null ref
     const nullRef = { current: null };
-    expect(_isRefNotNull(nullRef)).toBe(false);
+    expect(isRefNotNull(nullRef)).toBe(false);
     
     // Test with non-null ref
     const validRef = { current: document.createElement("div") };
-    expect(_isRefNotNull(validRef)).toBe(true);
+    expect(isRefNotNull(validRef)).toBe(true);
   });
 
   it("handles keyboard events with unsupported keys", () => {
@@ -411,7 +416,7 @@ describe("Slider", () => {
     
     // We need to test this differently since handleNavigation is internal
     // Let's create a scenario where the keyboard event itself throws
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Note: silentConsole already suppresses console output
     
     render(
       <Slider

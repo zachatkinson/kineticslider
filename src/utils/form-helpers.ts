@@ -1,11 +1,7 @@
 import { VALIDATION_CSS_CLASSES } from "../constants/validation";
-import {
-  ValidationErrorSeverity,
-  ValidationResult,
-  ValidationErrorType,
-  ValidationErrorCode,
-} from "../types/validation";
-import type { ValidationError } from "../types/validation";
+import { ValidationErrorSeverity, ValidationErrorType, ValidationErrorCode } from "../types/validation";
+import type { ValidationError, ValidationResult } from "../types/validation";
+import type { FieldValidationResult, FormValidator, Formatter } from "../types/utils";
 
 /**
  * Extract error message for a specific field
@@ -182,10 +178,6 @@ export function parseFormData<T>(formData: FormData): T {
   }
 }
 
-type FieldValidationResult = { isValid: boolean; message: string };
-type Validator = (value: string) => FieldValidationResult;
-type Formatter = (value: string) => string;
-
 /**
  * Validate a field value using an array of validators
  *
@@ -198,7 +190,7 @@ type Formatter = (value: string) => string;
  */
 export function validateField(
   value: string,
-  validators: Validator[],
+  validators: FormValidator[],
 ): FieldValidationResult {
   try {
     for (const validator of validators) {

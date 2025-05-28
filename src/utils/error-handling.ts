@@ -1,31 +1,7 @@
 import React from "react";
 import { trackError as trackAnalyticsError } from "./analytics";
 import { ErrorType, ExtendedError } from "../types/error";
-
-/**
- * Function type for error handlers
- */
-type ErrorHandlerFunction = (error: Error, errorType: ErrorType) => void;
-
-/**
- * Options for error handling configuration
- *
- * @example
- * ```typescript
- * const options: ErrorHandlingOptions = {
- *   capturePromiseRejections: true,
- *   captureConsoleErrors: false,
- *   reportToAnalytics: true,
- *   logToConsole: process.env.NODE_ENV !== 'production'
- * };
- * ```
- */
-interface ErrorHandlingOptions {
-  capturePromiseRejections?: boolean;
-  captureConsoleErrors?: boolean;
-  reportToAnalytics?: boolean;
-  logToConsole?: boolean;
-}
+import type { ErrorHandlerFunction, ErrorHandlingOptions } from "../types/utils";
 
 /**
  * Handles component errors and tracks them for analytics.

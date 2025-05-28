@@ -1,6 +1,7 @@
 import React from "react";
 import { _sanitizeErrorForClient as sanitizeErrorForClient } from "../utils/error-sanitizer";
 import { AnalyticsManager } from "../utils/analytics";
+import type { ErrorBoundaryProps, ErrorBoundaryState } from "../types/components";
 
 // Extend Window interface for test utilities
 declare global {
@@ -8,54 +9,6 @@ declare global {
     setErrorBoundaryRecovery?: (value: boolean) => void;
     shouldRecover?: boolean;
   }
-}
-
-export interface ErrorBoundaryProps {
-  /**
-   * The content to render normally (when no error occurs)
-   */
-  children: React.ReactNode;
-
-  /**
-   * Either a React element or a function that returns a React element
-   * If a function, it will receive the error and a retry function as arguments
-   */
-  fallback?:
-    | React.ReactNode
-    | ((error: Error, retry: () => void) => React.ReactNode);
-
-  /**
-   * Callback fired when an error is caught
-   */
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-
-  /**
-   * Maximum number of automatic retry attempts
-   *
-   * @default 3
-   */
-  maxRetries?: number;
-
-  /**
-   * Skip the automatic recovery UI
-   *
-   * @default false
-   */
-  skipRecoveryUi?: boolean;
-
-  /**
-   * Used for testing to identify nested boundaries
-   *
-   * @internal
-   */
-  nestLevel?: string;
-}
-
-export interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: React.ErrorInfo | null;
-  retryCount: number;
 }
 
 /**

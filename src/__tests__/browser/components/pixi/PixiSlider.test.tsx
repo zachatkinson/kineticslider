@@ -26,7 +26,7 @@ import {
 // Import types we need for our tests
 import type { SlideData } from "../../../../types/pixi";
 
-// Mock PIXI.js
+// Mock PIXI.js - use the default export
 vi.mock("pixi.js", () => mockPixi);
 
 // Mock GSAP
@@ -55,8 +55,8 @@ describe("PixiSlider Browser Tests", () => {
     setupPerformanceMocks();
     resetAccessibilityMocks();
 
-    // Mock console to prevent noise during tests
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    // Mock console to prevent error output during tests
+    // silentConsole is already active - no setup needed
 
     // Mock Element.prototype methods needed for component
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(

@@ -8,6 +8,8 @@
 import type { WorkerTask } from "../types/performance-resources";
 import type { ResourceError as _ResourceError } from "../types/error";
 import type { ExtendedError as _ExtendedError } from "../types/error";
+// Import global types to ensure window extensions are recognized
+import "../types/global";
 
 /**
  * Resource pool for reusing objects
@@ -252,13 +254,18 @@ export class WorkerPool {
 
         // Register worker with global registry if in test environment
         if (typeof window !== "undefined") {
+          const windowWithRegistry = window as unknown as {
+            registerWorker?: (worker: Worker) => void;
+            __WORKER_REGISTRY__?: Set<Worker>;
+          };
+          
           // Use the registerWorker function if available
-          if (window.registerWorker) {
-            window.registerWorker(worker);
+          if (windowWithRegistry.registerWorker) {
+            windowWithRegistry.registerWorker(worker);
           }
           // Otherwise add directly to the registry if it exists
-          else if (window.__WORKER_REGISTRY__) {
-            window.__WORKER_REGISTRY__.add(worker);
+          else if (windowWithRegistry.__WORKER_REGISTRY__) {
+            windowWithRegistry.__WORKER_REGISTRY__.add(worker);
           }
         }
       } catch (error) {
@@ -499,9 +506,14 @@ export class WorkerPool {
       this.workers.forEach((worker) => {
         try {
           if (typeof window !== "undefined") {
+            // Check if window has the worker registry
+            const windowWithRegistry = window as Window & {
+              __WORKER_REGISTRY__?: Set<Worker>;
+            };
+            
             // Use the window registry cleanup methods if available
-            if (window.__WORKER_REGISTRY__) {
-              window.__WORKER_REGISTRY__.delete(worker);
+            if (windowWithRegistry.__WORKER_REGISTRY__) {
+              windowWithRegistry.__WORKER_REGISTRY__.delete(worker);
             }
           }
           worker.terminate();

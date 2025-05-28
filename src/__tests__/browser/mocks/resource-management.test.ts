@@ -1,12 +1,12 @@
 /**
  * Tests for resource management mocks
  */
-import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
-  mockTerminate,
   WorkerPool,
   ResourcePool,
-} from "./resource-management.mock";
+  mockTerminate,
+} from "../../mocks";
 
 describe("Resource Management Mocks", () => {
   beforeEach(() => {

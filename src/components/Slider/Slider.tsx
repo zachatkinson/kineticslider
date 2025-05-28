@@ -56,8 +56,8 @@ import { useErrorTracking } from "../../hooks/slider/useErrorTracking";
 import styles from "./Slider.module.css";
 import { getSlideStyle } from "@/utils/styles";
 import { createBrandedNumber } from '../../types/branded';
-import { ErrorType } from '../../types/error';
 import type { JSX } from "react";
+import { useErrorState } from "../../hooks/useErrorState";
 
 // Cast styles to Record<string, string> for type safety
 const {
@@ -212,7 +212,7 @@ export const Slider: React.FC<SliderProps> = ({
 const SliderContent: React.FC<
   SliderProps & {
     hideNavigation: boolean;
-    setParentError?: (e: Error) => void;
+    setParentError?: (e: Error | null) => void;
     setParentIsError?: (b: boolean) => void;
   }
 > = ({
@@ -238,11 +238,16 @@ const SliderContent: React.FC<
   const [activeIndex, setActiveIndex] = useState<number>(
     initialSlide ? Number(initialSlide) : 0,
   );
-  const [_error, _setError] = useState<Error | null>(null);
-  const [_isError, _setIsError] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const _errorTracking = useErrorTracking();
+
+  // Use error state hook
+  const { propagateError } = useErrorState({
+    onParentError: setParentError,
+    onParentIsError: setParentIsError,
+    onError: _onError,
+    enableTracking: true,
+  });
 
   useEffect((): (() => void) => {
     return () => {
@@ -251,19 +256,6 @@ const SliderContent: React.FC<
       }
     };
   }, []);
-
-  // Helper to propagate error up
-  const propagateError = useCallback(
-    (err: Error): void => {
-      _setError(err);
-      _setIsError(true);
-      if (setParentError) setParentError(err);
-      if (setParentIsError) setParentIsError(true);
-      if (_onError) _onError(err);
-      _errorTracking.trackError(err, ErrorType.NAVIGATION);
-    },
-    [setParentError, setParentIsError, _onError, _errorTracking],
-  );
 
   // Handle animation completion
   const handleAnimationComplete = useCallback((): void => {
@@ -440,20 +432,6 @@ const SliderContent: React.FC<
       )}
     </div>
   );
-};
-
-/**
- * Checks if a ref is not null
- *
- * @param ref The ref to check
- *
- * @returns true if the ref is not null, false otherwise
- *
- */
-export const _isRefNotNull = <T,>(
-  ref: React.RefObject<T>,
-): ref is React.RefObject<T> & { current: T } => {
-  return ref.current !== null;
 };
 
 export default Slider;
