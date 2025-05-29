@@ -16,6 +16,7 @@ import {
 } from "./math";
 import { debounce, throttle } from "./common";
 import type { PerformanceSample, FrameCallback } from "../types/utils";
+import { log } from "./logger";
 
 /**
  * Performance sample data structure
@@ -83,8 +84,11 @@ export function measurePerformance<
     const start = performance.now();
     const result = fn(...args) as R;
     const end = performance.now();
-    // Log only warnings and errors as per ESLint config
-    console.warn(`${name} execution time: ${end - start}ms`);
+    const duration = end - start;
+    
+    // Use proper logging instead of console
+    log.performance(name, duration);
+    
     return result;
   };
 }
@@ -162,10 +166,10 @@ export function trackRenderTime(
   const time = performance.now() - startTime;
 
   if (logToConsole) {
-    console.warn(
-      `[Performance] ${componentId} ${
-        label ? label + " " : ""
-      }Render: ${time.toFixed(2)}ms`,
+    log.performance(
+      `${componentId} ${label ? label + " " : ""}Render`,
+      time,
+      { componentId, label }
     );
   }
 
@@ -256,8 +260,10 @@ export function initializePerformanceMonitoring(
     const entries = list.getEntries();
     entries.forEach((entry) => {
       if (enableLogging) {
-        console.warn(
-          `[Performance] ${componentId}: ${entry.name} - ${entry.duration}ms`,
+        log.performance(
+          `${componentId}: ${entry.name}`,
+          entry.duration,
+          { componentId, entryName: entry.name }
         );
       }
       options.handlers?.onMeasure?.(entry.name, entry.duration);

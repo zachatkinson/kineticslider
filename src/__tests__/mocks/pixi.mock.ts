@@ -3,8 +3,24 @@
  */
 import { vi } from "vitest";
 
+// Define proper types for PIXI options
+interface MockApplicationOptions {
+  width?: number;
+  height?: number;
+  view?: HTMLCanvasElement;
+  backgroundColor?: number;
+  resolution?: number;
+}
+
+interface MockTexture {
+  destroy: () => void;
+  width: number;
+  height: number;
+  valid: boolean;
+}
+
 // Mock PIXI.js Application
-const mockApplication = vi.fn().mockImplementation((options?: any) => {
+const mockApplication = vi.fn().mockImplementation((options?: MockApplicationOptions) => {
   const mockStage = {
     addChild: vi.fn(),
     removeChild: vi.fn(),
@@ -56,7 +72,7 @@ const mockContainer = vi.fn().mockImplementation(() => ({
 }));
 
 // Mock PIXI.js Sprite
-const mockSprite = vi.fn().mockImplementation((texture?: any) => ({
+const mockSprite = vi.fn().mockImplementation((texture?: MockTexture) => ({
   anchor: {
     set: vi.fn(),
     x: 0.5,

@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { log } from "./utils/logger";
 
 import BasicExample from "./examples/BasicExample";
 import "./index.css";
@@ -13,5 +14,5 @@ if (rootElement) {
     </React.StrictMode>,
   );
 } else {
-  console.error("Root element not found");
+  log.error("Root element not found - cannot initialize React application");
 }

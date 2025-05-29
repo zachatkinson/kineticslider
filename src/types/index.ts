@@ -77,8 +77,19 @@ export * from "./performance-testing";
 export * from "./performance-shared";
 export * from "./performance-resources";
 
-// PIXI types
-export * from "./pixi";
+// PIXI types (exclude conflicting PerformanceMetrics)
+export type {
+  CanvasMode,
+  AspectRatioMode,
+  CanvasDimensions,
+  ResponsiveBreakpoint,
+  CanvasConfig,
+  PixiOptimizations,
+  PerformanceConfig,
+  SlideData,
+  PixiAppProps,
+  PixiSlide,
+} from "./pixi";
 
 // Slider types
 export * from "./slider";

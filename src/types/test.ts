@@ -7,7 +7,7 @@
  *
  * @example Example usage
  */
-export interface MockFunction<T extends (...args: any[]) => any> {
+export interface MockFunction<T extends (...args: unknown[]) => unknown> {
   /**
    * The mocked function
    */

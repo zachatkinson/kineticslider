@@ -2,6 +2,7 @@ import React from "react";
 import { _sanitizeErrorForClient as sanitizeErrorForClient } from "../utils/error-sanitizer";
 import { AnalyticsManager } from "../utils/analytics";
 import type { ErrorBoundaryProps, ErrorBoundaryState } from "../types/components";
+import { log } from "../utils/logger";
 
 // Extend Window interface for test utilities
 declare global {
@@ -115,9 +116,10 @@ export class ErrorBoundary extends React.Component<
       this.scheduleRecovery();
     } else {
       // Log an error for max retries
-      console.error(
-        `Max retries (${maxRetries}) reached for error:`,
-        error.message,
+      log.error(
+        `Max retries (${maxRetries}) reached for error: ${error.message}`,
+        error,
+        { maxRetries, retryCount: this.state.retryCount }
       );
 
       // For tests: dispatch an event when max retries reached

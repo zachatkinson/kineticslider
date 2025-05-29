@@ -137,13 +137,9 @@ export {
 
 // Animation utilities
 export {
-  AnimationController,
-  animationController,
-  createSlideTransition,
-  animateSlide,
-  createBasicAnimation,
   createFadeAnimation,
   createSlideAnimation,
+  createSlideTransition,
 } from "./animation";
 
 // Image utilities
@@ -202,3 +198,27 @@ export {
   safeRefAccess,
   withRef,
 } from "./ref-helpers";
+
+// PIXI Canvas utilities
+export {
+  calculatePixiCanvasDimensions,
+  calculateSpriteScale,
+  getCurrentPixiBreakpoint,
+  hasPixiDimensionsChanged,
+  createPixiCanvasConfig,
+  validatePixiCanvasConfig,
+  createPixiAppOptions,
+  DEFAULT_PIXI_CANVAS_CONFIG,
+  DEFAULT_PIXI_BREAKPOINTS,
+  DEFAULT_PIXI_OPTIMIZATIONS,
+} from "./pixi-canvas";
+
+// Logging utilities
+export {
+  logger,
+  log,
+  createLogger,
+  LogLevel,
+  type LogEntry,
+  type LoggerConfig,
+} from "./logger";
