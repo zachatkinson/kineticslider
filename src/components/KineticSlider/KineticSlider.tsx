@@ -29,7 +29,7 @@ import type {
 import { ErrorBoundary } from "../ErrorBoundary";
 import { FocusManager } from "../FocusManager";
 import { Loading } from "../Loading/Loading";
-import { createBrandedNumber } from "../../types/branded";
+import { createBrandedNumber } from "../../utils/branded-helpers";
 import type { SlideIndex } from "../../types/branded";
 import { ErrorType as _ErrorType } from "../../types/error";
 import type {

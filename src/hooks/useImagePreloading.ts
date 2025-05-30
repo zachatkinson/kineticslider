@@ -1,47 +1,7 @@
 import { useState, useCallback } from "react";
 import { preloadImage } from "../utils/image";
 import type { ImageError } from "../types/image";
-
-/**
- * Options for configuring image preloading behavior
- *
- * @example
- * ```typescript
- * const options: UseImagePreloadingOptions = {
- *   lazyLoad: true,
- *   onError: (error) => console.error('Image failed to load:', error),
- *   onAnalytics: () => trackImageLoad()
- * };
- * ```
- */
-export interface UseImagePreloadingOptions {
-  /** Whether lazy loading is enabled */
-  lazyLoad?: boolean;
-  /** Callback for handling image loading errors */
-  onError?: (error: ImageError) => void;
-  /** Callback for analytics tracking */
-  onAnalytics?: () => void;
-}
-
-/**
- * Return type for the useImagePreloading hook
- *
- * @example
- * ```typescript
- * const { preloadedImages, loadingStates, preloadImagesForSlide } = useImagePreloading({
- *   lazyLoad: true,
- *   onError: handleError
- * });
- * ```
- */
-export interface UseImagePreloadingReturn {
-  /** Set of successfully preloaded image URLs */
-  preloadedImages: Set<string>;
-  /** Record of loading states for each image */
-  loadingStates: Record<string, boolean>;
-  /** Function to preload images for a specific slide */
-  preloadImagesForSlide: (slideIndex: number, slides: Array<{ image?: string }>) => () => void;
-}
+import type { UseImagePreloadingOptions, UseImagePreloadingReturn } from "../types/hooks";
 
 /**
  * Custom hook for managing image preloading in slider components

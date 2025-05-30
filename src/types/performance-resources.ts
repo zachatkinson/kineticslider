@@ -6,22 +6,23 @@
  */
 
 /**
- * Represents a task in the worker pool queue
+ * Represents a function-based task in the resource management worker pool queue
  * Contains the task function and resolve/reject callbacks for the Promise
+ * This is different from the data-based WorkerTask in worker-pool types
  *
  * @template T - The return type of the task function
  * @interface
  * @example Example usage
  * ```typescript
- * // Example of creating a worker task manually
- * const _workerTask: WorkerTask<number> = {
+ * // Example of creating a resource worker task manually
+ * const _resourceTask: ResourceWorkerTask<number> = {
  *   task: () => calculatePrimes(10000),
- *   resolve: (result) => console.log(`Found $){result} primes`),
- *   reject: (_error) => console._error('Calculation failed:', _error)
+ *   resolve: (result) => console.log(`Found ${result} primes`),
+ *   reject: (_error) => console.error('Calculation failed:', _error)
  * };
  * ```
  */
-export interface WorkerTask<T> {
+export interface ResourceWorkerTask<T> {
   /**
    * The task function to be executed in a worker thread
    * Should be serializable to be sent to a Web Worker

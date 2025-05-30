@@ -55,7 +55,7 @@ import type { KineticSliderProps as SliderProps } from "../../types/slider";
 import { useErrorTracking } from "../../hooks/slider/useErrorTracking";
 import styles from "./Slider.module.css";
 import { getSlideStyle } from "@/utils/styles";
-import { createBrandedNumber } from '../../types/branded';
+import { createBrandedNumber } from '../../utils/branded-helpers';
 import type { JSX } from "react";
 import { useErrorState } from "../../hooks/useErrorState";
 

@@ -1,17 +1,25 @@
-import { ErrorSeverity, ErrorType } from "../../types/error";
+/**
+ * Worker pool statistics tracking and monitoring
+ *
+ * @module WorkerPoolStatistics
+ * @version 1.0.0
+ */
+
+import { ErrorType, ErrorSeverity } from "../../types/error";
 import type { WorkerPoolStats, ErrorDistribution } from "./types";
 
-const MAX_HISTORY_SIZE = 100;
-const MINUTE = 60 * 1000;
+const MAX_HISTORY_SIZE = 1000;
+const MINUTE = 60 * 1000; // 1 minute in milliseconds
 
 /**
- * Worker pool statistics utilities
+ * Statistics tracker for worker pool performance monitoring
  *
- * @example
+ * @example Statistics tracking usage
  * ```ts
- * import { getWorkerPoolStats } from './statistics';
- * const stats = getWorkerPoolStats();
- * console.log(stats);
+ * const tracker = new StatisticsTracker();
+ * tracker.trackTaskStart(Date.now());
+ * tracker.trackTaskCompletion(150); // 150ms execution time
+ * const stats = tracker.calculateStats(4, 2, 3, 4);
  * ```
  */
 export class StatisticsTracker {
@@ -27,7 +35,7 @@ export class StatisticsTracker {
   /**
    * Track the start of a task
    *
-   * @param timestamp - The start time of the task
+   * @param timestamp - The timestamp when the task started
    *
    * @returns void
    *
@@ -40,22 +48,21 @@ export class StatisticsTracker {
   /**
    * Track the completion of a task
    *
-   * @param executionTime - The execution time of the task
+   * @param executionTime - The time it took to execute the task
    *
    * @returns void
    *
    */
   public trackTaskCompletion(executionTime: number): void {
-    this.completedTasks++;
     this.executionTimes.push(executionTime);
     this.completionTimestamps.push(Date.now());
-
+    this.completedTasks++;
     this.limitArray(this.executionTimes);
     this.limitArray(this.completionTimestamps);
   }
 
   /**
-   * Track a failed task
+   * Track a task failure
    *
    * @returns void
    *
@@ -117,7 +124,7 @@ export class StatisticsTracker {
    *
    * @param queueSize
    *
-   * @param maxWorkers
+   * @param _maxWorkers
    *
    * @returns {WorkerPoolStats} The calculated statistics
    *
@@ -126,40 +133,36 @@ export class StatisticsTracker {
     totalWorkers: number,
     availableWorkers: number,
     queueSize: number,
-    maxWorkers: number,
+    _maxWorkers: number,
   ): WorkerPoolStats {
-    const now = Date.now();
+    const _now = Date.now();
     const busyWorkers = totalWorkers - availableWorkers;
-    const utilization =
-      totalWorkers > 0 ? (busyWorkers / totalWorkers) * 100 : 0;
-
-    const avgExecutionTime = this.calculateAverage(this.executionTimes);
-    const throughput = this.calculateThroughput(now);
-
-    // Calculate pending tasks as sum of queued and in-progress tasks
-    const pendingTasks = queueSize + busyWorkers;
+    const _avgExecutionTime = this.calculateAverage(this.executionTimes);
 
     return {
-      queueSize,
-      activeWorkers: totalWorkers,
       totalWorkers,
       availableWorkers,
       busyWorkers,
-      pendingTasks,
-      maxWorkers,
-      utilization,
-      completedTasks: this.completedTasks,
-      failedTasks: this.failedTasks,
-      avgExecutionTime,
-      throughput,
+      queueSize,
+      errorCount: this.failedTasks,
       errorStats: {
-        errorDistribution: this.initializeErrorTypeDistribution(),
-        severityCounts: this.initializeErrorSeverityCounts(),
-        dailyTrends: {},
-        averageProcessingTime: avgExecutionTime,
-        topErrorPatterns: [],
-        errorTimeDistribution: this.initializeErrorTimeDistribution(),
+        total: this.failedTasks,
+        byType: this.initializeErrorTypeDistribution(),
+        bySeverity: this.initializeErrorSeverityCounts(),
+        errorTypeDistribution: this.initializeErrorTypeDistribution(),
+        severityDistribution: this.initializeErrorSeverityCounts(),
       },
+      errorTrends: {
+        daily: {},
+        weekly: {},
+        monthly: {},
+      },
+      taskStartTimes: {},
+      taskCompletionTimes: {},
+      peakQueueSize: this.peakQueueSize,
+      avgWaitTime: 0,
+      queueSizeHistory: [...this.queueSizeHistory],
+      lastResetTime: this.lastResetTime,
     };
   }
 
@@ -246,4 +249,4 @@ export function getWorkerPoolStats(): Record<string, number> {
  */
 export function getLastStatsSnapshot(): Record<string, number> | null {
   return null;
-}
+} 

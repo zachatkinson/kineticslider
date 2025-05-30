@@ -1,34 +1,91 @@
 /**
- * WorkerPool utility for managing Web Workers
- */
-import {
-  WorkerPoolOptions,
-  WorkerTask,
-  WorkerPoolError,
-} from "./worker-pool/types";
-import { ErrorType, ErrorSeverity } from "../types/error";
-
-export type { WorkerPoolError };
-
-/**
- * Simplified worker pool statistics interface
- *
- * @example
+ * Worker Pool Implementation
+ * 
+ * Provides a thread pool for managing background tasks with configurable
+ * concurrency limits and task queuing.
+ * 
+ * @example Basic worker pool usage
  * ```ts
- * const stats: WorkerPoolStats = {
- *   totalWorkers: 4,
- *   availableWorkers: 2,
- *   busyWorkers: 2,
- *   queueSize: 1
- * };
+ * const pool = new WorkerPool({ maxWorkers: 4 });
+ * await pool.execute(myTask);
  * ```
  */
-export interface WorkerPoolStats {
-  totalWorkers: number;
-  availableWorkers: number;
-  busyWorkers: number;
-  queueSize: number;
+
+import type { 
+  WorkerPoolOptions, 
+  WorkerTask, 
+  WorkerPoolStats,
+} from "../types/worker-pool";
+import { ErrorType, ErrorSeverity } from "../types/error";
+import { EventEmitter as _EventEmitter } from "events";
+
+// Create a local WorkerPoolError class since we can't import the interface as a value
+/**
+ * Custom error class for worker pool operations
+ * 
+ * @example Worker pool error handling
+ * ```ts
+ * try {
+ *   await pool.execute(task);
+ * } catch (error) {
+ *   if (error instanceof WorkerPoolError) {
+ *     console.log(`Worker ${error.workerId} failed: ${error.message}`);
+ *   }
+ * }
+ * ```
+ */
+class WorkerPoolError extends Error {
+  public readonly workerId: string;
+  public readonly error: string;
+  public readonly timestamp: string;
+  public readonly operation: string;
+  public readonly category: string;
+  public readonly stackTrace: string;
+  public readonly type: ErrorType;
+  public readonly severity: ErrorSeverity;
+  public readonly code: string;
+  public readonly details: {
+    taskId?: string;
+    errorTime: number;
+    workerId: string;
+  };
+
+  /**
+   *
+   */
+  constructor(params: {
+    message: string;
+    workerId: string;
+    error: string;
+    timestamp: string;
+    operation: string;
+    category: string;
+    stackTrace: string;
+    type: ErrorType;
+    severity: ErrorSeverity;
+    code: string;
+    details: {
+      taskId?: string;
+      errorTime: number;
+      workerId: string;
+    };
+  }) {
+    super(params.message);
+    this.name = "WorkerPoolError";
+    this.workerId = params.workerId;
+    this.error = params.error;
+    this.timestamp = params.timestamp;
+    this.operation = params.operation;
+    this.category = params.category;
+    this.stackTrace = params.stackTrace;
+    this.type = params.type;
+    this.severity = params.severity;
+    this.code = params.code;
+    this.details = params.details;
+  }
 }
+
+export type { WorkerPoolError };
 
 /**
  * WorkerPool class for managing a pool of Web Workers
@@ -41,8 +98,8 @@ export interface WorkerPoolStats {
  * });
  * ```
  */
-export class WorkerPool {
-  private taskQueue: WorkerTask[] = [];
+export class WorkerPool<_T = unknown, _R = unknown> {
+  private taskQueue: WorkerTask<unknown, unknown>[] = [];
   private taskMap: Map<string, WorkerTask> = new Map(); // Track active tasks by ID
   private availableWorkers: Worker[] = [];
   private workers: Worker[] = [];
@@ -62,20 +119,19 @@ export class WorkerPool {
   }
 
   /**
-   * Execute a task on a worker
+   * Execute a task using an available worker
    *
-   * @param data
+   * @param data - The data to process
    *
-   * @returns {Promise<R>} A promise that resolves with the result of the worker task
+   * @returns Promise that resolves with the result
    *
+   * @example Execute a task
+   * ```ts
+   * const result = await pool.execute({ input: 'data' });
+   * ```
    */
   public async execute<T = unknown, R = unknown>(data: T): Promise<R> {
-    type Task = WorkerTask<T, R> & {
-      resolve: (value: R) => void;
-      reject: (error: unknown) => void;
-    };
-
-    const task: Task = {
+    const task: WorkerTask<T, R> = {
       id: Math.random().toString(36).substring(7),
       data,
       resolve: (_value: R) => {},
@@ -85,7 +141,7 @@ export class WorkerPool {
     return new Promise<R>((resolve, reject) => {
       task.resolve = resolve;
       task.reject = reject;
-      this.taskQueue.push(task as unknown as WorkerTask);
+      this.taskQueue.push(task as WorkerTask<unknown, unknown>);
       this.processQueue();
     });
   }
@@ -130,6 +186,25 @@ export class WorkerPool {
       availableWorkers: this.availableWorkers.length,
       busyWorkers: this.workers.length - this.availableWorkers.length,
       queueSize: this.taskQueue.length,
+      errorCount: 0, // TODO: Implement error tracking
+      errorStats: {
+        total: 0,
+        byType: {} as Record<ErrorType, number>,
+        bySeverity: {} as Record<ErrorSeverity, number>,
+        errorTypeDistribution: {} as Record<ErrorType, number>,
+        severityDistribution: {} as Record<ErrorSeverity, number>,
+      },
+      errorTrends: {
+        daily: {},
+        weekly: {},
+        monthly: {},
+      },
+      taskStartTimes: {},
+      taskCompletionTimes: {},
+      peakQueueSize: this.taskQueue.length,
+      avgWaitTime: 0,
+      queueSizeHistory: [this.taskQueue.length],
+      lastResetTime: Date.now(),
     };
   }
 
@@ -194,7 +269,12 @@ export class WorkerPool {
    * Create a new worker and add it to the pool
    */
   private createWorker(): void {
-    const worker = new Worker(this.options.workerScript);
+    const workerScript = this.options.workerScript;
+    if (!workerScript) {
+      throw new Error('Worker script is required');
+    }
+    
+    const worker = new Worker(workerScript);
 
     // Set up event listeners
     worker.addEventListener("message", (event) => {
@@ -272,12 +352,15 @@ export class WorkerPool {
     workerId: string,
     taskId?: string,
   ): WorkerPoolError {
+    const errorMessage = error instanceof Error ? error.message : error.toString();
+    const errorString = error instanceof Error ? error.toString() : error.toString();
+    
     return new WorkerPoolError({
-      message: error instanceof Error ? error.message : error.toString(),
+      message: errorMessage,
       type: ErrorType.WORKER_POOL,
       severity: ErrorSeverity.ERROR,
       workerId,
-      error: error instanceof Error ? error : new Error(error.toString()),
+      error: errorString,
       timestamp: new Date().toISOString(),
       operation: "worker_pool",
       category: "worker_error",

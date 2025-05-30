@@ -22,30 +22,6 @@ export function isNullOrUndefined(value: unknown): value is null | undefined {
 }
 
 /**
- * Checks if a value is a non-null object (excluding arrays)
- *
- * @param value - The value to check
- *
- * @returns {boolean} True if the value is a non-null object
- *
- */
-export function isObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-/**
- * Checks if a value is an array
- *
- * @param value - The value to check
- *
- * @returns {boolean} True if the value is an array
- *
- */
-export function isArray<T = unknown>(value: unknown): value is T[] {
-  return Array.isArray(value);
-}
-
-/**
  * Checks if a value is a string
  *
  * @param value - The value to check
@@ -79,6 +55,38 @@ export function isNumber(value: unknown): value is number {
  */
 export function isBoolean(value: unknown): value is boolean {
   return typeof value === "boolean";
+}
+
+/**
+ * Checks if a value is an array
+ *
+ * @param value - The value to check
+ *
+ * @returns {boolean} True if the value is an array
+ *
+ */
+export function isArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+/**
+ * Checks if a value is an object (but not null or array)
+ *
+ * @param value - The value to check
+ *
+ * @returns {boolean} True if the value is an object
+ *
+ */
+export function isObject(
+  value: unknown,
+): value is Record<string, unknown> {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    !(value instanceof Date) &&
+    !(value instanceof RegExp)
+  );
 }
 
 /**
@@ -119,21 +127,8 @@ export function isNull(value: unknown): value is null {
   return value === null;
 }
 
-/**
- * Checks if a value is empty (null, undefined, empty string, empty array, or empty object)
- *
- * @param value - The value to check
- *
- * @returns {boolean} True if the value is empty
- *
- */
-export function isEmpty(value: unknown): boolean {
-  if (isNullOrUndefined(value)) return true;
-  if (isString(value)) return value.trim().length === 0;
-  if (isArray(value)) return value.length === 0;
-  if (isObject(value)) return Object.keys(value).length === 0;
-  return false;
-}
+// Re-export isEmpty from object-helpers for backward compatibility
+export { isEmpty } from "./object-helpers";
 
 /**
  * Checks if a value has a specific method

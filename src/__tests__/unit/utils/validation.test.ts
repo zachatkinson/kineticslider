@@ -6,10 +6,10 @@ import {
   validateErrorInfo,
   validateAccessibility,
   validatePerformanceConfig,
+  validateImageExists as _validateImageExists,
   composeValidators,
   composeAsyncValidators,
   memoizeValidator,
-  isObject,
   isEmpty,
   safeGet,
   clearValidationCache,
@@ -19,6 +19,7 @@ import {
   getErrorForField,
   getFieldClass,
 } from "@/utils/validation";
+import { isObject } from "@/utils/type-checks";
 import {
   ValidationErrorType,
   ValidationErrorCode,
@@ -273,7 +274,6 @@ describe("Validation Utils", () => {
       });
 
       it("returns false for non-objects", () => {
-        // Skip Date test which might depend on implementation
         expect(isObject(null)).toBe(false);
         expect(isObject(undefined)).toBe(false);
         expect(isObject(42)).toBe(false);
@@ -281,7 +281,6 @@ describe("Validation Utils", () => {
         expect(isObject(true)).toBe(false);
         expect(isObject(Symbol("sym"))).toBe(false);
         expect(isObject([])).toBe(false);
-        // Skip: expect(isObject(new Date())).toBe(false);
       });
     });
 

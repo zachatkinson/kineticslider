@@ -17,6 +17,19 @@ import type {
 } from "./performance-shared";
 
 /**
+ * Extended Performance interface with memory property for testing
+ * 
+ * @description Used in browser tests where performance.memory might not be available
+ */
+export type PerformanceWithMemory = Performance & {
+  memory?: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  };
+};
+
+/**
  * Types of metrics that can be tested
  *
  * @description */

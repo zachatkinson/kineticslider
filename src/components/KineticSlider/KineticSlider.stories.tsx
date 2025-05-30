@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react";
 import { KineticSlider } from "./KineticSlider";
 import { createSlideId } from "../../utils/test-utils";
 import type { Slide } from "@/types/slider";
-import { createBrandedNumber } from "@/types/branded";
+import { createBrandedNumber } from "@/utils/branded-helpers";
 import type { SlideIndex } from "../../types/branded";
+import type { KineticSliderStory } from "../../types/storybook";
 
 const _mockSlides: Slide[] = [
   {
@@ -67,10 +68,9 @@ const meta = {
 } satisfies Meta<typeof KineticSlider>;
 
 export default meta;
-type Story = StoryObj<typeof KineticSlider>;
 
 // Default story with minimum configuration
-export const Default: Story = {
+export const Default: KineticSliderStory = {
   args: {
     slides: [
       {
@@ -99,7 +99,7 @@ export const Default: Story = {
 };
 
 // Story with keyboard navigation enabled
-export const WithKeyboardNavigation: Story = {
+export const WithKeyboardNavigation: KineticSliderStory = {
   args: {
     slides: Default.args?.slides,
     enableKeyboard: true,
@@ -107,7 +107,7 @@ export const WithKeyboardNavigation: Story = {
 };
 
 // Story with infinite loop enabled
-export const WithInfiniteLoop: Story = {
+export const WithInfiniteLoop: KineticSliderStory = {
   args: {
     slides: Default.args?.slides,
     infiniteLoop: true,
@@ -115,7 +115,7 @@ export const WithInfiniteLoop: Story = {
 };
 
 // Story with custom initial slide
-export const CustomInitialSlide: Story = {
+export const CustomInitialSlide: KineticSliderStory = {
   args: {
     slides: Default.args?.slides,
     initialSlide: createBrandedNumber(1, "SlideIndex") as SlideIndex,

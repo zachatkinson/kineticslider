@@ -1,422 +1,176 @@
 /**
  * Validation helper functions
  *
- * Utility functions to assist with validation operations
- *
- * @returns {ReturnType} The return value
- *
+ * Utilities for validating data structures and constraints
  */
 
-import {
+import type {
+  ValidationResult,
   ValidationError,
   ValidationErrorType,
   ValidationErrorCode,
   ValidationErrorSeverity,
-  SchemaType,
-  SchemaValidationOptions,
-  ComponentId,
+  ValidationContext,
 } from "../types/validation";
-import { SliderId } from "../types/branded";
-import type { ValidationContext, SchemaField } from "../types/validation";
-import { isObject } from "./type-checks";
-import type { ValidationResult } from "../types/validation";
-import type { Slide } from "../types/slider";
-import { _validateSlideWithBusinessRules as validateSlideWithBusinessRules } from "./slide-validator";
-import { debounce } from "./debounce";
+import { isEmpty, safeGet } from "./object-helpers";
 
 /**
- * Helper function to create a validation error with enhanced fields
+ * Validates string constraints
  *
- * @param type
+ * @param value - The string value to validate
  *
- * @param message
+ * @param constraints - The constraints to apply
  *
- * @param field
+ * @param constraints.minLength - Minimum length constraint
  *
- * @param details
+ * @param constraints.maxLength - Maximum length constraint
  *
- * @param expected
+ * @param constraints.pattern - Pattern regex constraint
  *
- * @param severity
+ * @param constraints.required - Whether the field is required
  *
- * @param suggestion
- *
- * @param locale
- *
- * @returns {ValidationError} - The return value
- *
- */
-export function createValidationError(
-  type: ValidationErrorType,
-  message: string,
-  field?: string,
-  details?: Record<string, unknown>,
-  expected?: unknown,
-  severity?: ValidationErrorSeverity,
-  suggestion?: string,
-  locale?: string,
-): ValidationError {
-  return {
-    type,
-    code: ValidationErrorCode[
-      type.toUpperCase() as keyof typeof ValidationErrorCode
-    ],
-    message,
-    field,
-    details,
-    expected,
-    severity,
-    suggestion,
-    locale,
-  };
-}
-
-/**
- * Helper function to check if a value is empty
- *
- * @param value
- *
- * @returns {boolean} The return value
- *
- */
-export function _isEmpty(value: unknown): boolean {
-  if (value === null || value === undefined) return true;
-  if (typeof value === "string") return value.trim().length === 0;
-  if (Array.isArray(value)) return value.length === 0;
-  if (typeof value === "object") return Object.keys(value).length === 0;
-  return false;
-}
-
-/**
- * Helper function to safely get a value from an object by path
- *
- * @param obj
- *
- * @param key
- *
- * @param defaultValue
- *
- * @returns {T} The return value
- *
- */
-export function safeGet<T>(
-  obj: Record<string, unknown> | null | undefined,
-  key: string,
-  defaultValue: T,
-): T {
-  if (!obj) return defaultValue;
-  return (obj[key] as T) ?? defaultValue;
-}
-
-/**
- * Helper function to convert a string to a branded SliderId
- *
- * @param id
- *
- * @returns {SliderId} - The return value
- *
- */
-export function _toSlideId(id: string): SliderId {
-  return id as SliderId;
-}
-
-/**
- * Helper function to convert a string to a branded ComponentId
- *
- * @param id
- *
- * @returns {ComponentId} The return value
- *
- */
-export function _toComponentId(id: string): ComponentId {
-  return id as ComponentId;
-}
-
-/**
- * Helper function to validate string constraints
- *
- * @param value
- *
- * @param constraints
- *
- * @returns {ValidationError | null} The return value
- *
- */
-export function validateStringConstraints(
-  value: string,
-  constraints: SchemaValidationOptions,
-): ValidationError | null {
-  if (
-    constraints.minLength !== undefined &&
-    value.length < constraints.minLength
-  ) {
-    return createValidationError(
-      ValidationErrorType.INVALID_RANGE,
-      `String must be at least ${constraints.minLength} characters long`,
-      undefined,
-      { value, constraints },
-    );
-  }
-
-  if (
-    constraints.maxLength !== undefined &&
-    value.length > constraints.maxLength
-  ) {
-    return createValidationError(
-      ValidationErrorType.INVALID_RANGE,
-      `String must be at most ${constraints.maxLength} characters long`,
-      undefined,
-      { value, constraints },
-    );
-  }
-
-  if (constraints.pattern && !constraints.pattern.test(value)) {
-    return createValidationError(
-      ValidationErrorType.INVALID_FORMAT,
-      "String does not match required pattern",
-      undefined,
-      { value, constraints },
-    );
-  }
-
-  return null;
-}
-
-/**
- * Helper function to validate number constraints
- *
- * @param value
- *
- * @param constraints
- *
- * @returns {ValidationError | null} The return value
- *
- */
-export function validateNumberConstraints(
-  value: number,
-  constraints: SchemaValidationOptions,
-): ValidationError | null {
-  if (constraints.min !== undefined && value < constraints.min) {
-    return createValidationError(
-      ValidationErrorType.INVALID_RANGE,
-      `Number must be at least ${constraints.min}`,
-      undefined,
-      { value, constraints },
-    );
-  }
-
-  if (constraints.max !== undefined && value > constraints.max) {
-    return createValidationError(
-      ValidationErrorType.INVALID_RANGE,
-      `Number must be at most ${constraints.max}`,
-      undefined,
-      { value, constraints },
-    );
-  }
-
-  if (constraints.step !== undefined && value % constraints.step !== 0) {
-    return createValidationError(
-      ValidationErrorType.INVALID_RANGE,
-      `Number must be a multiple of ${constraints.step}`,
-      undefined,
-      { value, constraints },
-    );
-  }
-
-  return null;
-}
-
-/**
- * Helper function to validate required fields
- *
- * @param obj
- *
- * @param requiredFields
- *
- * @returns {ValidationError[]} The return value
- *
- */
-export function _validateRequiredFields(
-  obj: Record<string, unknown>,
-  requiredFields: string[],
-): ValidationError[] {
-  const errors: ValidationError[] = [];
-
-  for (const field of requiredFields) {
-    if (!(field in obj) || obj[field] === undefined) {
-      errors.push(
-        createValidationError(
-          ValidationErrorType.REQUIRED_PROP,
-          `Required field '${field}' is missing`,
-          field,
-          undefined,
-        ),
-      );
-    }
-  }
-
-  return errors;
-}
-
-// For deep path traversal
-let _currentPath = "";
-
-/**
- * Validates a value against a schema field definition
- *
- * @param value - Value to validate
- *
- * @param field - Schema field definition
- *
- * @param propertyPath
- *
- * @param context - Validation context
+ * @param context - The validation context
  *
  * @returns Validation result
  *
  */
-export function validateAgainstSchemaField(
-  value: unknown,
-  field: SchemaField,
-  propertyPath: string,
-  context?: ValidationContext,
-): ValidationResult | Promise<ValidationResult> {
+export function validateStringConstraints(
+  value: string,
+  constraints: {
+    minLength?: number;
+    maxLength?: number;
+    pattern?: RegExp;
+    required?: boolean;
+  },
+  context: ValidationContext & { field: string },
+): ValidationResult {
   const errors: ValidationError[] = [];
-  _currentPath = [...(context?.path || []), propertyPath]
-    .filter(Boolean)
-    .join(".");
 
-  // Check required constraint if value is undefined or null
-  if ((value === undefined || value === null) && field.options?.required) {
-    return {
-      valid: false,
-      errors: [
-        createValidationError(
-          ValidationErrorType.REQUIRED_PROP,
-          `${_currentPath} is required`,
-          _currentPath,
-          { value },
-          "non-null value",
-          ValidationErrorSeverity.ERROR,
-          `Provide a value for ${_currentPath}`,
-          context?.locale,
-        ),
-      ],
-    };
+  if (constraints.required && isEmpty(value)) {
+    errors.push({
+      type: "REQUIRED_FIELD_MISSING" as ValidationErrorType,
+      code: "FIELD_REQUIRED" as ValidationErrorCode,
+      message: `${context.field} is required`,
+      severity: "error" as ValidationErrorSeverity,
+      field: context.field,
+      context,
+    });
   }
 
-  // If value is undefined and not required, it's valid
-  if (value === undefined) {
-    return { valid: true, errors: [] };
+  if (value && constraints.minLength && value.length < constraints.minLength) {
+    errors.push({
+      type: "VALIDATION_ERROR" as ValidationErrorType,
+      code: "MIN_LENGTH" as ValidationErrorCode,
+      message: `${context.field} must be at least ${constraints.minLength} characters`,
+      severity: "error" as ValidationErrorSeverity,
+      field: context.field,
+      context,
+    });
   }
 
-  // Type validation
-  const types = Array.isArray(field.type) ? field.type : [field.type];
-
-  // Check if value matches any of the allowed types
-  const typeValid = types.some((type) => {
-    switch (type) {
-      case SchemaType.STRING:
-        return typeof value === "string";
-      case SchemaType.NUMBER:
-        return typeof value === "number";
-      case SchemaType.BOOLEAN:
-        return typeof value === "boolean";
-      case SchemaType.OBJECT:
-        return (
-          typeof value === "object" && value !== null && !Array.isArray(value)
-        );
-      case SchemaType.ARRAY:
-        return Array.isArray(value);
-      case "null":
-        return value === null;
-      case SchemaType.ANY:
-        return true;
-      default:
-        return false;
-    }
-  });
-
-  if (!typeValid && value !== null) {
-    errors.push(
-      createValidationError(
-        ValidationErrorType.INVALID_TYPE,
-        `Expected ${_currentPath} to be of type ${types.join(" | ")}`,
-        _currentPath,
-        { value, expectedTypes: types },
-        types.join(" | "),
-        ValidationErrorSeverity.ERROR,
-        `Ensure ${_currentPath} is of the correct type`,
-        context?.locale,
-      ),
-    );
-    return { valid: false, errors };
+  if (value && constraints.maxLength && value.length > constraints.maxLength) {
+    errors.push({
+      type: "VALIDATION_ERROR" as ValidationErrorType,
+      code: "MAX_LENGTH" as ValidationErrorCode,
+      message: `${context.field} must be no more than ${constraints.maxLength} characters`,
+      severity: "error" as ValidationErrorSeverity,
+      field: context.field,
+      context,
+    });
   }
 
-  // If no options to check, it's valid
-  if (!field.options) {
-    return { valid: errors.length === 0, errors };
+  if (value && constraints.pattern && !constraints.pattern.test(value)) {
+    errors.push({
+      type: "VALIDATION_ERROR" as ValidationErrorType,
+      code: "PATTERN_MISMATCH" as ValidationErrorCode,
+      message: `${context.field} format is invalid`,
+      severity: "error" as ValidationErrorSeverity,
+      field: context.field,
+      context,
+    });
   }
 
-  const options = field.options;
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
 
-  // Check string-specific constraints if value is a string
-  if (typeof value === "string" && options) {
-    const stringErrors = validateStringConstraints(value, options);
-    if (stringErrors) {
-      // Update the field path
-      stringErrors.field = _currentPath;
-      errors.push(stringErrors);
-    }
+/**
+ * Validates number constraints
+ *
+ * @param value - The number value to validate
+ *
+ * @param constraints - The constraints to apply
+ *
+ * @param constraints.min - Minimum value constraint
+ *
+ * @param constraints.max - Maximum value constraint
+ *
+ * @param constraints.integer - Whether value must be an integer
+ *
+ * @param constraints.required - Whether the field is required
+ *
+ * @param context - The validation context
+ *
+ * @returns Validation result
+ *
+ */
+export function validateNumberConstraints(
+  value: number,
+  constraints: {
+    min?: number;
+    max?: number;
+    integer?: boolean;
+    required?: boolean;
+  },
+  context: ValidationContext & { field: string },
+): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  if (constraints.required && (value === null || value === undefined)) {
+    errors.push({
+      type: "REQUIRED_FIELD_MISSING" as ValidationErrorType,
+      code: "FIELD_REQUIRED" as ValidationErrorCode,
+      message: `${context.field} is required`,
+      severity: "error" as ValidationErrorSeverity,
+      field: context.field,
+      context,
+    });
   }
 
-  // Check number-specific constraints if value is a number
-  if (typeof value === "number" && options) {
-    const numberErrors = validateNumberConstraints(value, options);
-    if (numberErrors) {
-      // Update the field path
-      numberErrors.field = _currentPath;
-      errors.push(numberErrors);
-    }
-  }
-
-  // For objects, validate nested fields
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value) &&
-    field.properties
-  ) {
-    const promises: Promise<ValidationResult>[] = [];
-    for (const [childKey, childField] of Object.entries(field.properties)) {
-      const childValue = (value as Record<string, unknown>)[childKey];
-      const childPath = `${_currentPath}.${childKey}`;
-
-      const nestedResult = validateAgainstSchemaField(
-        childValue,
-        childField,
-        childPath,
+  if (value !== null && value !== undefined) {
+    if (constraints.min !== undefined && value < constraints.min) {
+      errors.push({
+        type: "VALIDATION_ERROR" as ValidationErrorType,
+        code: "MIN_VALUE" as ValidationErrorCode,
+        message: `${context.field} must be at least ${constraints.min}`,
+        severity: "error" as ValidationErrorSeverity,
+        field: context.field,
         context,
-      );
-      if (nestedResult instanceof Promise) {
-        promises.push(
-          nestedResult.then((resolvedResult) => {
-            if (!resolvedResult.valid) {
-              errors.push(...resolvedResult.errors);
-            }
-            return resolvedResult;
-          }),
-        );
-      } else if (!nestedResult.valid) {
-        errors.push(...nestedResult.errors);
-      }
+      });
     }
 
-    if (promises.length > 0) {
-      return Promise.all(promises).then(() => ({
-        valid: errors.length === 0,
-        errors,
-      }));
+    if (constraints.max !== undefined && value > constraints.max) {
+      errors.push({
+        type: "VALIDATION_ERROR" as ValidationErrorType,
+        code: "MAX_VALUE" as ValidationErrorCode,
+        message: `${context.field} must be no more than ${constraints.max}`,
+        severity: "error" as ValidationErrorSeverity,
+        field: context.field,
+        context,
+      });
+    }
+
+    if (constraints.integer && !Number.isInteger(value)) {
+      errors.push({
+        type: "VALIDATION_ERROR" as ValidationErrorType,
+        code: "INVALID_TYPE" as ValidationErrorCode,
+        message: `${context.field} must be an integer`,
+        severity: "error" as ValidationErrorSeverity,
+        field: context.field,
+        context,
+      });
     }
   }
 
@@ -427,163 +181,146 @@ export function validateAgainstSchemaField(
 }
 
 /**
- * Validates a slide object against business rules
+ * Validates required fields in an object
  *
- * @param data
+ * @param obj - The object to validate
  *
- * @returns {Promise<ValidationResult>} Promise with validation result
+ * @param requiredFields - Array of required field names
+ *
+ * @param context - The validation context
+ *
+ * @returns Validation result
  *
  */
-export async function _validateSlide(data: Slide): Promise<ValidationResult> {
-  return validateSlideWithBusinessRules(data);
-}
+export function _validateRequiredFields(
+  obj: Record<string, unknown>,
+  requiredFields: string[],
+  context: ValidationContext,
+): ValidationResult {
+  const errors: ValidationError[] = [];
 
-/**
- * Validates form data using an async validation function.
- *
- * @param formData - Form data to validate
- *
- * @param validationFn - Validation function
- *
- * @param setValidating - Function to set validating state
- *
- * @param setValidationResult - Function to set validation result
- *
- * @returns {Promise<void>} Resolves when validation is complete
- *
- */
-export async function validateFormData<T>(
-  formData: T,
-  validationFn: (data: T) => Promise<ValidationResult>,
-  setValidating: (validating: boolean) => void,
-  setValidationResult: (result: ValidationResult) => void,
-): Promise<void> {
-  setValidating(true);
-  try {
-    const result = await validationFn(formData);
-    setValidationResult(result);
-  } catch (error) {
-    console.error("Validation error:", error);
-    setValidationResult({
-      valid: false,
-      errors: [
-        createValidationError(
-          ValidationErrorType.ASYNC_VALIDATION_FAILED,
-          "Validation failed unexpectedly",
-          undefined,
-          { error },
-        ),
-      ],
-    });
-  } finally {
-    setValidating(false);
+  for (const field of requiredFields) {
+    const value = safeGet(obj, field, undefined);
+    if (isEmpty(value)) {
+      errors.push({
+        type: "REQUIRED_FIELD_MISSING" as ValidationErrorType,
+        code: "FIELD_REQUIRED" as ValidationErrorCode,
+        message: `${field} is required`,
+        severity: "error" as ValidationErrorSeverity,
+        field,
+        context,
+      });
+    }
   }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
 }
 
 /**
- * Creates a debounced validator function
- *
- * @param validateFn Validation function to debounce
- *
- * @param debounceMs Debounce time in milliseconds
- *
- * @returns Debounced validation function
- *
- */
-export function createDebouncedValidator<T>(
-  validateFn: (data: T) => Promise<void>,
-  debounceMs: number,
-): (data: T) => void {
-  // Use type assertion to match the debounce function's expected type
-  return debounce(
-    validateFn as (...args: unknown[]) => unknown,
-    debounceMs,
-  ) as (data: T) => void;
-}
-
-/**
- * Gets a validation error for a specific field
- *
- * @param errors Validation errors
- *
- * @param fieldName Field name to find error for
- *
- * @returns ValidationError or undefined if not found
- *
- */
-export function _getErrorForField(
-  errors: ValidationResult["errors"],
-  fieldName: string,
-): ValidationError | undefined {
-  return errors.find((error) => error.property === fieldName);
-}
-
-/**
- * Checks if a value is a valid slide object
- *
- * @param value Value to check
- *
- * @returns True if value is a valid slide
- *
- */
-export function isValidSlide(value: unknown): boolean {
-  if (!isObject(value)) return false;
-
-  // Add your slide validation logic here
-  return true;
-}
-
-/**
- * Checks if a value has valid props
- *
- * @param value Value to check
- *
- * @returns True if value has valid props
- *
- */
-export function _isValidProps(value: unknown): boolean {
-  if (!isObject(value)) return false;
-
-  // Add your props validation logic here
-  return true;
-}
-
-/**
- * Checks if a value is valid error info
- *
- * @param value Value to check
- *
- * @returns {boolean} True if value is valid error info
- *
- */
-export function _isValidErrorInfo(value: unknown): boolean {
-  if (!isObject(value)) return false;
-
-  // Add your error info validation logic here
-  return true;
-}
-
-/**
- * Validates a value using all registered validators
+ * Validates a value against a schema field definition
  *
  * @param value - The value to validate
  *
- * @param validators - The validators to use
+ * @param schema - The schema field definition
  *
- * @returns {ValidationResult} The result of the validation
+ * @param schema.type - The expected type of the value
+ *
+ * @param schema.required - Whether the field is required
+ *
+ * @param schema.constraints - Additional constraints for the field
+ *
+ * @param context - The validation context
+ *
+ * @returns Validation result
  *
  */
-export function validateAll(
+export function validateAgainstSchemaField(
   value: unknown,
-  validators: import('../types/validation').Validator[]
+  schema: {
+    type: string;
+    required?: boolean;
+    constraints?: Record<string, unknown>;
+  },
+  context: ValidationContext & { field: string },
 ): ValidationResult {
-  const errors: import('../types/validation').ValidationError[] = [];
-  for (const validator of validators) {
-    const result = validator(value);
-    if (result && !result.valid) {
-      errors.push(...result.errors);
-    }
+  const errors: ValidationError[] = [];
+
+  // Check required
+  if (schema.required && isEmpty(value)) {
+    errors.push({
+      type: "REQUIRED_FIELD_MISSING" as ValidationErrorType,
+      code: "FIELD_REQUIRED" as ValidationErrorCode,
+      message: `${context.field} is required`,
+      severity: "error" as ValidationErrorSeverity,
+      field: context.field,
+      context,
+    });
+    return { valid: false, errors };
   }
+
+  // Skip type validation if value is empty and not required
+  if (isEmpty(value)) {
+    return { valid: true, errors: [] };
+  }
+
+  // Type validation
+  switch (schema.type) {
+    case "string":
+      if (typeof value !== "string") {
+        errors.push({
+          type: "VALIDATION_ERROR" as ValidationErrorType,
+          code: "INVALID_TYPE" as ValidationErrorCode,
+          message: `${context.field} must be a string`,
+          severity: "error" as ValidationErrorSeverity,
+          field: context.field,
+          context,
+        });
+      }
+      break;
+    case "number":
+      if (typeof value !== "number" || isNaN(value)) {
+        errors.push({
+          type: "VALIDATION_ERROR" as ValidationErrorType,
+          code: "INVALID_TYPE" as ValidationErrorCode,
+          message: `${context.field} must be a number`,
+          severity: "error" as ValidationErrorSeverity,
+          field: context.field,
+          context,
+        });
+      }
+      break;
+    case "boolean":
+      if (typeof value !== "boolean") {
+        errors.push({
+          type: "VALIDATION_ERROR" as ValidationErrorType,
+          code: "INVALID_TYPE" as ValidationErrorCode,
+          message: `${context.field} must be a boolean`,
+          severity: "error" as ValidationErrorSeverity,
+          field: context.field,
+          context,
+        });
+      }
+      break;
+    case "array":
+      if (!Array.isArray(value)) {
+        errors.push({
+          type: "VALIDATION_ERROR" as ValidationErrorType,
+          code: "INVALID_TYPE" as ValidationErrorCode,
+          message: `${context.field} must be an array`,
+          severity: "error" as ValidationErrorSeverity,
+          field: context.field,
+          context,
+        });
+      }
+      break;
+    default:
+      // Unknown type
+      break;
+  }
+
   return {
     valid: errors.length === 0,
     errors,

@@ -1,6 +1,7 @@
 import type { AnimationEase as _AnimationEase } from "./common";
 import type { Brand as _Brand, Duration, Delay, FPS } from "./branded";
 import gsap from "gsap";
+import type { Container, Filter } from 'pixi.js';
 
 /**
  * Animation-specific types and interfaces
@@ -10,6 +11,13 @@ import gsap from "gsap";
  *
  * @module Animation
  * @group Types
+ */
+
+/**
+ * Enhanced Animation System Types for Phase 3
+ * 
+ * Provides type-safe interfaces for GSAP integration, timeline management,
+ * and configurable distortion effects with custom shader support.
  */
 
 /**
@@ -219,4 +227,311 @@ export interface BasicAnimationReturn {
    *
    */
   animate: (options: AnimationOptions) => () => void;
+}
+
+// Core Animation Types
+export type AnimationEasing = 
+  | 'none' | 'power1' | 'power2' | 'power3' | 'power4'
+  | 'back' | 'bounce' | 'circ' | 'elastic' | 'expo' | 'sine'
+  | 'power1.in' | 'power1.out' | 'power1.inOut'
+  | 'power2.in' | 'power2.out' | 'power2.inOut'
+  | 'power3.in' | 'power3.out' | 'power3.inOut'
+  | 'power4.in' | 'power4.out' | 'power4.inOut'
+  | 'back.in' | 'back.out' | 'back.inOut'
+  | 'bounce.in' | 'bounce.out' | 'bounce.inOut'
+  | 'circ.in' | 'circ.out' | 'circ.inOut'
+  | 'elastic.in' | 'elastic.out' | 'elastic.inOut'
+  | 'expo.in' | 'expo.out' | 'expo.inOut'
+  | 'sine.in' | 'sine.out' | 'sine.inOut'
+  | string; // Allow custom easing functions
+
+export enum AnimationType {
+  SLIDE_TRANSITION = 'slide_transition',
+  FADE = 'fade',
+  SCALE = 'scale',
+  ROTATE = 'rotate',
+  DISPLACEMENT = 'displacement',
+  FILTER_EFFECT = 'filter_effect',
+  TEXT_ANIMATION = 'text_animation',
+  MOUSE_FOLLOW = 'mouse_follow',
+  IDLE_EFFECT = 'idle_effect',
+  CUSTOM = 'custom'
+}
+
+export enum AnimationPriority {
+  CRITICAL = 'critical',
+  HIGH = 'high',
+  NORMAL = 'normal',
+  LOW = 'low'
+}
+
+export enum TimelineState {
+  IDLE = 'idle',
+  PLAYING = 'playing',
+  PAUSED = 'paused',
+  REVERSED = 'reversed',
+  COMPLETED = 'completed',
+  KILLED = 'killed'
+}
+
+// Animation Configuration Interfaces
+export interface BaseAnimationConfig {
+  duration: number;
+  delay?: number;
+  ease?: AnimationEasing;
+  repeat?: number;
+  repeatDelay?: number;
+  yoyo?: boolean;
+  onStart?: () => void;
+  onUpdate?: (progress: number) => void;
+  onComplete?: () => void;
+  onInterrupt?: () => void;
+}
+
+export interface SlideTransitionConfig extends BaseAnimationConfig {
+  type: AnimationType.SLIDE_TRANSITION;
+  scaleIntensity?: number;
+  direction?: 'forward' | 'backward';
+  stagger?: number;
+}
+
+export interface DisplacementConfig extends BaseAnimationConfig {
+  type: AnimationType.DISPLACEMENT;
+  intensity: number;
+  momentum?: number;
+  target: 'image' | 'text' | 'both';
+  interactive?: boolean;
+}
+
+export interface FilterEffectConfig extends BaseAnimationConfig {
+  type: AnimationType.FILTER_EFFECT;
+  filterType: string;
+  intensity: number;
+  properties?: Record<string, unknown>;
+}
+
+export interface CustomAnimationConfig extends BaseAnimationConfig {
+  type: AnimationType.CUSTOM;
+  properties: Record<string, unknown>;
+  target: Container | Container[];
+}
+
+export type EnhancedAnimationConfig = 
+  | SlideTransitionConfig 
+  | DisplacementConfig 
+  | FilterEffectConfig 
+  | CustomAnimationConfig;
+
+// Timeline Management
+export interface TimelineOptions {
+  autoRemoveChildren?: boolean;
+  delay?: number;
+  onComplete?: () => void;
+  onInterrupt?: () => void;
+  onReverseComplete?: () => void;
+  onStart?: () => void;
+  onUpdate?: (progress: number) => void;
+  paused?: boolean;
+  repeat?: number;
+  repeatDelay?: number;
+  smoothChildTiming?: boolean;
+  yoyo?: boolean;
+}
+
+export interface TimelineGroup {
+  id: string;
+  name?: string;
+  priority: AnimationPriority;
+  timeline: gsap.core.Timeline;
+  state: TimelineState;
+  animations: AnimationInstance[];
+  metadata?: Record<string, unknown>;
+  createdAt: number;
+  lastUpdated: number;
+}
+
+export interface AnimationInstance {
+  id: string;
+  type: AnimationType;
+  config: EnhancedAnimationConfig;
+  tween: gsap.core.Tween;
+  target: Container | Container[];
+  state: TimelineState;
+  progress: number;
+  startTime: number;
+  duration: number;
+}
+
+// Distortion Effects
+export interface DistortionEffect {
+  id: string;
+  name: string;
+  type: 'displacement' | 'wave' | 'noise' | 'custom';
+  enabled: boolean;
+  intensity: number;
+  properties: Record<string, unknown>;
+}
+
+export interface ImageDistortionConfig {
+  enabled: boolean;
+  effects: DistortionEffect[];
+  globalIntensity: number;
+  interactive: boolean;
+  momentum: number;
+  scaleIntensity: number;
+}
+
+export interface TextDistortionConfig {
+  enabled: boolean;
+  effects: DistortionEffect[];
+  globalIntensity: number;
+  interactive: boolean;
+  separateFromImage: boolean;
+  customProperties?: {
+    blur?: number;
+    offset?: { x: number; y: number };
+    tilt?: number;
+  };
+}
+
+export interface DistortionManager {
+  imageConfig: ImageDistortionConfig;
+  textConfig: TextDistortionConfig;
+  globalEnabled: boolean;
+  performanceMode: 'high' | 'balanced' | 'performance';
+}
+
+// Custom Shader Support
+export interface ShaderConfig {
+  fragmentShader?: string;
+  vertexShader?: string;
+  uniforms?: Record<string, unknown>;
+  enabled?: boolean;
+}
+
+export interface CustomShader {
+  id: string;
+  name: string;
+  config: ShaderConfig;
+  filter?: Filter;
+  isLoaded: boolean;
+  metadata?: {
+    author?: string;
+    description?: string;
+    version?: string;
+    tags?: string[];
+  };
+}
+
+// Advanced animation profiling metrics
+export interface AnimationProfilerMetrics {
+  totalAnimations: number;
+  activeAnimations: number;
+  averageFPS: number;
+  frameDrops: number;
+  memoryUsage: number;
+  gpuUtilization?: number;
+  renderTime: number;
+  lastFrameTime: number;
+  performanceScore: number; // 0-100
+}
+
+export interface AnimationProfiler {
+  startProfiling(): void;
+  stopProfiling(): AnimationProfilerMetrics;
+  getMetrics(): AnimationProfilerMetrics;
+  resetMetrics(): void;
+  isRunning(): boolean;
+}
+
+// Enhanced Animation Hook Types
+export interface AnimationHookConfig {
+  enableProfiling?: boolean;
+  maxConcurrentAnimations?: number;
+  defaultEasing?: AnimationEasing;
+  defaultDuration?: number;
+  performanceMode?: 'high' | 'balanced' | 'performance';
+  debugMode?: boolean;
+}
+
+export interface AnimationHookReturn {
+  // Timeline Management
+  createTimeline: (options?: TimelineOptions) => string;
+  getTimeline: (id: string) => gsap.core.Timeline | null;
+  killTimeline: (id: string) => void;
+  pauseTimeline: (id: string) => void;
+  resumeTimeline: (id: string) => void;
+  
+  // Animation Creation
+  animate: (target: Container | Container[], config: EnhancedAnimationConfig) => string;
+  animateSlideTransition: (fromIndex: number, toIndex: number, config?: Partial<SlideTransitionConfig>) => string;
+  animateDisplacement: (config: DisplacementConfig) => string;
+  animateFilter: (config: FilterEffectConfig) => string;
+  
+  // Distortion Controls
+  setImageDistortion: (config: Partial<ImageDistortionConfig>) => void;
+  setTextDistortion: (config: Partial<TextDistortionConfig>) => void;
+  updateDistortionIntensity: (target: 'image' | 'text' | 'both', intensity: number) => void;
+  
+  // Performance & Metrics
+  getMetrics: () => AnimationMetrics;
+  startProfiling: () => void;
+  stopProfiling: () => void;
+  
+  // State
+  isAnimating: boolean;
+  activeTimelineCount: number;
+  performance: AnimationMetrics;
+}
+
+// Event Types
+export interface AnimationEvent {
+  type: 'start' | 'update' | 'complete' | 'interrupt' | 'pause' | 'resume';
+  animationId: string;
+  timelineId?: string;
+  target?: Container | Container[];
+  progress?: number;
+  timestamp: number;
+}
+
+export type AnimationEventHandler = (event: AnimationEvent) => void;
+
+// Error Types
+/**
+ * Custom error class for animation-related errors
+ * 
+ * @example
+ * ```typescript
+ * throw new AnimationError('Invalid target', AnimationErrorCode.INVALID_TARGET);
+ * ```
+ */
+export class AnimationError extends Error {
+  /**
+   *
+   */
+  constructor(
+    message: string,
+    public code: string,
+    public animationId?: string,
+    public timelineId?: string
+  ) {
+    super(message);
+    this.name = 'AnimationError';
+  }
+}
+
+export enum AnimationErrorCode {
+  INVALID_TARGET = 'INVALID_TARGET',
+  INVALID_CONFIG = 'INVALID_CONFIG',
+  TIMELINE_NOT_FOUND = 'TIMELINE_NOT_FOUND',
+  ANIMATION_NOT_FOUND = 'ANIMATION_NOT_FOUND',
+  GSAP_NOT_AVAILABLE = 'GSAP_NOT_AVAILABLE',
+  PERFORMANCE_LIMIT_EXCEEDED = 'PERFORMANCE_LIMIT_EXCEEDED',
+  SHADER_COMPILATION_FAILED = 'SHADER_COMPILATION_FAILED'
+}
+
+export interface EnhancedAnimationHookConfig extends AnimationHookConfig {
+  timelineManager?: import('../utils/animation/TimelineManager').TimelineManager;
+  enableDistortionEffects?: boolean;
+  onAnimationEvent?: AnimationEventHandler;
 }

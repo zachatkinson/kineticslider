@@ -16,7 +16,16 @@ import {
   ValidationErrorSeverity,
   SchemaType,
 } from "../types/validation";
-import type { SliderId as SlideId, ComponentId } from "../types/branded";
+import type { SliderId as SlideId, ComponentId as _ComponentId } from "../types/branded";
+import { isEmpty, safeGet } from "./object-helpers";
+import { isObject } from "./type-checks";
+import { _toComponentId as _toComponentId } from "./validation-core";
+
+// Re-export utility functions for backward compatibility
+export { isEmpty, safeGet } from "./object-helpers";
+
+// Re-export toComponentId from centralized location
+export { _toComponentId as toComponentId } from "./validation-core";
 
 /**
  * Helper function to convert a string to a SlideId
@@ -30,85 +39,9 @@ export function toSlideId(id: string): SlideId {
   return id as SlideId;
 }
 
-/**
- * Helper function to convert a string to a ComponentId
- *
- * @param id The string to convert
- *
- * @returns The string as a ComponentId
- *
- */
-export function toComponentId(id: string): ComponentId {
-  return id as ComponentId;
-}
-
 // Cache for memoized validators
 const validatorCache = new Map<string, ValidationResult>();
 const validatorRegistry = new Map<string, Validator<unknown>>();
-
-/**
- * Helper function to check if a value is empty
- *
- * @param value The value to check
- *
- * @returns True if the value is: empty, false otherwise
- *
- */
-export function isEmpty(value: unknown): boolean {
-  if (value === null || value === undefined) return true;
-  if (typeof value === "string") return value.trim().length === 0;
-  if (Array.isArray(value)) return value.length === 0;
-  if (typeof value === "object") return Object.keys(value).length === 0;
-  return false;
-}
-
-/**
- * Helper function to check if a value is an object
- *
- * @param value The value to check
- *
- * @returns True if the value is an: object, false otherwise
- *
- */
-export function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/**
- * Helper function to safely get a value from an object using dot notation
- *
- * @param obj The object to get the value from
- *
- * @param path The dot-notation path to the value
- *
- * @param defaultValue The default value to return if the path doesn't exist
- *
- * @returns The value from the object or the default value
- *
- */
-export function safeGet<T>(obj: unknown, path: string, defaultValue: T): T {
-  if (obj === null || obj === undefined) return defaultValue;
-  if (typeof obj !== "object") return defaultValue;
-
-  const keys = path.split(".");
-  let result: unknown = obj;
-
-  for (const key of keys) {
-    if (result === null || result === undefined || typeof result !== "object") {
-      return defaultValue;
-    }
-    if (Object.prototype.hasOwnProperty.call(result, key)) {
-      result = (result as Record<string, unknown>)[key];
-    } else {
-      return defaultValue;
-    }
-    if (result === undefined) {
-      return defaultValue;
-    }
-  }
-
-  return result as T;
-}
 
 // Type guards
 /**

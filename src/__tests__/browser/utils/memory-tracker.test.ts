@@ -6,7 +6,7 @@ import {
   captureMemoryUsage,
   compareMemorySnapshots,
   measureMemoryUsage,
-} from "./memory-tracker";
+} from "../../../utils/memory-helpers";
 
 // Mock performance.memory
 const mockMemoryInfo = {

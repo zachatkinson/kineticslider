@@ -5,9 +5,10 @@
 import type { FPS, ByteSize, Milliseconds } from "../types/branded";
 import type {
   PerformanceMetrics,
-  PerformanceMonitoringOptions,
 } from "../types/performance";
 import type { MetricSummary } from "../types/performance-shared";
+import type { PerformanceSample, FrameCallback } from "../types/utils";
+import type { PerformanceData } from "../types/scripts";
 import {
   calculateMean,
   _calculateMedian as calculateMedian,
@@ -15,7 +16,6 @@ import {
   _calculatePercentile as calculatePercentile,
 } from "./math";
 import { debounce, throttle } from "./common";
-import type { PerformanceSample, FrameCallback } from "../types/utils";
 import { log } from "./logger";
 
 /**
@@ -239,6 +239,14 @@ export function createPerformanceId(prefix: string, suffix?: string): string {
  *
  * @param options - Configuration options for monitoring
  *
+ * @param options.enableLogging
+ *
+ * @param options.sampleRate
+ *
+ * @param options.handlers
+ *
+ * @param options.handlers.onMeasure
+ *
  * @returns Cleanup function to stop monitoring
  *
  * @example Example usage
@@ -251,7 +259,13 @@ export function createPerformanceId(prefix: string, suffix?: string): string {
  */
 export function initializePerformanceMonitoring(
   componentId: string,
-  options: PerformanceMonitoringOptions = {},
+  options: {
+    enableLogging?: boolean;
+    sampleRate?: number;
+    handlers?: {
+      onMeasure?: (name: string, duration: number) => void;
+    };
+  } = {},
 ): () => void {
   const { enableLogging = false, sampleRate: _sampleRate = 1 } = options;
 
@@ -468,13 +482,6 @@ export const trackEvent = (
   // Implementation
 };
 
-// Define a simple interface for the batch process function
-interface _PerformanceData {
-  timestamp: number;
-  metric: string;
-  value: number;
-}
-
 /**
  * Batch process performance data with sampling
  *
@@ -483,7 +490,7 @@ interface _PerformanceData {
  * @param _sampleRate - Rate at which to sample data (0-1)
  *
  */
-function _batchProcess(data: _PerformanceData[], _sampleRate = 0.1): void {
+function _batchProcess(data: PerformanceData[], _sampleRate = 0.1): void {
   // Implementation
 }
 

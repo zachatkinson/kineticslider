@@ -15,7 +15,8 @@ import {
   setupPerformanceMocks,
   resetPerformanceMocks,
 } from "../../mocks/performance.mock";
-import { createMockPerformanceMonitor } from "../../mocks/performance-monitor.mock";
+import { createMockPerformanceMonitor } from "@/__tests__/mocks/performance-monitor.mock";
+import type { PerformanceWithMemory } from "@/types/performance-testing";
 // Commented out unused imports to fix linting
 // import { trackPerformance } from "@/utils/performance";
 // import { trackAnimation } from "@/utils/animation";
@@ -35,35 +36,7 @@ vi.mock("../../../utils/performance-monitor", () => ({
 // const { PerformanceMonitor } = require("../../../utils/performance-monitor");
 
 // Mock RAF for animation testing
-const mockRaf = (): { tick: (count?: number, frameTime?: number) => void } => {
-  let rafId = 0;
-  const queue = new Map();
-
-  // Replace requestAnimationFrame
-  window.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
-    const id = ++rafId;
-    queue.set(id, cb);
-    return id;
-  });
-
-  // Replace cancelAnimationFrame
-  window.cancelAnimationFrame = vi.fn((id: number) => {
-    queue.delete(id);
-  });
-
-  // Function to simulate RAF ticks
-  const tick = (count = 1, frameTime = 16.67): void => {
-    for (let i = 0; i < count; i++) {
-      const time = performance.now() + frameTime;
-      for (const [id, cb] of [...queue.entries()]) {
-        queue.delete(id);
-        cb(time);
-      }
-    }
-  };
-
-  return { tick };
-};
+// Removed unused mockRaf function
 
 // Helper to generate mock slides
 const generateMockSlides = (count: number): Slide[] => {
@@ -77,23 +50,36 @@ const generateMockSlides = (count: number): Slide[] => {
 };
 
 describe("Performance Utilities - Browser", () => {
-  beforeEach(() => {
-    setupBrowserApiMocks();
-    setupPerformanceMocks();
-  });
-
-  afterEach(() => {
-    resetPerformanceMocks();
-  });
-
-  let rafController: ReturnType<typeof mockRaf>;
+  let rafController: { tick: (frames: number) => void };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    rafController = mockRaf();
-
-    // Set up timer mocks
     vi.useFakeTimers();
+    resetPerformanceMocks();
+    setupPerformanceMocks();
+    setupBrowserApiMocks();
+
+    // Mock requestAnimationFrame
+    let frameId = 0;
+    const callbacks: Array<() => void> = [];
+
+    rafController = {
+      tick: (frames: number) => {
+        for (let i = 0; i < frames; i++) {
+          callbacks.forEach((callback) => callback());
+          callbacks.length = 0;
+        }
+      },
+    };
+
+    vi.stubGlobal("requestAnimationFrame", (callback: () => void) => {
+      callbacks.push(callback);
+      return ++frameId;
+    });
+
+    vi.stubGlobal("cancelAnimationFrame", (_id: number) => {
+      // Mock implementation
+    });
   });
 
   afterEach(() => {
@@ -186,15 +172,6 @@ describe("PerformanceMonitor Functionality (Browser)", () => {
   });
 
   it("should track memory usage", async () => {
-    // Create a temporary type that includes the memory property
-    type PerformanceWithMemory = Performance & {
-      memory?: {
-        usedJSHeapSize: number;
-        totalJSHeapSize: number;
-        jsHeapSizeLimit: number;
-      };
-    };
-
     // Cast performance to our extended type and add memory property if it doesn't exist
     const performanceWithMemory = performance as PerformanceWithMemory;
     if (!performanceWithMemory.memory) {

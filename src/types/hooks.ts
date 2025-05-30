@@ -12,6 +12,7 @@ import type {
   AnimationConfig,
   AnimationOptions,
   AnimationMetrics,
+  BasicAnimationReturn,
 } from "./animation";
 import type {
   GestureConfig,
@@ -24,13 +25,14 @@ import type {
   Slide,
   SliderMetrics as _SliderMetrics,
 } from "./slider";
-import type { SlideIndex } from "./branded";
+import type { SlideIndex, SliderId as _SliderId } from "./branded";
 import type { FocusTrapOptions as _FocusTrapOptions } from "./keyboard";
 import type { gsap as _gsap } from "gsap";
 import type { UseSliderAccessibilityProps } from "./accessibility";
-import type { ValidationResult } from "./validation";
+import type { ValidationResult } from "./utils";
 import type { AnimationEvents } from "./animation";
 import type React from "react";
+import type { CanvasConfig, CanvasDimensions, PerformanceMetrics } from "./pixi";
 
 // Re-export types needed by components
 export type {
@@ -76,55 +78,12 @@ export interface UseAnimationReturn {
 }
 
 /**
- * Return type for the basic animation hook
- *
- * @example Example usage
- */
-export interface BasicAnimationReturn {
-  play: () => void;
-  pause: () => void;
-  reverse: () => void;
-  restart: () => void;
-}
-
-/**
- * Return type for the enhanced animation hook with GSAP integration
+ * Extended animation result interface
  *
  * @example Example usage
  */
 export interface UseAnimationResult extends UseAnimationReturn {
   animation: BasicAnimationReturn;
-}
-
-/**
- * Return type for the useKeyboard hook
- *
- * @example Example usage
- */
-export interface UseKeyboardReturn {
-  focusFirst: () => void;
-  focusLast: () => void;
-  focusNext: () => void;
-  focusPrevious: () => void;
-}
-
-/**
- * Return type for the usePerformance hook
- *
- * @example Example usage
- */
-export interface UsePerformanceReturn {
-  fps: number;
-  memory: {
-    used: number;
-    total: number;
-    limit: number;
-  };
-  metrics: {
-    fcp: number;
-    lcp: number;
-    cls: number;
-  };
 }
 
 /**
@@ -169,17 +128,6 @@ export interface UseErrorTrackingReturn {
 }
 
 // Hook Options Types
-
-/**
- * Options for the usePerformance hook
- *
- * @example Example usage
- */
-export interface UsePerformanceOptions {
-  sampleSize?: number;
-  interval?: number;
-  enableMemoryTracking?: boolean;
-}
 
 /**
  * Options for the useAnimation hook
@@ -378,4 +326,59 @@ export interface UseFocusRestorationReturn {
   previousFocusRef: React.MutableRefObject<HTMLElement | null>;
   restoreFocus: () => void;
   storeFocus: () => void;
+}
+
+/**
+ * Canvas dimensions hook configuration options
+ *
+ * @example Hook configuration
+ * ```tsx
+ * const options: UseCanvasDimensionsOptions = {
+ *   config: myCanvasConfig,
+ *   containerRef: containerRef,
+ *   debounceDelay: 100
+ * };
+ * ```
+ */
+export interface UseCanvasDimensionsOptions {
+  /** Canvas configuration */
+  config: CanvasConfig;
+  /** Container element reference */
+  containerRef?: React.RefObject<HTMLElement | null>;
+  /** Resize debounce delay in milliseconds */
+  debounceDelay?: number;
+  /** Performance monitoring callback */
+  onPerformanceUpdate?: (metrics: PerformanceMetrics) => void;
+  /** Dimension change callback */
+  onDimensionsChange?: (dimensions: CanvasDimensions) => void;
+  /** Breakpoint change callback */
+  onBreakpointChange?: (breakpoint: string) => void;
+}
+
+/**
+ * Return type for canvas dimensions hook
+ *
+ * @example Hook return value structure
+ * ```tsx
+ * const {
+ *   dimensions,
+ *   isCalculating,
+ *   currentBreakpoint,
+ *   recalculate
+ * } = useCanvasDimensions(options);
+ * ```
+ */
+export interface UseCanvasDimensionsReturn {
+  /** Current canvas dimensions */
+  dimensions: CanvasDimensions;
+  /** Whether dimensions are being calculated */
+  isCalculating: boolean;
+  /** Current responsive breakpoint name */
+  currentBreakpoint: string | null;
+  /** Performance metrics */
+  performanceMetrics: PerformanceMetrics | null;
+  /** Manual recalculation function */
+  recalculate: () => void;
+  /** Update configuration function */
+  updateConfig: (newConfig: CanvasConfig) => void;
 }

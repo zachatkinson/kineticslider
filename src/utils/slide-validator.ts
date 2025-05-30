@@ -1,53 +1,23 @@
 import { _slideSchema as slideSchema } from "../schemas/slide.schema";
-import type { Slide } from "../types";
-import {
-  ValidationErrorCode,
-  ValidationErrorSeverity,
-  ValidationErrorType,
+import type { Slide } from "../types/slider";
+import type {
   ValidationResult,
+  ValidationError,
   ValidationContext,
   Validator,
   AsyncValidator,
 } from "../types/validation";
+import { ValidationErrorType, ValidationErrorCode } from "../types/validation";
+import { memoizeValidator, composeAsyncValidators } from "./validation";
 import { createSchemaValidator } from "../utils/validation";
-import { composeAsyncValidators, memoizeValidator } from "../utils/validation";
-import { ValidationError } from "./errors";
+import { ValidationErrorSeverity } from "../types/validation";
 import type { SlideItem } from "../types/slider";
-
-// Local implementation of createSchemaValidator for tests
-// This will only be used if the imported one is not available
-function localCreateSchemaValidator<_T>(
-  _schema: Record<string, unknown>,
-): Validator<_T> {
-  return (value: unknown, _context?: ValidationContext): ValidationResult => {
-    if (typeof value !== "object" || value === null) {
-      return {
-        valid: false,
-        errors: [
-          {
-            type: ValidationErrorType.TYPE,
-            code: ValidationErrorCode.INVALID_TYPE,
-            message: "Value must be an object",
-            value,
-            expected: "object",
-            severity: ValidationErrorSeverity.ERROR,
-          },
-        ],
-      };
-    }
-
-    return { valid: true, errors: [] };
-  };
-}
+import { mockImageValidation } from "./test-helpers";
 
 /**
  * Create a validator for slides using our schema system
  */
-export const validateSlideWithSchema: Validator<unknown> = (
-  typeof createSchemaValidator === "function"
-    ? createSchemaValidator
-    : localCreateSchemaValidator
-)(slideSchema);
+export const validateSlideWithSchema: Validator<unknown> = createSchemaValidator(slideSchema);
 
 /**
  * @param value - Value to validate
@@ -61,44 +31,21 @@ export const asyncValidateSlide: AsyncValidator<unknown> = async (
   value: unknown,
   context?: ValidationContext,
 ): Promise<ValidationResult> => {
-  // Implementation will just forward to the local validator for now
-  const result = await Promise.resolve(
-    localCreateSchemaValidator<unknown>({})(value, context),
-  );
-  return result;
+  // Implementation will just forward to the schema validator
+  const result = validateSlideWithSchema(value, context);
+  return Promise.resolve(result);
 };
-
-// Local implementation of memoizeValidator for tests
-// This will only be used if the imported one is not available
-function localMemoizeValidator<_T>(
-  validator: Validator<_T>,
-  _getKey: (value: unknown, context?: ValidationContext) => string = (value) =>
-    JSON.stringify(value),
-  _options?: { ttl?: number; maxSize?: number },
-): Validator<_T> {
-  // For: tests, we'll just return the validator function directly
-  return validator;
-}
 
 /**
  * Memoized version of the schema validator for performance
  */
-export const _memoizedSlideValidator = (
-  typeof memoizeValidator === "function"
-    ? memoizeValidator
-    : localMemoizeValidator
-)(
+export const _memoizedSlideValidator = memoizeValidator(
   validateSlideWithSchema,
   // Custom key generator function based on essential slide properties
   (value: unknown) => {
     if (typeof value !== "object" || value === null) return "";
     const obj = value as Record<string, unknown>;
     return `${obj["id"] || ""}-${obj["title"] || ""}-${obj["image"] || ""}`;
-  },
-  // Cache options
-  {
-    ttl: 5 * 60 * 1000, // 5 minutes
-    maxSize: 100, // Cache up to 100 slide: validations
   },
 );
 
@@ -191,42 +138,15 @@ export const _validateSlidesWithSchema = async (
   };
 };
 
-// Local implementation of composeAsyncValidators for tests
-function localComposeAsyncValidators(
-  ...validators: AsyncValidator<unknown>[]
-): AsyncValidator<unknown> {
-  return async (
-    value: unknown,
-    context?: ValidationContext,
-  ): Promise<ValidationResult> => {
-    let finalResult: ValidationResult = { valid: true, errors: [] };
-
-    for (const validator of validators) {
-      const result = await validator(value, context);
-
-      if (!result.valid) {
-        finalResult.valid = false;
-        finalResult.errors = [...finalResult.errors, ...result.errors];
-      }
-    }
-
-    return finalResult;
-  };
-}
-
 /**
  * Enhanced slide validation that includes extra business rules
  */
-export const _validateSlideWithBusinessRules: AsyncValidator<Slide> = (
-  typeof composeAsyncValidators === "function"
-    ? composeAsyncValidators
-    : localComposeAsyncValidators
-)(
+export const _validateSlideWithBusinessRules: AsyncValidator<Slide> = composeAsyncValidators(
   asyncValidateSlide, // Use the async version to ensure types match
   async (value: unknown): Promise<ValidationResult> => {
     // Exit early if not a valid slide object
     if (typeof value !== "object" || value === null) {
-      return { valid: true, errors: [] }; // Let schema validation handle this: case
+      return { valid: true, errors: [] }; // Let schema validation handle this case
     }
 
     const slide = value as Record<string, unknown>;
@@ -256,7 +176,7 @@ export const _validateSlideWithBusinessRules: AsyncValidator<Slide> = (
     // This would typically call an external service or API
     if (typeof slide["image"] === "string") {
       // Example of an async business rule (mock implementation)
-      // In a real: app, this might check image: dimensions, file: size, etc.
+      // In a real app, this might check image dimensions, file size, etc.
       const imageValid = await mockImageValidation(slide["image"]);
 
       if (!imageValid) {
@@ -280,36 +200,20 @@ export const _validateSlideWithBusinessRules: AsyncValidator<Slide> = (
   },
 );
 
-// Mock function for demonstration purposes
-async function mockImageValidation(imageUrl: string): Promise<boolean> {
-  // In a real: implementation, this would check image: dimensions, file: size, etc.
-  return !imageUrl.includes("thumbnail") && !imageUrl.includes("small");
-}
-
-// Define custom validators types if they're not exported from the validation module
-type _CustomValidator<_T> = (
-  value: unknown,
-  context?: ValidationContext,
-) => ValidationResult | Promise<ValidationResult>;
-type _CustomAsyncValidator<_T> = (
-  value: unknown,
-  context?: ValidationContext,
-) => Promise<ValidationResult>;
-
 // Common validation error creator
 export const createValidationError = (
   _schema: unknown,
   value: unknown,
   _context?: ValidationContext,
 ): ValidationError => {
-  return new ValidationError(
-    `Validation failed for value: ${JSON.stringify(value)}`,
-    {
-      schema: _schema,
-      value,
-      context: _context,
-    },
-  );
+  return {
+    type: ValidationErrorType.CUSTOM,
+    code: ValidationErrorCode.CUSTOM_ERROR,
+    message: `Validation failed for value: ${JSON.stringify(value)}`,
+    value,
+    severity: ValidationErrorSeverity.ERROR,
+    context: _context,
+  };
 };
 
 /**
@@ -326,8 +230,8 @@ export const createValidationError = (
  */
 export function validateSlide(
   slide: SlideItem,
-  _schema: unknown, // Updated from any
-  _options?: Record<string, unknown>, // Updated from any
+  _schema: unknown,
+  _options?: Record<string, unknown>,
 ): ValidationResult {
   // Basic validation implementation
   try {
@@ -345,7 +249,7 @@ export function validateSlide(
       errors: [
         {
           message: "Slide is invalid",
-          path: ["slide"], // Change string to array
+          path: ["slide"],
           value: slide,
           type: ValidationErrorType.TYPE,
           code: ValidationErrorCode.INVALID_TYPE,
@@ -360,7 +264,7 @@ export function validateSlide(
         {
           message:
             error instanceof Error ? error.message : "Unknown validation error",
-          path: ["slide"], // Change string to array
+          path: ["slide"],
           value: slide,
           type: ValidationErrorType.TYPE,
           code: ValidationErrorCode.INVALID_TYPE,

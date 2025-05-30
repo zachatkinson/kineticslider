@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { createBrandedNumber } from "@/types/branded";
+import { createBrandedNumber } from "@/utils/branded-helpers";
 import type { Slide } from "@/types/slider";
 
 // Mock functions that can be accessed and reset

@@ -1,7 +1,7 @@
 import React from "react";
 import { useCallback } from "react";
 import { useSlider } from "../../context/SliderContext";
-import { createBrandedNumber } from "../../types/branded";
+import { createBrandedNumber } from "../../utils/branded-helpers";
 import type { KeyboardNavigationHook } from "../../types/hooks";
 
 /**

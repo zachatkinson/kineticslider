@@ -8,6 +8,22 @@
 import { ValidationErrorSeverity } from "./error";
 
 /**
+ * Validation context interface for providing additional context during validation
+ *
+ * @example
+ * ```ts
+ * const context: ValidationContext = {
+ *   path: ['user', 'profile', 'email'],
+ *   locale: 'en-US'
+ * };
+ * ```
+ */
+export interface ValidationContext {
+  path?: string[];
+  locale?: string;
+}
+
+/**
  * Validation error types
  */
 export enum ValidationErrorType {
@@ -123,18 +139,6 @@ export interface ValidationError {
   details?: Record<string, unknown>;
   context?: ValidationContext;
   value?: unknown;
-}
-
-/**
- * Validation context
- *
- * @example Example usage
- */
-export interface ValidationContext {
-  path?: string[];
-  locale?: string;
-  componentId?: ComponentId;
-  [key: string]: unknown;
 }
 
 /**

@@ -76,12 +76,6 @@ export interface SlideItem {
   metadata?: Record<string, unknown>;
 }
 
-// Accessibility types
-export interface AccessibilityConfig {
-  ariaLabel?: string;
-  keyboardNavigation?: boolean;
-}
-
 // Autoplay types
 export interface AutoplayConfig {
   enabled: boolean;

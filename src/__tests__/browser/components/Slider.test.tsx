@@ -7,7 +7,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Slider } from "@/components/Slider/Slider";
 import { SliderProvider } from "@/context/SliderContext";
-import { brandSliderId } from "@/types/branded";
+import { createSliderId } from "@/utils/branded-helpers";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { FeatureFlag } from "@/types/feature-flags";
 import {
@@ -19,13 +19,7 @@ import {
   createSliderContextMock,
   resetSliderMocks,
 } from "../../mocks/slider.mock";
-
-declare global {
-  interface Window {
-    __MOCK_NAV_ERROR__?: boolean;
-    __MOCK_SLIDER_CONFIG__?: any;
-  }
-}
+import "../../../types/window";
 
 // Mock error tracking module
 vi.mock("@/hooks/slider/useErrorTracking", () => ({
@@ -62,21 +56,21 @@ if (typeof window !== "undefined" && !window.requestAnimationFrame) {
 
 const testSlides = [
   {
-    id: brandSliderId("slide-1"),
+    id: createSliderId("slide-1"),
     title: "First Slide",
     image: "/test-image-1.jpg",
     alt: "First slide image",
     content: <div data-testid="slide-1">First Slide</div>,
   },
   {
-    id: brandSliderId("slide-2"),
+    id: createSliderId("slide-2"),
     title: "Second Slide",
     image: "/test-image-2.jpg",
     alt: "Second slide image",
     content: <div data-testid="slide-2">Second Slide</div>,
   },
   {
-    id: brandSliderId("slide-3"),
+    id: createSliderId("slide-3"),
     title: "Third Slide",
     image: "/test-image-3.jpg",
     alt: "Third slide image",

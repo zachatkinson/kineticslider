@@ -4,11 +4,9 @@ import { useGestures } from "./useGestures";
 import type { KineticSliderProps, SliderMetrics } from "../types/slider";
 import type { SwipeDirection } from "../types/gestures";
 import type { UseKineticSliderReturn, SliderGestureEvent } from "../types/hooks";
-import {
-  createBrandedNumber,
-  SlideIndex as _SlideIndex,
-} from "../types/branded";
+import type { SlideIndex as _SlideIndex } from "../types/branded";
 import { validateSlideIndex } from "../utils/navigation-helpers";
+import { createBrandedNumber } from "../utils/branded-helpers";
 
 export const useKineticSlider = ({
   slides,

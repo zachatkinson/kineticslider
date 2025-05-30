@@ -3,6 +3,8 @@
  */
 
 import type { Result } from "../types/common";
+import { safeJsonParse as _safeJsonParse } from "./json";
+import { safeGetNested as _safeGetNested } from "./object-helpers";
 
 /**
  * Creates a debounced function that delays invoking the provided function
@@ -93,46 +95,6 @@ export function memoize<
 }
 
 /**
- * Overload 1: Using with a fallback value
- *
- * @param value - The string to parse as JSON
- *
- * @param fallback - Fallback value if parsing fails
- *
- * @returns The parsed object or the fallback value
- *
- */
-export function safeJsonParse<T>(value: string, fallback: T): T;
-
-/**
- * Overload 2: Using without a fallback (returns null if parsing fails)
- *
- * @param value - The string to parse as JSON
- *
- * @returns The parsed object or null if parsing fails
- *
- */
-export function safeJsonParse<T>(value: string): T | null;
-
-/**
- * Safely parses JSON without throwing exceptions
- *
- * @param value - The string to parse as JSON
- *
- * @param fallback - Optional fallback value if parsing fails
- *
- * @returns The parsed object or the fallback value if parsing fails
- *
- */
-export function safeJsonParse<T>(value: string, fallback?: T): T | null {
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback !== undefined ? fallback : null;
-  }
-}
-
-/**
  * Sleeps for the specified number of milliseconds
  *
  * @param ms - The number of milliseconds to sleep
@@ -180,36 +142,6 @@ export function deepClone<T>(obj: T): T {
  */
 export function shallowMerge<T>(target: T, ...sources: Partial<T>[]): T {
   return Object.assign({}, target, ...sources);
-}
-
-/**
- * Gets a value from a nested object safely without throwing errors
- *
- * @param obj - The object to get the value from
- *
- * @param path - The path to the value (e.g. 'user.address.city')
- *
- * @param defaultValue - The default value to return if the path doesn't exist
- *
- * @returns The value at the path or the default value
- *
- */
-export function getNestedValue<
-  T,
-  D = undefined,
-  O extends Record<string, unknown> = Record<string, unknown>,
->(obj: O, path: string, defaultValue?: D): T | D {
-  const keys = path.split(".");
-  let result: unknown = obj;
-
-  for (const key of keys) {
-    if (result === undefined || result === null) {
-      return defaultValue as D;
-    }
-    result = (result as Record<string, unknown>)[key];
-  }
-
-  return result === undefined ? (defaultValue as D) : (result as T);
 }
 
 /**
@@ -282,12 +214,8 @@ export async function tryAsync<T>(
   }
 }
 
-/**
- * Generate a unique ID
- *
- * @returns {string} A unique ID string
- *
- */
-export function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2);
-}
+// Re-export safeJsonParse from centralized location
+export { safeJsonParse } from "./json";
+
+// Re-export getNestedValue as alias for safeGetNested from centralized location
+export { safeGetNested as getNestedValue } from "./object-helpers";

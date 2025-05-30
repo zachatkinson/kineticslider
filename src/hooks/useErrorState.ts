@@ -1,56 +1,7 @@
 import { useState, useCallback } from "react";
 import { useErrorTracking } from "./slider/useErrorTracking";
 import { ErrorType } from "../types/error";
-
-/**
- * Options for configuring error state behavior
- *
- * @example
- * ```typescript
- * const options: UseErrorStateOptions = {
- *   initialError: null,
- *   initialIsError: false,
- *   onParentError: (error) => console.error('Parent error:', error),
- *   enableTracking: true
- * };
- * ```
- */
-export interface UseErrorStateOptions {
-  /** Initial error state */
-  initialError?: Error | null;
-  /** Initial error flag state */
-  initialIsError?: boolean;
-  /** Callback for parent error propagation */
-  onParentError?: (error: Error | null) => void;
-  /** Callback for parent error flag propagation */
-  onParentIsError?: (isError: boolean) => void;
-  /** Callback for additional error handling */
-  onError?: (error: Error) => void;
-  /** Whether to enable error tracking */
-  enableTracking?: boolean;
-}
-
-/**
- * Return type for the useErrorState hook
- *
- * @example
- * ```typescript
- * const { error, isError, propagateError, clearError } = useErrorState({
- *   onParentError: handleError,
- *   enableTracking: true
- * });
- * ```
- */
-export interface UseErrorStateReturn {
-  /** Current error state */
-  error: Error | null;
-  /** Whether an error has occurred */
-  isError: boolean;
-  /** Function to propagate an error */
-  propagateError: (error: Error, errorType?: ErrorType) => void;
-  /** Function to clear the current error */
-  clearError: () => void;
-}
+import type { UseErrorStateOptions, UseErrorStateReturn } from "../types/hooks";
 
 /**
  * Custom hook for managing error state with tracking and propagation
@@ -123,6 +74,8 @@ export function useErrorState(options: UseErrorStateOptions = {}): UseErrorState
   return {
     error,
     isError,
+    setError,
+    setIsError,
     propagateError,
     clearError,
   };

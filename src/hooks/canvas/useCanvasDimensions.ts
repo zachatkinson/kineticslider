@@ -11,6 +11,10 @@ import type {
   CanvasConfig,
   PerformanceMetrics,
 } from "../../types/pixi";
+import type {
+  UseCanvasDimensionsOptions,
+  UseCanvasDimensionsReturn,
+} from "../../types/hooks";
 import {
   calculatePixiCanvasDimensions,
   hasPixiDimensionsChanged,
@@ -18,61 +22,19 @@ import {
 } from "../../utils/pixi-canvas";
 
 /**
- * Hook options for canvas dimensions management
- *
- * @example
- * ```typescript
- * const options: UseCanvasDimensionsOptions = {
- *   config: createPixiCanvasConfig(),
- *   containerRef: myContainerRef,
- *   onDimensionsChange: (dims) => console.log('New dimensions:', dims)
- * };
- * ```
- */
-export interface UseCanvasDimensionsOptions {
-  /** Canvas configuration */
-  config: CanvasConfig;
-  /** Container element reference */
-  containerRef?: React.RefObject<HTMLElement | null>;
-  /** Resize debounce delay in milliseconds */
-  debounceDelay?: number;
-  /** Performance monitoring callback */
-  onPerformanceUpdate?: (metrics: PerformanceMetrics) => void;
-  /** Dimension change callback */
-  onDimensionsChange?: (dimensions: CanvasDimensions) => void;
-  /** Breakpoint change callback */
-  onBreakpointChange?: (breakpoint: string) => void;
-}
-
-/**
- * Hook return type
- *
- * @example
- * ```typescript
- * const { dimensions, recalculate, updateConfig } = useCanvasDimensions(options);
- * console.log('Current size:', dimensions.width, 'x', dimensions.height);
- * ```
- */
-export interface UseCanvasDimensionsReturn {
-  /** Current canvas dimensions */
-  dimensions: CanvasDimensions;
-  /** Current breakpoint name (for responsive mode) */
-  currentBreakpoint: string | null;
-  /** Whether dimensions are being calculated */
-  isCalculating: boolean;
-  /** Force recalculation of dimensions */
-  recalculate: () => void;
-  /** Update canvas configuration */
-  updateConfig: (newConfig: Partial<CanvasConfig>) => void;
-}
-
-/**
- * Custom hook for managing canvas dimensions
+ * Hook for managing responsive canvas dimensions with performance optimization
  * 
- * @param options - Configuration options for canvas dimensions management
- *
- * @returns Canvas dimensions management utilities
- *
+ * @param options - Configuration options for canvas dimension management
+ * 
+ * @returns Canvas dimensions management interface
+ * 
+ * @example
+ * ```tsx
+ * const { dimensions, isCalculating, recalculate } = useCanvasDimensions({
+ *   config: canvasConfig,
+ *   containerRef: myContainerRef
+ * });
+ * ```
  */
 export function useCanvasDimensions(
   options: UseCanvasDimensionsOptions,
@@ -86,30 +48,31 @@ export function useCanvasDimensions(
     onBreakpointChange,
   } = options;
 
-  const [dimensions, setDimensions] = useState<CanvasDimensions>(config.dimensions);
-  const [currentBreakpoint, setCurrentBreakpoint] = useState<string | null>(null);
+  // State
+  const [dimensions, setDimensions] = useState<CanvasDimensions>(() =>
+    calculatePixiCanvasDimensions(config, 800, 600)
+  );
   const [isCalculating, setIsCalculating] = useState(false);
-  const [currentConfig, setCurrentConfig] = useState<CanvasConfig>(config);
+  const [currentBreakpoint, setCurrentBreakpoint] = useState<string | null>(null);
+  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics | null>(null);
 
-  // Store refs to avoid dependency issues
-  const callbacksRef = useRef({
-    onPerformanceUpdate,
-    onDimensionsChange,
-    onBreakpointChange,
-  });
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const resizeObserverRef = useRef<ResizeObserver | undefined>(undefined);
-  const configRef = useRef<CanvasConfig>(config);
+  // Refs for stable references
+  const configRef = useRef(config);
   const containerRefStable = useRef(containerRef);
+  const callbacksRef = useRef({ onDimensionsChange, onBreakpointChange, onPerformanceUpdate });
 
-  // Update refs when values change (no useEffect needed)
-  callbacksRef.current = {
-    onPerformanceUpdate,
-    onDimensionsChange,
-    onBreakpointChange,
-  };
-  configRef.current = currentConfig;
-  containerRefStable.current = containerRef;
+  // Update refs when props change
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  useEffect(() => {
+    containerRefStable.current = containerRef;
+  }, [containerRef]);
+
+  useEffect(() => {
+    callbacksRef.current = { onDimensionsChange, onBreakpointChange, onPerformanceUpdate };
+  }, [onDimensionsChange, onBreakpointChange, onPerformanceUpdate]);
 
   /**
    * Calculate dimensions - stable function using refs
@@ -168,137 +131,68 @@ export function useCanvasDimensions(
         });
       }
 
-      // Report performance metrics
-      if (callbacksRef.current.onPerformanceUpdate) {
-        const endTime = performance.now();
-        const calculationTime = endTime - startTime;
-        
-        const metrics: PerformanceMetrics = {
-          fps: 0,
-          memoryMB: 0,
-          renderTimeMS: calculationTime,
-          drawCalls: 0,
-          spriteCount: 0,
-          timestamp: Date.now(),
-        };
-        callbacksRef.current.onPerformanceUpdate(metrics);
-      }
+      // Performance tracking
+      const endTime = performance.now();
+      const calculationTime = endTime - startTime;
+      
+      const metrics: PerformanceMetrics = {
+        fps: 60, // Placeholder
+        memoryMB: 0,
+        renderTimeMS: calculationTime,
+        drawCalls: 0,
+        spriteCount: 0,
+        timestamp: Date.now()
+      };
+
+      setPerformanceMetrics(metrics);
+      callbacksRef.current.onPerformanceUpdate?.(metrics);
+
     } catch (error) {
-      console.error("Error calculating dimensions:", error);
+      console.error("Error calculating canvas dimensions:", error);
     } finally {
       setIsCalculating(false);
     }
-  }, []); // No dependencies - uses refs for all values
+  }, []);
 
-  /**
-   * Debounced dimension calculation
-   */
-  const debouncedCalculate = useCallback(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    debounceTimeoutRef.current = setTimeout(() => {
-      calculateDimensions();
-    }, debounceDelay);
+  // Debounced resize handler
+  const debouncedCalculate = useCallback((): (() => void) => {
+    const timeoutId = setTimeout(calculateDimensions, debounceDelay);
+    return () => clearTimeout(timeoutId);
   }, [calculateDimensions, debounceDelay]);
 
-  /**
-   * Force recalculation of dimensions
-   */
-  const recalculate = useCallback(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-    calculateDimensions();
-  }, [calculateDimensions]);
-
-  /**
-   * Update canvas configuration
-   */
-  const updateConfig = useCallback((newConfig: Partial<CanvasConfig>) => {
-    // Update the config synchronously first
-    const updated = {
-      ...configRef.current,
-      ...newConfig,
-      dimensions: newConfig.dimensions ? {
-        ...configRef.current.dimensions,
-        ...newConfig.dimensions,
-      } : configRef.current.dimensions,
-    };
-    
-    // Update the ref immediately
-    configRef.current = updated;
-    
-    // Update the state
-    setCurrentConfig(updated);
-    
-    // Trigger recalculation after config update
-    setTimeout(() => {
-      calculateDimensions();
-    }, 0);
-  }, [calculateDimensions]);
-
-  /**
-   * Update config when prop changes
-   */
+  // Initial calculation and resize listener
   useEffect(() => {
-    setCurrentConfig(config);
-    // Trigger recalculation when config prop changes
-    calculateDimensions();
-  }, [config, calculateDimensions]);
-
-  /**
-   * Set up resize observer and initial calculation
-   */
-  useEffect(() => {
-    // Initial calculation
     calculateDimensions();
 
-    // Set up resize observer only if containerRef is available
-    if (containerRefStable.current?.current) {
-      resizeObserverRef.current = new ResizeObserver(() => {
-        debouncedCalculate();
-      });
-
-      resizeObserverRef.current.observe(containerRefStable.current.current);
-    }
-
-    return () => {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-      }
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, [calculateDimensions, debouncedCalculate]); // Include dependencies
-
-  /**
-   * Set up window resize listener for fullscreen mode
-   */
-  useEffect(() => {
-    if (currentConfig.mode !== "fullscreen") {
-      return;
-    }
-
-    const handleWindowResize = (): void => {
+    const handleResize = (): void => {
       debouncedCalculate();
     };
 
-    window.addEventListener("resize", handleWindowResize);
-    window.addEventListener("orientationchange", handleWindowResize);
-
+    window.addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener("resize", handleWindowResize);
-      window.removeEventListener("orientationchange", handleWindowResize);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [currentConfig.mode, debouncedCalculate]); // Include debouncedCalculate dependency
+  }, [calculateDimensions, debouncedCalculate]);
+
+  // Recalculate when config changes
+  useEffect(() => {
+    calculateDimensions();
+  }, [config, calculateDimensions]);
+
+  const recalculate = useCallback(() => {
+    calculateDimensions();
+  }, [calculateDimensions]);
+
+  const updateConfig = useCallback((newConfig: CanvasConfig) => {
+    configRef.current = newConfig;
+    calculateDimensions();
+  }, [calculateDimensions]);
 
   return {
     dimensions,
-    currentBreakpoint,
     isCalculating,
+    currentBreakpoint,
+    performanceMetrics,
     recalculate,
     updateConfig,
   };

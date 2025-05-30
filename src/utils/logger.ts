@@ -3,28 +3,10 @@
  * Replaces all console.* statements with proper logging levels
  */
 
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-  SILENT = 4,
-}
-
-export interface LogEntry {
-  level: LogLevel;
-  message: string;
-  timestamp: string;
-  context?: Record<string, unknown>;
-  error?: Error;
-}
-
-export interface LoggerConfig {
-  level: LogLevel;
-  enableConsole: boolean;
-  enableStorage: boolean;
-  maxEntries: number;
-}
+import { LogLevel } from "../types/logger";
+import type { LogEntry, LoggerConfig } from "../types/logger";
+export { LogLevel } from "../types/logger";
+export type { LogEntry, LoggerConfig } from "../types/logger";
 
 class Logger {
   private config: LoggerConfig;

@@ -30,64 +30,28 @@ export {
   hasFormCriticalErrors,
 } from "./form-helpers";
 
-// Common utilities
+// Re-export error types
 export {
-  debounce,
-  throttle,
-  memoize,
-  safeJsonParse,
-  sleep,
-  _createRandomId as createRandomId,
-  deepClone,
-  shallowMerge,
-  getNestedValue,
-} from "./common";
+  ValidationErrorType,
+  ValidationErrorCode,
+  ValidationErrorSeverity,
+};
 
-// Performance utilities
+// Re-export validation functions with clean names
 export {
-  measurePerformance,
-  _measureFPS as measureFPS,
-  createPerformanceMonitor,
-  _calculateMetricSummary as calculateMetricSummary,
-  trackInteraction as trackPerformanceInteraction,
-} from "./performance";
+  validateSlides,
+  validateAnimationConfig,
+  _validateProps as validateProps,
+  _validateErrorInfo as validateErrorInfo,
+  _validateAccessibility as validateAccessibility,
+  _validatePerformanceConfig as validatePerformanceConfig,
+  _validateImageExists as validateImageExists,
+};
 
-// Validation utilities
+// Animation utilities
 export {
-  isEmpty,
-  isObject,
-  registerValidator,
-  getValidator,
-  createSchemaValidator,
-  memoizeValidator,
-  clearValidationCache,
-  toSlideId,
-  toComponentId,
-  safeGet,
-  composeValidators,
-  composeAsyncValidators,
-  createValidationError,
-} from "./validation";
-
-// Slide validation utilities
-export { validateSlides, validateAnimationConfig };
-
-// Additional validation utilities
-export {
-  createValidator,
-  safeGet as safeGetProp, // Rename to avoid conflict with safeGet from json.ts
-  _createValidationError as createTestValidationError, // Rename to avoid conflict
-} from "./validation-extras";
-
-// Validation guard functions
-export {
-  isValidSlide,
-  isValidProps,
-  isValidErrorInfo,
-} from "./validation-guards";
-
-// Re-export validation enums
-export { ValidationErrorType, ValidationErrorCode, ValidationErrorSeverity };
+  createBasicAnimation,
+} from "./animation";
 
 // Type checking utilities
 export {
@@ -111,14 +75,8 @@ export {
 // String utilities
 export {
   capitalize,
-  _camelToKebab as camelToKebab,
-  _kebabToCamel as kebabToCamel,
-  truncate,
   _isEmptyString as isEmptyString,
 } from "./string";
-
-// JSON utilities
-export { safeGet as safeGetJson } from "./json";
 
 // Math utilities
 export {
@@ -135,27 +93,53 @@ export {
   _safeArithmetic as safeArithmetic,
 } from "./math";
 
-// Animation utilities
+// Object utilities (centralized)
 export {
-  createFadeAnimation,
-  createSlideAnimation,
-  createSlideTransition,
-} from "./animation";
+  isEmpty,
+  safeGet,
+  safeGetNested,
+  safeGetPath,
+  hasProperty,
+  safeSet,
+} from "./object-helpers";
 
-// Image utilities
-export { preloadImage } from "./image";
-
-// Cache utilities
+// Branded type utilities
 export {
-  Cache,
-  ValidationCache,
-  _globalValidationCache as globalValidationCache,
-} from "./cache";
+  createBrandedId,
+  createBrandedNumber,
+  createSliderId,
+  createComponentId,
+  createAnimationId,
+  createGestureId,
+  createSessionId,
+  createElementId,
+  isSliderId,
+  isComponentId,
+  validateAndCreateSliderId,
+} from "./branded-helpers";
 
-// Export types from type definitions
-export type { CacheOptions } from "../types/cache";
+// Memory utilities
+export {
+  captureMemoryUsage,
+  compareMemorySnapshots,
+  measureMemoryUsage,
+  measureMemoryUsageAsync,
+} from "./memory-helpers";
 
-// Validation helpers
+// Event utilities
+export {
+  createPointerEvent,
+  createTouchEvent,
+  createGestureEvent,
+  createKeyboardEvent,
+  createMouseEvent,
+  createWheelEvent,
+  createFocusEvent,
+  dispatchEvent,
+  createAndDispatchEvent,
+} from "./event-helpers";
+
+// Validation helpers (keeping only unique functions)
 export {
   validateStringConstraints,
   validateNumberConstraints,
@@ -163,15 +147,12 @@ export {
   validateAgainstSchemaField,
 } from "./validation-helpers";
 
-// Validation checks
+// PIXI utilities
 export {
-  _hasErrors as hasErrors,
-  _hasErrorsOfSeverity as hasErrorsOfSeverity,
-  _getErrorsOfSeverity as getErrorsOfSeverity,
-  _getMostSevereError as getMostSevereError,
-  _hasErrorsWithProperties as hasErrorsWithProperties,
-  _getErrorsForProperties as getErrorsForProperties,
-} from "./validation-checks";
+  calculatePixiCanvasDimensions,
+  hasPixiDimensionsChanged,
+  getCurrentPixiBreakpoint,
+} from "./pixi-canvas";
 
 // Slide helper utilities
 export {
@@ -199,26 +180,18 @@ export {
   withRef,
 } from "./ref-helpers";
 
-// PIXI Canvas utilities
+// ID helper utilities
 export {
-  calculatePixiCanvasDimensions,
-  calculateSpriteScale,
-  getCurrentPixiBreakpoint,
-  hasPixiDimensionsChanged,
-  createPixiCanvasConfig,
-  validatePixiCanvasConfig,
-  createPixiAppOptions,
-  DEFAULT_PIXI_CANVAS_CONFIG,
-  DEFAULT_PIXI_BREAKPOINTS,
-  DEFAULT_PIXI_OPTIMIZATIONS,
-} from "./pixi-canvas";
+  createSlideId,
+  createComponentId as createComponentIdHelper,
+  createAnimationId as createAnimationIdHelper,
+  createGestureId as createGestureIdHelper,
+  createSessionId as createSessionIdHelper,
+} from "./id-helpers";
 
-// Logging utilities
-export {
-  logger,
-  log,
-  createLogger,
-  LogLevel,
-  type LogEntry,
-  type LoggerConfig,
-} from "./logger";
+// Worker pool utilities
+export { WorkerPool } from "./worker-pool";
+export type { WorkerPoolOptions, WorkerTask, WorkerPoolStats } from "../types/worker-pool";
+
+// Test utilities
+export { mockImageValidation } from "./test-helpers";

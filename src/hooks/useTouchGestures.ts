@@ -1,56 +1,7 @@
 import { useCallback, useRef } from "react";
 import { createSliderGestureEvent } from "../utils/slide-helpers";
-import type { SliderGestureEvent } from "../types/hooks";
-
-/**
- * Options for configuring touch gesture behavior
- *
- * @example
- * ```typescript
- * const options: UseTouchGesturesOptions = {
- *   threshold: 50,
- *   enabled: true,
- *   onNext: () => console.log('Next slide'),
- *   onPrev: () => console.log('Previous slide')
- * };
- * ```
- */
-export interface UseTouchGesturesOptions {
-  /** Minimum distance in pixels to trigger a swipe */
-  threshold?: number;
-  /** Whether touch gestures are enabled */
-  enabled?: boolean;
-  /** Callback for tracking user interactions */
-  onInteraction?: (gestureType: string) => void;
-  /** Callback for handling gesture events */
-  onGestureEvent?: (event: SliderGestureEvent) => void;
-  /** Callback for next slide navigation */
-  onNext?: () => void;
-  /** Callback for previous slide navigation */
-  onPrev?: () => void;
-}
-
-/**
- * Return type for the useTouchGestures hook
- *
- * @example
- * ```typescript
- * const { handleTouchStart, handleTouchMove, handleTouchEnd } = useTouchGestures({
- *   threshold: 50,
- *   enabled: true,
- *   onNext: () => nextSlide(),
- *   onPrev: () => prevSlide()
- * });
- * ```
- */
-export interface UseTouchGesturesReturn {
-  /** Touch start event handler */
-  handleTouchStart: (event: React.TouchEvent) => void;
-  /** Touch move event handler */
-  handleTouchMove: (event: React.TouchEvent) => void;
-  /** Touch end event handler */
-  handleTouchEnd: (event: React.TouchEvent) => void;
-}
+import type { UseTouchGesturesOptions, UseTouchGesturesReturn } from "../types/hooks";
+import type { SliderGestureEvent as _SliderGestureEvent } from "../types/hooks";
 
 /**
  * Custom hook for handling touch gestures in slider components

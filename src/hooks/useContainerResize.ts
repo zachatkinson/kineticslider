@@ -1,51 +1,6 @@
 import { useState, useEffect, useRef, RefObject, useCallback } from "react";
 import { debounce } from "../utils/performance";
-
-/**
- * Options for configuring container resize behavior
- *
- * @example
- * ```typescript
- * const options: UseContainerResizeOptions = {
- *   debounceDelay: 200,
- *   trackWidth: true,
- *   trackHeight: false,
- *   initialWidth: "100%"
- * };
- * ```
- */
-export interface UseContainerResizeOptions {
-  /** Debounce delay in milliseconds for resize events */
-  debounceDelay?: number;
-  /** Whether to track width changes */
-  trackWidth?: boolean;
-  /** Whether to track height changes */
-  trackHeight?: boolean;
-  /** Initial width value */
-  initialWidth?: string;
-  /** Initial height value */
-  initialHeight?: string;
-}
-
-/**
- * Return type for the useContainerResize hook
- *
- * @example
- * ```typescript
- * const { containerWidth, containerHeight, recalculateSize } = useContainerResize(containerRef, {
- *   debounceDelay: 200,
- *   trackWidth: true
- * });
- * ```
- */
-export interface UseContainerResizeReturn {
-  /** Current container width */
-  containerWidth: string;
-  /** Current container height */
-  containerHeight: string;
-  /** Function to manually trigger resize calculation */
-  recalculateSize: () => void;
-}
+import type { UseContainerResizeOptions, UseContainerResizeReturn } from "../types/hooks";
 
 /**
  * Custom hook for handling container resize events with debouncing

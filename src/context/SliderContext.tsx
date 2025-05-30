@@ -42,7 +42,7 @@ import type {
 } from "../types/slider";
 import type { GestureDelta as _GestureDelta } from "../types/gesture";
 import type { GestureDistance as _GestureDistance } from "../types/branded";
-import { createBrandedNumber } from "../types/branded";
+import { createBrandedNumber } from "../utils/branded-helpers";
 import type {
   SliderProviderProps,
   SliderConsumerProps,

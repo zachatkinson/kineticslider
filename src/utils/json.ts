@@ -71,49 +71,5 @@ export function safeJsonStringify(
   }
 }
 
-/**
- * Helper function to safely get a nested property from an object using a path string.
- * Path can be dot notation like 'a.b.c' or array notation like 'a[0].b.c[1]'.
- *
- * @param obj - Object to get value from
- *
- * @param path - Path to property, using dot notation, can include array indices as [0]
- *
- * @param defaultValue - Default value to return if the property does not exist
- *
- * @returns The property value or the default value if the property does not exist
- *
- */
-export function safeGet<T>(
-  obj: Record<string, unknown>,
-  path: string,
-  defaultValue: T,
-): T {
-  if (!obj || !path) {
-    return defaultValue;
-  }
-
-  // Match any property name or array index inside brackets
-  const parts = path
-    .replace(/\[(\w+)\]/g, ".$1") // convert [0] to .0
-    .replace(/^\./, "") // strip leading dot
-    .split(".");
-
-  let current: unknown = obj;
-
-  for (const part of parts) {
-    if (current === null || current === undefined) {
-      return defaultValue;
-    }
-
-    if (typeof current !== "object") {
-      return defaultValue;
-    }
-
-    current = (current as Record<string, unknown>)[part];
-  }
-
-  return current !== undefined && current !== null
-    ? (current as T)
-    : defaultValue;
-}
+// Re-export the centralized safeGet function with path support for backward compatibility
+export { safeGetNested as safeGet } from "./object-helpers";

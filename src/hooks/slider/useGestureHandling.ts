@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useCallback, useRef } from "react";
 import { useSlider } from "../../context/SliderContext";
-import { createBrandedNumber } from "../../types/branded";
+import { createBrandedNumber } from "../../utils/branded-helpers";
 import type { SliderContextValue } from "../../types/slider";
 import type { GestureStateRef } from "../../types/hooks";
 

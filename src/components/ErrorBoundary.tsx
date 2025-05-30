@@ -3,14 +3,7 @@ import { _sanitizeErrorForClient as sanitizeErrorForClient } from "../utils/erro
 import { AnalyticsManager } from "../utils/analytics";
 import type { ErrorBoundaryProps, ErrorBoundaryState } from "../types/components";
 import { log } from "../utils/logger";
-
-// Extend Window interface for test utilities
-declare global {
-  interface Window {
-    setErrorBoundaryRecovery?: (value: boolean) => void;
-    shouldRecover?: boolean;
-  }
-}
+import "../types/window";
 
 /**
  * A React error boundary component that catches errors in its child component tree

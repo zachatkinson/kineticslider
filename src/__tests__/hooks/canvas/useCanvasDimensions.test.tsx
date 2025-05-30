@@ -64,9 +64,9 @@ describe("useCanvasDimensions", () => {
       );
 
       await act(async () => {
-        result.current.updateConfig({
+        result.current.updateConfig(createPixiCanvasConfig({
           dimensions: { width: 1200, height: 900 },
-        });
+        }));
         
         // Wait for the setTimeout to complete
         await new Promise(resolve => setTimeout(resolve, 10));
@@ -87,7 +87,10 @@ describe("useCanvasDimensions", () => {
       );
 
       act(() => {
-        result.current.updateConfig({ mode: "fullscreen" });
+        result.current.updateConfig(createPixiCanvasConfig({ 
+          mode: "fullscreen",
+          dimensions: { width: 800, height: 600 },
+        }));
       });
 
       // Should not crash
@@ -105,9 +108,9 @@ describe("useCanvasDimensions", () => {
       );
 
       await act(async () => {
-        result.current.updateConfig({
+        result.current.updateConfig(createPixiCanvasConfig({
           dimensions: { width: 1000, height: 700 },
-        });
+        }));
         
         // Wait for the setTimeout to complete
         await new Promise(resolve => setTimeout(resolve, 10));

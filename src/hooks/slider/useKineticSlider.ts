@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import type { KineticSliderHookProps, KineticSliderHookResult } from "../../types/hooks";
 import { useErrorTracking } from "./useErrorTracking";
-import { createBrandedNumber } from "../../types/branded";
+import { createBrandedNumber } from "../../utils/branded-helpers";
 
 /**
  * A hook for creating touch and draggable slider functionality with momentum effects

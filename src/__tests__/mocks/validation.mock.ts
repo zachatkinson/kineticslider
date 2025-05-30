@@ -4,53 +4,28 @@
  */
 
 import { vi as _vi } from "vitest";
+import {
+  ValidationErrorType,
+  ValidationErrorCode,
+  ValidationErrorSeverity,
+} from "../../types/validation";
+import type {
+  ValidationResult,
+  ValidationError,
+  ValidationContext,
+} from "../../types/validation";
 
-// Types
-export enum ValidationErrorType {
-  TYPE = "type",
-  REQUIRED = "required",
-  FORMAT = "format",
-  BUSINESS = "business",
-  CUSTOM = "custom",
-}
-
-export enum ValidationErrorCode {
-  REQUIRED_FIELD = "required_field",
-  INVALID_TYPE = "invalid_type",
-  INVALID_FORMAT = "invalid_format",
-  BUSINESS_RULE = "business_rule",
-  CUSTOM_ERROR = "custom_error",
-}
-
-export interface ValidationResult {
-  valid: boolean;
-  errors: ValidationError[];
-  metadata?: Record<string, unknown>;
-}
-
-export enum ValidationErrorSeverity {
-  ERROR = "error",
-  WARNING = "warning",
-  INFO = "info",
-}
-
-export interface ValidationError {
-  type: ValidationErrorType;
-  code: ValidationErrorCode;
-  message: string;
-  property?: string;
-  _value?: unknown;
-  expected?: unknown;
-  path?: string[];
-  severity?: ValidationErrorSeverity;
-  suggestion?: string;
-  locale?: string;
-}
-
-export interface ValidationContext {
-  path?: string[];
-  locale?: string;
-}
+// Re-export types for convenience
+export {
+  ValidationErrorType,
+  ValidationErrorCode,
+  ValidationErrorSeverity,
+};
+export type {
+  ValidationResult,
+  ValidationError,
+  ValidationContext,
+};
 
 // Mock implementation of validation functions
 /**

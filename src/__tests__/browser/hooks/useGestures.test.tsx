@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { useGestures } from "@/hooks/useGestures";
 import { GestureOptions } from "@/types/gestures";
-import { createBrandedNumber } from "@/types/branded";
+import { createBrandedNumber } from "@/utils/branded-helpers";
 
 /**
  * Helper to create pointer events

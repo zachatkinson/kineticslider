@@ -25,7 +25,7 @@ export type SliderEventType =
  *
  * @example Example usage
  */
-interface BaseEventData {
+export interface BaseEventData {
   timestamp: number;
   sessionId: string;
   type: SliderEventType;
@@ -37,7 +37,7 @@ interface BaseEventData {
  *
  * @example Example usage
  */
-interface SlideChangeEventData extends BaseEventData {
+export interface SlideChangeEventData extends BaseEventData {
   type: "slide_change";
   fromIndex: SlideIndex;
   toIndex: SlideIndex;
@@ -45,48 +45,48 @@ interface SlideChangeEventData extends BaseEventData {
   isAutoplay: boolean;
 }
 
-interface AnimationEventData extends BaseEventData {
+export interface AnimationEventData extends BaseEventData {
   type: "animation_start" | "animation_complete";
   duration: number;
   direction: "forward" | "backward";
 }
 
-interface GestureEventData extends BaseEventData {
+export interface GestureEventData extends BaseEventData {
   type: "gesture_start" | "gesture_end" | "gesture_detected";
   direction: "horizontal" | "vertical";
   distance: number;
   velocity: number;
 }
 
-interface ErrorEventData extends BaseEventData {
+export interface ErrorEventData extends BaseEventData {
   type: "error";
   errorType: ErrorType;
   message: string;
   stack?: string;
 }
 
-interface ViewEventData extends BaseEventData {
+export interface ViewEventData extends BaseEventData {
   type: "view";
   slideId: SliderId;
   duration: number;
   isVisible: boolean;
 }
 
-interface InteractionEventData extends BaseEventData {
+export interface InteractionEventData extends BaseEventData {
   type: "interaction";
   action: "click" | "hover" | "focus";
   target: string;
   slideId?: SliderId;
 }
 
-interface PerformanceEventData extends BaseEventData {
+export interface PerformanceEventData extends BaseEventData {
   type: "performance_metric";
   metricName: string;
   value: number;
   unit: string;
 }
 
-interface AccessibilityEventData extends BaseEventData {
+export interface AccessibilityEventData extends BaseEventData {
   type: "accessibility_action";
   action: string;
   element: string;
@@ -111,7 +111,7 @@ export type SliderEventData =
  *
  * @example Example usage
  */
-interface AnalyticsConfig {
+export interface AnalyticsConfig {
   enabled: boolean;
   debug: boolean;
   batchEvents: boolean;
@@ -153,7 +153,7 @@ export type SliderAnalyticsEventType =
  *
  * @example Example usage
  */
-interface BaseAnalyticsData {
+export interface BaseAnalyticsData {
   eventType: SliderAnalyticsEventType;
   timestamp: string;
   componentId?: string;
@@ -164,7 +164,7 @@ interface BaseAnalyticsData {
  *
  * @example Example usage
  */
-interface SlideChangeAnalytics extends BaseAnalyticsData {
+export interface SlideChangeAnalytics extends BaseAnalyticsData {
   eventType: "slide_change";
   fromIndex: SlideIndex;
   toIndex: SlideIndex;
@@ -176,7 +176,7 @@ interface SlideChangeAnalytics extends BaseAnalyticsData {
  *
  * @example Example usage
  */
-interface AnimationCompleteAnalytics extends BaseAnalyticsData {
+export interface AnimationCompleteAnalytics extends BaseAnalyticsData {
   eventType: "animation_complete";
   duration: number;
   direction: "forward" | "backward";
@@ -186,7 +186,7 @@ interface AnimationCompleteAnalytics extends BaseAnalyticsData {
  *
  * @example Example usage
  */
-interface GestureAnalytics extends BaseAnalyticsData {
+export interface GestureAnalytics extends BaseAnalyticsData {
   eventType: "gesture_detected";
   gestureType: string;
   direction: "horizontal" | "vertical";
@@ -198,7 +198,7 @@ interface GestureAnalytics extends BaseAnalyticsData {
  *
  * @example Example usage
  */
-interface ErrorAnalytics extends BaseAnalyticsData {
+export interface ErrorAnalytics extends BaseAnalyticsData {
   eventType: "error";
   error: Error;
   errorType: ErrorType;
@@ -214,23 +214,4 @@ export type SliderAnalyticsData =
   | SlideChangeAnalytics
   | AnimationCompleteAnalytics
   | GestureAnalytics
-  | ErrorAnalytics;
-
-// Export all types
-export type {
-  BaseEventData,
-  SlideChangeEventData,
-  AnimationEventData,
-  GestureEventData,
-  ErrorEventData,
-  ViewEventData,
-  InteractionEventData,
-  PerformanceEventData,
-  AccessibilityEventData,
-  AnalyticsConfig,
-  BaseAnalyticsData,
-  SlideChangeAnalytics,
-  AnimationCompleteAnalytics,
-  GestureAnalytics,
-  ErrorAnalytics,
-};
+  | ErrorAnalytics; 

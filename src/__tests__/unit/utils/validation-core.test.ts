@@ -1,13 +1,12 @@
 import { describe, expect, test } from "vitest";
+import type { ValidationResult } from "@/types/validation";
 import {
   ValidationErrorType,
   ValidationErrorCode,
-  ValidationResult,
 } from "@/types/validation";
+import { isObject } from "@/utils/type-checks";
+import { isEmpty, safeGet } from "@/utils/object-helpers";
 import {
-  _isEmpty as isEmpty,
-  _isObject as isObject,
-  safeGet,
   _toSlideId as toSlideId,
   _toComponentId as toComponentId,
   _createValidationError as createValidationError,

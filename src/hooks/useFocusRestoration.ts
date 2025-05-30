@@ -1,45 +1,5 @@
 import { useEffect, useRef, useCallback } from "react";
-
-/**
- * Options for configuring focus restoration behavior
- *
- * @example
- * ```typescript
- * const options: UseFocusRestorationOptions = {
- *   enabled: true,
- *   restoreOnUnmount: true,
- *   returnFocusTo: '#main-content'
- * };
- * ```
- */
-export interface UseFocusRestorationOptions {
-  /** Whether focus restoration is enabled */
-  enabled?: boolean;
-  /** Whether to restore focus when the component unmounts */
-  restoreOnUnmount?: boolean;
-  /** Element or selector to restore focus to */
-  returnFocusTo?: HTMLElement | string | (() => HTMLElement | null) | null;
-}
-
-/**
- * Return type for the useFocusRestoration hook
- *
- * @example
- * ```typescript
- * const { previousFocusRef, restoreFocus, storeFocus } = useFocusRestoration({
- *   enabled: true,
- *   restoreOnUnmount: true
- * });
- * ```
- */
-export interface UseFocusRestorationReturn {
-  /** Reference to store the previously focused element */
-  previousFocusRef: React.MutableRefObject<HTMLElement | null>;
-  /** Function to manually restore focus */
-  restoreFocus: () => void;
-  /** Function to store the current focus */
-  storeFocus: () => void;
-}
+import type { UseFocusRestorationOptions, UseFocusRestorationReturn } from "../types/hooks";
 
 /**
  * Custom hook for managing focus restoration in components

@@ -1,9 +1,4 @@
-// Declare the worker registry type
-declare global {
-  interface Window {
-    __WORKER_REGISTRY__: Set<unknown>;
-  }
-}
+import "../types/window";
 
 // Mock Worker globally
 class MockWorker implements Partial<Worker> {

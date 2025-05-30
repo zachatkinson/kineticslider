@@ -3,7 +3,15 @@
  */
 
 // Animation types
-export * from "./animation";
+export type {
+  AnimationOptions,
+  AnimationMetrics,
+  AnimationEvents,
+  ExtendedAnimationConfig,
+  AnimationConfig,
+  TimelineConfig,
+  TransitionType,
+} from "./animation";
 
 // Analytics types
 export * from "./analytics";
@@ -47,13 +55,9 @@ export * from "./gsap";
 // Hook types
 export type {
   UseAnimationReturn,
-  BasicAnimationReturn,
   UseAnimationResult,
-  UseKeyboardReturn,
-  UsePerformanceReturn,
   UseKineticSliderReturn,
   UseErrorTrackingReturn,
-  UsePerformanceOptions,
   UseAnimationConfig,
   KineticSliderHookProps,
   SliderGestureEvent,

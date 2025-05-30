@@ -5,7 +5,7 @@ import { useSliderAccessibility } from "../../hooks/pixi/useSliderAccessibility"
 import { PixiErrorBoundary } from "./PixiErrorBoundary";
 import type { PixiAppProps, PixiSlide } from "../../types/pixi";
 import { SliderError } from "../../utils/errors";
-import { createBrandedNumber } from "../../types/branded";
+import { createBrandedNumber } from "../../utils/branded-helpers";
 
 /**
  * Core Pixi.js slider application class that handles: rendering, animations, and slide management.
@@ -80,6 +80,8 @@ export class PixiSliderApp {
   private currentIndex: number = 0;
   private isAnimating: boolean = false;
   private container: PIXI.Container;
+  private width: number;
+  private height: number;
 
   /**
    * Creates a new PixiSliderApp instance.
@@ -114,25 +116,39 @@ export class PixiSliderApp {
       throw new SliderError("At least one slide is required", "INIT_ERROR");
     }
 
+    // Set default dimensions if not provided
+    this.width = options.width ?? 800;
+    this.height = options.height ?? 600;
+
     // Initialize Pixi Application with WebGL
-    this.app = new PIXI.Application({
-      view: canvas,
-      width: options.width,
-      height: options.height,
-      backgroundColor: 0x000000,
-      resolution: window.devicePixelRatio || 1,
-      antialias: true,
-      autoDensity: true,
-    });
+    try {
+      this.app = new PIXI.Application({
+        view: canvas,
+        width: this.width,
+        height: this.height,
+        backgroundColor: 0x000000,
+        resolution: window.devicePixelRatio || 1,
+        antialias: true,
+        autoDensity: true,
+      });
 
-    // Create main container
-    this.container = new PIXI.Container();
-    this.app.stage.addChild(this.container);
+      // Verify app was created properly
+      if (!this.app || !this.app.stage) {
+        throw new SliderError("Failed to create PIXI Application", "INIT_ERROR");
+      }
 
-    // Initialize
-    void this.init().catch((err) => {
-      console.error("Failed to initialize slider:", err);
-    });
+      // Create main container
+      this.container = new PIXI.Container();
+      this.app.stage.addChild(this.container);
+
+      // Initialize
+      void this.init().catch((err) => {
+        console.error("Failed to initialize slider:", err);
+      });
+    } catch (error) {
+      console.error("Failed to create PIXI Application:", error);
+      throw new SliderError("Failed to create PIXI Application", "INIT_ERROR");
+    }
   }
 
   /**
@@ -192,10 +208,10 @@ export class PixiSliderApp {
 
           // Center sprite
           sprite.anchor.set(0.5);
-          sprite.position.set(this.options.width / 2, this.options.height / 2);
+          sprite.position.set(this.width / 2, this.height / 2);
 
           // Scale to cover
-          this.scaleToFit(sprite, this.options.width, this.options.height);
+          this.scaleToFit(sprite, this.width, this.height);
 
           container.addChild(sprite);
           this.container.addChild(container);
@@ -482,6 +498,10 @@ const PixiSliderComponent: React.FC<PixiAppProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sliderRef = useRef<PixiSliderApp | null>(null);
 
+  // Set default dimensions if not provided
+  const actualWidth = width ?? 800;
+  const actualHeight = height ?? 600;
+
   // Initialize accessibility hook
   const { announceSlide } = useSliderAccessibility({
     totalSlides: slides.length,
@@ -497,8 +517,8 @@ const PixiSliderComponent: React.FC<PixiAppProps> = ({
     try {
       // Initialize Pixi application
       sliderRef.current = new PixiSliderApp(canvasRef.current, {
-        width,
-        height,
+        width: actualWidth,
+        height: actualHeight,
         slides,
         onSlideChange: (index) => {
           onSlideChange?.(createBrandedNumber(index, "SlideIndex"));
@@ -518,18 +538,18 @@ const PixiSliderComponent: React.FC<PixiAppProps> = ({
       sliderRef.current?.destroy();
       sliderRef.current = null;
     };
-  }, [width, height, slides, onSlideChange, announceSlide, onError]);
+  }, [actualWidth, actualHeight, slides, onSlideChange, announceSlide, onError]);
 
   // Handle resize
   useEffect(() => {
     if (!sliderRef.current) return;
-    sliderRef.current.resize(width, height);
-  }, [width, height]);
+    sliderRef.current.resize(actualWidth, actualHeight);
+  }, [actualWidth, actualHeight]);
 
   return (
     <div
       className="pixi-slider-container"
-      style={{ width, height, position: "relative" }}
+      style={{ width: actualWidth, height: actualHeight, position: "relative" }}
       data-testid="pixi-slider"
       role="region"
       aria-roledescription="carousel"
@@ -537,8 +557,8 @@ const PixiSliderComponent: React.FC<PixiAppProps> = ({
     >
       <canvas
         ref={canvasRef}
-        width={width}
-        height={height}
+        width={actualWidth}
+        height={actualHeight}
         style={{ display: "block" }}
         data-testid="pixi-canvas"
         tabIndex={0}

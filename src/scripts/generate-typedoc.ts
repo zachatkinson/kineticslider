@@ -16,6 +16,7 @@ import {
 } from "typedoc";
 import path from "path";
 import fs from "fs";
+import type { TypeDocConfig } from "../types/scripts";
 
 /**
  * TypeDoc configuration options
@@ -32,20 +33,6 @@ import fs from "fs";
  * };
  * ```
  */
-interface TypeDocConfig {
-  /** Root directory of the project */
-  rootDir: string;
-  /** Output directory for generated documentation */
-  outDir: string;
-  /** Entry point glob patterns */
-  entryPoints: string[];
-  /** TSConfig file path */
-  tsConfigPath: string;
-  /** Project name */
-  name: string;
-  /** Additional TypeDoc options */
-  options: Record<string, unknown>;
-}
 
 /**
  * Default TypeDoc configuration

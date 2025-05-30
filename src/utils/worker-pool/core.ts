@@ -352,20 +352,14 @@ export class WorkerPool extends EventEmitter {
    */
   public getStatistics(): WorkerPoolStats {
     return {
-      queueSize: this.taskQueue.length,
-      activeWorkers: this.workers.length,
       totalWorkers: this.workers.length,
       availableWorkers: this.idleWorkers.size,
       busyWorkers: this.inFlightTasks.size,
-      pendingTasks: this.taskQueue.length + this.inFlightTasks.size,
-      maxWorkers: this.options.maxWorkers || 4,
-      utilization: this.workers.length > 0 ? (this.inFlightTasks.size / this.workers.length) * 100 : 0,
-      completedTasks: this.completedTasks,
-      failedTasks: this.failedTasks,
-      avgExecutionTime: 0, // TODO: Implement
-      throughput: this.completedTasks / (Date.now() - this.startTime),
+      queueSize: this.taskQueue.length,
+      errorCount: this.failedTasks,
       errorStats: {
-        errorDistribution: {
+        total: this.failedTasks,
+        byType: {
           render: 0,
           async: 0,
           animation: 0,
@@ -387,18 +381,42 @@ export class WorkerPool extends EventEmitter {
           initialization: 0,
           worker_pool: 0
         },
-        severityCounts: { info: 0, warning: 0, error: 0, critical: 0 },
-        dailyTrends: {},
-        averageProcessingTime: 0,
-        topErrorPatterns: [],
-        errorTimeDistribution: {
-          daily: {},
-          weekly: {},
-          monthly: {},
-          rateChangePercent: 0,
-          trend: 'stable'
-        }
-      }
+        bySeverity: { info: 0, warning: 0, error: 0, critical: 0 },
+        errorTypeDistribution: {
+          render: 0,
+          async: 0,
+          animation: 0,
+          validation: 0,
+          resource: 0,
+          interaction: 0,
+          state: 0,
+          operation: 0,
+          gesture: 0,
+          navigation: 0,
+          animation_error: 0,
+          asset_loading: 0,
+          image_load_error: 0,
+          network: 0,
+          user_input: 0,
+          configuration: 0,
+          unknown: 0,
+          performance: 0,
+          initialization: 0,
+          worker_pool: 0
+        },
+        severityDistribution: { info: 0, warning: 0, error: 0, critical: 0 }
+      },
+      errorTrends: {
+        daily: {},
+        weekly: {},
+        monthly: {}
+      },
+      taskStartTimes: {},
+      taskCompletionTimes: {},
+      peakQueueSize: Math.max(this.taskQueue.length, 0),
+      avgWaitTime: 0,
+      queueSizeHistory: [this.taskQueue.length],
+      lastResetTime: this.startTime
     };
   }
 

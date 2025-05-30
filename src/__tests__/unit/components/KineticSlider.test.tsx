@@ -3,7 +3,7 @@ import { KineticSlider } from "@/components/KineticSlider/KineticSlider";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useKineticSlider } from "@/hooks/useKineticSlider";
 // import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { createBrandedNumber } from "@/types/branded";
+import { createBrandedNumber } from "@/utils/branded-helpers";
 import type { Slide } from "@/types/slider";
 import { createSlideId } from "@/utils/id-helpers";
 import { setupBrowserApiMocks, mockSlides } from "@/__tests__/mocks";

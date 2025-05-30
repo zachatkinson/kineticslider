@@ -6,7 +6,7 @@ import {
   SwipeDirection,
   UseGesturesReturn,
 } from "../types/gestures";
-import { createBrandedNumber } from "../types/branded";
+import { createBrandedNumber } from "../utils/branded-helpers";
 
 export const useGestures = (
   config: Partial<GestureConfig> = {

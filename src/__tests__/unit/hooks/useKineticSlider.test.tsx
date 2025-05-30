@@ -1,7 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSlideId } from "@/utils/id-helpers";
-import { createBrandedNumber } from "@/types/branded";
+import { createBrandedNumber } from "@/utils/branded-helpers";
 import type { Slide } from "@/types/slider";
 
 // Simple, focused mocks following best practices

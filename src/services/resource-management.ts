@@ -5,11 +5,9 @@
  * @version 1.0.0
  */
 
-import type { WorkerTask } from "../types/performance-resources";
-import type { ResourceError as _ResourceError } from "../types/error";
-import type { ExtendedError as _ExtendedError } from "../types/error";
-// Import global types to ensure window extensions are recognized
 import "../types/global";
+import type { WorkerPoolOptions } from "../types/worker-pool";
+import type { ResourceWorkerTask } from "../types/performance-resources";
 
 /**
  * Resource pool for reusing objects
@@ -141,34 +139,6 @@ export class ResourcePool<T> {
 }
 
 /**
- * Options for configuring a WorkerPool
- *
- * @example
- * ```typescript
- * // Configure a worker pool with 4 workers and custom error handling
- * const workerPoolOptions: WorkerPoolOptions = {
- *   maxWorkers: 4,
- *   workerScript: '/path/to/worker.js',
- *   errorHandler: (error) => {
- *     console.error('Worker error:', error);
- *     analytics.trackError(error);
- *   }
- * };
- *
- * // Create a worker pool with these options
- * const pool = new WorkerPool(workerPoolOptions);
- * ```
- */
-export interface WorkerPoolOptions {
-  /** Maximum number of workers in the pool */
-  maxWorkers?: number;
-  /** Path to the worker script */
-  workerScript?: string;
-  /** Error handler for worker errors */
-  errorHandler?: (error: Error | unknown) => void;
-}
-
-/**
  * Worker pool for offloading heavy computations
  * Manages a pool of Web Workers for parallel task execution
  *
@@ -208,7 +178,7 @@ export class WorkerPool {
    *
    * @private
    */
-  private taskQueue: Array<WorkerTask<unknown>> = [];
+  private taskQueue: Array<ResourceWorkerTask<unknown>> = [];
 
   /**
    * Workers that are currently idle and ready to process tasks
@@ -229,7 +199,7 @@ export class WorkerPool {
    *
    * @private
    */
-  private errorHandler?: (error: Error | unknown) => void;
+  private errorHandler?: (error: Error, context: { taskId?: string; operation?: string }) => void;
 
   /**
    * Create a new worker pool
@@ -271,7 +241,7 @@ export class WorkerPool {
       } catch (error) {
         console.error("Error creating worker:", error);
         if (this.errorHandler) {
-          this.errorHandler(error);
+          this.errorHandler(error as Error, { operation: "worker_creation" });
         }
       }
     }
@@ -295,7 +265,7 @@ export class WorkerPool {
         if (error) {
           task.reject(error);
           if (this.errorHandler) {
-            this.errorHandler(error);
+            this.errorHandler(error instanceof Error ? error : new Error(String(error)), { operation: "task_execution" });
           }
         } else {
           task.resolve(result);
@@ -312,7 +282,7 @@ export class WorkerPool {
         task.reject(error);
 
         if (this.errorHandler) {
-          this.errorHandler(error);
+          this.errorHandler(error, { operation: "task_execution" });
         }
       }
       this.availableWorkers.push(worker);
@@ -344,7 +314,7 @@ export class WorkerPool {
           task.reject(error);
           this.availableWorkers.push(worker);
           if (this.errorHandler) {
-            this.errorHandler(error);
+            this.errorHandler(error instanceof Error ? error : new Error(String(error)), { operation: "task_posting" });
           }
         }
       }
@@ -403,7 +373,7 @@ export class WorkerPool {
       }
 
       // Create the task
-      const taskObj: WorkerTask<unknown> = {
+      const taskObj: ResourceWorkerTask<unknown> = {
         task: task as () => unknown,
         resolve: resolve as (value: unknown) => void,
         reject,
@@ -520,14 +490,14 @@ export class WorkerPool {
         } catch (error) {
           console.warn("Error terminating worker:", error);
           if (this.errorHandler) {
-            this.errorHandler(error);
+            this.errorHandler(error as Error, { operation: "worker_termination" });
           }
         }
       });
     } catch (error) {
       console.warn("Error during worker pool termination:", error);
       if (this.errorHandler) {
-        this.errorHandler(error);
+        this.errorHandler(error as Error, { operation: "worker_termination" });
       }
     } finally {
       // Clean up resources regardless of errors

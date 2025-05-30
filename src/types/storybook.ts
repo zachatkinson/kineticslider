@@ -1,7 +1,12 @@
 /**
- * Storybook type definitions and interfaces
+ * Storybook-related type definitions
+ *
+ * @module Storybook
+ * @version 1.0.0
  */
+
 import type { Meta as ComponentMeta, StoryObj } from "@storybook/react";
+import type { KineticSlider } from "../components/KineticSlider/KineticSlider";
 
 /**
  * Story type helper
@@ -34,3 +39,8 @@ export interface StoryContext<T = Record<string, unknown>> {
   globals: Record<string, unknown>;
   viewMode: "story" | "docs";
 }
+
+/**
+ * Story type for KineticSlider component
+ */
+export type KineticSliderStory = StoryObj<typeof KineticSlider>;

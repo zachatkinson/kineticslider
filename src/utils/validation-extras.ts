@@ -12,7 +12,6 @@ import {
   ValidationErrorCode,
   ValidationContext,
 } from "../types/validation";
-import { isObject } from "./type-checks";
 
 /**
  * Create a type-guard function from a validator
@@ -38,27 +37,8 @@ export function createValidator<T>(
   };
 }
 
-/**
- * Safe access to object properties with a default value if property doesn't exist
- *
- * @param obj - The object to get a property from
- *
- * @param key - The key of the property to get
- *
- * @param defaultValue - The default value to return if property doesn't exist
- *
- * @returns The property value or the default value
- *
- */
-export function safeGet<T>(obj: unknown, key: string, defaultValue: T): T {
-  if (!isObject(obj)) {
-    return defaultValue;
-  }
-
-  return (obj as Record<string, unknown>)[key] !== undefined
-    ? ((obj as Record<string, unknown>)[key] as T)
-    : defaultValue;
-}
+// Re-export safeGet from object-helpers for backward compatibility
+export { safeGet } from "./object-helpers";
 
 /**
  * Create a validation type guard from a validator
