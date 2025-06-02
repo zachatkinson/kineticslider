@@ -338,6 +338,237 @@ export interface ShockwaveFilterConfig extends BaseFilterConfig {
 }
 
 /**
+ * Bloom filter configuration
+ *
+ * @example
+ * const config: BloomFilterConfig = {
+ *   type: 'bloom',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(6),
+ *   strength: 4,
+ *   primaryProperty: 'strength'
+ * };
+ */
+export interface BloomFilterConfig extends BaseFilterConfig {
+  type: 'bloom';
+  /** Overall bloom strength */
+  strength?: number;
+  /** Horizontal bloom strength */
+  strengthX?: number;
+  /** Vertical bloom strength */
+  strengthY?: number;
+  primaryProperty?: 'strength' | 'strengthX' | 'strengthY';
+}
+
+/**
+ * Pixelate filter configuration
+ *
+ * @example
+ * const config: PixelateFilterConfig = {
+ *   type: 'pixelate',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(7),
+ *   size: 10,
+ *   primaryProperty: 'size'
+ * };
+ */
+export interface PixelateFilterConfig extends BaseFilterConfig {
+  type: 'pixelate';
+  /** Overall pixelation size */
+  size?: number;
+  /** Horizontal pixelation size */
+  sizeX?: number;
+  /** Vertical pixelation size */
+  sizeY?: number;
+  primaryProperty?: 'size' | 'sizeX' | 'sizeY';
+}
+
+/**
+ * Twist filter configuration
+ *
+ * @example
+ * const config: TwistFilterConfig = {
+ *   type: 'twist',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(8),
+ *   angle: 4,
+ *   radius: 200,
+ *   primaryProperty: 'angle'
+ * };
+ */
+export interface TwistFilterConfig extends BaseFilterConfig {
+  type: 'twist';
+  /** Twist angle */
+  angle?: number;
+  /** Twist radius */
+  radius?: number;
+  /** X offset */
+  offsetX?: number;
+  /** Y offset */
+  offsetY?: number;
+  primaryProperty?: 'angle' | 'radius';
+}
+
+/**
+ * Noise filter configuration
+ *
+ * @example
+ * const config: NoiseFilterConfig = {
+ *   type: 'noise',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(5),
+ *   noise: 0.5,
+ *   primaryProperty: 'noise'
+ * };
+ */
+export interface NoiseFilterConfig extends BaseFilterConfig {
+  type: 'noise';
+  /** Noise amount */
+  noise?: number;
+  /** Noise level (alternative name for noise) */
+  noiseLevel?: number;
+  /** Noise seed */
+  seed?: number;
+  /** Whether to generate new seed on update */
+  generateNewSeedOnUpdate?: boolean;
+  primaryProperty?: 'noise';
+}
+
+/**
+ * Color matrix filter configuration
+ *
+ * @example
+ * const config: ColorMatrixFilterConfig = {
+ *   type: 'colorMatrix',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(6),
+ *   matrix: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+ *   primaryProperty: 'brightness'
+ * };
+ */
+export interface ColorMatrixFilterConfig extends BaseFilterConfig {
+  type: 'colorMatrix';
+  /** Color matrix array */
+  matrix?: number[];
+  /** Alpha adjustment */
+  alpha?: number;
+  primaryProperty?: 'brightness' | 'contrast' | 'saturation' | 'hue' | 'alpha';
+}
+
+/**
+ * Outline filter configuration
+ *
+ * @example
+ * const config: OutlineFilterConfig = {
+ *   type: 'outline',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(4),
+ *   thickness: 2,
+ *   color: 0xffffff,
+ *   primaryProperty: 'thickness'
+ * };
+ */
+export interface OutlineFilterConfig extends BaseFilterConfig {
+  type: 'outline';
+  /** Outline thickness */
+  thickness?: number;
+  /** Outline color */
+  color?: ColorSource;
+  /** Outline alpha */
+  alpha?: number;
+  /** Outline quality */
+  quality?: number;
+  /** Knockout mode */
+  knockout?: boolean;
+  primaryProperty?: 'thickness' | 'alpha';
+}
+
+/**
+ * Bulge Pinch filter configuration
+ *
+ * @example
+ * const config: BulgePinchFilterConfig = {
+ *   type: 'bulgePinch',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(7),
+ *   strength: 0.5,
+ *   center: { x: 0.5, y: 0.5 },
+ *   primaryProperty: 'strength'
+ * };
+ */
+export interface BulgePinchFilterConfig extends BaseFilterConfig {
+  type: 'bulgePinch';
+  /** Effect strength */
+  strength?: number;
+  /** Center point */
+  center?: PointData;
+  /** X center coordinate */
+  centerX?: number;
+  /** Y center coordinate */
+  centerY?: number;
+  /** Effect radius */
+  radius?: number;
+  primaryProperty?: 'strength' | 'radius';
+}
+
+/**
+ * Emboss filter configuration
+ *
+ * @example
+ * const config: EmbossFilterConfig = {
+ *   type: 'emboss',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(5),
+ *   strength: 5,
+ *   primaryProperty: 'strength'
+ * };
+ */
+export interface EmbossFilterConfig extends BaseFilterConfig {
+  type: 'emboss';
+  /** Emboss strength */
+  strength?: number;
+  primaryProperty?: 'strength';
+}
+
+/**
+ * Old Film filter configuration
+ *
+ * @example
+ * const config: OldFilmFilterConfig = {
+ *   type: 'oldFilm',
+ *   enabled: true,
+ *   intensity: createFilterIntensity(6),
+ *   sepia: 0.3,
+ *   noise: 0.3,
+ *   primaryProperty: 'sepia'
+ * };
+ */
+export interface OldFilmFilterConfig extends BaseFilterConfig {
+  type: 'oldFilm';
+  /** Sepia amount */
+  sepia?: number;
+  /** Noise amount */
+  noise?: number;
+  /** Noise size */
+  noiseSize?: number;
+  /** Scratch density */
+  scratch?: number;
+  /** Scratch density (alternative name) */
+  scratchDensity?: number;
+  /** Scratch width */
+  scratchWidth?: number;
+  /** Vignette opacity */
+  vignetting?: number;
+  /** Vignette alpha */
+  vignettingAlpha?: number;
+  /** Vignette blur */
+  vignettingBlur?: number;
+  /** Random seed */
+  seed?: number;
+  primaryProperty?: 'sepia' | 'noise' | 'scratch' | 'vignetting';
+}
+
+/**
  * Union type of all filter configurations
  */
 export type FilterConfig =
@@ -347,7 +578,16 @@ export type FilterConfig =
   | GlitchFilterConfig
   | RGBSplitFilterConfig
   | AdjustmentFilterConfig
-  | ShockwaveFilterConfig;
+  | ShockwaveFilterConfig
+  | BloomFilterConfig
+  | PixelateFilterConfig
+  | TwistFilterConfig
+  | NoiseFilterConfig
+  | ColorMatrixFilterConfig
+  | OutlineFilterConfig
+  | BulgePinchFilterConfig
+  | EmbossFilterConfig
+  | OldFilmFilterConfig;
 
 /**
  * Filter result interface
@@ -640,6 +880,114 @@ export const isAdjustmentFilter = (config: FilterConfig): config is AdjustmentFi
  */
 export const isShockwaveFilter = (config: FilterConfig): config is ShockwaveFilterConfig => {
   return config.type === 'shockwave';
+};
+
+/**
+ * Type guard for bloom filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is BloomFilterConfig
+ *
+ */
+export const isBloomFilter = (config: FilterConfig): config is BloomFilterConfig => {
+  return config.type === 'bloom';
+};
+
+/**
+ * Type guard for pixelate filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is PixelateFilterConfig
+ *
+ */
+export const isPixelateFilter = (config: FilterConfig): config is PixelateFilterConfig => {
+  return config.type === 'pixelate';
+};
+
+/**
+ * Type guard for twist filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is TwistFilterConfig
+ *
+ */
+export const isTwistFilter = (config: FilterConfig): config is TwistFilterConfig => {
+  return config.type === 'twist';
+};
+
+/**
+ * Type guard for noise filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is NoiseFilterConfig
+ *
+ */
+export const isNoiseFilter = (config: FilterConfig): config is NoiseFilterConfig => {
+  return config.type === 'noise';
+};
+
+/**
+ * Type guard for color matrix filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is ColorMatrixFilterConfig
+ *
+ */
+export const isColorMatrixFilter = (config: FilterConfig): config is ColorMatrixFilterConfig => {
+  return config.type === 'colorMatrix';
+};
+
+/**
+ * Type guard for outline filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is OutlineFilterConfig
+ *
+ */
+export const isOutlineFilter = (config: FilterConfig): config is OutlineFilterConfig => {
+  return config.type === 'outline';
+};
+
+/**
+ * Type guard for bulge pinch filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is BulgePinchFilterConfig
+ *
+ */
+export const isBulgePinchFilter = (config: FilterConfig): config is BulgePinchFilterConfig => {
+  return config.type === 'bulgePinch';
+};
+
+/**
+ * Type guard for emboss filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is EmbossFilterConfig
+ *
+ */
+export const isEmbossFilter = (config: FilterConfig): config is EmbossFilterConfig => {
+  return config.type === 'emboss';
+};
+
+/**
+ * Type guard for old film filter configuration
+ *
+ * @param config - Filter configuration to check
+ *
+ * @returns True if config is OldFilmFilterConfig
+ *
+ */
+export const isOldFilmFilter = (config: FilterConfig): config is OldFilmFilterConfig => {
+  return config.type === 'oldFilm';
 };
 
 /**
