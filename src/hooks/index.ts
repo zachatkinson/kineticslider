@@ -1,43 +1,76 @@
-// Main hooks
-export { useKineticSlider } from "./useKineticSlider";
-export { useFormValidation } from "./useFormValidation";
-export { useKeyboard } from "./useKeyboard";
-export { usePerformance } from "./usePerformance";
-export { useGestures } from "./useGestures";
+/**
+ * Hooks index - centralized exports for all custom hooks
+ */
+
+// Animation hooks
 export { useAnimation } from "./useAnimation";
+export { useEnhancedAnimation } from "./animation/useEnhancedAnimation";
 
-// New abstracted hooks
-export { useTouchGestures } from "./useTouchGestures";
-export { useImagePreloading } from "./useImagePreloading";
-export { useContainerResize } from "./useContainerResize";
-export { useErrorState } from "./useErrorState";
-export { useFocusRestoration } from "./useFocusRestoration";
-
-// Slider-specific hooks
-export { useSlideValidation } from "./slider/useSlideValidation";
-export { useKeyboardNavigation } from "./slider/useKeyboardNavigation";
-export { useKineticSlider as useKineticSliderCore } from "./slider/useKineticSlider";
-export { useGestureHandling } from "./slider/useGestureHandling";
-export { useErrorTracking } from "./slider/useErrorTracking";
-export { useSliderAnimation } from "./slider/useSliderAnimation";
-export { usePerformanceMonitoring } from "./slider/usePerformanceMonitoring";
+// Async data hooks
+export { useAsync, useAsyncWithRetry, useMultipleAsync } from "./useAsync";
 
 // Canvas hooks
 export { useCanvasDimensions } from "./canvas/useCanvasDimensions";
 
-// Pixi hooks
+// Container hooks
+export { useContainerResize } from "./useContainerResize";
+
+// Error hooks
+export { useErrorState } from "./useErrorState";
+
+// Focus hooks
+export { useFocusRestoration } from "./useFocusRestoration";
+
+// Form hooks
+export { useFormValidation } from "./useFormValidation";
+
+// Gesture hooks
+export { useGestures } from "./useGestures";
+export { useTouchGestures } from "./useTouchGestures";
+
+// Image hooks
+export { useImagePreloading } from "./useImagePreloading";
+
+// Keyboard hooks
+export { useKeyboard } from "./useKeyboard";
+
+// Modal hooks
+export { useModal } from "./useModal";
+
+// Accessibility hooks
+export { useAccessibilityAnnouncements, announcementHelpers } from "./useAccessibilityAnnouncements";
+
+// Performance hooks
+export { usePerformance } from "./usePerformance";
+
+// Slider hooks
+export { useKineticSlider } from "./useKineticSlider";
+export { useSliderAnimation } from "./slider/useSliderAnimation";
+export { useErrorTracking } from "./slider/useErrorTracking";
+export { usePerformanceMonitoring } from "./slider/usePerformanceMonitoring";
+
+// PIXI hooks
 export { useSliderAccessibility } from "./pixi/useSliderAccessibility";
 
-// Hook types
+// Re-export types from centralized types file
 export type {
-  UseTouchGesturesOptions,
-  UseTouchGesturesReturn,
-  UseImagePreloadingOptions,
-  UseImagePreloadingReturn,
-  UseContainerResizeOptions,
-  UseContainerResizeReturn,
   UseErrorStateOptions,
   UseErrorStateReturn,
+  UseTouchGesturesOptions,
+  UseTouchGesturesReturn,
+  UseContainerResizeOptions,
+  UseContainerResizeReturn,
+  UseImagePreloadingOptions,
+  UseImagePreloadingReturn,
   UseFocusRestorationOptions,
   UseFocusRestorationReturn,
+  UseCanvasDimensionsOptions,
+  UseCanvasDimensionsReturn,
+  AsyncState,
+  UseAsyncOptions,
+  SliderAnimationHook,
+  UseModalOptions,
+  UseModalReturn,
+  UseAccessibilityAnnouncementsOptions,
+  UseAccessibilityAnnouncementsReturn,
 } from "../types/hooks"; 

@@ -185,8 +185,16 @@ export function SliderProvider({
   items,
   config = {},
 }: SliderProviderProps): React.ReactNode {
-  const [state, dispatch] = useReducer(sliderReducer, initialState);
   const mergedConfig = { ...defaultConfig, ...config };
+  
+  // Initialize state with items and sync infiniteLoop with config.loop
+  const initialStateWithItems = {
+    ...initialState,
+    items,
+    infiniteLoop: mergedConfig.loop ?? true,
+  };
+  
+  const [state, dispatch] = useReducer(sliderReducer, initialStateWithItems);
 
   const next = useCallback(() => {
     if (!state.isAnimating) {

@@ -2,22 +2,7 @@
  * Mock implementations for PIXI.js
  */
 import { vi } from "vitest";
-
-// Define proper types for PIXI options
-interface MockApplicationOptions {
-  width?: number;
-  height?: number;
-  view?: HTMLCanvasElement;
-  backgroundColor?: number;
-  resolution?: number;
-}
-
-interface MockTexture {
-  destroy: () => void;
-  width: number;
-  height: number;
-  valid: boolean;
-}
+import type { MockApplicationOptions, MockTexture } from "../../types/test-mocks";
 
 // Mock PIXI.js Application
 const mockApplication = vi.fn().mockImplementation((options?: MockApplicationOptions) => {

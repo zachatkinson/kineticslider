@@ -25,6 +25,7 @@ import type {
   SliderId,
 } from "./branded";
 import type { SliderEventHandler as _SliderEventHandler } from "./events";
+import type { CanvasConfig } from "./pixi";
 
 // Re-export branded types for backward compatibility
 export type {
@@ -152,36 +153,47 @@ export interface SlideAnimation {
  * @example Example usage
  */
 export interface KineticSliderProps {
-  /** Array of slides to render */
+  /** Array of slides to display */
   slides: Slide[];
-  /** Initial slide _index */
+  
+  /** Initial slide index (default: 0) */
   initialSlide?: SlideIndex;
-  /** Callback when slide changes */
-  onSlideChange?: (_index: SlideIndex) => void;
-  /** Callback when animation completes */
+  
+  /** Callback fired when active slide changes */
+  onSlideChange?: (index: SlideIndex) => void;
+  
+  /** Callback fired when slide animation completes */
   onAnimationComplete?: () => void;
-  /** Callback when _error occurs */
-  onError?: (_error: Error | Record<string, unknown>) => void;
-  /** Additional class name */
+  
+  /** Callback fired when an error occurs */
+  onError?: (error: Error) => void;
+  
+  /** Additional CSS class name */
   className?: string;
-  /** Additional inline styles */
+  
+  /** Inline styles */
   style?: React.CSSProperties;
-  /** Enable keyboard navigation */
+  
+  /** Enable keyboard navigation (default: true) */
   enableKeyboard?: boolean;
-  /** Enable gesture support */
+  
+  /** Enable touch/mouse gestures (default: true) */
   enableGestures?: boolean;
-  /** Animation duration in seconds */
+  
+  /** Animation duration in seconds (default: 0.5) */
   duration?: number;
-  /** Animation easing function */
+  
+  /** Animation easing function (default: "power2.out") */
   ease?: string;
-  /** Enable infinite loop */
+  
+  /** Enable infinite loop (default: false) */
   infiniteLoop?: boolean;
-  /** Enable lazy loading of slides */
+  
+  /** Enable lazy loading of slides (default: true) */
   lazyLoad?: boolean;
-  /** Animation state */
-  "data-animating"?: boolean;
-  /** Hide navigation buttons */
-  hideNavigation?: boolean;
+  
+  /** Canvas configuration for PIXI.js rendering */
+  canvas?: CanvasConfig;
 }
 
 /** Alias for backward compatibility */

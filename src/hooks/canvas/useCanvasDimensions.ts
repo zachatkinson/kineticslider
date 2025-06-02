@@ -82,21 +82,22 @@ export function useCanvasDimensions(
     setIsCalculating(true);
 
     try {
-      // Default to large container size to allow config dimensions to be used
-      let containerWidth = 9999;
-      let containerHeight = 9999;
+      // Default to config dimensions
+      let containerWidth = configRef.current.dimensions.width;
+      let containerHeight = configRef.current.dimensions.height;
 
-      // Use container dimensions if available
+      // Use container dimensions if available and valid
       if (containerRefStable.current?.current) {
         try {
           const containerRect = containerRefStable.current.current.getBoundingClientRect();
-          containerWidth = containerRect.width;
-          containerHeight = containerRect.height;
+          // Only use container dimensions if they are valid (> 0)
+          if (containerRect.width > 0 && containerRect.height > 0) {
+            containerWidth = containerRect.width;
+            containerHeight = containerRect.height;
+          }
         } catch (error) {
           // Fallback to config dimensions if getBoundingClientRect fails
           console.warn("Failed to get container dimensions:", error);
-          containerWidth = configRef.current.dimensions.width;
-          containerHeight = configRef.current.dimensions.height;
         }
       }
 
@@ -155,7 +156,7 @@ export function useCanvasDimensions(
   }, []);
 
   // Debounced resize handler
-  const debouncedCalculate = useCallback((): (() => void) => {
+  const _debouncedCalculate = useCallback(() => {
     const timeoutId = setTimeout(calculateDimensions, debounceDelay);
     return () => clearTimeout(timeoutId);
   }, [calculateDimensions, debounceDelay]);
@@ -163,21 +164,17 @@ export function useCanvasDimensions(
   // Initial calculation and resize listener
   useEffect(() => {
     calculateDimensions();
+  }, [calculateDimensions]);
 
-    const handleResize = (): void => {
-      debouncedCalculate();
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [calculateDimensions, debouncedCalculate]);
-
-  // Recalculate when config changes
+  // Recalculate when config changes - but avoid infinite loops
   useEffect(() => {
-    calculateDimensions();
-  }, [config, calculateDimensions]);
+    // Only recalculate if config actually changed
+    const timeoutId = setTimeout(() => {
+      calculateDimensions();
+    }, 0);
+    
+    return () => clearTimeout(timeoutId);
+  }, [calculateDimensions, config.mode, config.dimensions.width, config.dimensions.height, config.aspectRatio]);
 
   const recalculate = useCallback(() => {
     calculateDimensions();

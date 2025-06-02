@@ -3,31 +3,24 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useAnimation } from "@/hooks/useAnimation";
 import * as animationUtils from "@/utils/animation";
 
-// Mock animation utilities
+// Mock animation utilities - must be at top level
 vi.mock("@/utils/animation", () => ({
   createBasicAnimation: vi.fn(),
 }));
 
+// Import mocks after vi.mock
+import {
+  createMockAnimationOptions,
+  resetAnimationMocks,
+} from "../../mocks/animation.mock";
+
 describe("useAnimation Hook", () => {
-  const mockTarget = document.createElement("div");
-  const mockOptions = {
-    target: mockTarget,
-    config: {
-      duration: 0.5,
-      ease: "power2.out",
-    },
-    onComplete: vi.fn(),
-  };
+  const mockOptions = createMockAnimationOptions();
 
   // Reset all mocks before each test
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Mock createBasicAnimation to return a cleanup function
-    vi.mocked(animationUtils.createBasicAnimation).mockReturnValue(() => {
-      // Mock cleanup function
-      return;
-    });
+    resetAnimationMocks();
   });
 
   it("should return an animate function", () => {

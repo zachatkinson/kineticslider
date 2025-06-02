@@ -15,7 +15,8 @@ import type { ErrorType, ErrorSeverity } from "./error";
  * const options: WorkerPoolOptions = {
  *   maxWorkers: 4,
  *   timeout: 30000,
- *   retries: 3
+ *   retries: 3,
+ *   errorHandler: (error, context) => console.error('Worker error:', error)
  * };
  * ```
  */
@@ -24,6 +25,7 @@ export interface WorkerPoolOptions {
   timeout?: number;
   retries?: number;
   workerScript?: string;
+  errorHandler?: (error: Error, context: { taskId?: string; operation?: string }) => void;
 }
 
 /**

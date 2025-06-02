@@ -3,6 +3,13 @@
  */
 import type { GsapInstance as _GsapInstance } from "./gsap";
 import type { WindowWithAnalytics as _WindowWithAnalytics } from "./performance";
+import type { 
+  GestureTestUtilities, 
+  UserJourneyTestUtilities, 
+  ResourceManagementTestUtilities,
+  CanvasTestUtilities,
+  TestUtilities 
+} from "./e2e-testing";
 
 // All global type declarations have been moved to src/types/global.ts
 // This file is kept for declaration merging and re-exports
@@ -19,6 +26,15 @@ declare global {
     };
     registerWorker?: (worker: Worker) => void;
     __WORKER_REGISTRY__?: Set<Worker>;
+    
+    // E2E Testing utilities
+    testGestures?: GestureTestUtilities;
+    testUserJourney?: UserJourneyTestUtilities;
+    createTestWorkerScript?: () => string;
+    TestWorkerPool?: new (options: { maxWorkers: number; workerScript: string }) => Record<string, unknown>;
+    testResourceManagement?: ResourceManagementTestUtilities;
+    testCanvas?: CanvasTestUtilities;
+    testUtils?: TestUtilities;
   }
 }
 

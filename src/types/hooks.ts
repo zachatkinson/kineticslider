@@ -382,3 +382,215 @@ export interface UseCanvasDimensionsReturn {
   /** Update configuration function */
   updateConfig: (newConfig: CanvasConfig) => void;
 }
+
+/**
+ * Async state interface for useAsync hook
+ * 
+ * @example
+ * ```tsx
+ * const state: AsyncState<User> = {
+ *   data: null,
+ *   loading: true,
+ *   error: null,
+ *   reload: () => {},
+ *   reset: () => {}
+ * };
+ * ```
+ */
+export interface AsyncState<T> {
+  /** The fetched data */
+  data: T | null;
+  /** Loading state indicator */
+  loading: boolean;
+  /** Error state */
+  error: Error | null;
+  /** Function to manually reload data */
+  reload: () => void;
+  /** Function to reset state */
+  reset: () => void;
+}
+
+/**
+ * Async hook options for useAsync hook
+ * 
+ * @example
+ * ```tsx
+ * const options: UseAsyncOptions = {
+ *   immediate: false,
+ *   onError: (error) => console.error(error),
+ *   debounceMs: 300
+ * };
+ * ```
+ */
+export interface UseAsyncOptions {
+  /** Whether to fetch data immediately on mount */
+  immediate?: boolean;
+  /** Whether to reset error state on new fetch */
+  resetErrorOnFetch?: boolean;
+  /** Custom error handler */
+  onError?: (error: Error) => void;
+  /** Custom success handler */
+  onSuccess?: (data: unknown) => void;
+  /** Debounce delay for fetch operations */
+  debounceMs?: number;
+}
+
+/**
+ * Modal configuration options
+ * 
+ * @example
+ * Basic modal configuration
+ * ```tsx
+ * const options: UseModalOptions = {
+ *   initialOpen: false,
+ *   restoreFocus: true,
+ *   closeOnEscape: true
+ * };
+ * ```
+ */
+export interface UseModalOptions {
+  /**
+   * Initial open state
+   */
+  initialOpen?: boolean;
+  
+  /**
+   * Whether to restore focus when modal closes
+   */
+  restoreFocus?: boolean;
+  
+  /**
+   * Whether to close modal on escape key
+   */
+  closeOnEscape?: boolean;
+  
+  /**
+   * Whether to close modal when clicking outside
+   */
+  closeOnOutsideClick?: boolean;
+  
+  /**
+   * Callback when modal opens
+   */
+  onOpen?: () => void;
+  
+  /**
+   * Callback when modal closes
+   */
+  onClose?: () => void;
+  
+  /**
+   * Callback when modal state changes
+   */
+  onStateChange?: (isOpen: boolean) => void;
+}
+
+/**
+ * Modal state management return interface
+ * 
+ * @example
+ * Using the modal return interface
+ * ```tsx
+ * const modalReturn: UseModalReturn = {
+ *   isOpen: false,
+ *   open: () => {},
+ *   close: () => {},
+ *   toggle: () => {},
+ *   modalProps: { 'aria-hidden': true, role: 'dialog', tabIndex: -1 },
+ *   triggerProps: { 'aria-expanded': false, 'aria-haspopup': 'dialog', onClick: () => {} }
+ * };
+ * ```
+ */
+export interface UseModalReturn {
+  /**
+   * Whether modal is currently open
+   */
+  isOpen: boolean;
+  
+  /**
+   * Open the modal
+   */
+  open: () => void;
+  
+  /**
+   * Close the modal
+   */
+  close: () => void;
+  
+  /**
+   * Toggle modal open/closed state
+   */
+  toggle: () => void;
+  
+  /**
+   * Modal props to spread on modal container
+   */
+  modalProps: {
+    'aria-hidden': boolean;
+    role: string;
+    tabIndex: number;
+  };
+  
+  /**
+   * Trigger props to spread on modal trigger element
+   */
+  triggerProps: {
+    'aria-expanded': boolean;
+    'aria-haspopup': string;
+    onClick: () => void;
+  };
+}
+
+/**
+ * Options for the accessibility announcements hook
+ * 
+ * @example
+ * Basic accessibility announcements configuration
+ * ```tsx
+ * const options: UseAccessibilityAnnouncementsOptions = {
+ *   politeness: 'polite',
+ *   autoClear: true,
+ *   clearDelay: 3000,
+ *   deduplicate: true
+ * };
+ * ```
+ */
+export interface UseAccessibilityAnnouncementsOptions {
+  /** Politeness level for announcements */
+  politeness?: 'polite' | 'assertive';
+  /** Whether to clear announcements after a delay */
+  autoClear?: boolean;
+  /** Auto-clear delay in milliseconds */
+  clearDelay?: number;
+  /** Whether to deduplicate consecutive identical announcements */
+  deduplicate?: boolean;
+}
+
+/**
+ * Return type for the accessibility announcements hook
+ * 
+ * @example
+ * Using the accessibility announcements hook
+ * ```tsx
+ * const {
+ *   announcement,
+ *   announce,
+ *   clearAnnouncement,
+ *   liveRegionProps
+ * }: UseAccessibilityAnnouncementsReturn = useAccessibilityAnnouncements();
+ * ```
+ */
+export interface UseAccessibilityAnnouncementsReturn {
+  /** Current announcement text */
+  announcement: string;
+  /** Function to make an announcement */
+  announce: (message: string) => void;
+  /** Function to clear current announcement */
+  clearAnnouncement: () => void;
+  /** Props to spread on the live region element */
+  liveRegionProps: {
+    'aria-live': 'polite' | 'assertive';
+    'aria-atomic': boolean;
+    role: string;
+  };
+}

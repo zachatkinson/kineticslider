@@ -405,4 +405,26 @@ export function createPixiAppOptions(
     autoDensity: optimizations.autoDensity !== false,
     powerPreference: optimizations.powerPreference || "high-performance",
   };
+}
+
+/**
+ * Get responsive-first default canvas configuration
+ * Follows modern web development best practices
+ *
+ * @returns Default responsive canvas configuration
+ *
+ */
+export function getDefaultResponsiveCanvasConfig(): CanvasConfig {
+  return createPixiCanvasConfig({
+    mode: "responsive",
+    dimensions: {
+      width: 800,
+      height: 600,
+      pixelRatio: typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1,
+    },
+    aspectRatio: "cover",
+    highDPI: true,
+    pixiOptimizations: true,
+    breakpoints: DEFAULT_PIXI_BREAKPOINTS,
+  });
 } 

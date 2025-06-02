@@ -19,6 +19,7 @@ export const defaultConfig = {
       '**/dist/**',
       '**/coverage/**',
       '**/.next/**',
+      '**/e2e/**',
     ],
     globals: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],

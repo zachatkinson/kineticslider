@@ -195,3 +195,10 @@ export type { WorkerPoolOptions, WorkerTask, WorkerPoolStats } from "../types/wo
 
 // Test utilities
 export { mockImageValidation } from "./test-helpers";
+
+// E2E Test Helper utilities
+export {
+  browserCapabilities,
+  gestureSimulation,
+  testSetup,
+} from "./e2e-test-helpers";

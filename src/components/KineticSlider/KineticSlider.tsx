@@ -14,6 +14,7 @@ import { useKineticSlider } from "../../hooks/useKineticSlider";
 import { useTouchGestures } from "../../hooks/useTouchGestures";
 import { useImagePreloading } from "../../hooks/useImagePreloading";
 import { useContainerResize } from "../../hooks/useContainerResize";
+import { useCanvasDimensions } from "../../hooks/canvas/useCanvasDimensions";
 import type { KineticSliderProps, Slide as _Slide } from "../../types/slider";
 import type {
   SliderAnalyticsData as _SliderAnalyticsData,
@@ -46,6 +47,9 @@ import {
 import {
   generateNavigationAnnouncement,
 } from "../../utils/navigation-helpers";
+import {
+  getDefaultResponsiveCanvasConfig,
+} from "../../utils/pixi-canvas";
 
 /**
  * A high-performance kinetic slider component with smooth animations and gesture support.
@@ -116,7 +120,11 @@ export const KineticSlider = memo(
     ease = "power2.out",
     infiniteLoop = false,
     lazyLoad = true,
+    canvas,
   }: KineticSliderProps) => {
+    // Canvas configuration with modern defaults
+    const canvasConfig = canvas || getDefaultResponsiveCanvasConfig();
+
     const {
       currentSlide,
       isAnimating,
@@ -154,6 +162,23 @@ export const KineticSlider = memo(
       ease,
       infiniteLoop,
     });
+
+    // Canvas system integration
+    const {
+      dimensions: _canvasDimensions,
+      isCalculating: _isCanvasCalculating,
+      currentBreakpoint: _currentBreakpoint,
+      performanceMetrics: _performanceMetrics,
+      recalculate: _recalculateCanvas,
+    } = useCanvasDimensions({
+      config: canvasConfig,
+      containerRef: sliderRef,
+    });
+
+    // Debug logging for development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('KineticSlider: Canvas configuration', canvasConfig);
+    }
 
     const [liveRegion, setLiveRegion] = useState("");
     const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -383,6 +408,14 @@ export const KineticSlider = memo(
       // Error boundary handling
     };
 
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('KineticSlider: Slider state', { currentSlide, isAnimating, next, prev, handleGesture, sliderRef, goToSlide });
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('KineticSlider: Component rendered with', slides.length, 'slides');
+    }
+
     return (
       <ErrorBoundary
         fallback={<div>Error loading slider. Please try again.</div>}
@@ -401,6 +434,7 @@ export const KineticSlider = memo(
           role="region"
           aria-roledescription="carousel"
           aria-label="Image slider"
+          tabIndex={enableKeyboard ? 0 : -1}
           onTouchStart={enableGestures ? handleTouchStart : undefined}
           onTouchMove={enableGestures ? handleTouchMove : undefined}
           onTouchEnd={enableGestures ? handleTouchEnd : undefined}

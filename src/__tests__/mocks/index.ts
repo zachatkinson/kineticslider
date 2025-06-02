@@ -14,6 +14,9 @@ export * from "./test-data.mock";
 // Test helper mocks
 export * from "./test-helpers.mock";
 
+// Test setup mocks
+export * from "./test-setup.mock";
+
 // Resource management mocks
 export * from "./resource-management.mock";
 

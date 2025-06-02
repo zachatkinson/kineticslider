@@ -1,6 +1,12 @@
 import * as PIXI from "pixi.js";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import type { WebGLPerformanceMetrics } from "../../types/webgl";
+import {
+  createOptimizedPixiOptions,
+  initializeWebGLOptimizations,
+} from "../../utils/webgl-optimization";
+import { createPixiAppOptions } from "../../utils/pixi-canvas";
 import { useSliderAccessibility } from "../../hooks/pixi/useSliderAccessibility";
 import { PixiErrorBoundary } from "./PixiErrorBoundary";
 import type { PixiAppProps, PixiSlide } from "../../types/pixi";
@@ -12,7 +18,7 @@ import { createBrandedNumber } from "../../utils/branded-helpers";
  * Implements high-performance WebGL-based image transitions with GSAP animations.
  *
  * @class
- * @version 1.0.0
+ * @version 2.0.0 - Phase 2 Enhanced with WebGL optimizations
  * @example Example usage
  * ```typescript
  * const slider = new PixiSliderApp(canvasElement, {
@@ -21,7 +27,17 @@ import { createBrandedNumber } from "../../utils/branded-helpers";
  *   slides: [
  *     { id: '1', image: '/slide1.jpg', alt: 'Slide 1' },
  *     { id: '2', image: '/slide2.jpg', alt: 'Slide 2' }
- *   ]
+ *   ],
+ *   canvas: {
+ *     mode: "responsive",
+ *     dimensions: { width: 800, height: 600 },
+ *     aspectRatio: "cover"
+ *   },
+ *   pixiOptimizations: {
+ *     batchRendering: true,
+ *     textureGC: true,
+ *     preferredRenderer: "webgl"
+ *   }
  * });
  *
  * // Navigate between slides
@@ -44,6 +60,8 @@ import { createBrandedNumber } from "../../utils/branded-helpers";
  * - Hardware acceleration via WebGL
  * - Texture compression and caching
  * - Efficient slide transitions using GSAP
+ * - WebGL context optimization and recovery
+ * - Advanced texture management
  *
  * @description * - Asset loading failures with retry mechanism
  * - Texture loading error handling
@@ -51,6 +69,7 @@ import { createBrandedNumber } from "../../utils/branded-helpers";
  * - Memory management errors
  * - Initialization failures
  * - Graceful destruction
+ * - Performance monitoring and optimization
  *
  * @description * - Input validation for slide data
  * - Memory protection limits
@@ -58,6 +77,7 @@ import { createBrandedNumber } from "../../utils/branded-helpers";
  * - Asset loading security
  * - Error message sanitization
  * - Event handling safety
+ * - Texture optimization security
  *
  * @description * - ARIA roles and labels
  * - Keyboard navigation support
@@ -73,6 +93,7 @@ import { createBrandedNumber } from "../../utils/branded-helpers";
  * @see PixiErrorBoundary - Error handling component
  * @see SliderError - Custom error implementation
  * @see useSliderAccessibility - Accessibility hook
+ * @see WebGLOptimization - WebGL optimization utilities
  */
 export class PixiSliderApp {
   private app: PIXI.Application;
@@ -82,9 +103,14 @@ export class PixiSliderApp {
   private container: PIXI.Container;
   private width: number;
   private height: number;
+  
+  // Phase 2 WebGL Optimization Components
+  private webglOptimizations: ReturnType<typeof initializeWebGLOptimizations> | null = null;
+  private performanceMetrics: WebGLPerformanceMetrics | null = null;
+  private isDestroyed = false;
 
   /**
-   * Creates a new PixiSliderApp instance.
+   * Creates a new PixiSliderApp instance with Phase 2 WebGL optimizations.
    *
    * @param {HTMLCanvasElement} canvas - The canvas element to render to
    *
@@ -96,12 +122,19 @@ export class PixiSliderApp {
    *
    * @param {Array<{id: string, image: string, alt: string}>} options.slides - Array of slide data
    *
+   * @param {CanvasConfig} [options.canvas] - Canvas configuration for responsive behavior
+   *
+   * @param {PixiOptimizations} [options.pixiOptimizations] - WebGL and rendering optimizations
+   *
    * @param {function} [options.onSlideChange] - Optional callback for slide changes
+   *
+   * @param {function} [options.onPerformanceUpdate] - Optional callback for performance metrics
    *
    * @throws {SliderError} When initialization fails or invalid options provided
    *
    * @description Uses WebGL for hardware acceleration and optimized rendering
    * @description Validates all input parameters and slide data
+   * @description Implements advanced texture management and batch rendering
    */
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -110,6 +143,7 @@ export class PixiSliderApp {
       "onSlideChange" | "onError"
     > & {
       onSlideChange?: ((index: number) => void) | undefined;
+      onPerformanceUpdate?: ((metrics: WebGLPerformanceMetrics) => void) | undefined;
     },
   ) {
     if (options.slides.length === 0) {
@@ -117,19 +151,31 @@ export class PixiSliderApp {
     }
 
     // Set default dimensions if not provided
-    this.width = options.width ?? 800;
-    this.height = options.height ?? 600;
+    this.width = options.width ?? options.canvas?.dimensions.width ?? 800;
+    this.height = options.height ?? options.canvas?.dimensions.height ?? 600;
 
-    // Initialize Pixi Application with WebGL
+    // Initialize Pixi Application with WebGL optimizations
     try {
+      // Create optimized PIXI options
+      let pixiOptions: Record<string, unknown>;
+      if (options.canvas) {
+        pixiOptions = createPixiAppOptions(options.canvas, options.pixiOptimizations);
+      } else {
+        const optimizations = createOptimizedPixiOptions(options.pixiOptimizations || {});
+        pixiOptions = {
+          powerPreference: optimizations.powerPreference as "high-performance" | "low-power" | "default",
+          antialias: true,
+          autoDensity: optimizations.autoDensity,
+        };
+      }
+
       this.app = new PIXI.Application({
         view: canvas,
+        ...pixiOptions,
+        // Override with specific dimensions and background
         width: this.width,
         height: this.height,
-        backgroundColor: 0x000000,
-        resolution: window.devicePixelRatio || 1,
-        antialias: true,
-        autoDensity: true,
+        backgroundColor: options.canvas?.backgroundColor ?? 0x000000,
       });
 
       // Verify app was created properly
@@ -137,9 +183,38 @@ export class PixiSliderApp {
         throw new SliderError("Failed to create PIXI Application", "INIT_ERROR");
       }
 
+      // Initialize WebGL optimizations (optional in test environments)
+      try {
+        this.webglOptimizations = initializeWebGLOptimizations(
+          this.canvas,
+          {
+            preferWebGL2: true,
+            powerPreference: "high-performance",
+            antialias: true,
+          },
+          {
+            maxTextureSize: 2048,
+            enableCompression: true,
+            gcThreshold: 512,
+          },
+          {
+            enableSpriteBatching: true,
+            optimizeDrawCalls: true,
+          },
+        );
+      } catch (webglError) {
+        console.warn("WebGL optimizations failed to initialize, continuing without optimizations:", webglError);
+        this.webglOptimizations = null;
+      }
+
       // Create main container
       this.container = new PIXI.Container();
       this.app.stage.addChild(this.container);
+
+      // Start performance monitoring (only if WebGL optimizations are available)
+      if (this.webglOptimizations) {
+        this.startPerformanceMonitoring();
+      }
 
       // Initialize
       void this.init().catch((err) => {
@@ -149,6 +224,39 @@ export class PixiSliderApp {
       console.error("Failed to create PIXI Application:", error);
       throw new SliderError("Failed to create PIXI Application", "INIT_ERROR");
     }
+  }
+
+  /**
+   * Start performance monitoring loop
+   * 
+   * @private
+   */
+  private startPerformanceMonitoring(): void {
+    if (!this.webglOptimizations) return;
+
+    // Start the performance monitor
+    this.webglOptimizations.performanceMonitor.startMonitoring();
+
+    const updatePerformance = (): void => {
+      if (this.isDestroyed || !this.webglOptimizations) return;
+
+      // Get current metrics
+      this.performanceMetrics = this.webglOptimizations.performanceMonitor.getMetrics();
+      
+      // Call performance callback if provided
+      this.options.onPerformanceUpdate?.(this.performanceMetrics);
+
+      // Check for performance issues
+      if (!this.webglOptimizations.performanceMonitor.isPerformanceAcceptable()) {
+        const recommendations = this.webglOptimizations.performanceMonitor.getRecommendations();
+        console.warn("Performance issues detected:", recommendations);
+      }
+
+      // Schedule next update
+      requestAnimationFrame(updatePerformance);
+    };
+
+    requestAnimationFrame(updatePerformance);
   }
 
   /**
@@ -175,13 +283,13 @@ export class PixiSliderApp {
   }
 
   /**
-   * Loads and sets up all slide assets.
+   * Loads and sets up all slide assets with texture optimization.
    * Creates sprites and containers for each slide.
    *
    * @private
    * @async
    * @throws {SliderError} When asset loading fails
-   * @description Implements efficient texture loading and caching
+   * @description Implements efficient texture loading and caching with WebGL optimization
    * @description Validates asset URLs and texture data
    * @returns A promise that resolves when all assets are loaded
    *
@@ -200,6 +308,14 @@ export class PixiSliderApp {
             throw new SliderError(
               `Failed to load texture for slide: ${asset.name}`,
               "TEXTURE_ERROR",
+            );
+          }
+
+          // Apply texture optimizations (if available)
+          if (this.webglOptimizations) {
+            this.webglOptimizations.textureManager.cacheTexture(
+              asset.name,
+              texture
             );
           }
 
@@ -425,13 +541,80 @@ export class PixiSliderApp {
   }
 
   /**
-   * Destroys the PIXI application and releases resources.
+   * Resizes the slider to new dimensions with WebGL optimization.
+   *
+   * @public
+   * @param {number} width - New width in pixels
+   *
+   * @param {number} height - New height in pixels
+   *
+   * @throws {SliderError} When resize operation fails
+   * @description Updates canvas and sprites for new dimensions with performance optimization
+   * @description Validates input dimensions and maintains aspect ratios
+   */
+  public resize(width: number, height: number): void {
+    if (width <= 0 || height <= 0) {
+      throw new SliderError("Invalid dimensions for resize", "RESIZE_ERROR");
+    }
+
+    this.width = width;
+    this.height = height;
+
+    // Update renderer size
+    this.app.renderer.resize(width, height);
+
+    // Update all slides
+    this.slides.forEach((slide) => {
+      slide.sprite.position.set(width / 2, height / 2);
+      this.scaleToFit(slide.sprite, width, height);
+    });
+  }
+
+  /**
+   * Get current performance metrics
+   * 
+   * @public
+   * @returns Current WebGL performance metrics
+   *
+   */
+  public getPerformanceMetrics(): WebGLPerformanceMetrics | null {
+    return this.performanceMetrics;
+  }
+
+  /**
+   * Get WebGL context information
+   * 
+   * @public
+   * @returns WebGL context information
+   *
+   */
+  public getWebGLInfo(): Record<string, unknown> {
+    return this.webglOptimizations?.contextManager.getContextInfo() ?? {};
+  }
+
+  /**
+   * Check if WebGL context is lost
+   * 
+   * @public
+   * @returns Whether WebGL context is lost
+   *
+   */
+  public isContextLost(): boolean {
+    return this.webglOptimizations?.contextManager.isContextLostState() ?? false;
+  }
+
+  /**
+   * Destroys the PIXI application and releases resources with WebGL cleanup.
    *
    * @public
    * @description Properly disposes of all resources and event listeners
-   * @description Ensures memory is fully released
+   * @description Ensures memory is fully released including WebGL optimizations
    */
   public destroy(): void {
+    if (this.isDestroyed) return;
+    
+    this.isDestroyed = true;
+
     // Destroy textures and sprites
     this.slides.forEach((slide) => {
       slide.sprite.destroy();
@@ -442,31 +625,15 @@ export class PixiSliderApp {
     // Clear the map
     this.slides.clear();
 
+    // Cleanup WebGL optimizations
+    if (this.webglOptimizations) {
+      this.webglOptimizations.contextManager.destroy();
+      this.webglOptimizations.textureManager.clearCache();
+      this.webglOptimizations.performanceMonitor.stopMonitoring();
+    }
+
     // Destroy the Pixi application
     this.app.destroy(true);
-  }
-
-  /**
-   * Resizes the slider to new dimensions.
-   *
-   * @public
-   * @param {number} width - New width in pixels
-   *
-   * @param {number} height - New height in pixels
-   *
-   * @throws {SliderError} When resize operation fails
-   * @description Updates canvas and sprites for new dimensions
-   * @description Validates input dimensions
-   */
-  public resize(width: number, height: number): void {
-    // Update renderer size
-    this.app.renderer.resize(width, height);
-
-    // Update all slides
-    this.slides.forEach((slide) => {
-      slide.sprite.position.set(width / 2, height / 2);
-      this.scaleToFit(slide.sprite, width, height);
-    });
   }
 }
 
