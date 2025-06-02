@@ -79,18 +79,17 @@ export const testDataFactories = {
   /**
    * Create mock form data
    * 
-   * @param overrides - Data overrides
+   * @param overrides - Form data overrides
    *
    * @returns Mock form data
    *
    */
   createMockFormData(overrides: Partial<MockFormData> = {}): MockFormData {
     return {
-      name: 'Test Name',
-      email: 'test@example.com',
-      age: 25,
-      isActive: true,
-      description: null,
+      title: 'Test Slide',
+      description: 'Test Description',
+      image: 'https://example.com/test.jpg',
+      alt: 'Test Alt Text',
       ...overrides,
     };
   },
@@ -98,7 +97,7 @@ export const testDataFactories = {
   /**
    * Create mock gesture event
    * 
-   * @param overrides - Event overrides
+   * @param overrides - Gesture event overrides
    *
    * @returns Mock gesture event
    *

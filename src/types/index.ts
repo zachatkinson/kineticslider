@@ -1,25 +1,24 @@
 /**
- * Central type exports for the application
+ * Central type exports for the KineticSlider application
+ *
+ * This file serves as the main entry point for all type definitions,
+ * providing a centralized location for importing types throughout the application.
+ *
+ * @module Types
+ * @version 1.0.0
  */
 
 // Animation types
 export type {
-  AnimationOptions,
-  AnimationMetrics,
-  AnimationEvents,
-  ExtendedAnimationConfig,
   AnimationConfig,
-  TimelineConfig,
-  TransitionType,
-  AnimationEasing,
-  AnimationInstance,
-  AnimationProfilerMetrics,
+  AnimationOptions,
   BasicAnimationReturn,
-  EnhancedAnimationHookConfig,
-  AnimationHookReturn,
-  ImageDistortionConfig,
-  TextDistortionConfig,
-  ShaderConfig,
+  SlideTransitionConfig,
+  TransitionType,
+  AnimationType,
+  AnimationPriority,
+  FilterEffectConfig,
+  CustomAnimationConfig,
   CustomShader,
 } from "./animation";
 
@@ -28,7 +27,6 @@ export * from "./analytics";
 
 // Accessibility types
 export type {
-  FocusManagerProps,
   AccessibilityAction,
   AccessibilityEvent,
   AccessibilityConfig,
@@ -37,6 +35,7 @@ export type {
 
 // Branded types
 export type {
+  SlideIndex,
   SliderId,
   ComponentId,
   AnimationId,
@@ -61,19 +60,68 @@ export type {
 } from "./common";
 
 // Component types
-export * from "./components";
+export type {
+  SlideFormProps,
+  ErrorBoundaryProps,
+  ErrorBoundaryState,
+} from "./components";
+
+// Context types
+export type {
+  SliderProviderProps,
+  SliderConsumerProps,
+  WithSliderProps,
+} from "./context";
+
+// E2E testing types
+export type {
+  TestUtilities,
+  GestureTestUtilities,
+  UserJourneyTestUtilities,
+} from "./e2e-testing";
 
 // Error types
 export type {
-  ErrorType,
-  ErrorSeverity,
   BaseError,
-  SliderError,
-  ValidationError as ErrorValidationError,
-  NetworkError,
-  ErrorBoundaryState,
   ErrorInfo,
+  ErrorSeverity,
+  ErrorType,
+  ValidationErrorSeverity,
 } from "./error";
+
+// Feature flag types
+export type {
+  FeatureFlag,
+} from "./feature-flags";
+
+// Filter types
+export type {
+  FilterType,
+  BaseFilterConfig,
+  DisplacementFilterConfig,
+  BlurFilterConfig,
+  GlowFilterConfig,
+  GlitchFilterConfig,
+  RGBSplitFilterConfig,
+  AdjustmentFilterConfig,
+  ShockwaveFilterConfig,
+  FilterConfig,
+  FilterResult,
+  FilterFactoryOptions,
+  FilterPerformanceMetrics,
+  FilterAnimationState,
+  FilterEventType,
+  FilterEvent,
+  FilterManagerConfig,
+  FilterModuleEntry,
+  FilterInstance,
+} from "./filters";
+
+// Form validation types
+export type {
+  FormValidationOptions,
+  FormValidationState,
+} from "./form-validation";
 
 // Gesture types
 export type {
@@ -84,25 +132,38 @@ export type {
 } from "./gestures";
 
 // GSAP types
-export * from "./gsap";
+export type {
+  GsapVars,
+  GsapTween,
+  GsapTimeline,
+} from "./gsap";
 
 // Hook types
 export type {
-  UseAsyncOptions,
   AsyncState,
-  UseErrorStateOptions,
-  UseErrorStateReturn,
-  UseFocusRestorationOptions,
-  UseFocusRestorationReturn,
+  UseAsyncOptions,
   UseImagePreloadingOptions,
   UseImagePreloadingReturn,
+  UseErrorStateOptions,
+  UseErrorStateReturn,
   UseContainerResizeOptions,
   UseContainerResizeReturn,
-  UseCanvasDimensionsOptions,
-  UseCanvasDimensionsReturn,
+  UseFocusRestorationOptions,
+  UseFocusRestorationReturn,
   UseModalOptions,
   UseModalReturn,
+  UseCanvasDimensionsOptions,
+  UseCanvasDimensionsReturn,
+  UseKineticSliderReturn,
+  SliderGestureEvent,
+  SlideValidationOptions,
 } from "./hooks";
+
+// Image types
+export type {
+  ImageError,
+  PreloadImageOptions,
+} from "./image";
 
 // Interactable elements types
 export type {
@@ -118,75 +179,6 @@ export type {
   UseKeyboardReturn,
 } from "./keyboard";
 
-// Performance types
-export type {
-  PerformanceMetrics as PerformanceMetricsType,
-  UsePerformanceOptions,
-  UsePerformanceReturn,
-} from "./performance";
-
-// PIXI types
-export type {
-  CanvasDimensions,
-  CanvasConfig,
-  CanvasMode,
-  PerformanceMetrics,
-} from "./pixi";
-
-// Slider types
-export * from "./slider";
-
-// Store types
-export * from "./store";
-
-// Storybook types
-export * from "./storybook";
-
-// Test types
-export * from "./test/mocks";
-
-// Validation types
-export type {
-  ValidationResult,
-  ValidationError,
-  ValidationContext,
-  Validator,
-  AsyncValidator,
-  Schema,
-  SchemaField,
-  ValidationErrorType,
-  ValidationErrorCode,
-  ValidationErrorSeverity,
-  SchemaType,
-  ValidationType,
-} from "./validation";
-
-export type {
-  SchemaValidationOptions,
-  ValidationRule,
-  KeyGenerator,
-} from "./validation";
-
-// Do not export test types or global augmentations
-
-// Worker pool types
-export type {
-  WorkerTask,
-  WorkerPoolOptions,
-  WorkerPoolStats,
-} from "./worker-pool";
-
-// Image types
-export type {
-  ImageError,
-} from "./image";
-
-// Form validation types
-export type {
-  FormValidationOptions,
-  FormValidationState,
-} from "./form-validation";
-
 // Logger types
 export type {
   LogLevel,
@@ -194,54 +186,75 @@ export type {
   LoggerConfig,
 } from "./logger";
 
-// Analytics types
+// Migration types
 export type {
-  BaseEventData,
-  SlideChangeEventData,
-  AnimationEventData,
-  GestureEventData,
-  ErrorEventData,
-  ViewEventData,
-  InteractionEventData,
-  PerformanceEventData,
-  AccessibilityEventData,
-  AnalyticsConfig,
-  BaseAnalyticsData,
-  SlideChangeAnalytics,
-  AnimationCompleteAnalytics,
-  GestureAnalytics,
-  ErrorAnalytics,
-} from "./analytics";
+  TestPerformanceMetric,
+  BenchmarkResult,
+  FeatureEvent,
+  FeatureMetrics,
+} from "./migration";
 
-// E2E testing types
+// Performance types
 export type {
-  TestUtilities,
-  GestureTestUtilities,
-  UserJourneyTestUtilities,
-  ResourceManagementTestUtilities,
-  WorkerPoolTestUtilities,
-  CanvasTestUtilities,
-  E2ETestSetupFunction,
-  E2ETestCleanupFunction,
-  E2ETestConfig,
-  BrowserCapabilities,
-} from "./e2e-testing";
+  PerformanceMetrics,
+  UsePerformanceOptions,
+  UsePerformanceReturn,
+} from "./performance";
 
-// Test mock types
+// Performance testing types
 export type {
-  MockApplicationOptions,
-  MockTexture,
-  MockPixiContainer,
-  MockWorker,
-  MockHTMLElement,
-  MockCanvasContext,
-  MockResizeObserver,
-  MockIntersectionObserver,
-  MockTimers,
-  TestDataFactory,
-  MockValidationError,
-  MockFormData,
-  MockGestureEvent,
-  MockAnimationOptions,
-  MockPerformanceMetrics,
-} from "./test-mocks";
+  MetricType,
+} from "./performance-testing";
+
+// PIXI types
+export type {
+  CanvasDimensions,
+  CanvasConfig,
+  PerformanceMetrics as PixiPerformanceMetrics,
+} from "./pixi";
+
+// Slider types
+export type {
+  Slide,
+  SliderConfig,
+  SliderState,
+  SlideItem,
+  SliderAction,
+  SliderContextValue,
+  KineticSliderProps,
+  SliderMetrics,
+} from "./slider";
+
+// Store types
+export type {
+  SlideAction as StoreSlideAction,
+} from "./store";
+
+// Validation types
+export type {
+  ValidationContext,
+  ValidationErrorType,
+  ValidationErrorCode,
+  SchemaType,
+  ValidationError,
+  ValidationResult,
+  Validator,
+  AsyncValidator,
+  Schema,
+  SchemaField,
+  ValidationType,
+} from "./validation";
+
+// Re-export utility functions
+export {
+  createFilterIntensity,
+  createFilterId,
+  createFilterCacheKey,
+  isDisplacementFilter,
+  isBlurFilter,
+  isGlowFilter,
+  isGlitchFilter,
+  isRGBSplitFilter,
+  isAdjustmentFilter,
+  isShockwaveFilter,
+} from "./filters";

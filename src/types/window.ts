@@ -62,6 +62,56 @@ declare global {
       clearErrors: () => void;
     };
     
+    /** E2E Test utilities */
+    testUtils?: {
+      getCurrentSlide: () => number;
+      setSlide: (index: number) => void;
+      getSlideCount: () => number;
+    };
+    
+    /** Filter test utilities */
+    filterTestUtils?: {
+      isFilterActive: (type: string) => boolean;
+      applyFilter: (type: string, intensity: number) => void;
+      removeFilter: (type: string) => void;
+      getActiveFilters: () => string[];
+    };
+    
+    /** Gesture test utilities */
+    gestureTestUtils?: {
+      simulateSwipe: (direction: 'left' | 'right') => void;
+      simulateTouch: (x: number, y: number) => void;
+      getGestureState: () => Record<string, unknown>;
+    };
+    
+    /** Resource test utilities */
+    resourceTestUtils?: {
+      getPerformanceMetrics: () => { fps: number; memoryUsage: number };
+      getResourceUsage: () => Record<string, number>;
+      clearCache: () => void;
+    };
+    
+    /** Worker test utilities */
+    workerTestUtils?: {
+      getActiveWorkers: () => number;
+      terminateAllWorkers: () => void;
+      getWorkerStats: () => Record<string, number>;
+    };
+    
+    /** Canvas test utilities */
+    canvasTestUtils?: {
+      getCanvasDimensions: () => { width: number; height: number };
+      resizeCanvas: (width: number, height: number) => void;
+      getCanvasContext: () => CanvasRenderingContext2D | null;
+    };
+    
+    /** User journey test utilities */
+    userJourneyTestUtils?: {
+      startJourney: (journeyName: string) => void;
+      completeStep: (stepName: string) => void;
+      getJourneyProgress: () => Record<string, unknown>;
+    };
+    
     /** Error boundary test utilities */
     setErrorBoundaryRecovery?: (value: boolean) => void;
     shouldRecover?: boolean;

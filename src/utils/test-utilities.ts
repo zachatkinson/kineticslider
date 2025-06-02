@@ -390,67 +390,10 @@ export const animationHelpers = {
   }
 };
 
-/**
- * Mock utilities for testing
- */
-export const mockHelpers = {
-  /**
-   * Create a mock function with call tracking
-   * 
-   * @param implementation - Optional implementation function
-   * 
-   * @returns Mock function with call tracking
-   *
-   */
-  createMockFunction<T extends (...args: unknown[]) => unknown>(
-    implementation?: T
-  ): T & { calls: Parameters<T>[]; results: ReturnType<T>[]; callCount: number } {
-    const calls: Parameters<T>[] = [];
-    const results: ReturnType<T>[] = [];
-
-    const mockFn = ((...args: Parameters<T>) => {
-      calls.push(args);
-      const result = implementation ? implementation(...args) : undefined;
-      results.push(result as ReturnType<T>);
-      return result;
-    }) as T & { calls: Parameters<T>[]; results: ReturnType<T>[]; callCount: number };
-
-    Object.defineProperty(mockFn, 'calls', { get: () => calls });
-    Object.defineProperty(mockFn, 'results', { get: () => results });
-    Object.defineProperty(mockFn, 'callCount', { get: () => calls.length });
-
-    return mockFn;
-  },
-
-  /**
-   * Create a mock promise that resolves after a delay
-   * 
-   * @param value - Value to resolve with
-   *
-   * @param delay - Delay in milliseconds
-   * 
-   * @returns Promise that resolves with value after delay
-   *
-   */
-  createDelayedPromise<T>(value: T, delay: number = 100): Promise<T> {
-    return new Promise(resolve => {
-      setTimeout(() => resolve(value), delay);
-    });
-  },
-
-  /**
-   * Create a mock promise that rejects after a delay
-   * 
-   * @param error - Error to reject with
-   *
-   * @param delay - Delay in milliseconds
-   * 
-   * @returns Promise that rejects with error after delay
-   *
-   */
-  createDelayedRejection(error: Error, delay: number = 100): Promise<never> {
-    return new Promise((_, reject) => {
-      setTimeout(() => reject(error), delay);
-    });
-  }
-}; 
+// Re-export mock utilities from centralized location
+export { 
+  createMockFunction,
+  createAsyncMock,
+  createAsyncErrorMock,
+  mockTimers
+} from '../__tests__/mocks/test-helpers.mock'; 

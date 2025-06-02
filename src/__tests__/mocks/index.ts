@@ -14,6 +14,9 @@ export * from "./test-data.mock";
 // Test helper mocks
 export * from "./test-helpers.mock";
 
+// E2E test helper mocks
+export * from "./e2e-test-helpers.mock";
+
 // Test setup mocks
 export * from "./test-setup.mock";
 
