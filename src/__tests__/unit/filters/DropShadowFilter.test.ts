@@ -3,26 +3,45 @@ import { createDropShadowFilter, type DropShadowFilterConfig } from '../../../fi
 import { createFilterIntensity } from '../../../types/filters';
 
 // Mock the PIXI DropShadowFilter from pixi-filters
-const mockDropShadowFilter = {
-    alpha: 0.5,
-    blur: 2,
-    color: 0x000000,
-    offsetX: 2,
-    offsetY: 2,
-    pixelSize: 1,
-    pixelSizeX: 1,
-    pixelSizeY: 1,
-    quality: 1,
-    shadowOnly: false,
-    destroy: vi.fn()
-};
+const createMockDropShadowFilter = (options: any = {}): {
+    alpha: number;
+    blur: number;
+    color: number;
+    offsetX: number;
+    offsetY: number;
+    pixelSize: number;
+    pixelSizeX: number;
+    pixelSizeY: number;
+    quality: number;
+    shadowOnly: boolean;
+    destroy: any;
+    enabled: boolean;
+    [key: string]: any;
+} => ({
+    alpha: options.alpha ?? 0.5,
+    blur: options.blur ?? 2,
+    color: options.color ?? 0x000000,
+    offsetX: options.offsetX ?? 2,
+    offsetY: options.offsetY ?? 2,
+    pixelSize: options.pixelSize ?? 1,
+    pixelSizeX: options.pixelSizeX ?? 1,
+    pixelSizeY: options.pixelSizeY ?? 1,
+    quality: options.quality ?? 1,
+    shadowOnly: options.shadowOnly ?? false,
+    destroy: vi.fn(),
+    enabled: true,
+    ...options
+});
 
 vi.mock('pixi-filters', () => ({
-    DropShadowFilter: vi.fn(() => mockDropShadowFilter)
+    DropShadowFilter: vi.fn().mockImplementation((options: any = {}) => 
+        createMockDropShadowFilter(options)
+    )
 }));
 
 describe('DropShadowFilter', () => {
     let DropShadowFilterMock: any;
+    let mockDropShadowFilter: any;
 
     beforeEach(async () => {
         vi.clearAllMocks();
@@ -31,17 +50,8 @@ describe('DropShadowFilter', () => {
         const pixiFiltersModule = await import('pixi-filters');
         DropShadowFilterMock = pixiFiltersModule.DropShadowFilter as any;
         
-        // Reset mock filter properties
-        mockDropShadowFilter.alpha = 0.5;
-        mockDropShadowFilter.blur = 2;
-        mockDropShadowFilter.color = 0x000000;
-        mockDropShadowFilter.offsetX = 2;
-        mockDropShadowFilter.offsetY = 2;
-        mockDropShadowFilter.pixelSize = 1;
-        mockDropShadowFilter.pixelSizeX = 1;
-        mockDropShadowFilter.pixelSizeY = 1;
-        mockDropShadowFilter.quality = 1;
-        mockDropShadowFilter.shadowOnly = false;
+        // The mock will be created fresh for each test by the mock implementation
+        mockDropShadowFilter = null;
     });
 
     describe('Basic functionality', () => {
@@ -113,6 +123,7 @@ describe('DropShadowFilter', () => {
             };
 
             const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
 
             // Test various intensity levels
             result.updateIntensity(0);
@@ -138,7 +149,8 @@ describe('DropShadowFilter', () => {
                 intensity: 6
             };
 
-            createDropShadowFilter(config);
+            const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
 
             // Should use defaults: blur=2, offsetX=2, offsetY=2
             expect(mockDropShadowFilter.blur).toBe(12.8); // 2 + (6 * 1.8) = 12.8
@@ -154,6 +166,7 @@ describe('DropShadowFilter', () => {
             };
 
             const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
 
             result.updateIntensity(8);
             // alpha = 0.5 + (8/20) = 0.5 + 0.4 = 0.9
@@ -168,10 +181,29 @@ describe('DropShadowFilter', () => {
                 intensity: 8
             };
 
-            createDropShadowFilter(config);
+            const result = createDropShadowFilter(config);
+            const mockFilter = result.filter as any; // Cast to any to access mock properties
 
             // Alpha should remain at configured value
-            expect(mockDropShadowFilter.alpha).toBe(0.7);
+            expect(mockFilter.alpha).toBe(0.7);
+        });
+
+        it('should apply initial intensity if provided', () => {
+            const config: DropShadowFilterConfig = {
+                type: 'dropShadow',
+                enabled: true,
+                blur: 4,
+                offsetX: 3,
+                offsetY: 2,
+                intensity: 4
+            };
+
+            const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
+            
+            expect(mockDropShadowFilter.blur).toBe(11.2); // 4 + (4 * 1.8) = 11.2
+            expect(mockDropShadowFilter.offsetX).toBe(7); // 3 + (4 * 1.0) = 7
+            expect(mockDropShadowFilter.offsetY).toBe(6); // 2 + (4 * 1.0) = 6
         });
     });
 
@@ -185,6 +217,7 @@ describe('DropShadowFilter', () => {
             };
 
             const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
 
             // Change values
             result.updateIntensity(2);
@@ -211,6 +244,7 @@ describe('DropShadowFilter', () => {
             };
 
             const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
 
             // Change values
             result.updateIntensity(2);
@@ -257,22 +291,6 @@ describe('DropShadowFilter', () => {
                 shadowOnly: true
             });
         });
-
-        it('should apply initial intensity if provided', () => {
-            const config: DropShadowFilterConfig = {
-                type: 'dropShadow',
-                enabled: true,
-                blur: 4,
-                offsetX: 3,
-                offsetY: 2,
-                intensity: 4
-            };
-
-            createDropShadowFilter(config);
-            expect(mockDropShadowFilter.blur).toBe(11.2); // 4 + (4 * 1.8) = 11.2
-            expect(mockDropShadowFilter.offsetX).toBe(7); // 3 + (4 * 1.0) = 7
-            expect(mockDropShadowFilter.offsetY).toBe(6); // 2 + (4 * 1.0) = 6
-        });
     });
 
     describe('Disposal', () => {
@@ -283,6 +301,8 @@ describe('DropShadowFilter', () => {
             };
 
             const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
+            
             result.dispose();
 
             expect(mockDropShadowFilter.destroy).toHaveBeenCalled();
@@ -294,10 +314,11 @@ describe('DropShadowFilter', () => {
                 enabled: true
             };
 
+            const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
+
             // Remove destroy method
             delete (mockDropShadowFilter as any).destroy;
-
-            const result = createDropShadowFilter(config);
             
             // Should not throw
             expect(() => result.dispose()).not.toThrow();
@@ -315,7 +336,9 @@ describe('DropShadowFilter', () => {
                 intensity: 0
             };
 
-            createDropShadowFilter(config);
+            const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
+            
             expect(mockDropShadowFilter.blur).toBe(2); // No additional blur
             expect(mockDropShadowFilter.offsetX).toBe(2); // No additional offset
             expect(mockDropShadowFilter.offsetY).toBe(2);
@@ -331,7 +354,9 @@ describe('DropShadowFilter', () => {
                 intensity: 10
             };
 
-            createDropShadowFilter(config);
+            const result = createDropShadowFilter(config);
+            mockDropShadowFilter = result.filter; // Get the actual mock created
+            
             expect(mockDropShadowFilter.blur).toBe(19); // 1 + (10 * 1.8) = 19
             expect(mockDropShadowFilter.offsetX).toBe(11); // 1 + (10 * 1.0) = 11
             expect(mockDropShadowFilter.offsetY).toBe(11);

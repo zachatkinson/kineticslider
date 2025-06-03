@@ -257,4 +257,10 @@ export {
   isRGBSplitFilter,
   isAdjustmentFilter,
   isShockwaveFilter,
+  isAlphaFilter,
+  isCRTFilter,
+  isColorReplaceFilter,
+  isConvolutionFilter,
+  isDropShadowFilter,
+  isGrayscaleFilter,
 } from "./filters";

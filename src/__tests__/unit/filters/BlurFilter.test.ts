@@ -67,7 +67,6 @@ describe('BlurFilter', () => {
 
             // Verify the constructor was called with the correct options
             expect(BlurFilterMock).toHaveBeenCalledWith({
-                strength: 8,
                 strengthX: 10,
                 strengthY: 15,
                 quality: 2,
@@ -186,7 +185,6 @@ describe('BlurFilter', () => {
             createBlurFilter(config);
 
             expect(BlurFilterMock).toHaveBeenCalledWith({
-                strength: 8,
                 strengthX: undefined,
                 strengthY: undefined,
                 quality: 4,

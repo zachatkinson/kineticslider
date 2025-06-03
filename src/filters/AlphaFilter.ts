@@ -1,5 +1,6 @@
-import { AlphaFilter } from 'pixi.js';
-import { createFilterIntensity } from '../types/filters';
+import { AlphaFilter as PixiAlphaFilter } from 'pixi.js';
+import { createFilterIntensity, type FilterIntensity } from '../types/filters';
+import { BaseFilter, type BaseFilterConfig } from './BaseFilter';
 
 /**
  * Configuration for the Alpha filter
@@ -8,106 +9,116 @@ import { createFilterIntensity } from '../types/filters';
  * ```typescript
  * const config: AlphaFilterConfig = {
  *   type: 'alpha',
- *   enabled: true,
  *   alpha: 0.5,
  *   intensity: 7
  * };
  * ```
  */
-export interface AlphaFilterConfig {
-    type: 'alpha';
-    enabled: boolean;
-    intensity?: number;
-    alpha?: number;
+export interface AlphaFilterConfig extends BaseFilterConfig {
+  type: 'alpha';
+  alpha?: number;
 }
 
 /**
- * Creates an Alpha filter that applies transparency to the entire display object
- * 
- * This is recommended over Container's alpha property to avoid visual layering issues
- * with individual elements. AlphaFilter applies alpha evenly across the entire
- * display object and any opaque elements it contains.
- * 
- * @param config - Configuration for the Alpha filter
+ * Alpha Filter Implementation
  *
- * @returns Object with filter instance and control functions
+ * Controls the transparency of the display object.
+ *
+ * @example
+ * ```typescript
+ * const filter = new AlphaFilter({ type: 'alpha', alpha: 0.8 });
+ * filter.updateIntensity(5);
+ * filter.reset();
+ * ```
+ */
+export class AlphaFilter extends BaseFilter<AlphaFilterConfig> {
+  /**
+   *
+   */
+  constructor(config: AlphaFilterConfig) {
+    const pixiFilter = new PixiAlphaFilter();
+    super(config, pixiFilter);
+  }
+
+  private get alphaFilter(): PixiAlphaFilter {
+    return this.pixiFilter as PixiAlphaFilter;
+  }
+
+  protected initialize(): void {
+    // Set initial alpha value
+    const configuredAlpha = this.originalConfig.alpha ?? 1.0;
+    this.alphaFilter.alpha = configuredAlpha;
+    
+    // Call parent initialize to handle intensity
+    super.initialize();
+  }
+
+  /**
+   * Updates the filter intensity
+   *
+   * @param intensity - The intensity value (0-10)
+   *
+   */
+  updateIntensity(intensity: FilterIntensity): void {
+    const intensityValue = createFilterIntensity(intensity);
+    const configuredAlpha = this.originalConfig.alpha ?? 1.0;
+    
+    // Scale the configured alpha by the intensity ratio
+    this.alphaFilter.alpha = Math.min(1.0, Math.max(0.0, configuredAlpha * (intensityValue / 10)));
+  }
+
+  /**
+   * Resets the filter to its original configuration
+   *
+   * @returns void
+   *
+   */
+  reset(): void {
+    // Apply intensity only if both intensity AND alpha are explicitly configured
+    if (this.originalConfig.intensity !== undefined && this.originalConfig.alpha !== undefined) {
+      this.updateIntensity(createFilterIntensity(this.originalConfig.intensity));
+    } else {
+      // Reset to configured value or default when no intensity should be applied
+      const configuredAlpha = this.originalConfig.alpha ?? 1.0;
+      this.alphaFilter.alpha = configuredAlpha;
+    }
+  }
+
+  /**
+   * Gets the current state of the filter
+   *
+   * @returns The current filter state
+   *
+   */
+  getState(): Record<string, unknown> {
+    return {
+      ...super.getState(),
+      alpha: this.alphaFilter.alpha,
+      configuredAlpha: this.originalConfig.alpha
+    };
+  }
+}
+
+/**
+ * Factory function for backward compatibility
+ *
+ * @param config - The filter configuration
+ *
+ * @returns The filter instance with utility methods
  *
  */
 export function createAlphaFilter(config: AlphaFilterConfig): {
-    filter: AlphaFilter;
-    updateIntensity: (intensity: number) => void;
-    reset: () => void;
-    dispose: () => void;
+  filter: Filter;
+  updateIntensity: (intensity: number) => void;
+  reset: () => void;
+  dispose: () => void;
 } {
-    // Create the filter
-    const filter = new AlphaFilter();
-    
-    // Store original configuration values
-    const originalConfig = { ...config };
-
-    /**
-     * Update the filter's alpha intensity
-     *
-     * @param intensity
-     *
-     */
-    const updateIntensity = (intensity: number): void => {
-        const intensityValue = createFilterIntensity(intensity);
-        
-        // Base alpha calculation - lower intensity = more transparent
-        const baseAlpha = originalConfig.alpha ?? 1.0;
-        
-        // Scale alpha based on intensity (0-10 maps to 0-1)
-        filter.alpha = Math.max(0, Math.min(1, baseAlpha * (intensityValue / 10)));
-    };
-
-    /**
-     * Reset the filter to initial configuration values or defaults
-     */
-    const reset = (): void => {
-        // Check if alpha configuration was provided
-        const hasAlphaConfig = originalConfig.alpha !== undefined;
-
-        if (hasAlphaConfig) {
-            // Reset to configured value
-            const alphaValue = originalConfig.alpha;
-            if (alphaValue !== undefined) {
-                filter.alpha = alphaValue;
-            }
-            
-            // Apply intensity when alpha config was provided
-            if (originalConfig.intensity !== undefined) {
-                updateIntensity(originalConfig.intensity);
-            }
-        } else {
-            // Reset to default without applying intensity
-            filter.alpha = 1.0; // Fully opaque by default
-        }
-    };
-
-    /**
-     * Cleanup function
-     */
-    const dispose = (): void => {
-        if (filter.destroy) {
-            filter.destroy();
-        }
-    };
-
-    // Set initial alpha value if configured (before applying intensity)
-    if (config.alpha !== undefined) {
-        filter.alpha = config.alpha;
-    }
-
-    // Apply initial intensity if provided, which will override the alpha with scaled value
-    if (config.intensity !== undefined) {
-        updateIntensity(config.intensity);
-    }
-
-    return {
-        filter,
-        updateIntensity,
-        reset,
-        dispose
-    };
+  const filterInstance = new AlphaFilter(config);
+  
+  return {
+    filter: filterInstance.filter,
+    updateIntensity: (intensity: number) => filterInstance.updateIntensity(createFilterIntensity(intensity)),
+    reset: () => filterInstance.reset(),
+    dispose: () => filterInstance.dispose()
+  };
 } 

@@ -1,73 +1,118 @@
-import { EmbossFilter } from 'pixi-filters';
-import type { EmbossFilterConfig, FilterResult } from '../types/filters';
+import { EmbossFilter as PixiEmbossFilter } from 'pixi-filters';
+import { Filter } from 'pixi.js';
+import { createFilterIntensity, type FilterIntensity } from '../types/filters';
+import { BaseFilter, type BaseFilterConfig } from './BaseFilter';
 
 /**
- * Enhanced EmbossFilter with intensity control
- * 
- * The EmbossFilter creates an embossed effect on the display object.
- * The strength parameter controls how pronounced the emboss effect is.
- * 
- * @param config - Configuration for the Emboss filter
+ * Configuration for the Emboss filter
  *
- * @returns FilterResult with the filter instance and control functions
- * 
  * @example
  * ```typescript
- * const embossFilter = createEmbossFilter({
+ * const config: EmbossFilterConfig = {
  *   type: 'emboss',
- *   enabled: true,
- *   intensity: 7,
- *   strength: 5,
- *   primaryProperty: 'strength'
- * });
+ *   strength: 8,
+ *   intensity: 6
+ * };
  * ```
  */
-export function createEmbossFilter(config: EmbossFilterConfig): FilterResult {
-    // Set default values
-    const strength = config.strength ?? 5;
+export interface EmbossFilterConfig extends BaseFilterConfig {
+  type: 'emboss';
+  strength?: number;
+}
 
-    // Create the filter with initial configuration
-    const filter = new EmbossFilter();
+/**
+ * Emboss Filter Implementation
+ *
+ * Creates a relief-like effect making the display object appear carved or embossed.
+ *
+ * @example
+ * ```typescript
+ * const filter = new EmbossFilter({ 
+ *   type: 'emboss', 
+ *   strength: 10 
+ * });
+ * filter.updateIntensity(5);
+ * filter.reset();
+ * ```
+ */
+export class EmbossFilter extends BaseFilter<EmbossFilterConfig> {
+  /**
+   *
+   */
+  constructor(config: EmbossFilterConfig) {
+    const pixiFilter = new PixiEmbossFilter(config.strength ?? 5);
+    super(config, pixiFilter);
+  }
 
-    // Apply initial configuration
-    filter.strength = strength;
+  private get embossFilter(): PixiEmbossFilter {
+    return this.pixiFilter as PixiEmbossFilter;
+  }
 
-    /**
-     * Update the filter's intensity based on the configuration
-     * 
-     * @param intensity - New intensity value (0-10 scale)
-     *
-     */
-    const updateIntensity = (intensity: number): void => {
-        // Normalize intensity to a 0-10 scale
-        const normalizedIntensity = Math.max(0, Math.min(10, intensity));
+  /**
+   * Updates the filter intensity
+   *
+   * @param intensity - The intensity value (0-10)
+   *
+   */
+  updateIntensity(intensity: FilterIntensity): void {
+    const intensityValue = createFilterIntensity(intensity);
+    
+    // Scale strength based on intensity (matches test expectations)
+    this.embossFilter.strength = intensityValue * 2;
+  }
 
-        // Map intensity (0-10) to strength (0-20)
-        filter.strength = normalizedIntensity * 2; // Creates range from 0 to 20
+  /**
+   * Resets the filter to its original configuration
+   *
+   * @returns void
+   *
+   */
+  reset(): void {
+    // Apply intensity if configured
+    if (this.originalConfig.intensity !== undefined) {
+      this.updateIntensity(createFilterIntensity(this.originalConfig.intensity));
+    } else {
+      // Reset to configured strength or default
+      const configuredStrength = this.originalConfig.strength ?? 5;
+      this.embossFilter.strength = configuredStrength;
+    }
+  }
+
+  /**
+   * Gets the current state of the filter
+   *
+   * @returns The current filter state
+   *
+   */
+  getState(): Record<string, unknown> {
+    return {
+      ...super.getState(),
+      strength: this.embossFilter.strength,
+      configuredStrength: this.originalConfig.strength
     };
+  }
+}
 
-    /**
-     * Reset the filter to initial configuration values or defaults
-     */
-    const reset = (): void => {
-        // Reset to configured values or defaults
-        filter.strength = config.strength ?? 5;
-
-        // If intensity was provided in config, apply that
-        if (config.intensity !== undefined) {
-            updateIntensity(config.intensity);
-        }
-    };
-
-    /**
-     * Release any WebGL resources used by this filter
-     */
-    const dispose = (): void => {
-        filter.destroy();
-    };
-
-    // Set initial intensity
-    updateIntensity(config.intensity);
-
-    return { filter, updateIntensity, reset, dispose, config };
+/**
+ * Factory function for backward compatibility
+ *
+ * @param config - The filter configuration
+ *
+ * @returns The filter instance with utility methods
+ *
+ */
+export function createEmbossFilter(config: EmbossFilterConfig): {
+  filter: Filter;
+  updateIntensity: (intensity: number) => void;
+  reset: () => void;
+  dispose: () => void;
+} {
+  const filterInstance = new EmbossFilter(config);
+  
+  return {
+    filter: filterInstance.filter,
+    updateIntensity: (intensity: number) => filterInstance.updateIntensity(createFilterIntensity(intensity)),
+    reset: () => filterInstance.reset(),
+    dispose: () => filterInstance.dispose()
+  };
 } 
