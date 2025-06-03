@@ -17,6 +17,9 @@ node_modules/
 *.lcov
 .test/
 .next-test/
+test-results/
+playwright-report/
+playwright/.cache/
 
 # Production
 /build
