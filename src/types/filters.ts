@@ -16,6 +16,7 @@ import type { PointData, ColorSource } from 'pixi.js';
 import type { BloomFilterConfig } from '../filters/BloomFilter';
 import type { BackdropBlurFilterConfig } from '../filters/BackdropBlurFilter';
 import type { ColorGradientFilterConfig } from '../filters/ColorGradientFilter';
+import type { ColorReplaceFilterConfig } from '../filters/ColorReplaceFilter';
 
 /**
  * Branded types for filter system
@@ -477,29 +478,6 @@ export interface ColorOverlayFilterConfig extends BaseFilterConfig {
   color?: number;           // The color of the overlay (hex format, default: 0x000000)
   alpha?: number;           // The alpha (opacity) of the overlay (0-1, default: 1)
   primaryProperty?: 'alpha' | 'color';  // Property controlled by intensity
-}
-
-/**
- * Configuration for the ColorReplace filter
- *
- * @example
- * ```typescript
- * const config: ColorReplaceFilterConfig = {
- *   type: 'colorReplace',
- *   enabled: true,
- *   originalColor: 0xff0000,
- *   targetColor: 0x00ff00,
- *   tolerance: 0.1,
- *   intensity: 5
- * };
- * ```
- */
-export interface ColorReplaceFilterConfig extends BaseFilterConfig {
-  type: 'colorReplace';
-  originalColor?: ColorSource;  // The color that will be changed (default: 0xff0000)
-  targetColor?: ColorSource;    // The resulting color (default: 0x000000)
-  tolerance?: number;           // Tolerance/sensitivity of color comparison (0-1, default: 0.4)
-  primaryProperty?: 'tolerance' | 'originalColor' | 'targetColor'; // Property controlled by intensity
 }
 
 /**
