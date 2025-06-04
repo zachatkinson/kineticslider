@@ -339,7 +339,7 @@ describe('ColorReplaceFilter Unit Tests', () => {
         enabled: true
       };
 
-      const filter = new ColorReplaceFilter(config);
+      const _filter = new ColorReplaceFilter(config);
 
       // createFilterIntensity should throw for invalid values
       expect(() => createFilterIntensity(-1)).toThrow();

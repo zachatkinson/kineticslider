@@ -806,7 +806,7 @@ test.describe('ColorReplaceFilter E2E Tests', () => {
       // Rapidly change multiple controls
       const changes = [
         () => page.evaluate(() => window.testColorReplaceFilter.setIntensity(Math.random() * 10)),
-        () => page.locator('#tolerance').fill((Math.random()).toFixed(2)),
+        () => page.evaluate(() => window.testColorReplaceFilter.setTolerance(Math.random())),
         () => page.evaluate(() => window.testColorReplaceFilter.setOriginalColor(Math.floor(Math.random() * 0xffffff))),
         () => page.evaluate(() => window.testColorReplaceFilter.setTargetColor(Math.floor(Math.random() * 0xffffff)))
       ];
