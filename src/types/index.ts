@@ -47,6 +47,10 @@ export type {
   FPS,
   Milliseconds,
   ByteSize,
+  FilterIntensity,
+  FilterId,
+  Percentage,
+  BrandedNumber,
 } from "./branded";
 
 // Browser types
@@ -55,8 +59,15 @@ export * from "./browser";
 // Common types
 export type {
   Result,
+  ResultData,
+  ResultError,
+  Nullable,
+  Optional,
   Status,
   AnimationEase,
+  LoadingState,
+  Resource,
+  ResourceState,
 } from "./common";
 
 // Component types
@@ -64,6 +75,9 @@ export type {
   SlideFormProps,
   ErrorBoundaryProps,
   ErrorBoundaryState,
+  PixiErrorBoundaryState,
+  BaseSliderProps,
+  WindowExtensions,
 } from "./components";
 
 // Context types
@@ -138,23 +152,32 @@ export type {
   GsapTimeline,
 } from "./gsap";
 
-// Hook types
+// Hook types (from centralized hooks file)
+export type {
+  UseAnimationStateOptions,
+  UseAnimationStateReturn,
+  UseModalStateOptions,
+  UseModalStateReturn,
+  UseAccessibilityAnnouncementsOptions,
+  UseAccessibilityAnnouncementsReturn,
+} from "./hooks/index";
+
+// Hook types (from main hooks file)
 export type {
   AsyncState,
   UseAsyncOptions,
   UseImagePreloadingOptions,
   UseImagePreloadingReturn,
-  UseErrorStateOptions,
-  UseErrorStateReturn,
   UseContainerResizeOptions,
   UseContainerResizeReturn,
   UseFocusRestorationOptions,
   UseFocusRestorationReturn,
-  UseModalOptions,
-  UseModalReturn,
   UseCanvasDimensionsOptions,
   UseCanvasDimensionsReturn,
-  UseKineticSliderReturn,
+  UseModalOptions,
+  UseModalReturn,
+  UseErrorStateOptions,
+  UseErrorStateReturn,
   SliderGestureEvent,
   SlideValidationOptions,
 } from "./hooks";

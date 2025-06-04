@@ -22,6 +22,74 @@ export interface Result<T, E = Error> {
 }
 
 /**
+ * Result data type for successful operations
+ * 
+ * @example Basic usage with typed data
+ * ```ts
+ * const data: ResultData<User> = { id: '1', name: 'John' };
+ * ```
+ */
+export type ResultData<T> = T;
+
+/**
+ * Result error type for failed operations
+ * 
+ * @example Basic error result
+ * ```ts
+ * const error: ResultError = new Error('Operation failed');
+ * ```
+ */
+export type ResultError<E = Error> = E;
+
+/**
+ * Async state management
+ *
+ * @example Async state for data fetching
+ * ```ts
+ * const state: AsyncState<User> = {
+ *   data: null,
+ *   loading: true,
+ *   error: null
+ * };
+ * ```
+ */
+export interface AsyncState<T> {
+  data: T | null;
+  loading: boolean;
+  error: Error | null;
+}
+
+/**
+ * Loading state type
+ */
+export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+
+/**
+ * Resource interface
+ *
+ * @example Resource data structure
+ * ```ts
+ * const resource: Resource<User> = {
+ *   id: 'user-123',
+ *   data: { id: '123', name: 'John' },
+ *   lastUpdated: Date.now(),
+ *   loading: false
+ * };
+ * ```
+ */
+export interface Resource<T> {
+  id: string;
+  data: T;
+  lastUpdated: number;
+  loading: boolean;
+}
+
+/**
+ * Resource state type
+ */
+export type ResourceState = 'unloaded' | 'loading' | 'loaded' | 'error';
+
+/**
  * Common application states and enums
  */
 export type Status = "idle" | "loading" | "success" | "error";

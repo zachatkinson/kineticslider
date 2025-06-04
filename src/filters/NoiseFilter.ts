@@ -1,137 +1,135 @@
 import { NoiseFilter as PixiNoiseFilter } from 'pixi.js';
 import { Filter } from 'pixi.js';
-import { createFilterIntensity, type FilterIntensity } from '../types/filters';
-import { BaseFilter, type BaseFilterConfig } from './BaseFilter';
-
-/**
- * Configuration for the Noise filter
- *
- * @example
- * ```typescript
- * const config: NoiseFilterConfig = {
- *   type: 'noise',
- *   noise: 0.3,
- *   seed: 0.5,
- *   intensity: 7
- * };
- * ```
- */
-export interface NoiseFilterConfig extends BaseFilterConfig {
-  type: 'noise';
-  noise?: number;
-  seed?: number;
-  generateNewSeedOnUpdate?: boolean;
-  noiseLevel?: number;
-}
+import { 
+  createFilterIntensity, 
+  type FilterIntensity,
+  type NoiseFilterConfig,
+  isNoiseFilter 
+} from '../types/filters';
 
 /**
  * Noise Filter Implementation
- *
- * Adds random noise/grain effect to the display object using PIXI.js NoiseFilter.
- *
+ * 
+ * A Noise effect filter that adds random noise/grain effect to display objects.
+ * Uses the centralized interface system for type safety.
+ * 
+ * **PIXI Properties:**
+ * - noise: number (default: 0.5) - The amount of noise to apply (0, 1]
+ * - seed: number - A seed value to apply to the random noise generation
+ * 
+ * @see https://pixijs.download/release/docs/filters.NoiseFilter.html
+ * 
  * @example
  * ```typescript
+ * // Basic usage
  * const filter = new NoiseFilter({ 
- *   type: 'noise', 
- *   noise: 0.4,
- *   generateNewSeedOnUpdate: true 
+ *   type: 'noise',
+ *   noise: 0.3,
+ *   seed: 42,
+ *   intensity: 7
  * });
- * filter.updateIntensity(6);
+ * 
+ * // Update noise based on intensity
+ * filter.updateIntensity(8);
+ * 
+ * // Reset to original values
  * filter.reset();
  * ```
  */
-export class NoiseFilter extends BaseFilter<NoiseFilterConfig> {
+export class NoiseFilter extends PixiNoiseFilter {
+  private originalConfig: NoiseFilterConfig;
+
   /**
    *
    */
   constructor(config: NoiseFilterConfig) {
-    const pixiFilter = new PixiNoiseFilter();
-    super(config, pixiFilter);
-  }
-
-  private get noiseFilter(): PixiNoiseFilter {
-    return this.pixiFilter as PixiNoiseFilter;
-  }
-
-  protected initialize(): void {
-    // Set initial noise value - tests use noiseLevel as alternative name for noise
-    const configuredNoise = this.originalConfig.noise ?? this.originalConfig.noiseLevel ?? 0.5;
-    this.noiseFilter.noise = configuredNoise;
-    
-    // Set seed - use configured value or generate random one
-    if (this.originalConfig.seed !== undefined) {
-      this.noiseFilter.seed = this.originalConfig.seed;
-    } else {
-      this.noiseFilter.seed = Math.random();
+    if (!isNoiseFilter(config)) {
+      throw new Error('Invalid NoiseFilter configuration');
     }
-    
-    // Call parent initialize to handle intensity
-    super.initialize();
+
+    // Call PIXI constructor (no constructor parameters for NoiseFilter)
+    super();
+
+    this.originalConfig = { ...config };
+
+    // Apply PIXI properties with their defaults
+    this.noise = config.noise ?? 0.5;  // PIXI default
+    this.seed = config.seed ?? Math.random();  // Random seed if not provided
+
+    // Apply initial intensity if provided
+    if (config.intensity !== undefined) {
+      this.updateIntensity(config.intensity);
+    }
   }
 
   /**
-   * Updates the filter intensity
-   *
+   * Updates the filter intensity by modifying the noise property
+   * 
    * @param intensity - The intensity value (0-10)
    *
    */
   updateIntensity(intensity: FilterIntensity): void {
     const intensityValue = createFilterIntensity(intensity);
     
-    // Convert intensity to noise level (tests expect direct mapping)
-    this.noiseFilter.noise = intensityValue / 10;
-    
+    if (this.originalConfig.primaryProperty === 'noise') {
+      // Direct noise control (0-10 maps to 0-1, respecting PIXI range)
+      this.noise = Math.max(0.001, Math.min(1, intensityValue / 10));  // Avoid 0 per PIXI range (0, 1]
+    } else {
+      // Default: Scale from base noise value
+      const baseNoise = this.originalConfig.noise ?? 0.5;
+      this.noise = Math.max(0.001, Math.min(1, baseNoise * (intensityValue / 5)));
+    }
+
     // Generate new seed if configured
     if (this.originalConfig.generateNewSeedOnUpdate) {
-      this.noiseFilter.seed = Math.random();
+      this.seed = Math.random();
     }
   }
 
   /**
    * Resets the filter to its original configuration
-   *
-   * @returns void
-   *
    */
   reset(): void {
-    // Reset to configured values or defaults
-    const configuredNoise = this.originalConfig.noise ?? this.originalConfig.noiseLevel ?? 0.5;
-    const configuredSeed = this.originalConfig.seed ?? Math.random();
-    
-    this.noiseFilter.noise = configuredNoise;
-    this.noiseFilter.seed = configuredSeed;
-    
-    // Apply intensity if configured
+    // Reset to original values or PIXI defaults
+    this.noise = this.originalConfig.noise ?? 0.5;
+    this.seed = this.originalConfig.seed ?? Math.random();
+
+    // Reapply original intensity if configured
     if (this.originalConfig.intensity !== undefined) {
-      this.updateIntensity(createFilterIntensity(this.originalConfig.intensity));
+      this.updateIntensity(this.originalConfig.intensity);
     }
   }
 
   /**
-   * Gets the current state of the filter
-   *
+   * Gets the current filter state for debugging
+   * 
    * @returns The current filter state
    *
    */
   getState(): Record<string, unknown> {
     return {
-      ...super.getState(),
-      noise: this.noiseFilter.noise,
-      seed: this.noiseFilter.seed,
-      configuredNoise: this.originalConfig.noise,
-      configuredNoiseLevel: this.originalConfig.noiseLevel,
-      configuredSeed: this.originalConfig.seed,
-      generateNewSeedOnUpdate: this.originalConfig.generateNewSeedOnUpdate
+      type: 'noise',
+      noise: this.noise,
+      seed: this.seed,
+      generateNewSeedOnUpdate: this.originalConfig.generateNewSeedOnUpdate,
+      originalConfig: this.originalConfig
     };
+  }
+
+  /**
+   * Disposes of the filter and cleans up resources
+   */
+  dispose(): void {
+    super.destroy();
   }
 }
 
 /**
  * Factory function for backward compatibility
- *
+ * 
  * @param config - The filter configuration
  *
- * @returns The filter instance with utility methods
+ * @returns Filter instance with utility methods
  *
  */
 export function createNoiseFilter(config: NoiseFilterConfig): {
@@ -143,7 +141,7 @@ export function createNoiseFilter(config: NoiseFilterConfig): {
   const filterInstance = new NoiseFilter(config);
   
   return {
-    filter: filterInstance.filter,
+    filter: filterInstance,
     updateIntensity: (intensity: number) => {
       // Handle edge cases for invalid intensity values
       try {

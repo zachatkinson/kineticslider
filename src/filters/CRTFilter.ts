@@ -1,36 +1,5 @@
 import { CRTFilter } from 'pixi-filters';
-import { createFilterIntensity } from '../types/filters';
-
-/**
- * Configuration for the CRT filter
- *
- * @example
- * ```typescript
- * const config: CRTFilterConfig = {
- *   type: 'crt',
- *   enabled: true,
- *   curvature: 1.0,
- *   lineWidth: 4.0,
- *   intensity: 6
- * };
- * ```
- */
-export interface CRTFilterConfig {
-    type: 'crt';
-    enabled: boolean;
-    intensity?: number;
-    curvature?: number;
-    lineContrast?: number;
-    lineWidth?: number;
-    noise?: number;
-    noiseSize?: number;
-    seed?: number;
-    time?: number;
-    verticalLine?: boolean;
-    vignetting?: number;
-    vignettingAlpha?: number;
-    vignettingBlur?: number;
-}
+import { createFilterIntensity, type CRTFilterConfig } from '../types/filters';
 
 /**
  * Creates a CRT filter that applies a CRT (Cathode Ray Tube) effect to an object

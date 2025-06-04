@@ -9,60 +9,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-
-/**
- * Options for the accessibility announcements hook
- * 
- * @example
- * Basic accessibility announcements configuration
- * ```tsx
- * const options: UseAccessibilityAnnouncementsOptions = {
- *   politeness: 'polite',
- *   autoClear: true,
- *   clearDelay: 3000,
- *   deduplicate: true
- * };
- * ```
- */
-export interface UseAccessibilityAnnouncementsOptions {
-  /** Politeness level for announcements */
-  politeness?: 'polite' | 'assertive';
-  /** Whether to clear announcements after a delay */
-  autoClear?: boolean;
-  /** Auto-clear delay in milliseconds */
-  clearDelay?: number;
-  /** Whether to deduplicate consecutive identical announcements */
-  deduplicate?: boolean;
-}
-
-/**
- * Return type for the accessibility announcements hook
- * 
- * @example
- * Using the accessibility announcements hook
- * ```tsx
- * const {
- *   announcement,
- *   announce,
- *   clearAnnouncement,
- *   liveRegionProps
- * }: UseAccessibilityAnnouncementsReturn = useAccessibilityAnnouncements();
- * ```
- */
-export interface UseAccessibilityAnnouncementsReturn {
-  /** Current announcement text */
-  announcement: string;
-  /** Function to make an announcement */
-  announce: (message: string) => void;
-  /** Function to clear current announcement */
-  clearAnnouncement: () => void;
-  /** Props to spread on the live region element */
-  liveRegionProps: {
-    'aria-live': 'polite' | 'assertive';
-    'aria-atomic': boolean;
-    role: string;
-  };
-}
+import type { UseAccessibilityAnnouncementsOptions, UseAccessibilityAnnouncementsReturn } from '../types/hooks/index';
 
 /**
  * Hook for managing accessibility announcements

@@ -8,177 +8,153 @@
  * @version 1.0.0
  */
 
-import { DisplacementFilter, Texture, Sprite, Point } from 'pixi.js';
-import { 
-  type DisplacementFilterConfig, 
-  type FilterResult,
-  type FilterIntensity
-} from '../types/filters';
-import { logger } from '../utils/logger';
+import { DisplacementFilter as PixiDisplacementFilter, Texture, Sprite, Point } from 'pixi.js';
+import type { DisplacementFilterConfig, FilterResult } from '../types/filters';
 
 /**
  * Enhanced DisplacementFilter with intensity control
  *
+ * The DisplacementFilter uses the pixel values from the specified texture (called the displacement map)
+ * to perform a displacement of an object. The red channel is used for X displacement and green channel for Y displacement.
+ *
+ * Based on PIXI.js DisplacementFilter documentation:
+ *
+ * @see https://pixijs.download/release/docs/filters.DisplacementFilter.html
+ * 
+ * @param config - Configuration for the Displacement filter
+ *
+ * @returns FilterResult with the filter instance and control functions
+ * 
  * @example
- * const filter = new EnhancedDisplacementFilter(sprite, new Point(20, 20));
- * filter.updateIntensity(8);
+ * ```typescript
+ * const displacementFilter = createDisplacementFilter({
+ *   type: 'displacement',
+ *   enabled: true,
+ *   intensity: 7,
+ *   displacementMap: myTexture,
+ *   scale: { x: 20, y: 20 },
+ *   primaryProperty: 'scale'
+ * });
+ * ```
  */
-class EnhancedDisplacementFilter extends DisplacementFilter {
-  private baseScaleX: number;
-  private baseScaleY: number;
-  private currentIntensity: FilterIntensity;
+export class DisplacementFilter extends PixiDisplacementFilter {
+    public readonly config: DisplacementFilterConfig;
+    private readonly baseScale: Point;
+    private displacementSprite: Sprite;
 
-  constructor(sprite: Sprite, scale?: Point) {
-    super(sprite, scale);
-    
-    // Store base scale values for intensity calculations
-    this.baseScaleX = scale?.x ?? 20;
-    this.baseScaleY = scale?.y ?? 20;
-    this.currentIntensity = 5 as FilterIntensity; // Default intensity
-  }
+    /**
+     *
+     */
+    constructor(config: DisplacementFilterConfig) {
+        // Create displacement sprite from texture
+        let displacementTexture: Texture;
+        
+        if (typeof config.displacementMap === 'string') {
+            displacementTexture = Texture.from(config.displacementMap);
+        } else {
+            displacementTexture = config.displacementMap;
+        }
+        
+        const sprite = new Sprite(displacementTexture);
+        
+        // Set default scale based on PIXI.js typical usage
+        const defaultScale = new Point(20, 20);
+        const scale = config.scale ? new Point(config.scale.x, config.scale.y) : defaultScale;
+        
+        super(sprite, scale);
+        
+        this.config = config;
+        this.displacementSprite = sprite;
+        this.baseScale = new Point(scale.x, scale.y);
 
-  /**
-   * Update filter intensity (0-10 scale)
-   *
-   * @param intensity - Filter intensity value
-   *
-   * @returns void
-   *
-   */
-  updateIntensity(intensity: FilterIntensity): void {
-    this.currentIntensity = intensity;
-    
-    // Map intensity (0-10) to scale multiplier (0-2)
-    const multiplier = intensity / 5; // 5 = middle intensity
-    
-    this.scale.x = this.baseScaleX * multiplier;
-    this.scale.y = this.baseScaleY * multiplier;
-    
-    logger.debug('DisplacementFilter intensity updated', {
-      intensity,
-      scaleX: this.scale.x,
-      scaleY: this.scale.y
-    });
-  }
+        // Set initial intensity
+        this.updateIntensity(config.intensity);
+    }
 
-  /**
-   * Reset filter to default state
-   *
-   * @returns void
-   *
-   */
-  reset(): void {
-    this.scale.x = this.baseScaleX;
-    this.scale.y = this.baseScaleY;
-    this.currentIntensity = 5 as FilterIntensity;
-  }
+    /**
+     * Update the filter's intensity based on the configuration
+     * 
+     * @param intensity - New intensity value (0-10 scale)
+     *
+     */
+    public updateIntensity(intensity: number): void {
+        // Normalize intensity to a 0-10 scale
+        const normalizedIntensity = Math.max(0, Math.min(10, intensity));
 
-  /**
-   * Get current filter state
-   *
-   * @returns Object containing current filter state
-   *
-   */
-  getState(): Record<string, unknown> {
-    return {
-      intensity: this.currentIntensity,
-      scaleX: this.scale.x,
-      scaleY: this.scale.y,
-      baseScaleX: this.baseScaleX,
-      baseScaleY: this.baseScaleY
-    };
-  }
+        // Map intensity (0-10) to scale multiplier (0-2)
+        const multiplier = normalizedIntensity / 5; // 5 = middle intensity gives 1x scale
+        
+        // Apply to both X and Y scale
+        this.scale.x = this.baseScale.x * multiplier;
+        this.scale.y = this.baseScale.y * multiplier;
+    }
+
+    /**
+     * Reset the filter to initial configuration values
+     */
+    public reset(): void {
+        // Reset to configured scale values
+        this.scale.x = this.baseScale.x;
+        this.scale.y = this.baseScale.y;
+
+        // If intensity was provided in config, apply that
+        if (this.config.intensity !== undefined) {
+            this.updateIntensity(this.config.intensity);
+        }
+    }
+
+    /**
+     * Get current filter state
+     *
+     * @returns Record containing current filter properties and state
+     *
+     */
+    public getState(): Record<string, unknown> {
+        return {
+            scaleX: this.scale.x,
+            scaleY: this.scale.y,
+            baseScaleX: this.baseScale.x,
+            baseScaleY: this.baseScale.y,
+            textureWidth: this.displacementSprite.texture.width,
+            textureHeight: this.displacementSprite.texture.height,
+            type: this.config.type,
+            enabled: this.config.enabled
+        };
+    }
+
+    /**
+     * Release any WebGL resources used by this filter
+     */
+    public dispose(): void {
+        // Clean up the displacement sprite
+        if (this.displacementSprite) {
+            this.displacementSprite.destroy();
+        }
+        
+        // Destroy the filter itself
+        this.destroy();
+    }
 }
 
 /**
- * Create a displacement filter instance
+ * Create a DisplacementFilter with the specified configuration
+ * 
+ * @param config - Configuration for the Displacement filter
  *
- * @param config - Displacement filter configuration
- *
- * @returns FilterResult containing the filter and control methods
+ * @returns FilterResult with the filter instance and control functions
  *
  */
 export function createFilter(config: DisplacementFilterConfig): FilterResult {
-  try {
-    logger.debug('Creating DisplacementFilter', { config });
+    const filter = new DisplacementFilter(config);
     
-    // Handle displacement map
-    let displacementTexture: Texture;
-    let displacementSprite: Sprite;
-    
-    if (typeof config.displacementMap === 'string') {
-      // Load texture from URL/path
-      displacementTexture = Texture.from(config.displacementMap);
-    } else {
-      // Use provided texture
-      displacementTexture = config.displacementMap;
-    }
-    
-    // Create sprite for displacement
-    displacementSprite = new Sprite(displacementTexture);
-    
-    // Determine scale values
-    let scalePoint: Point;
-    
-    if (config.scale) {
-      scalePoint = new Point(config.scale.x, config.scale.y);
-    } else if (config.scaleX !== undefined || config.scaleY !== undefined) {
-      scalePoint = new Point(
-        config.scaleX ?? 20,
-        config.scaleY ?? 20
-      );
-    } else {
-      // Default scale
-      scalePoint = new Point(20, 20);
-    }
-    
-    // Create the enhanced filter
-    const filter = new EnhancedDisplacementFilter(displacementSprite, scalePoint);
-    
-    // Apply initial intensity
-    if (config.intensity) {
-      filter.updateIntensity(config.intensity);
-    }
-    
-    // Set enabled state
-    filter.enabled = config.enabled;
-    
-    const result: FilterResult = {
-      filter,
-      config,
-      updateIntensity: (intensity: FilterIntensity) => {
-        filter.updateIntensity(intensity);
-      },
-      reset: () => {
-        filter.reset();
-      },
-      dispose: () => {
-        // Clean up resources
-        if (displacementSprite) {
-          displacementSprite.destroy();
-        }
-        if (displacementTexture && displacementTexture.destroy) {
-          displacementTexture.destroy();
-        }
-        filter.destroy();
-        
-        logger.debug('DisplacementFilter disposed');
-      },
-      getState: () => filter.getState()
+    return {
+        filter,
+        updateIntensity: (intensity: number) => filter.updateIntensity(intensity),
+        reset: () => filter.reset(),
+        dispose: () => filter.dispose(),
+        getState: () => filter.getState(),
+        config
     };
-    
-    logger.debug('DisplacementFilter created successfully', {
-      scaleX: filter.scale.x,
-      scaleY: filter.scale.y,
-      enabled: filter.enabled
-    });
-    
-    return result;
-    
-  } catch (error) {
-    logger.error('Failed to create DisplacementFilter', error as Error, { config });
-    throw error;
-  }
 }
 
 /**

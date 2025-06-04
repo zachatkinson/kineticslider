@@ -1,60 +1,58 @@
-import { ShockwaveFilter } from 'pixi-filters';
+import { ShockwaveFilter as PixiShockwaveFilter } from 'pixi-filters';
 import type { ShockwaveFilterConfig, FilterResult } from '../types/filters';
 
 /**
- * Enhanced Shockwave Filter
- *
- * Extends the PIXI ShockwaveFilter with intensity control and animation support.
- * Creates ripple/wave distortion effects.
- *
+ * Enhanced ShockwaveFilter with intensity control
+ * 
+ * Creates a visual wrinkle effect like a pond or blast wave.
+ * The ShockwaveFilter applies motion effects with configurable amplitude and wavelength.
+ * 
  * @example
  * ```typescript
- * const filter = createFilter({
+ * const shockwaveFilter = new ShockwaveFilter({
  *   type: 'shockwave',
  *   enabled: true,
- *   intensity: createFilterIntensity(7),
- *   center: { x: 0.5, y: 0.5 },
+ *   intensity: 7,
  *   amplitude: 30,
  *   wavelength: 160,
- *   animate: true
+ *   center: { x: 0, y: 0 },
+ *   primaryProperty: 'amplitude'
  * });
  * ```
  */
-class EnhancedShockwaveFilter extends ShockwaveFilter {
+export class ShockwaveFilter extends PixiShockwaveFilter {
+  public declare config: ShockwaveFilterConfig;
   private baseAmplitude: number;
   private baseWavelength: number;
   private baseRadius: number;
   private baseBrightness: number;
   private baseSpeed: number;
-  private baseCenter: [number, number];
-  private config: ShockwaveFilterConfig;
   private animationInterval?: NodeJS.Timeout;
 
+  /**
+   *
+   */
   constructor(config: ShockwaveFilterConfig) {
-    // Initialize with default or configured values
+    // Set PIXI defaults for properties not specified in config
     const options: Record<string, unknown> = {};
     
-    // Handle center configuration - convert to array format
-    let centerArray: [number, number];
+    // Handle center configuration (PIXI default: [0,0])
     if (config.center) {
-      centerArray = [config.center.x, config.center.y];
-      options.center = centerArray;
+      options.center = [config.center.x, config.center.y];
     } else if (config.centerX !== undefined || config.centerY !== undefined) {
-      centerArray = [
-        config.centerX !== undefined ? config.centerX : 0.5,
-        config.centerY !== undefined ? config.centerY : 0.5
+      options.center = [
+        config.centerX ?? 0, // PIXI default: 0
+        config.centerY ?? 0  // PIXI default: 0
       ];
-      options.center = centerArray;
     } else {
-      centerArray = [0.5, 0.5];
-      options.center = centerArray;
+      options.center = [0, 0]; // PIXI defaults
     }
     
     if (config.amplitude !== undefined) options.amplitude = config.amplitude;
-    if (config.wavelength !== undefined) options.wavelength = config.wavelength;
-    if (config.radius !== undefined) options.radius = config.radius;
     if (config.brightness !== undefined) options.brightness = config.brightness;
+    if (config.radius !== undefined) options.radius = config.radius;
     if (config.speed !== undefined) options.speed = config.speed;
+    if (config.wavelength !== undefined) options.wavelength = config.wavelength;
     if (config.time !== undefined) options.time = config.time;
     
     super(options);
@@ -62,41 +60,31 @@ class EnhancedShockwaveFilter extends ShockwaveFilter {
     this.config = config;
     this.enabled = config.enabled;
     
-    // Store base values for intensity calculations
-    this.baseAmplitude = this.amplitude || 30;
-    this.baseWavelength = this.wavelength || 160;
-    this.baseRadius = this.radius || -1;
-    this.baseBrightness = this.brightness || 1;
-    this.baseSpeed = this.speed || 500;
-    this.baseCenter = centerArray;
+    // Store base values for intensity calculations (using PIXI defaults)
+    this.baseAmplitude = this.amplitude ?? 30;     // PIXI default: 30
+    this.baseBrightness = this.brightness ?? 1;    // PIXI default: 1
+    this.baseRadius = this.radius ?? -1;           // PIXI default: -1
+    this.baseSpeed = this.speed ?? 500;            // PIXI default: 500
+    this.baseWavelength = this.wavelength ?? 160;  // PIXI default: 160
     
     // Start animation if configured
     if (config.animate) {
-      // Use 16ms for 60fps
-      const frequency = 16;
-      this.startAnimation(frequency);
+      this.startAnimation(config.animationSpeed || 16); // Default 60fps
     }
     
-    // Only apply initial intensity if no specific values are provided
-    const hasSpecificValues = config.amplitude !== undefined || 
-                             config.wavelength !== undefined || 
-                             config.radius !== undefined ||
-                             config.brightness !== undefined ||
-                             config.speed !== undefined ||
-                             config.time !== undefined;
-    
-    if (!hasSpecificValues) {
+    // Apply initial intensity if provided
+    if (config.intensity !== undefined) {
       this.updateIntensity(config.intensity);
     }
   }
 
   /**
-   * Update filter intensity
-   *
-   * @param intensity - Intensity value (0-10)
+   * Update the filter's intensity based on the configuration
+   * 
+   * @param intensity - New intensity value (0-10 scale)
    *
    */
-  updateIntensity(intensity: number): void {
+  public updateIntensity(intensity: number): void {
     const normalizedIntensity = Math.max(0, Math.min(10, intensity));
     
     if (this.config.primaryProperty) {
@@ -107,22 +95,34 @@ class EnhancedShockwaveFilter extends ShockwaveFilter {
         case 'wavelength':
           this.wavelength = this.baseWavelength * (normalizedIntensity / 10);
           break;
+        case 'radius':
+          // Handle radius specially since default is -1 (infinite)
+          if (this.baseRadius > 0) {
+            this.radius = this.baseRadius * (normalizedIntensity / 10);
+          } else {
+            this.radius = 100 * (normalizedIntensity / 10); // Use 100 as base for infinite radius
+          }
+          break;
+        case 'brightness':
+          this.brightness = this.baseBrightness * (normalizedIntensity / 10);
+          break;
         case 'speed':
           this.speed = this.baseSpeed * (normalizedIntensity / 10);
           break;
         default:
+          // Default behavior - adjust amplitude
           this.amplitude = this.baseAmplitude * (normalizedIntensity / 10);
       }
     } else {
-      // Default behavior - adjust amplitude and brightness
+      // Default behavior - adjust amplitude and brightness proportionally
       this.amplitude = this.baseAmplitude * (normalizedIntensity / 10);
       this.brightness = this.baseBrightness * (0.8 + (normalizedIntensity / 50));
     }
   }
 
   /**
-   * Start animation
-   *
+   * Start animation for time-based effects
+   * 
    * @param frequency - Animation frequency in milliseconds
    *
    */
@@ -132,7 +132,7 @@ class EnhancedShockwaveFilter extends ShockwaveFilter {
     }
     
     this.animationInterval = setInterval(() => {
-      this.time += 0.1;
+      this.time = (this.time || 0) + 0.1;
     }, frequency);
   }
 
@@ -147,35 +147,60 @@ class EnhancedShockwaveFilter extends ShockwaveFilter {
   }
 
   /**
-   * Reset filter to original configuration
+   * Reset the filter to initial configuration values or PIXI defaults
    */
-  reset(): void {
-    // Reset to configured values, not base values
-    this.amplitude = this.config.amplitude || this.baseAmplitude;
-    this.wavelength = this.config.wavelength || this.baseWavelength;
-    this.radius = this.config.radius || this.baseRadius;
-    this.brightness = this.config.brightness || this.baseBrightness;
-    // Reset center by setting it as an array
-    (this.center as unknown) = [this.baseCenter[0], this.baseCenter[1]];
-    this.time = this.config.time || 0;
+  public reset(): void {
+    // Reset to configured values or PIXI defaults
+    this.amplitude = this.config.amplitude ?? 30;        // PIXI default: 30
+    this.brightness = this.config.brightness ?? 1;       // PIXI default: 1
+    this.radius = this.config.radius ?? -1;              // PIXI default: -1
+    this.speed = this.config.speed ?? 500;               // PIXI default: 500
+    this.wavelength = this.config.wavelength ?? 160;     // PIXI default: 160
+    this.time = this.config.time ?? 0;                   // No PIXI default, use 0
+    
+    // Reset center (PIXI default: [0,0])
+    if (this.config.center) {
+      this.center = [this.config.center.x, this.config.center.y];
+    } else if (this.config.centerX !== undefined || this.config.centerY !== undefined) {
+      this.center = [
+        this.config.centerX ?? 0,
+        this.config.centerY ?? 0
+      ];
+    } else {
+      this.center = [0, 0]; // PIXI defaults
+    }
+
+    // Update base values for intensity calculations
+    this.baseAmplitude = this.amplitude;
+    this.baseBrightness = this.brightness;
+    this.baseRadius = this.radius;
+    this.baseSpeed = this.speed;
+    this.baseWavelength = this.wavelength;
+
+    // Apply intensity if configured
+    if (this.config.intensity !== undefined) {
+      this.updateIntensity(this.config.intensity);
+    }
   }
 
   /**
    * Get current filter state
    *
-   * @returns Current filter state including all shockwave properties
+   * @returns Record containing current filter properties and state
    *
    */
-  getState(): Record<string, unknown> {
+  public getState(): Record<string, unknown> {
     const centerArray = this.center as unknown as [number, number];
     return {
-      center: [centerArray[0], centerArray[1]],
       amplitude: this.amplitude,
-      wavelength: this.wavelength,
-      radius: this.radius,
       brightness: this.brightness,
+      center: [centerArray[0], centerArray[1]],
+      centerX: centerArray[0],
+      centerY: centerArray[1],
+      radius: this.radius,
       speed: this.speed,
       time: this.time,
+      wavelength: this.wavelength,
       enabled: this.enabled,
       intensity: this.config.intensity
     };
@@ -184,29 +209,39 @@ class EnhancedShockwaveFilter extends ShockwaveFilter {
   /**
    * Dispose of the filter and stop animations
    */
-  destroy(): void {
+  public destroy(): void {
     this.stopAnimation();
     super.destroy();
+  }
+
+  /**
+   * Get the filter result with control functions
+   *
+   * @returns FilterResult with filter instance and control functions
+   *
+   */
+  public getFilterResult(): FilterResult {
+    return {
+      filter: this,
+      updateIntensity: this.updateIntensity.bind(this),
+      reset: this.reset.bind(this),
+      dispose: this.destroy.bind(this),
+      config: this.config,
+      getState: this.getState.bind(this)
+    };
   }
 }
 
 /**
- * Create a Shockwave filter
+ * Factory function for backwards compatibility
  *
  * @param config - Filter configuration
  *
  * @returns FilterResult with filter instance and control functions
  *
+ * @deprecated Use new ShockwaveFilter() instead
  */
 export function createFilter(config: ShockwaveFilterConfig): FilterResult {
-  const filter = new EnhancedShockwaveFilter(config);
-
-  return {
-    filter,
-    config,
-    updateIntensity: (intensity) => filter.updateIntensity(intensity),
-    reset: () => filter.reset(),
-    dispose: () => filter.destroy(),
-    getState: () => filter.getState()
-  };
+  const filter = new ShockwaveFilter(config);
+  return filter.getFilterResult();
 } 

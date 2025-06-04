@@ -2,28 +2,7 @@
  * Reusable hook for managing animation state
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
-
-export interface UseAnimationStateOptions {
-  /** Initial animating state */
-  initialAnimating?: boolean;
-  /** Animation duration in milliseconds */
-  duration?: number;
-  /** Callback when animation starts */
-  onAnimationStart?: () => void;
-  /** Callback when animation completes */
-  onAnimationComplete?: () => void;
-}
-
-export interface UseAnimationStateReturn {
-  /** Whether animation is currently running */
-  isAnimating: boolean;
-  /** Start the animation */
-  startAnimation: () => void;
-  /** Stop the animation */
-  stopAnimation: () => void;
-  /** Set animation state directly */
-  setIsAnimating: (animating: boolean) => void;
-}
+import type { UseAnimationStateOptions, UseAnimationStateReturn } from '../types/hooks/index';
 
 /**
  * Hook for managing animation state with automatic timeout handling

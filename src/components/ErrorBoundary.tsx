@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react';
+import type { ErrorBoundaryProps, ErrorBoundaryState } from '../types/components';
 import { _sanitizeErrorForClient as sanitizeErrorForClient } from "../utils/error-sanitizer";
 import { AnalyticsManager } from "../utils/analytics";
-import type { ErrorBoundaryProps, ErrorBoundaryState } from "../types/components";
 import { log } from "../utils/logger";
 import "../types/window";
 
@@ -32,10 +32,7 @@ import "../types/window";
  * </ErrorBoundary>
  * ```
  */
-export class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   private retryTimeoutId: number | null = null;
   private hasHandledError = false;
 

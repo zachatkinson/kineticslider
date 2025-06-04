@@ -17,12 +17,13 @@ import { BaseFilter, type BaseFilterConfig } from './BaseFilter';
  */
 export interface BlurFilterConfig extends BaseFilterConfig {
   type: 'blur';
-  strengthX?: number;
-  strengthY?: number;
-  quality?: number;
-  kernelSize?: number;
-  resolution?: number;
-  repeatEdgePixels?: boolean;
+  strength?: number;     // Overall blur strength (0 - 10)
+  quality?: number;      // Quality of the blur (number of passes)
+  kernelSize?: number;   // Size of blur kernel (5, 7, 9, 11, 13, 15)
+  resolution?: number;   // Resolution of the blur filter
+  strengthX?: number;    // Strength of horizontal blur
+  strengthY?: number;    // Strength of vertical blur
+  repeatEdgePixels?: boolean; // Whether to clamp the edge of the target
 }
 
 /**

@@ -1,30 +1,5 @@
 import { ConvolutionFilter, type ConvolutionMatrix } from 'pixi-filters';
-import { createFilterIntensity } from '../types/filters';
-
-/**
- * Configuration for the Convolution filter
- *
- * @example
- * ```typescript
- * const config: ConvolutionFilterConfig = {
- *   type: 'convolution',
- *   enabled: true,
- *   preset: 'sharpen',
- *   width: 200,
- *   height: 200,
- *   intensity: 7
- * };
- * ```
- */
-export interface ConvolutionFilterConfig {
-    type: 'convolution';
-    enabled: boolean;
-    intensity?: number;
-    matrix?: ConvolutionMatrix;
-    width?: number;
-    height?: number;
-    preset?: 'normal' | 'gaussianBlur' | 'boxBlur' | 'sharpen' | 'edgeDetection' | 'emboss' | 'topSobel' | 'rightSobel';
-}
+import type { ConvolutionFilterConfig, FilterResult } from '../types/filters';
 
 /**
  * Helper function to create ConvolutionMatrix from number array
@@ -39,7 +14,7 @@ function createMatrix(values: number[]): ConvolutionMatrix {
 }
 
 /**
- * Creates a Convolution filter that applies a matrix convolution effect
+ * Enhanced ConvolutionFilter with modern PIXI properties
  * 
  * A convolution combines pixels in the input image with neighboring pixels to produce
  * a new image. Using different matrices, a wide variety of effects can be achieved,
@@ -47,25 +22,22 @@ function createMatrix(values: number[]): ConvolutionMatrix {
  * 
  * @param config - Configuration for the Convolution filter
  *
- * @returns Object with filter instance and control functions
- *
+ * @returns FilterResult with the filter instance and control functions
+ * 
+ * @example
+ * ```typescript
+ * const convolutionFilter = createConvolutionFilter({
+ *   type: 'convolution',
+ *   enabled: true,
+ *   preset: 'sharpen',
+ *   width: 200,
+ *   height: 200,
+ *   intensity: 7,
+ *   primaryProperty: 'matrix'
+ * });
+ * ```
  */
-export function createConvolutionFilter(config: ConvolutionFilterConfig): {
-    filter: ConvolutionFilter;
-    updateIntensity: (intensity: number) => void;
-    reset: () => void;
-    dispose: () => void;
-} {
-    // Create options object for the filter
-    const options: {
-        width: number;
-        height: number;
-        matrix?: ConvolutionMatrix;
-    } = {
-        width: config.width ?? 200,
-        height: config.height ?? 200,
-    };
-
+export function createConvolutionFilter(config: ConvolutionFilterConfig): FilterResult {
     // Common convolution matrices for different effects
     const presetMatrices = {
         normal: createMatrix([0, 0, 0, 0, 1, 0, 0, 0, 0]),            // Identity (no effect)
@@ -80,94 +52,124 @@ export function createConvolutionFilter(config: ConvolutionFilterConfig): {
 
     // Use provided matrix, preset, or default to identity matrix
     let baseMatrix: ConvolutionMatrix;
-    if (config.matrix) {
-        baseMatrix = config.matrix;
+    if (config.matrix && config.matrix.length >= 9) {
+        baseMatrix = createMatrix(config.matrix.slice(0, 9)); // Ensure exactly 9 values
     } else if (config.preset && presetMatrices[config.preset]) {
         baseMatrix = presetMatrices[config.preset];
     } else {
         baseMatrix = presetMatrices.normal;
     }
 
-    options.matrix = baseMatrix;
-
-    // Create the filter with options
-    const filter = new ConvolutionFilter(options);
+    // Create the filter with modern PIXI properties
+    const filter = new ConvolutionFilter({
+        width: config.width ?? 200,
+        height: config.height ?? 200,
+        matrix: baseMatrix
+    });
     
-    // Store original configuration values
-    const originalConfig = { ...config };
+    // Store original matrix for intensity calculations
     const originalMatrix = new Float32Array(baseMatrix);
 
     /**
      * Update the filter's intensity based on the configuration
-     *
-     * @param intensity
+     * 
+     * @param intensity - New intensity value (0-10 scale)
      *
      */
     const updateIntensity = (intensity: number): void => {
-        const intensityValue = createFilterIntensity(intensity);
-        
-        // Scale the convolution matrix based on intensity
-        // Start with identity matrix and blend with effect matrix
-        const identityMatrix = presetMatrices.normal;
-        const scaledMatrix = new Float32Array(9);
-        
-        // Blend between identity (no effect) and the full effect matrix
-        for (let i = 0; i < 9; i++) {
-            scaledMatrix[i] = identityMatrix[i] + (originalMatrix[i] - identityMatrix[i]) * (intensityValue / 10);
-        }
-        
-        filter.matrix = scaledMatrix;
-    };
+        // Normalize intensity to a 0-10 scale
+        const normalizedIntensity = Math.max(0, Math.min(10, intensity));
 
-    /**
-     * Reset the filter to initial configuration values or defaults
-     */
-    const reset = (): void => {
-        // Check if matrix configuration was provided  
-        const hasMatrixConfig = originalConfig.matrix !== undefined || originalConfig.preset !== undefined;
-
-        if (hasMatrixConfig) {
-            // Reset to configured matrix
-            filter.matrix = originalMatrix;
-            
-            // Reset dimensions if configured
-            if (originalConfig.width !== undefined) {
-                filter.width = originalConfig.width;
-            }
-            if (originalConfig.height !== undefined) {
-                filter.height = originalConfig.height;
-            }
-            
-            // Apply intensity when matrix config was provided
-            if (originalConfig.intensity !== undefined) {
-                updateIntensity(originalConfig.intensity);
+        // Apply intensity to the primary property if defined
+        if (config.primaryProperty) {
+            switch (config.primaryProperty) {
+                case 'matrix':
+                    // Scale the convolution matrix based on intensity
+                    // Start with identity matrix and blend with effect matrix
+                    const identityMatrix = presetMatrices.normal;
+                    const scaledMatrix = new Float32Array(9);
+                    
+                    // Blend between identity (no effect) and the full effect matrix
+                    const blendFactor = normalizedIntensity / 10;
+                    for (let i = 0; i < 9; i++) {
+                        scaledMatrix[i] = identityMatrix[i] + (originalMatrix[i] - identityMatrix[i]) * blendFactor;
+                    }
+                    
+                    filter.matrix = scaledMatrix;
+                    break;
+                
+                case 'width':
+                    // Map intensity to width scaling (this is less common but possible)
+                    const baseWidth = config.width ?? 200;
+                    filter.width = baseWidth * (0.5 + (normalizedIntensity / 10) * 0.5); // 50%-100% scaling
+                    break;
+                
+                case 'height':
+                    // Map intensity to height scaling (this is less common but possible)
+                    const baseHeight = config.height ?? 200;
+                    filter.height = baseHeight * (0.5 + (normalizedIntensity / 10) * 0.5); // 50%-100% scaling
+                    break;
             }
         } else {
-            // Reset to identity matrix without applying intensity
-            filter.matrix = presetMatrices.normal;
-            filter.width = originalConfig.width ?? 200;
-            filter.height = originalConfig.height ?? 200;
+            // Default behavior: adjust matrix intensity
+            const identityMatrix = presetMatrices.normal;
+            const scaledMatrix = new Float32Array(9);
+            
+            const blendFactor = normalizedIntensity / 10;
+            for (let i = 0; i < 9; i++) {
+                scaledMatrix[i] = identityMatrix[i] + (originalMatrix[i] - identityMatrix[i]) * blendFactor;
+            }
+            
+            filter.matrix = scaledMatrix;
         }
     };
 
     /**
-     * Cleanup function
+     * Reset the filter to initial configuration values
      */
-    const dispose = (): void => {
-        if (filter.destroy) {
-            filter.destroy();
+    const reset = (): void => {
+        // Reset to configured values or defaults
+        filter.matrix = originalMatrix;
+        filter.width = config.width ?? 200;
+        filter.height = config.height ?? 200;
+
+        // Apply intensity after restoring config values, if there's a primaryProperty
+        if (config.intensity !== undefined && config.primaryProperty) {
+            updateIntensity(config.intensity);
         }
     };
 
-    // Apply initial intensity if provided
-    if (config.intensity !== undefined) {
+    /**
+     * Get current filter state
+     *
+     * @returns Record containing current filter properties and state
+     *
+     */
+    const getState = (): Record<string, unknown> => {
+        return {
+            matrix: Array.from(filter.matrix),  // Convert to regular array for serialization
+            width: filter.width,
+            height: filter.height,
+            type: config.type,
+            enabled: config.enabled,
+            configuredMatrix: config.matrix,
+            configuredPreset: config.preset,
+            configuredWidth: config.width,
+            configuredHeight: config.height
+        };
+    };
+
+    /**
+     * Release any WebGL resources used by this filter
+     */
+    const dispose = (): void => {
+        filter.destroy();
+    };
+
+    // Apply initial intensity if provided and there's a primaryProperty
+    if (config.primaryProperty || (config.matrix === undefined && config.preset === undefined)) {
         updateIntensity(config.intensity);
     }
 
-    return {
-        filter,
-        updateIntensity,
-        reset,
-        dispose
-    };
+    return { filter, updateIntensity, reset, dispose, getState, config };
 } 

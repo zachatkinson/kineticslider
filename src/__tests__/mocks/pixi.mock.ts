@@ -222,3 +222,92 @@ export const setupPixiMocks = (): void => {
 export const resetPixiMocks = (): void => {
   vi.clearAllMocks();
 };
+
+// Default export that matches PIXI.js structure
+const mockPixi = vi.hoisted(() => ({
+  Application: vi.fn().mockImplementation((options: unknown = {}) => ({
+    destroy: vi.fn(),
+    stop: vi.fn(), 
+    start: vi.fn(),
+    render: vi.fn(),
+    resize: vi.fn(),
+    screen: { width: 800, height: 600 },
+    stage: {
+      addChild: vi.fn(),
+      removeChild: vi.fn(),
+      destroy: vi.fn(),
+      filters: []
+    },
+    renderer: {
+      width: 800,
+      height: 600,
+      view: document.createElement('canvas'),
+      plugins: {},
+      destroy: vi.fn()
+    },
+    ticker: {
+      add: vi.fn(),
+      remove: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      destroy: vi.fn()
+    },
+    loader: {
+      add: vi.fn(),
+      load: vi.fn()
+    },
+    view: document.createElement('canvas'),
+    ...(options as Record<string, unknown>)
+  })),
+  AlphaFilter: vi.fn().mockImplementation((options: unknown) => 
+    createMockAlphaFilter(options)
+  ),
+  BlurFilter: vi.fn().mockImplementation((options: unknown = {}) => {
+    // Handle both cases: when called with options object or individual parameters
+    const normalizedOptions = typeof options === 'object' && options !== null ? options : {};
+    return createMockBlurFilter(normalizedOptions);
+  }),
+  ColorMatrixFilter: vi.fn().mockImplementation((options: unknown = {}) => ({
+    ...createBaseFilterProperties(),
+    alpha: 1.0,
+    enabled: true,
+    desaturate: vi.fn(),
+    ...(options as Record<string, unknown>)
+  })),
+  NoiseFilter: vi.fn().mockImplementation(() => 
+    createMockNoiseFilter()
+  ),
+  DisplacementFilter: vi.fn().mockImplementation((sprite: unknown, scale: unknown) => 
+    createMockDisplacementFilter(sprite, scale)
+  ),
+  Texture: {
+    from: vi.fn().mockReturnValue({
+      destroy: vi.fn(),
+      width: 100,
+      height: 100
+    })
+  },
+  Sprite: vi.fn().mockImplementation(() => ({
+    destroy: vi.fn(),
+    width: 100,
+    height: 100,
+    anchor: { set: vi.fn() },
+    texture: null
+  })),
+  Point: vi.fn().mockImplementation((x: number, y: number) => ({ x, y })),
+  Container: vi.fn().mockImplementation(() => ({
+    addChild: vi.fn(),
+    removeChild: vi.fn(),
+    destroy: vi.fn(),
+    filters: []
+  })),
+  Graphics: vi.fn().mockImplementation(() => ({
+    beginFill: vi.fn().mockReturnThis(),
+    drawRect: vi.fn().mockReturnThis(),
+    endFill: vi.fn().mockReturnThis(),
+    clear: vi.fn().mockReturnThis(),
+    destroy: vi.fn()
+  }))
+}));
+
+export default mockPixi;

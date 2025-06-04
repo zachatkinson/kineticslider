@@ -1,136 +1,112 @@
-import { GrayscaleFilter as PixiGrayscaleFilter } from 'pixi-filters';
-import { Filter } from 'pixi.js';
-import { createFilterIntensity, type FilterIntensity } from '../types/filters';
-import { BaseFilter, type BaseFilterConfig } from './BaseFilter';
+import { GrayscaleFilter } from 'pixi-filters';
+import type { GrayscaleFilterConfig, FilterResult } from '../types/filters';
 
 /**
- * Configuration for the Grayscale filter
+ * Enhanced Grayscale Filter
+ *
+ * Extends the PIXI GrayscaleFilter with intensity control and configuration management.
+ * Applies a grayscale effect to display objects.
+ * 
+ * Based on official PIXI GrayscaleFilter documentation:
+ * - Simple grayscale effect with no configurable properties
+ * - Converts colors to grayscale
+ * 
+ * Since PIXI GrayscaleFilter has no configurable properties, our enhancement
+ * controls intensity through enabled state only (on/off).
  *
  * @example
  * ```typescript
- * const config: GrayscaleFilterConfig = {
+ * const filter = createFilter({
  *   type: 'grayscale',
- *   enabled: false,
- *   intensity: 6
- * };
- * ```
- */
-export interface GrayscaleFilterConfig extends BaseFilterConfig {
-  type: 'grayscale';
-  enabled?: boolean;
-}
-
-/**
- * Grayscale Filter Implementation
- *
- * Converts display object to grayscale using PIXI filters.
- *
- * @example
- * ```typescript
- * const filter = new GrayscaleFilter({ 
- *   type: 'grayscale', 
- *   enabled: true 
+ *   enabled: true,
+ *   intensity: createFilterIntensity(6)
  * });
- * filter.updateIntensity(8);
- * filter.reset();
  * ```
  */
-export class GrayscaleFilter extends BaseFilter<GrayscaleFilterConfig> {
-  /**
-   *
-   */
+class EnhancedGrayscaleFilter extends GrayscaleFilter {
+  private config: GrayscaleFilterConfig;
+  private currentIntensity: number = 0;
+
   constructor(config: GrayscaleFilterConfig) {
-    const pixiFilter = new PixiGrayscaleFilter();
-    super(config, pixiFilter);
-  }
-
-  private get grayscaleFilter(): PixiGrayscaleFilter {
-    return this.pixiFilter as PixiGrayscaleFilter;
-  }
-
-  protected initialize(): void {
-    // Set initial enabled state
-    const enabled = this.originalConfig.enabled ?? true;
-    this.grayscaleFilter.enabled = enabled;
+    // PIXI GrayscaleFilter has no constructor options
+    super();
     
-    // Set initial alpha (intensity control)
-    this.grayscaleFilter.alpha = 1.0;
+    this.config = config;
+    this.enabled = config.enabled;
     
-    // Call parent initialize to handle intensity
-    super.initialize();
-  }
-
-  /**
-   * Updates the filter intensity
-   *
-   * @param intensity - The intensity value (0-10)
-   *
-   */
-  updateIntensity(intensity: FilterIntensity): void {
-    const intensityValue = createFilterIntensity(intensity);
-    
-    // Map intensity to alpha (0-1 range)
-    const alpha = intensityValue / 10;
-    this.grayscaleFilter.alpha = alpha;
-    
-    // Enable/disable filter based on intensity
-    this.grayscaleFilter.enabled = intensityValue > 0;
-  }
-
-  /**
-   * Resets the filter to its original configuration
-   *
-   * @returns void
-   *
-   */
-  reset(): void {
-    // Apply intensity if configured - this will override any base settings
-    if (this.originalConfig.intensity !== undefined) {
-      this.updateIntensity(createFilterIntensity(this.originalConfig.intensity));
-    } else {
-      // Otherwise use configured values
-      const enabled = this.originalConfig.enabled ?? true;
-      this.grayscaleFilter.enabled = enabled;
-      this.grayscaleFilter.alpha = 1.0;
+    // Apply initial intensity if provided
+    if (config.intensity !== undefined) {
+      this.updateIntensity(config.intensity);
     }
   }
 
   /**
-   * Gets the current state of the filter
+   * Update filter intensity
    *
-   * @returns The current filter state
+   * Since PIXI GrayscaleFilter has no configurable properties,
+   * we control intensity by enabling/disabling the filter.
+   * Intensity > 0 enables the filter, intensity = 0 disables it.
+   *
+   * @param intensity - Intensity value (0-10)
+   *
+   */
+  updateIntensity(intensity: number): void {
+    const normalizedIntensity = Math.max(0, Math.min(10, intensity));
+    this.currentIntensity = normalizedIntensity;
+    
+    // Enable/disable filter based on intensity
+    // For GrayscaleFilter, it's either on or off
+    this.enabled = normalizedIntensity > 0;
+  }
+
+  /**
+   * Reset filter to original configuration
+   */
+  reset(): void {
+    // Reset to enabled state from config
+    this.enabled = this.config.enabled;
+    
+    // Apply intensity if configured
+    if (this.config.intensity !== undefined) {
+      this.updateIntensity(this.config.intensity);
+    } else {
+      // Default behavior
+      this.currentIntensity = this.enabled ? 10 : 0;
+    }
+  }
+
+  /**
+   * Get current filter state
+   *
+   * @returns Current filter state including all grayscale properties
    *
    */
   getState(): Record<string, unknown> {
     return {
-      ...super.getState(),
-      alpha: this.grayscaleFilter.alpha,
-      enabled: this.grayscaleFilter.enabled,
-      configuredEnabled: this.originalConfig.enabled
+      enabled: this.enabled,
+      intensity: this.currentIntensity,
+      configuredIntensity: this.config.intensity
     };
   }
 }
 
 /**
- * Factory function for backward compatibility
+ * Create a Grayscale filter
  *
- * @param config - The filter configuration
+ * @param config - Filter configuration
  *
- * @returns The filter instance with utility methods
+ * @returns FilterResult with filter instance and control functions
  *
  */
-export function createGrayscaleFilter(config: GrayscaleFilterConfig): {
-  filter: Filter;
-  updateIntensity: (intensity: number) => void;
-  reset: () => void;
-  dispose: () => void;
-} {
-  const filterInstance = new GrayscaleFilter(config);
-  
+export function createFilter(config: GrayscaleFilterConfig): FilterResult {
+  const filter = new EnhancedGrayscaleFilter(config);
+
   return {
-    filter: filterInstance.filter,
-    updateIntensity: (intensity: number) => filterInstance.updateIntensity(createFilterIntensity(intensity)),
-    reset: () => filterInstance.reset(),
-    dispose: () => filterInstance.dispose()
+    filter,
+    config,
+    updateIntensity: (intensity) => filter.updateIntensity(intensity),
+    reset: () => filter.reset(),
+    dispose: () => filter.destroy(),
+    getState: () => filter.getState()
   };
 } 

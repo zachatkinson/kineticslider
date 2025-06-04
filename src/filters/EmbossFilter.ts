@@ -1,24 +1,7 @@
 import { EmbossFilter as PixiEmbossFilter } from 'pixi-filters';
 import { Filter } from 'pixi.js';
-import { createFilterIntensity, type FilterIntensity } from '../types/filters';
-import { BaseFilter, type BaseFilterConfig } from './BaseFilter';
-
-/**
- * Configuration for the Emboss filter
- *
- * @example
- * ```typescript
- * const config: EmbossFilterConfig = {
- *   type: 'emboss',
- *   strength: 8,
- *   intensity: 6
- * };
- * ```
- */
-export interface EmbossFilterConfig extends BaseFilterConfig {
-  type: 'emboss';
-  strength?: number;
-}
+import { createFilterIntensity, type FilterIntensity, type EmbossFilterConfig } from '../types/filters';
+import { BaseFilter } from './BaseFilter';
 
 /**
  * Emboss Filter Implementation
