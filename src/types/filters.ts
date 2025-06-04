@@ -14,6 +14,8 @@ import type { PointData, ColorSource } from 'pixi.js';
 
 // Import filter configs from their respective files
 import type { BloomFilterConfig } from '../filters/BloomFilter';
+import type { BackdropBlurFilterConfig } from '../filters/BackdropBlurFilter';
+import type { ColorGradientFilterConfig } from '../filters/ColorGradientFilter';
 
 /**
  * Branded types for filter system
@@ -909,7 +911,9 @@ export type FilterConfig =
   | MultiColorReplaceFilterConfig
   | OldFilmFilterConfig
   | OutlineFilterConfig
-  | PixelateFilterConfig;
+  | PixelateFilterConfig
+  | BackdropBlurFilterConfig
+  | ColorGradientFilterConfig;
 
 /**
  * Standard result interface returned by all filter creation functions
