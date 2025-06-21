@@ -1,10 +1,7 @@
 ---
 description: DRY, YAGNI, and Best Practices Standards for Modern Web Development
-version: 1.0.0
 globs: ["src/**/*.{ts,tsx,js,jsx}", "**/*.{ts,tsx,js,jsx}"]
 alwaysApply: true
-extends: ["core/code-style.mdc", "core/performance.mdc"]
-tags: ["dry", "yagni", "best-practices", "refactoring", "maintainability"]
 ---
 
 # DRY, YAGNI, and Best Practices Standards
