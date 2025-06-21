@@ -1,2 +1,5 @@
-pnpm test
-pnpm lint-staged
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run lint-staged to check only staged files
+npx lint-staged

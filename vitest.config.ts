@@ -1,80 +1,58 @@
-/// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { resolve } from 'path';
 
-export const defaultConfig = {
-  plugins: [
-    react(),
-    tsconfigPaths({
-      projects: ['./tsconfig.testing.json']
-    })
-  ],
+export default defineConfig({
+  plugins: [react()],
+
   test: {
+    // Test environment
     environment: 'jsdom',
-    setupFiles: ['./src/__tests__/setup.ts', './src/__tests__/setup-worker.ts'],
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/coverage/**',
-      '**/.next/**',
-      '**/e2e/**',
-    ],
+
+    // Setup files
+    setupFiles: ['./src/__tests__/setup.ts'],
+
+    // Global test utilities
     globals: true,
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+
+    // Coverage configuration
     coverage: {
-      provider: 'v8' as const,
+      provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: ['src/__tests__/**/*']
+      exclude: [
+        'node_modules/',
+        'src/__tests__/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        'dist/',
+      ],
+      thresholds: {
+        global: {
+          branches: 85,
+          functions: 85,
+          lines: 85,
+          statements: 85,
+        },
+      },
     },
-    deps: {
-      optimizer: {
-        web: {
-          include: ['vitest-canvas-mock']
-        }
-      }
-    },
-    testTimeout: 120000,
-    hookTimeout: 120000,
-    teardownTimeout: 120000,
-    retry: 2,
-    isolate: true,
-    threads: false,
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true
-      }
-    }
+
+    // Test file patterns
+    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+
+    // Exclude patterns
+    exclude: [
+      'node_modules/',
+      'dist/',
+      '.next/',
+      'coverage/',
+      '**/*.e2e.{test,spec}.{js,ts,jsx,tsx}', // Exclude E2E tests
+    ],
   },
+
+  // Path resolution (same as Vite)
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
-      '@components': resolve(__dirname, './src/components'),
-      '@utils': resolve(__dirname, './src/utils'),
-      '@lib': resolve(__dirname, './src/lib'),
-      '@types': resolve(__dirname, './src/types'),
-      'src/__tests__/loader.mjs': resolve(__dirname, './src/__tests__/loader.mjs')
+      '@': resolve(__dirname, 'src'),
     },
-    conditions: ['development', 'browser']
   },
-  worker: {
-    format: 'iife' as const,
-    plugins: () => [
-      {
-        name: 'ts-worker',
-        transform(code: string, id: string) {
-          if (id.endsWith('.ts')) {
-            return {
-              code: code.replace(/\.ts/g, '.js'),
-              map: null
-            };
-          }
-        }
-      }
-    ]
-  }
-};
-
-export default defineConfig(defaultConfig); 
+});
