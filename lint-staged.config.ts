@@ -1,5 +1,3 @@
-import type { Config } from 'lint-staged';
-
 const isTestFile = (filePath: string): boolean => {
   return (
     filePath.includes('.test.') ||
@@ -11,7 +9,7 @@ const isTestFile = (filePath: string): boolean => {
 /**
  * lint-staged configuration
  */
-const config: Config = {
+const config = {
   // Check TypeScript files
   '**/*.ts?(x)': (files: string[]) => {
     const nonTestFiles = files.filter((file) => !isTestFile(file));

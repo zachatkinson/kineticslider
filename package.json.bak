@@ -50,6 +50,8 @@
     "lint:jsdoc": "eslint --config eslint.config.ts --ext .ts,.tsx src/ --rule 'jsdoc/require-jsdoc: error'",
     "clean:comments": "tsx src/scripts/cleanComments.ts",
     "type-check": "tsc --noEmit --skipLibCheck",
+    "build:worker": "vite build --config vite.worker.config.ts",
+    "pretest": "pnpm build:worker",
     "preview": "vite preview",
     "prepare": "husky install",
     "test:browser": "vitest run --config vitest.browser.config.ts",

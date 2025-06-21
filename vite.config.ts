@@ -14,93 +14,71 @@ const __dirname = dirname(__filename);
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => ({
   plugins: [
-    react({
-      jsxRuntime: 'automatic',
-      babel: {
-        plugins: mode === 'production' ? [
-          ['babel-plugin-transform-react-remove-prop-types', { removeImport: true }],
-          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
-        ] : []
-      }
-    }),
+    react(),
+    tsconfigPaths(),
     compression({
       algorithm: 'gzip',
-      ext: '.gz'
+      ext: '.gz',
     }),
-    tsconfigPaths()
   ],
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'KineticSlider',
-      formats: ['es', 'cjs', 'umd'],
-      fileName: (format) => `kineticslider.${format}.js`
+      formats: ['es', 'umd'],
+      fileName: (format) => `kinetic-slider.${format}.js`,
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'gsap', 'pixi.js'],
+      external: ['react', 'react-dom'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
-          gsap: 'gsap',
-          'pixi.js': 'PIXI'
-        }
-      }
+        },
+      },
     },
     sourcemap: true,
-    emptyOutDir: true,
-    reportCompressedSize: true,
-    target: 'es2015',
-    cssTarget: 'chrome80',
-    modulePreload: {
-      polyfill: true
-    }
+    minify: 'esbuild',
+    target: 'es2020',
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@types': path.resolve(__dirname, './src/types'),
+      '@constants': path.resolve(__dirname, './src/constants'),
+      '@assets': path.resolve(__dirname, './src/assets'),
+      '@context': path.resolve(__dirname, './src/context'),
+      '@config': path.resolve(__dirname, './src/config'),
+      '@services': path.resolve(__dirname, './src/services'),
+      '@features': path.resolve(__dirname, './src/features'),
+      '@layouts': path.resolve(__dirname, './src/layouts'),
+      '@lib': path.resolve(__dirname, './src/lib'),
+      '@api': path.resolve(__dirname, './src/api'),
+      '@store': path.resolve(__dirname, './src/store'),
+      '@providers': path.resolve(__dirname, './src/providers'),
+      '@styles': path.resolve(__dirname, './src/styles'),
+    },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
   },
   server: {
     port: 3000,
     open: true,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
+    hmr: {
+      overlay: true,
     },
-    cors: true
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom'],
-    exclude: ['gsap', 'pixi.js'],
-    esbuildOptions: {
-      target: 'esnext',
-    }
   },
   preview: {
-    port: 8080,
+    port: 4173,
     open: true,
-    cors: true
   },
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/setupTests.ts'],
-    coverage: {
-      reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: [
-        'src/**/*.d.ts',
-        'src/types/**/*',
-        'src/mocks/**/*',
-        'src/**/index.ts',
-        'src/setupTests.ts'
-      ],
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80
-    }
-  } as UserConfig['test']
+    setupFiles: ['./src/test/setup.ts'],
+  },
 })); 

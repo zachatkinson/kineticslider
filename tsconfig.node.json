@@ -43,15 +43,22 @@
     "alwaysStrict": true
   },
   "include": [
-    "*.config.ts",
-    "src/types/*.d.ts",
-    "src/types/**/*.d.ts",
-    "vite.config.*.ts",
-    "vitest.config.*.ts",
-    "playwright.config.*.ts",
-    ".cursor/**/*.config.ts",
-    ".storybook/**/*.config.ts",
-    "src/__tests__/**/*.ts",
-    "src/__tests__/**/*.tsx"
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.browser.config.ts",
+    "vitest.passing.config.ts",
+    "playwright.config.ts",
+    "eslint.config.ts",
+    "prettier.config.ts",
+    "postcss.config.ts",
+    "stylelint.config.ts",
+    "commitlint.config.ts",
+    "lint-staged.config.ts",
+    "lighthouserc.js",
+    "typedoc.json",
+    "src/**/*.config.ts",
+    "src/**/*.config.js",
+    "migration-tools/**/*.ts",
+    "src/scripts/**/*.ts"
   ]
 } 

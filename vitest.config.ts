@@ -64,7 +64,7 @@ export const defaultConfig = {
     plugins: () => [
       {
         name: 'ts-worker',
-        transform(code, id) {
+        transform(code: string, id: string) {
           if (id.endsWith('.ts')) {
             return {
               code: code.replace(/\.ts/g, '.js'),

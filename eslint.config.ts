@@ -18,7 +18,8 @@ const config: any = tseslint.config(
       'coverage/**', 
       'vite.config.ts', 
       'vitest.config.ts',
-      'src/__tests__/hooks/useKineticSlider.test.tsx'
+      'src/__tests__/hooks/useKineticSlider.test.tsx',
+      '.cursor/**'
     ],
   },
   {
