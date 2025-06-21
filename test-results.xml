@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.002076959">
-    <testsuite name="src/__tests__/placeholder.test.ts" timestamp="2025-06-21T17:43:01.240Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.002076959">
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have working test environment" time="0.000633666">
+<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.002090875">
+    <testsuite name="src/__tests__/placeholder.test.ts" timestamp="2025-06-21T17:43:51.048Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.002090875">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have working test environment" time="0.000605166">
         </testcase>
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have PIXI mock available" time="0.000169583">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have PIXI mock available" time="0.000173708">
         </testcase>
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have GSAP mock available" time="0.000144">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have GSAP mock available" time="0.00015325">
         </testcase>
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have ResizeObserver mock available" time="0.000057709">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have ResizeObserver mock available" time="0.000059792">
         </testcase>
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have IntersectionObserver mock available" time="0.000117666">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have IntersectionObserver mock available" time="0.00011725">
         </testcase>
     </testsuite>
 </testsuites>
