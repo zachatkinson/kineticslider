@@ -1,33 +1,129 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: Cursor Rules Index for KineticSlider Project
 version: 1.0.0
 globs: ["**/*"]
 alwaysApply: true
----
-
 # Cursor Rules Index
 
 ## Core Rules (Foundation)
 - `core/dry-yagni-practices.mdc`: DRY, YAGNI principles and best practices enforcement
+- `core/accessibility.mdc`: Accessibility standards and WCAG compliance
+- `core/analysis-process.mdc`: Code analysis and review standards
+- `core/code-style.mdc`: Base coding standards and formatting
+- `core/error-handling.mdc`: Error handling patterns and best practices
+- `core/performance.mdc`: Performance optimization standards
+
+## Development Rules
+- `development/abstractions.mdc`: Abstraction patterns and standards
+- `development/edge-computing.mdc`: Edge computing and runtime standards
+- `development/react-nextjs.mdc`: React and Next.js configuration standards
+- `development/server-components.mdc`: React Server Components patterns
+- `development/typescript.mdc`: TypeScript configuration and patterns
+- `development/virtual-dom.mdc`: Virtual DOM and React performance rules
+- `development/web-assembly.mdc`: WebAssembly integration standards
+
+## Documentation Rules
+- `documentation/base-documentation.mdc`: Base documentation standards
+- `documentation/testing-docs.mdc`: Testing documentation patterns
+- `documentation/component-driven/index.mdc`: Component-driven documentation
+- `documentation/component-driven/storybook.mdc`: Storybook standards
+- `documentation/component-driven/chromatic.mdc`: Chromatic visual testing
+- `documentation/examples/index.mdc`: Documentation examples standards
+- `documentation/examples/patterns.mdc`: Documentation patterns
+- `documentation/examples/antipatterns.mdc`: Documentation anti-patterns
+
+## Integration Rules
+- `integrations/ai/index.mdc`: AI integration standards
+- `integrations/analytics/index.mdc`: Analytics integration standards
+
+## Package Rules
+- `packages/astro.mdc`: Astro framework standards
+- `packages/base-documentation.mdc`: Package documentation standards
+- `packages/gsap.mdc`: GSAP animation standards
+- `packages/pixi.mdc`: Pixi.js graphics standards
+- `packages/typescript-config.mdc`: TypeScript configuration for packages
+- `packages/virtual-dom.mdc`: Virtual DOM package standards
+
+## Tooling Rules
+### Build & Containers
+- `tooling/build/build-tools.mdc`: Build tool configuration standards
+- `tooling/containers/index.mdc`: Container and Docker standards
+
+### Environments
+- `tooling/environments/development.mdc`: Development environment setup
+- `tooling/environments/production.mdc`: Production environment standards
+- `tooling/environments/staging.mdc`: Staging environment configuration
+- `tooling/environments/testing.mdc`: Testing environment setup
+
+### Linting & Formatting
+- `tooling/linting/eslint.mdc`: ESLint configuration standards
+- `tooling/linting/prettier.mdc`: Prettier formatting standards
+
+### Testing & Version Control
+- `tooling/testing/base-testing.mdc`: Base testing standards and patterns
+- `tooling/version-control/git.mdc`: Git workflow and commit standards
+- `tooling/package-management.mdc`: Package management standards
+
+## Rule Application Order
+1. **Core Rules (Foundation)**
+   - dry-yagni-practices.mdc → DRY/YAGNI enforcement and best practices
+   - code-style.mdc → Base coding standards and formatting
+   - error-handling.mdc → Error handling patterns
+   - performance.mdc → Performance optimization
+   - accessibility.mdc → WCAG compliance and accessibility
+
+2. **Development Rules**
+   - typescript.mdc → Type safety and TypeScript patterns
+   - react-nextjs.mdc → React/Next.js specific patterns
+   - server-components.mdc → Server-side rendering patterns
+   - virtual-dom.mdc → React performance optimization
+
+3. **Tooling Rules**
+   - eslint.mdc → Code linting and quality
+   - prettier.mdc → Code formatting
+   - git.mdc → Version control workflows
+   - testing/base-testing.mdc → Testing standards
+
+4. **Package-Specific Rules**
+   - pixi.mdc → Graphics and animation patterns
+   - gsap.mdc → Animation library standards
+
+## Usage
+These rules are automatically applied based on file patterns and project context.
+They enforce:
+- Code quality and maintainability standards
+- Performance and accessibility requirements
+- Documentation and testing best practices
+- Framework-specific patterns and optimizations
+- Build and deployment standards
 
 ## Rule Categories
 
-### Core Rules
-- **dry-yagni-practices**: Enforces Don't Repeat Yourself, You Aren't Gonna Need It principles, and coding best practices
+### Foundation Rules
+Essential rules that apply to all code and establish the base quality standards.
 
-## Rule Application Order
-1. Core Rules (Foundation)
-   - dry-yagni-practices.mdc → DRY/YAGNI enforcement and best practices
+### Framework Rules
+React, Next.js, TypeScript, and other framework-specific patterns and best practices.
 
-## Usage
-These rules are automatically applied to all TypeScript/JavaScript files in the project.
-They enforce:
-- Code duplication detection and prevention
-- Over-engineering prevention (YAGNI)
-- Best practices for maintainable code
-- Refactoring guidelines
+### Tooling Rules
+Development tools, build processes, testing frameworks, and CI/CD standards.
+
+### Package Rules
+Library-specific patterns for GSAP, Pixi.js, and other third-party integrations.
+
+### Documentation Rules
+Standards for code documentation, API docs, component documentation, and examples.
 
 ## Version History
 - 1.0.0: Initial rules setup
   - Added DRY/YAGNI practices rule
   - Established rule structure and organization
+  - Catalogued all existing cursor rules (40+ rules)
+  - Organized rules by functional categories
+  - Defined rule application order and dependencies
+
