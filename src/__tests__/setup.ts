@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Test Environment Setup
+ *
+ * This file configures the test environment with mock implementations
+ * of external libraries and global objects needed for testing.
+ *
+ * @version 1.0.0
+ * @author KineticSlider Team
+ * @since 1.0.0
+ */
+
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll } from 'vitest';
@@ -7,41 +18,49 @@ afterEach((): void => {
   cleanup();
 });
 
-// Mock PIXI.js for testing
-beforeAll((): void => {
-  // Mock PIXI global
-  global.PIXI = {
+/**
+ * Setup PIXI.js mock for testing environment
+ *
+ * @description Creates a minimal PIXI.js mock that satisfies basic testing needs
+ * without requiring the full PIXI.js library
+ */
+beforeAll(() => {
+  // Mock PIXI.js for testing
+  const globalWithPIXI = global as typeof global & { PIXI: unknown };
+  globalWithPIXI.PIXI = {
     Application: class MockApplication {
-      constructor() {}
-      destroy(): void {}
+      renderer = {};
+      stage = {};
+      view = document.createElement('canvas');
     },
     Container: class MockContainer {
-      constructor() {}
-      addChild(): void {}
-      removeChild(): void {}
-    },
-    Sprite: class MockSprite {
-      constructor() {}
-    },
-    Texture: class MockTexture {
-      static from(): MockTexture {
-        return new MockTexture();
+      children: unknown[] = [];
+      addChild(child: unknown): unknown {
+        this.children.push(child);
+        return child;
       }
     },
-    Filter: class MockFilter {
-      constructor() {}
+    Texture: class MockTexture {
+      width = 100;
+      height = 100;
     },
-  } as unknown as typeof PIXI;
+    Sprite: class MockSprite {
+      texture = new (
+        globalWithPIXI.PIXI as { Texture: new () => unknown }
+      ).Texture();
+    },
+    Filter: class MockFilter {
+      enabled = true;
+    },
+  };
 
-  // Mock GSAP
-  global.gsap = {
-    to: (): Record<string, unknown> => ({}),
-    from: (): Record<string, unknown> => ({}),
-    fromTo: (): Record<string, unknown> => ({}),
-    timeline: (): Record<string, unknown> => ({}),
-    set: (): Record<string, unknown> => ({}),
-    killTweensOf: (): void => {},
-  } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // Mock GSAP for testing
+  const globalWithGSAP = global as typeof global & { gsap: unknown };
+  globalWithGSAP.gsap = {
+    to: (target: unknown, vars: unknown): unknown => ({ target, vars }),
+    timeline: (vars?: unknown): unknown => ({ vars }),
+    registerPlugin: (): void => {},
+  };
 
   // Mock ResizeObserver
   global.ResizeObserver = class MockResizeObserver {

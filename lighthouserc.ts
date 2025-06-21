@@ -1,4 +1,23 @@
-module.exports = {
+interface LighthouseConfig {
+  ci: {
+    collect: {
+      startServerCommand: string;
+      url: string[];
+      numberOfRuns: number;
+      settings: {
+        chromeFlags: string;
+      };
+    };
+    assert: {
+      assertions: Record<string, string | [string, { minScore?: number; maxNumericValue?: number }]>;
+    };
+    upload: {
+      target: string;
+    };
+  };
+}
+
+const config: LighthouseConfig = {
   ci: {
     collect: {
       startServerCommand: 'pnpm run preview',
@@ -74,3 +93,5 @@ module.exports = {
     },
   },
 };
+
+export default config;

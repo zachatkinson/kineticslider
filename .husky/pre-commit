@@ -1,1 +1,1 @@
-npx lint-staged
+tsx scripts/lint-staged.ts

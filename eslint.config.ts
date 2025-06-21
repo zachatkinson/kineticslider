@@ -4,8 +4,9 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import security from 'eslint-plugin-security';
 import tseslint from 'typescript-eslint';
+import type { TSESLint } from '@typescript-eslint/utils';
 
-export default tseslint.config(
+const config: TSESLint.FlatConfig.ConfigArray = tseslint.config(
   {
     ignores: [
       'dist',
@@ -65,3 +66,5 @@ export default tseslint.config(
     },
   }
 );
+
+export default config;
