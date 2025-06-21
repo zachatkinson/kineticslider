@@ -1,0 +1,15 @@
+{
+  "high": true,
+  "moderate": false,
+  "low": false,
+  "critical": true,
+  "allowlist": [],
+  "skip-dev": false,
+  "report-type": "summary",
+  "retry": {
+    "count": 3,
+    "delay": 1000
+  },
+  "registry": "https://registry.npmjs.org/",
+  "output-format": "text"
+}

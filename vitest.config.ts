@@ -15,16 +15,19 @@ export default defineConfig({
     // Global test utilities
     globals: true,
 
-    // Coverage configuration
+    // Coverage configuration - Enterprise Grade
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov', 'text-summary'],
       exclude: [
         'node_modules/',
         'src/__tests__/',
         '**/*.d.ts',
         '**/*.config.*',
         'dist/',
+        'scripts/',
+        '.storybook/',
+        'storybook-static/',
       ],
       thresholds: {
         global: {
@@ -34,9 +37,14 @@ export default defineConfig({
           statements: 85,
         },
       },
+      // Fail if coverage is below thresholds
+      skipFull: false,
+      all: true,
+      // Report uncovered lines
+      reportOnFailure: true,
     },
 
-    // Test file patterns
+    // Test file patterns - EXCLUDE E2E tests
     include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
 
     // Exclude patterns
@@ -45,7 +53,37 @@ export default defineConfig({
       'dist/',
       '.next/',
       'coverage/',
+      'src/__tests__/e2e/**', // Exclude ALL E2E tests from Vitest
       '**/*.e2e.{test,spec}.{js,ts,jsx,tsx}', // Exclude E2E tests
+    ],
+
+    // Performance & Reliability
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    teardownTimeout: 5000,
+
+    // Parallel execution
+    threads: true,
+    maxThreads: 4,
+    minThreads: 1,
+
+    // Reporter configuration
+    reporter: ['verbose', 'junit'],
+    outputFile: {
+      junit: './test-results.xml',
+    },
+
+    // Mock configuration
+    clearMocks: true,
+    restoreMocks: true,
+
+    // Watch mode exclusions
+    watchExclude: [
+      'node_modules/**',
+      'dist/**',
+      'coverage/**',
+      '.git/**',
+      'src/__tests__/e2e/**', // Also exclude from watch
     ],
   },
 

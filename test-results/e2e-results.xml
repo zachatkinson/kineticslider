@@ -1,0 +1,156 @@
+<testsuites id="" name="" tests="35" failures="0" skipped="35" errors="0" time="0.01330600000000004">
+<testsuite name="basic.test.ts" timestamp="2025-06-21T17:40:47.154Z" hostname="chromium" tests="5" failures="0" skipped="5" time="0" errors="0">
+<testcase name="KineticSlider Basic Functionality › should load the application" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should have proper meta tags for SEO" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be accessible" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should handle keyboard navigation" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be responsive" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="basic.test.ts" timestamp="2025-06-21T17:40:47.154Z" hostname="firefox" tests="5" failures="0" skipped="5" time="0" errors="0">
+<testcase name="KineticSlider Basic Functionality › should load the application" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should have proper meta tags for SEO" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be accessible" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should handle keyboard navigation" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be responsive" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="basic.test.ts" timestamp="2025-06-21T17:40:47.154Z" hostname="webkit" tests="5" failures="0" skipped="5" time="0" errors="0">
+<testcase name="KineticSlider Basic Functionality › should load the application" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should have proper meta tags for SEO" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be accessible" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should handle keyboard navigation" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be responsive" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="basic.test.ts" timestamp="2025-06-21T17:40:47.154Z" hostname="Mobile Chrome" tests="5" failures="0" skipped="5" time="0" errors="0">
+<testcase name="KineticSlider Basic Functionality › should load the application" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should have proper meta tags for SEO" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be accessible" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should handle keyboard navigation" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be responsive" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="basic.test.ts" timestamp="2025-06-21T17:40:47.154Z" hostname="Mobile Safari" tests="5" failures="0" skipped="5" time="0" errors="0">
+<testcase name="KineticSlider Basic Functionality › should load the application" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should have proper meta tags for SEO" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be accessible" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should handle keyboard navigation" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be responsive" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="basic.test.ts" timestamp="2025-06-21T17:40:47.154Z" hostname="Microsoft Edge" tests="5" failures="0" skipped="5" time="0" errors="0">
+<testcase name="KineticSlider Basic Functionality › should load the application" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should have proper meta tags for SEO" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be accessible" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should handle keyboard navigation" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be responsive" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="basic.test.ts" timestamp="2025-06-21T17:40:47.154Z" hostname="Google Chrome" tests="5" failures="0" skipped="5" time="0" errors="0">
+<testcase name="KineticSlider Basic Functionality › should load the application" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should have proper meta tags for SEO" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be accessible" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should handle keyboard navigation" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="KineticSlider Basic Functionality › should be responsive" classname="basic.test.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+</testsuites>

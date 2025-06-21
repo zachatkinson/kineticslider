@@ -61,3 +61,9 @@ out
 
 # Local Netlify folder
 .netlify
+
+# Development HTTPS certificates
+.certs/
+*.key
+*.crt
+*.csr

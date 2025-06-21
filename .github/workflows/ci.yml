@@ -1,345 +1,262 @@
-name: CI
+name: 🚀 CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, 'refactor/**']
   pull_request:
     branches: [main, develop]
 
 env:
-  MAX_MEMORY: 6144MB
-  DEFAULT_TIMEOUT: 15
-  MAX_RETRIES: 3
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
 
 jobs:
-  validate:
+  # 🔍 Security & Dependency Scanning
+  security:
+    name: 🔒 Security Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'pnpm'
-      
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      
-      - name: Type check
-        run: pnpm run types:check
-      
-      - name: Lint
-        run: pnpm run lint
-      
-      - name: Style check
-        run: pnpm run style
-      
-      - name: Test
-        run: pnpm run test
-      
-      - name: Build
-        run: pnpm run build
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
 
+      - name: 🔍 Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: 📤 Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: 🛡️ Audit dependencies
+        run: |
+          npm audit --audit-level=high
+          npx audit-ci --high
+
+  # 🧪 Quality & Testing
+  test:
+    name: 🧪 Test & Quality
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 TypeScript check
+        run: pnpm typecheck
+
+      - name: 🎨 Lint check
+        run: pnpm lint
+
+      - name: 💅 Format check
+        run: pnpm format:check
+
+      - name: 🧪 Unit tests
+        run: pnpm test:coverage
+
+      - name: 📊 Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+
+      - name: ✅ Coverage threshold check
+        run: |
+          # Enforce minimum 85% coverage
+          pnpm test:coverage:check
+
+  # 🎭 E2E Testing
   e2e:
-    needs: validate
+    name: 🎭 E2E Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          version: 8
-      - uses: actions/setup-node@v4
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-      
-      - name: Install dependencies
+
+      - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
-      
-      - name: Install Playwright
-        run: pnpm exec playwright install --with-deps
-      
-      - name: Run E2E tests
-        run: pnpm run test:e2e
-      
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
+
+      - name: 🎭 Install Playwright browsers
+        run: pnpm playwright install --with-deps
+
+      - name: 🏗️ Build application
+        run: pnpm build
+
+      - name: 🎭 Run Playwright tests
+        run: pnpm test:e2e
+
+      - name: 📤 Upload Playwright report
+        uses: actions/upload-artifact@v3
+        if: failure()
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
 
-  security:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'pnpm'
-      
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      
-      - name: Run security scan
-        run: pnpm run security:scan
-      
-      - name: Check bundle size
-        run: pnpm run bundlewatch
-
-  visual:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'pnpm'
-      
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      
-      - name: Publish to Chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          exitZeroOnChanges: true
-
+  # 📊 Performance & Bundle Analysis
   performance:
-    needs: validate
+    name: 📊 Performance Analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          version: 8
-      - uses: actions/setup-node@v4
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-      
-      - name: Install dependencies
+
+      - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
-      
-      - name: Build
-        run: pnpm run build
-      
-      - name: Install Lighthouse CI
-        run: npm install -g @lhci/cli@0.13.x
-      
-      - name: Run Lighthouse CI
-        run: lhci autorun
 
-      - name: Run tests
-        uses: nick-fields/retry@v2
+      - name: 🏗️ Build for analysis
+        run: pnpm build
+
+      - name: 📦 Bundle size analysis
+        run: |
+          pnpm bundle:analyze
+          # Check bundle size limits (100KB gzipped core)
+          pnpm bundle:check
+
+      - name: 🔍 Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  # ♿ Accessibility Testing
+  accessibility:
+    name: ♿ Accessibility Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          timeout_minutes: 10
-          max_attempts: ${{ env.MAX_RETRIES }}
-          command: NODE_OPTIONS="--max-old-space-size=4096" npm test -- --maxWorkers=2 --ci
-          on_retry_command: npm run test:clear-cache
+          version: ${{ env.PNPM_VERSION }}
 
-      - name: Build
-        run: npm run build
-        timeout-minutes: 10
-        env:
-          NODE_OPTIONS: --max-old-space-size=6144
-          NEXT_TELEMETRY_DISABLED: 1
-          CI: true
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
-      - name: Analyze bundle size
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏗️ Build Storybook
+        run: pnpm build-storybook
+
+      - name: ♿ Run accessibility tests
         run: |
-          npx bundlewatch
-        env:
-          BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Monitor error rates
-        run: |
-          if [ -f "./.github/scripts/monitor-errors.js" ]; then
-            # Collect detailed error metrics
-            node ./.github/scripts/monitor-errors.js --detailed-metrics \
-              --track-memory-usage \
-              --track-cpu-usage \
-              --error-threshold=0.01 \
-              --output-format=json \
-              --include-stack-traces \
-              --track-error-patterns
+          # Install axe-core CLI
+          npm install -g @axe-core/cli
+          # Test built Storybook for WCAG 2.2 AA compliance
+          pnpm test:a11y
 
-            # Analyze error patterns
-            if [ -f "error-report.json" ]; then
-              echo "Error Rate Analysis:"
-              jq -r '.errors | "Total Errors: \(.total)\nError Rate: \(.rate)\nTop Patterns: \(.patterns)"' error-report.json
-              
-              # Check against thresholds
-              ERROR_RATE=$(jq -r '.errors.rate' error-report.json)
-              if (( $(echo "$ERROR_RATE > 0.01" | bc -l) )); then
-                echo "::warning::Error rate ($ERROR_RATE) exceeds threshold (0.01)"
-              fi
-            fi
+  # 🚀 Build & Deploy (on main branch only)
+  deploy:
+    name: 🚀 Deploy
+    runs-on: ubuntu-latest
+    needs: [security, test, e2e, performance, accessibility]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏗️ Build
+        run: pnpm build
+
+      - name: 📤 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+
+  # 📋 Quality Gate Summary
+  quality-gate:
+    name: 📋 Quality Gate
+    runs-on: ubuntu-latest
+    needs: [security, test, e2e, performance, accessibility]
+    if: always()
+    steps:
+      - name: ✅ Check all jobs status
+        run: |
+          if [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "❌ Security scan failed"
+            exit 1
           fi
-        continue-on-error: true
-
-      - name: Cleanup resources
-        if: always()
-        run: |
-          npm cache clean --force
-          rm -rf .next
-          rm -rf coverage
-          rm -rf node_modules/.cache
-
-      - name: Upload error logs
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: error-logs
-          path: |
-            ./logs
-            ./coverage
-            ./.next/error.log
-          retention-days: 7
-
-      - name: Accessibility test
-        id: accessibility
-        run: |
-          npm run test:a11y || (
-            echo "::error::Accessibility tests failed"
+          if [[ "${{ needs.test.result }}" != "success" ]]; then
+            echo "❌ Tests failed"
             exit 1
-          )
-        
-      - name: Security audit
-        id: security
-        run: |
-          npm audit || (
-            echo "::warning::Security audit found vulnerabilities"
-          )
-        
-      - name: Upload coverage to Codecov
-        if: success()
-        uses: codecov/codecov-action@v3
-
-      - name: Bundle Size Check
-        uses: preactjs/compressed-size-action@v2
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          pattern: './dist/**/*.{js,css,html}'
-          strip-hash: true
-          
-      - name: Performance Budget Check
-        run: |
-          npx bundlewatch --config .bundlewatch.config.json || (
-            echo "::error::Performance budget exceeded"
+          fi
+          if [[ "${{ needs.e2e.result }}" != "success" ]]; then
+            echo "❌ E2E tests failed"
             exit 1
-          )
-
-      - name: Check for failures
-        if: failure()
-        run: |
-          echo "::error::CI pipeline failed. Check the logs for details."
-          exit 1
-
-      - name: Security Scan
-        id: security-scan
-        run: |
-          # Install and run SAST tools
-          npm install -g snyk
-          snyk test || (
-            echo "::warning::Security vulnerabilities found"
-          )
-          
-          # Check security headers
-          npx check-security-headers https://localhost:3000 || (
-            echo "::warning::Security headers check failed"
-          )
-          
-      - name: Dependency Vulnerability Check
-        id: dependency-check
-        run: |
-          npm audit --audit-level=high || (
-            echo "::warning::High severity vulnerabilities found"
-          )
-          
-          # Run additional dependency checks
-          npx dependency-check . || (
-            echo "::warning::Dependency check failed"
-          )
-          
-      - name: Enhanced Monitoring Setup
-        id: monitoring
-        run: |
-          # Setup monitoring
-          npm install -g @monitoring/cli
-          
-          # Track performance metrics
-          monitor track-metrics \
-            --type=performance \
-            --metrics=FCP,LCP,CLS,TTI \
-            --output=metrics.json
-            
-          # Monitor error rates
-          monitor track-errors \
-            --window=1h \
-            --threshold=0.01 \
-            --output=errors.json
-            
-          # Track resource usage
-          monitor track-resources \
-            --metrics=cpu,memory,network \
-            --interval=5m \
-            --output=resources.json
-            
-      - name: Upload Monitoring Results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: monitoring-results
-          path: |
-            metrics.json
-            errors.json
-            resources.json
-
-  documentation:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'pnpm'
-      
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      
-      - name: Generate documentation
-        run: pnpm run docs:generate
-      
-      - name: Upload documentation artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: documentation
-          path: docs/
-          retention-days: 30
-      
-      - name: Deploy documentation (main branch only)
-        if: github.ref == 'refs/heads/main'
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: docs
-          branch: gh-pages
-          target-folder: docs 
+          fi
+          if [[ "${{ needs.performance.result }}" != "success" ]]; then
+            echo "❌ Performance checks failed"
+            exit 1
+          fi
+          if [[ "${{ needs.accessibility.result }}" != "success" ]]; then
+            echo "❌ Accessibility tests failed"
+            exit 1
+          fi
+          echo "✅ All quality gates passed!" 

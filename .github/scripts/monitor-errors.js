@@ -10,7 +10,7 @@ const CPU_THRESHOLD_PERCENT = 80; // 80% CPU threshold
 const ERROR_PATHS = {
   next: path.resolve('./.next/error.log'),
   test: path.resolve('./coverage/coverage-final.json'),
-  build: path.resolve('./logs/build-errors.log')
+  build: path.resolve('./logs/build-errors.log'),
 };
 
 // Helper function to check if file exists
@@ -28,7 +28,8 @@ const parseNextErrors = () => {
   if (!fileExists(ERROR_PATHS.next)) return 0;
   try {
     const content = fs.readFileSync(ERROR_PATHS.next, 'utf8');
-    return content.split('\n').filter(line => line.includes('[Error]')).length;
+    return content.split('\n').filter((line) => line.includes('[Error]'))
+      .length;
   } catch (error) {
     console.error('Error parsing Next.js error log:', error.message);
     return 0;
@@ -41,7 +42,10 @@ const parseTestErrors = () => {
   try {
     const coverage = JSON.parse(fs.readFileSync(ERROR_PATHS.test, 'utf8'));
     return Object.values(coverage).reduce((total, file) => {
-      return total + (file.s ? Object.values(file.s).filter(v => v === 0).length : 0);
+      return (
+        total +
+        (file.s ? Object.values(file.s).filter((v) => v === 0).length : 0)
+      );
     }, 0);
   } catch (error) {
     console.error('Error parsing test coverage:', error.message);
@@ -60,13 +64,13 @@ const checkResourceUsage = () => {
     memory: {
       used: Math.round(memoryUsageMB),
       threshold: MEMORY_THRESHOLD_MB,
-      exceeded: memoryUsageMB > MEMORY_THRESHOLD_MB
+      exceeded: memoryUsageMB > MEMORY_THRESHOLD_MB,
     },
     cpu: {
       percent: Math.round(cpuPercent),
       threshold: CPU_THRESHOLD_PERCENT,
-      exceeded: cpuPercent > CPU_THRESHOLD_PERCENT
-    }
+      exceeded: cpuPercent > CPU_THRESHOLD_PERCENT,
+    },
   };
 };
 
@@ -83,17 +87,14 @@ const generateReport = () => {
       total: totalErrors,
       next: nextErrors,
       test: testErrors,
-      rate: totalErrors / 100 // Simplified error rate calculation
+      rate: totalErrors / 100, // Simplified error rate calculation
     },
-    resources: resourceUsage
+    resources: resourceUsage,
   };
 
   // Write report to file
   try {
-    fs.writeFileSync(
-      './error-report.json',
-      JSON.stringify(report, null, 2)
-    );
+    fs.writeFileSync('./error-report.json', JSON.stringify(report, null, 2));
   } catch (error) {
     console.error('Error writing report:', error.message);
   }
@@ -107,9 +108,11 @@ try {
   console.log('Error Monitoring Report:', JSON.stringify(report, null, 2));
 
   // Check thresholds and exit with error if exceeded
-  if (report.errors.rate > ERROR_RATE_THRESHOLD ||
-      report.resources.memory.exceeded ||
-      report.resources.cpu.exceeded) {
+  if (
+    report.errors.rate > ERROR_RATE_THRESHOLD ||
+    report.resources.memory.exceeded ||
+    report.resources.cpu.exceeded
+  ) {
     console.error('Error thresholds exceeded!');
     process.exit(1);
   }
@@ -118,4 +121,4 @@ try {
 } catch (error) {
   console.error('Fatal error in monitoring script:', error.message);
   process.exit(1);
-} 
+}
