@@ -104,8 +104,15 @@ Complete rewrite of KineticSlider using modern best practices, clean architectur
 - [ ] Create error handling framework
 - [ ] Set up logging and monitoring
 
-**Milestone**: Architecture documented, contracts defined
+#### 1.2.1 Observability & Analytics Infrastructure
+- [ ] Set up error tracking (Sentry integration)
+- [ ] Configure real user monitoring (RUM)
+- [ ] Create analytics event framework
+- [ ] Set up business metrics tracking
+- [ ] Create observability dashboard foundation
+- [ ] Implement performance telemetry collection
 
+**Milestone**: Architecture documented, contracts defined, observability foundation ready
 #### 1.3 Base Infrastructure
 - [ ] Create core context providers
 - [ ] Implement base hooks (useSlider, useRenderer)
