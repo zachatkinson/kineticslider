@@ -1,34 +1,33 @@
 import { test, expect } from '@playwright/test';
+import { navigateAndWait, testViewportResponsiveness } from './utils';
+import { CSS_SELECTORS } from '../../core/constants';
 
 test.describe('KineticSlider Basic Functionality', () => {
   test('should load the application', async ({ page }) => {
-    await page.goto('/');
-
-    // Wait for the page to load
-    await page.waitForLoadState('networkidle');
+    await navigateAndWait(page);
 
     // Check that the page title is correct
     await expect(page).toHaveTitle(/KineticSlider/);
 
     // Check for basic page structure
-    const main = page.locator('main, #root, [data-testid="app"]').first();
+    const main = page.locator(CSS_SELECTORS.MAIN_SELECTORS).first();
     await expect(main).toBeVisible();
   });
 
   test('should have proper meta tags for SEO', async ({ page }) => {
-    await page.goto('/');
+    await navigateAndWait(page);
 
     // Check for viewport meta tag
-    const viewport = page.locator('meta[name="viewport"]');
+    const viewport = page.locator(CSS_SELECTORS.VIEWPORT_META);
     await expect(viewport).toHaveAttribute('content', /width=device-width/);
 
     // Check for description meta tag
-    const description = page.locator('meta[name="description"]');
+    const description = page.locator(CSS_SELECTORS.DESCRIPTION_META);
     await expect(description).toHaveAttribute('content');
   });
 
   test('should be accessible', async ({ page }) => {
-    await page.goto('/');
+    await navigateAndWait(page);
 
     // Check for proper heading structure
     const h1 = page.locator('h1').first();
@@ -37,14 +36,14 @@ test.describe('KineticSlider Basic Functionality', () => {
     }
 
     // Check for skip links or main landmark
-    const main = page.locator('main, [role="main"]').first();
+    const main = page.locator(CSS_SELECTORS.MAIN_ROLE).first();
     if ((await main.count()) > 0) {
       await expect(main).toBeVisible();
     }
   });
 
   test('should handle keyboard navigation', async ({ page }) => {
-    await page.goto('/');
+    await navigateAndWait(page);
 
     // Test tab navigation
     await page.keyboard.press('Tab');
@@ -57,25 +56,24 @@ test.describe('KineticSlider Basic Functionality', () => {
   });
 
   test('should be responsive', async ({ page }) => {
-    await page.goto('/');
+    await navigateAndWait(page);
 
-    // Test mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForTimeout(500); // Allow for responsive adjustments
+    // Test all viewport sizes
+    const results = await testViewportResponsiveness(
+      page,
+      CSS_SELECTORS.MAIN_SELECTORS
+    );
 
-    const main = page.locator('main, #root, [data-testid="app"]').first();
-    await expect(main).toBeVisible();
+    // Verify all viewports show content
+    results.forEach((result, _index) => {
+      expect(result.isVisible).toBe(true);
+    });
+  });
 
-    // Test tablet viewport
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await page.waitForTimeout(500);
+  test('should display image meta title', async ({ page }) => {
+    await navigateAndWait(page);
 
-    await expect(main).toBeVisible();
-
-    // Test desktop viewport
-    await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.waitForTimeout(500);
-
-    await expect(main).toBeVisible();
+    const text = await page.textContent('.image-meta title') || '';
+    expect(text).toMatch(/Image \d+ of \d+/);
   });
 });

@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './src/__tests__/e2e',
 
+
+
   /* Run tests in files in parallel */
   fullyParallel: true,
 
@@ -27,17 +29,26 @@ export default defineConfig({
   },
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['html'],
-    ['junit', { outputFile: 'test-results/e2e-results.xml' }],
-    ['json', { outputFile: 'test-results/e2e-results.json' }],
-    ...(process.env.CI ? [['github']] : []),
-  ],
+  reporter: process.env.CI 
+    ? [
+        ['html'],
+        ['junit', { outputFile: 'test-results/e2e-results.xml' }],
+        ['json', { outputFile: 'test-results/e2e-results.json' }],
+        ['github']
+      ]
+    : [
+        ['html'],
+        ['junit', { outputFile: 'test-results/e2e-results.xml' }],
+        ['json', { outputFile: 'test-results/e2e-results.json' }]
+      ],
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:3000',
+    baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:8080',
+    
+    /* Ignore HTTPS errors for local development */
+    ignoreHTTPSErrors: false,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -76,11 +87,7 @@ export default defineConfig({
       use: { ...devices['iPhone 12'] },
     },
 
-    /* Test against branded browsers. */
-    {
-      name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    },
+    /* Test against installed browsers only */
     {
       name: 'Google Chrome',
       use: { ...devices['Desktop Chrome'], channel: 'chrome' },
@@ -95,9 +102,9 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: 'pnpm dev',
-        port: 3000,
+        command: 'npx serve public -l 8080',
+        port: 8080,
         reuseExistingServer: !process.env.CI,
-        timeout: 120 * 1000,
+        timeout: 30 * 1000,
       },
 });

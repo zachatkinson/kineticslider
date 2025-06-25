@@ -4,7 +4,10 @@ async function globalSetup(config: FullConfig): Promise<void> {
   console.log('Starting E2E test global setup...');
 
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const context = await browser.newContext({
+    ignoreHTTPSErrors: true,
+  });
+  const page = await context.newPage();
 
   try {
     const baseURL = config.projects[0].use.baseURL || 'http://localhost:3000';

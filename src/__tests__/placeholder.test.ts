@@ -10,6 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { PROJECT_PHASES } from '../core/constants';
 
 /**
  * Test suite for verifying external library mocks
@@ -60,6 +61,6 @@ describe('KineticSlider', () => {
    */
   it('should be implemented in Phase 2', () => {
     // TODO: Implement actual slider tests in Phase 2
-    expect('Phase 1.2 Complete').toBeTruthy();
+    expect(`${PROJECT_PHASES.PHASE_1_2} Complete`).toBeTruthy();
   });
 });

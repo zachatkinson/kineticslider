@@ -9,14 +9,18 @@
  * @since 1.0.0
  */
 
+// Only setup Jest DOM if we're not in a Playwright environment
 import '@testing-library/jest-dom';
+
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll } from 'vitest';
 
-// Cleanup after each test
-afterEach((): void => {
-  cleanup();
-});
+// Cleanup after each test - only in Vitest environment
+if (typeof process !== 'undefined' && !process.env.PLAYWRIGHT_TEST) {
+  afterEach((): void => {
+    cleanup();
+  });
+}
 
 /**
  * Setup PIXI.js mock for testing environment
@@ -57,30 +61,35 @@ beforeAll(() => {
   // Mock GSAP for testing
   const globalWithGSAP = global as typeof global & { gsap: unknown };
   globalWithGSAP.gsap = {
-    to: (target: unknown, vars: unknown): unknown => ({ target, vars }),
-    timeline: (vars?: unknown): unknown => ({ vars }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    to: (target: any, vars: any): any => ({ target, vars }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    timeline: (vars?: any): any => ({ vars }),
     registerPlugin: (): void => {},
-  };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
 
   // Mock ResizeObserver
-  global.ResizeObserver = class MockResizeObserver {
+  global.ResizeObserver = class MockResizeObserver implements ResizeObserver {
     observe(): void {}
     unobserve(): void {}
     disconnect(): void {}
-  } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  };
 
   // Mock IntersectionObserver
-  global.IntersectionObserver = class MockIntersectionObserver {
+  global.IntersectionObserver = class MockIntersectionObserver
+    implements IntersectionObserver
+  {
     root = null;
     rootMargin = '';
-    thresholds = [];
+    thresholds: readonly number[] = [];
     observe(): void {}
     unobserve(): void {}
     disconnect(): void {}
     takeRecords(): IntersectionObserverEntry[] {
       return [];
     }
-  } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  };
 
   // Mock requestAnimationFrame
   global.requestAnimationFrame = (cb: FrameRequestCallback): number => {
