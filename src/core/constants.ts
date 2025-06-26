@@ -281,19 +281,23 @@ export const WAIT_STRATEGIES = {
 // ⚡ Performance Constants
 // =============================================================================
 
-/** Performance targeting constants */
-export const PERFORMANCE = {
-  /** Target frame rate */
+/** Performance optimization constants */
+export const PERFORMANCE: Record<string, number> = {
+  /** Target frame rate for animations */
   TARGET_FPS: 60,
   /** Frame budget in milliseconds (1000ms / 60fps) */
   FRAME_BUDGET_MS: 16.67,
-  /** Maximum acceptable frame time */
+  /** Maximum frame processing time */
   MAX_FRAME_TIME_MS: 16,
-  /** Memory warning threshold (bytes) */
-  MEMORY_WARNING_THRESHOLD: 50 * 1024 * 1024, // 50MB
-  /** Memory critical threshold (bytes) */
-  MEMORY_CRITICAL_THRESHOLD: 100 * 1024 * 1024, // 100MB
-} as const;
+  /** Memory usage warning threshold (as fraction of total memory) */
+  MEMORY_WARNING_THRESHOLD: 0.7,
+  /** Memory usage critical threshold (as fraction of total memory) */
+  MEMORY_CRITICAL_THRESHOLD: 0.9,
+  /** Sample buffer size for velocity tracking */
+  SAMPLE_BUFFER_SIZE: 10,
+  /** Throttle interval for 60fps performance (16.67ms) */
+  THROTTLE_INTERVAL: 16.67,
+};
 
 // =============================================================================
 // 🎬 Animation Constants
@@ -359,6 +363,19 @@ export const PHYSICS = {
   EXIT_SPEED_FACTOR: 0.6,
   /** Minimum animation duration (seconds) */
   MIN_DURATION: 0.05,
+  /** Distance normalization factor for drag calculations */
+  DISTANCE_NORMALIZATION: 100,
+  /** Spring calculation minimum constant threshold */
+  SPRING_MIN_CONSTANT: 0.1,
+  /** Duration calculation factors */
+  DURATION_FACTORS: {
+    /** Minimum duration offset multiplier */
+    MIN_OFFSET: 0.5,
+    /** Maximum duration offset multiplier */
+    MAX_OFFSET: 0.5,
+    /** Spring damping intensity factor */
+    SPRING_DAMPING_FACTOR: 0.5,
+  },
   /** Time factor bounds for adaptive timing */
   TIME_FACTOR: {
     MIN: 0.5,
@@ -495,6 +512,8 @@ export const INPUT = {
   DOUBLE_TAP_MAX_DELAY: 300,
   /** Maximum touch targets for multi-touch */
   MAX_TOUCH_TARGETS: 2,
+  /** Minimum movement threshold for input */
+  MIN_MOVEMENT_THRESHOLD: 0.1,
 } as const;
 
 /** Interaction timing constants */

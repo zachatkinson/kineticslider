@@ -12,36 +12,12 @@
 // 🎯 Core System Exports
 // =============================================================================
 
-export type {
-  // Core interfaces
-  ISliderEngine,
-  ISliderPhysics,
-  ISliderRenderer,
-  ISliderController,
+export * from './types';
 
-  // Configuration types
-  SliderConfig,
-  PhysicsConfig,
-  RenderConfig,
-  InputConfig,
-
-  // State and data types
-  SliderState,
-  EventEmitter,
-  InputCallbacks,
-  SlideData,
-  FilterConfig,
-  DisplacementConfig,
-  SliderText,
-
-  // Service types
-  ServiceKey,
-} from './types';
-
-export type { IServiceContainer } from './container';
+export * from './container';
 export { serviceContainer, SERVICE_KEYS } from './container';
-export { SimpleEventEmitter } from './event-emitter';
-export { SliderEngine } from './engine';
+export * from './event-emitter';
+export * from './engine';
 
 // =============================================================================
 // 🎨 Animation Constants Group
@@ -131,3 +107,6 @@ export {
 // =============================================================================
 
 export { validateConstants } from './constants';
+
+// Export sprite helper utilities
+export * from './sprite-helpers';
