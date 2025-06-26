@@ -292,17 +292,17 @@ describe('SliderPhysicsEngine', () => {
 
       // Quick interaction (500ms, high intensity)
       const quickTiming = engine.calculateAdaptiveTiming(500, INTENSITY.HIGH);
-              expect(quickTiming).toBeCloseTo(
-          TEST_CONFIG.EXPECTED.TIMING_065,
-          TEST_TOLERANCE.TIMING
-        ); // More tolerance for calculation variance
+      expect(quickTiming).toBeCloseTo(
+        TEST_CONFIG.EXPECTED.TIMING_065,
+        TEST_TOLERANCE.TIMING
+      ); // More tolerance for calculation variance
 
       // Slow interaction (2000ms, low intensity)
       const slowTiming = engine.calculateAdaptiveTiming(2000, INTENSITY.LOW);
-              expect(slowTiming).toBeCloseTo(
-          TEST_CONFIG.EXPECTED.TIMING_18,
-          TEST_TOLERANCE.PERFORMANCE
-        ); // More tolerance for calculation variance
+      expect(slowTiming).toBeCloseTo(
+        TEST_CONFIG.EXPECTED.TIMING_18,
+        TEST_TOLERANCE.PERFORMANCE
+      ); // More tolerance for calculation variance
     });
 
     it('should calculate momentum decay', () => {

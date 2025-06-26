@@ -71,10 +71,10 @@ export class SimpleEventEmitter implements EventEmitter {
       try {
         callback(...args);
       } catch (error) {
-              // Emit error event instead of console.error for better error handling
-      if (event !== SLIDER_EVENTS.ERROR) {
-        this.emit(SLIDER_EVENTS.ERROR, { event, error, callback });
-      }
+        // Emit error event instead of console.error for better error handling
+        if (event !== SLIDER_EVENTS.ERROR) {
+          this.emit(SLIDER_EVENTS.ERROR, { event, error, callback });
+        }
       }
     });
   }

@@ -9,7 +9,12 @@ import type {
   InputCallbacks,
 } from './types';
 import { serviceContainer, SERVICE_KEYS } from './container';
-import { ERROR_MESSAGES, INTERACTION_EFFECTS, SLIDER_EVENTS, TEST_CONFIG } from '.';
+import {
+  ERROR_MESSAGES,
+  INTERACTION_EFFECTS,
+  SLIDER_EVENTS,
+  TEST_CONFIG,
+} from '.';
 
 /**
  * Central SliderEngine - Coordinates all slider functionality
@@ -120,7 +125,10 @@ export class SliderEngine implements ISliderEngine {
 
     try {
       this.setState({ isTransitioning: true });
-      this.emit(SLIDER_EVENTS.SLIDE_CHANGE_START, { from: previousIndex, to: index });
+      this.emit(SLIDER_EVENTS.SLIDE_CHANGE_START, {
+        from: previousIndex,
+        to: index,
+      });
 
       if (animated && this.physics && this.renderer) {
         // Get sprites from renderer
@@ -150,7 +158,10 @@ export class SliderEngine implements ISliderEngine {
         isTransitioning: false,
       });
 
-      this.emit(SLIDER_EVENTS.SLIDE_CHANGED, { from: previousIndex, to: index });
+      this.emit(SLIDER_EVENTS.SLIDE_CHANGED, {
+        from: previousIndex,
+        to: index,
+      });
     } catch (error) {
       this.setState({ isTransitioning: false });
       throw new Error(ERROR_MESSAGES.NAVIGATION_FAILED(index, error));
@@ -273,7 +284,8 @@ export class SliderEngine implements ISliderEngine {
 
       if (currentSprite) {
         // Apply scale effect based on drag distance
-        const intensity = Math.abs(deltaX) / TEST_CONFIG.CALCULATION.MOVEMENT_BASE; // Scale based on drag distance
+        const intensity =
+          Math.abs(deltaX) / TEST_CONFIG.CALCULATION.MOVEMENT_BASE; // Scale based on drag distance
         this.physics.animateScale(
           currentSprite,
           INTERACTION_EFFECTS.BASE_SCALE +
@@ -313,7 +325,10 @@ export class SliderEngine implements ISliderEngine {
   private setState(updates: Partial<SliderState>): void {
     const previousState = { ...this.state };
     this.state = { ...this.state, ...updates };
-    this.emit(SLIDER_EVENTS.STATE_CHANGED, { previous: previousState, current: this.state });
+    this.emit(SLIDER_EVENTS.STATE_CHANGED, {
+      previous: previousState,
+      current: this.state,
+    });
   }
 
   /**
@@ -323,4 +338,3 @@ export class SliderEngine implements ISliderEngine {
     return index >= 0 && index < this.state.totalSlides;
   }
 }
- 

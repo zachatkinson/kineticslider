@@ -255,8 +255,6 @@ export const CSS_SELECTORS = {
   FOCUS: ':focus',
 } as const;
 
-
-
 /** Property arrays for animations to eliminate DRY violations */
 export const ANIMATION_PROPERTIES = {
   /** Basic transform properties */

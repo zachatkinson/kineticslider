@@ -302,7 +302,7 @@ test.describe('KineticSlider Foundation', () => {
     test('should support drag and drop for slider interaction', async ({
       page,
     }) => {
-            const dragSupport = await page.evaluate(() => {
+      const dragSupport = await page.evaluate(() => {
         return {
           dragEvents: 'ondragstart' in document.createElement('div'),
           dataTransfer: typeof DataTransfer === 'function',

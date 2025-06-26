@@ -13,8 +13,19 @@ import {
   createMockService,
   cleanupServiceContainer,
 } from '../utils/test-factories';
-import { SLIDER_EVENTS, TEST_CONFIG, INPUT, DEFAULT_RENDER_CONFIG } from '../../core';
-import type { SliderConfig, ISliderPhysics, ISliderRenderer, ISliderController, EventEmitter } from '../../core/types';
+import {
+  SLIDER_EVENTS,
+  TEST_CONFIG,
+  INPUT,
+  DEFAULT_RENDER_CONFIG,
+} from '../../core';
+import type {
+  SliderConfig,
+  ISliderPhysics,
+  ISliderRenderer,
+  ISliderController,
+  EventEmitter,
+} from '../../core/types';
 
 describe('SliderEngine', () => {
   let engine: SliderEngine;
@@ -40,11 +51,13 @@ describe('SliderEngine', () => {
     } as unknown as ISliderPhysics;
 
     mockRenderer = {
-      getSprites: vi.fn().mockReturnValue([
-        createMockService('sprite1'),
-        createMockService('sprite2'),
-        createMockService('sprite3'),
-      ]),
+      getSprites: vi
+        .fn()
+        .mockReturnValue([
+          createMockService('sprite1'),
+          createMockService('sprite2'),
+          createMockService('sprite3'),
+        ]),
       setVisible: vi.fn(),
       destroy: vi.fn(),
     } as unknown as ISliderRenderer;
@@ -66,15 +79,14 @@ describe('SliderEngine', () => {
     serviceContainer.register(SERVICE_KEYS.PHYSICS, () => mockPhysics);
     serviceContainer.register(SERVICE_KEYS.RENDERER, () => mockRenderer);
     serviceContainer.register(SERVICE_KEYS.CONTROLLER, () => mockController);
-    serviceContainer.register(SERVICE_KEYS.EVENT_EMITTER, () => mockEventEmitter);
+    serviceContainer.register(
+      SERVICE_KEYS.EVENT_EMITTER,
+      () => mockEventEmitter
+    );
 
     // Create test config
     mockConfig = {
-      images: [
-        'image1.jpg',
-        'image2.jpg',
-        'image3.jpg',
-      ],
+      images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
       physics: {
         transitionDuration: TEST_CONFIG.DURATION.STANDARD,
         transitionEase: 'power2.out',
@@ -111,8 +123,12 @@ describe('SliderEngine', () => {
       expect(state.currentIndex).toBe(0);
 
       // Verify services were configured
-      expect(mockPhysics.setPhysicsConfig).toHaveBeenCalledWith(mockConfig.physics);
-      expect(mockController.setInputConfig).toHaveBeenCalledWith(mockConfig.input);
+      expect(mockPhysics.setPhysicsConfig).toHaveBeenCalledWith(
+        mockConfig.physics
+      );
+      expect(mockController.setInputConfig).toHaveBeenCalledWith(
+        mockConfig.input
+      );
       expect(mockController.initialize).toHaveBeenCalled();
 
       // Verify initialization event was emitted
@@ -142,7 +158,12 @@ describe('SliderEngine', () => {
 
       // Capture state changes during initialization
       vi.mocked(mockEventEmitter.emit).mockImplementation((event, data) => {
-        if (event === SLIDER_EVENTS.STATE_CHANGED && data && typeof data === 'object' && 'current' in data) {
+        if (
+          event === SLIDER_EVENTS.STATE_CHANGED &&
+          data &&
+          typeof data === 'object' &&
+          'current' in data
+        ) {
           capturedStates.push((data as { current: unknown }).current);
         }
       });
@@ -150,14 +171,23 @@ describe('SliderEngine', () => {
       await engine.initialize(mockConfig);
 
       // Verify loading progress was updated
-      const loadingStates = capturedStates.filter(state => 
-        state && typeof state === 'object' && 'isLoading' in state && (state as { isLoading: boolean }).isLoading
+      const loadingStates = capturedStates.filter(
+        (state) =>
+          state &&
+          typeof state === 'object' &&
+          'isLoading' in state &&
+          (state as { isLoading: boolean }).isLoading
       );
       expect(loadingStates.length).toBeGreaterThan(0);
-      expect(loadingStates.some(state => 
-        state && typeof state === 'object' && 'loadingProgress' in state && 
-        (state as { loadingProgress: number }).loadingProgress > 0
-      )).toBe(true);
+      expect(
+        loadingStates.some(
+          (state) =>
+            state &&
+            typeof state === 'object' &&
+            'loadingProgress' in state &&
+            (state as { loadingProgress: number }).loadingProgress > 0
+        )
+      ).toBe(true);
     });
   });
 
@@ -320,7 +350,10 @@ describe('SliderEngine', () => {
     it('should emit events', () => {
       engine.emit('test-event', 'test-data');
 
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith('test-event', 'test-data');
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'test-event',
+        'test-data'
+      );
     });
   });
 
@@ -331,7 +364,8 @@ describe('SliderEngine', () => {
 
     it('should handle drag start events', () => {
       // Simulate drag start through input callbacks
-      const inputCallbacks = vi.mocked(mockController.initialize).mock.calls[0][1];
+      const inputCallbacks = vi.mocked(mockController.initialize).mock
+        .calls[0][1];
       inputCallbacks.onDragStart(100, 200);
 
       expect(mockEventEmitter.emit).toHaveBeenCalledWith(
@@ -341,7 +375,8 @@ describe('SliderEngine', () => {
     });
 
     it('should apply scale effect during drag move', () => {
-      const inputCallbacks = vi.mocked(mockController.initialize).mock.calls[0][1];
+      const inputCallbacks = vi.mocked(mockController.initialize).mock
+        .calls[0][1];
       inputCallbacks.onDragMove(150, 250, 50, 50);
 
       expect(mockPhysics.animateScale).toHaveBeenCalled();
@@ -352,7 +387,8 @@ describe('SliderEngine', () => {
     });
 
     it('should reset scale on drag end', () => {
-      const inputCallbacks = vi.mocked(mockController.initialize).mock.calls[0][1];
+      const inputCallbacks = vi.mocked(mockController.initialize).mock
+        .calls[0][1];
       inputCallbacks.onDragEnd(120, 220);
 
       expect(mockPhysics.animateScale).toHaveBeenCalled();
@@ -369,7 +405,8 @@ describe('SliderEngine', () => {
     });
 
     it('should handle swipe left input', async () => {
-      const inputCallbacks = vi.mocked(mockController.initialize).mock.calls[0][1];
+      const inputCallbacks = vi.mocked(mockController.initialize).mock
+        .calls[0][1];
       await inputCallbacks.onSwipeLeft();
 
       expect(engine.getCurrentIndex()).toBe(1); // Next slide
@@ -378,22 +415,25 @@ describe('SliderEngine', () => {
     it('should handle swipe right input', async () => {
       // Move to slide 1 first
       await engine.goToSlide(1);
-      
-      const inputCallbacks = vi.mocked(mockController.initialize).mock.calls[0][1];
+
+      const inputCallbacks = vi.mocked(mockController.initialize).mock
+        .calls[0][1];
       await inputCallbacks.onSwipeRight();
 
       expect(engine.getCurrentIndex()).toBe(0); // Previous slide
     });
 
     it('should handle keyboard left input', async () => {
-      const inputCallbacks = vi.mocked(mockController.initialize).mock.calls[0][1];
+      const inputCallbacks = vi.mocked(mockController.initialize).mock
+        .calls[0][1];
       await inputCallbacks.onKeyLeft();
 
       expect(engine.getCurrentIndex()).toBe(2); // Previous slide (wrapped)
     });
 
     it('should handle keyboard right input', async () => {
-      const inputCallbacks = vi.mocked(mockController.initialize).mock.calls[0][1];
+      const inputCallbacks = vi.mocked(mockController.initialize).mock
+        .calls[0][1];
       await inputCallbacks.onKeyRight();
 
       expect(engine.getCurrentIndex()).toBe(1); // Next slide
@@ -418,7 +458,9 @@ describe('SliderEngine', () => {
       expect(state.currentIndex).toBe(0);
       expect(state.totalSlides).toBe(0);
 
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith(SLIDER_EVENTS.DESTROYED);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        SLIDER_EVENTS.DESTROYED
+      );
     });
   });
 
@@ -434,7 +476,7 @@ describe('SliderEngine', () => {
 
     it('should handle navigation before initialization', async () => {
       await engine.goToSlide(1);
-      
+
       // Should not navigate
       expect(engine.getCurrentIndex()).toBe(0);
     });
@@ -446,4 +488,4 @@ describe('SliderEngine', () => {
       await expect(engine.initialize(mockConfig)).rejects.toThrow();
     });
   });
-}); 
+});

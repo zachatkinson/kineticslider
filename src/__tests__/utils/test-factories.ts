@@ -853,7 +853,7 @@ export const assertTimelineExists = (timeline: unknown) => {
  */
 export const assertAnimationExists = (animation: unknown) => {
   assertExists(animation);
-      expect(typeof animation).toBe(DOM_PROPERTIES.TYPE_OBJECT);
+  expect(typeof animation).toBe(DOM_PROPERTIES.TYPE_OBJECT);
 };
 
 /**

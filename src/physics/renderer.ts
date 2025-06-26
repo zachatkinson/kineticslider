@@ -176,16 +176,26 @@ export class PixiSliderRenderer {
       ...props,
       // GPU optimization
       onStart: () => {
-            // Note: Can't use DOM_PROPERTIES.TYPE_OBJECT here due to TypeScript typeof constraint
-            if (target && typeof target === 'object' && DOM_PROPERTIES.STYLE in target) {
-      (target as HTMLElement).style.willChange = DOM_PROPERTIES.WILL_CHANGE_TRANSFORM;
-    }
+        // Note: Can't use DOM_PROPERTIES.TYPE_OBJECT here due to TypeScript typeof constraint
+        if (
+          target &&
+          typeof target === 'object' &&
+          DOM_PROPERTIES.STYLE in target
+        ) {
+          (target as HTMLElement).style.willChange =
+            DOM_PROPERTIES.WILL_CHANGE_TRANSFORM;
+        }
       },
       onComplete: () => {
-            // Note: Can't use DOM_PROPERTIES.TYPE_OBJECT here due to TypeScript typeof constraint
-            if (target && typeof target === 'object' && DOM_PROPERTIES.STYLE in target) {
-      (target as HTMLElement).style.willChange = DOM_PROPERTIES.WILL_CHANGE_AUTO;
-    }
+        // Note: Can't use DOM_PROPERTIES.TYPE_OBJECT here due to TypeScript typeof constraint
+        if (
+          target &&
+          typeof target === 'object' &&
+          DOM_PROPERTIES.STYLE in target
+        ) {
+          (target as HTMLElement).style.willChange =
+            DOM_PROPERTIES.WILL_CHANGE_AUTO;
+        }
         this.activeTweens.delete(tween);
         props.onComplete?.();
       },
@@ -276,14 +286,14 @@ export class PixiSliderRenderer {
   markSpritesForGSAP(sprites: Sprite[]): void {
     sprites.forEach((sprite, index) => {
       // Add data attribute for GSAP selector targeting
-          // Note: Can't use DOM_PROPERTIES.TYPE_OBJECT here due to TypeScript typeof constraint
-          if (sprite && typeof sprite === 'object') {
-      (sprite as unknown as { [DATA_ATTRIBUTES.SLIDER_SPRITE]: boolean })[
-        DATA_ATTRIBUTES.SLIDER_SPRITE
-      ] = true;
-      (sprite as unknown as { [DATA_ATTRIBUTES.SPRITE_INDEX]: number })[
-        DATA_ATTRIBUTES.SPRITE_INDEX
-      ] = index;
+      // Note: Can't use DOM_PROPERTIES.TYPE_OBJECT here due to TypeScript typeof constraint
+      if (sprite && typeof sprite === 'object') {
+        (sprite as unknown as { [DATA_ATTRIBUTES.SLIDER_SPRITE]: boolean })[
+          DATA_ATTRIBUTES.SLIDER_SPRITE
+        ] = true;
+        (sprite as unknown as { [DATA_ATTRIBUTES.SPRITE_INDEX]: number })[
+          DATA_ATTRIBUTES.SPRITE_INDEX
+        ] = index;
       }
     });
   }
@@ -316,7 +326,10 @@ export class PixiSliderRenderer {
       sprites.every(
         (sprite) =>
           // Note: Can't use DOM_PROPERTIES.TYPE_OBJECT here due to TypeScript typeof constraint
-          sprite && typeof sprite === 'object' && DOM_PROPERTIES.X_COORDINATE in sprite && DOM_PROPERTIES.Y_COORDINATE in sprite
+          sprite &&
+          typeof sprite === 'object' &&
+          DOM_PROPERTIES.X_COORDINATE in sprite &&
+          DOM_PROPERTIES.Y_COORDINATE in sprite
       )
     );
   }

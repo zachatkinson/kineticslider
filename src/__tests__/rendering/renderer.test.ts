@@ -24,13 +24,13 @@ import { ERROR_MESSAGES, RENDERING, VIEWPORT, SCALE } from '../../core';
 // 🎯 Default Configuration for Testing
 // =============================================================================
 
-  const DEFAULT_TEST_RENDER_CONFIG: RenderConfig = {
-    width: VIEWPORT.DESKTOP.width,
-    height: VIEWPORT.DESKTOP.height,
-    backgroundColor: RENDERING.BACKGROUND_COLOR,
-    antialias: RENDERING.ANTIALIAS,
-    resolution: RENDERING.RESOLUTION,
-  };
+const DEFAULT_TEST_RENDER_CONFIG: RenderConfig = {
+  width: VIEWPORT.DESKTOP.width,
+  height: VIEWPORT.DESKTOP.height,
+  backgroundColor: RENDERING.BACKGROUND_COLOR,
+  antialias: RENDERING.ANTIALIAS,
+  resolution: RENDERING.RESOLUTION,
+};
 
 // =============================================================================
 // 🎯 Mock DOM Operations - Best Practices Solution!
@@ -144,19 +144,19 @@ describe('SliderRenderer - Business Logic Tests', () => {
   let mockDOMOps: ReturnType<typeof createMockDOMOperations>;
 
   beforeEach(() => {
-    // Create mock DOM operations 
+    // Create mock DOM operations
     mockDOMOps = createMockDOMOperations();
-    
+
     // Create renderer with injected DOM operations (NO DOM ISSUES!)
     renderer = new SliderRenderer(mockDOMOps);
-    
+
     // Create mock container (real DOM element for container tests)
     mockContainer = document.createElement('div');
     mockContainer.style.width = '800px';
     mockContainer.style.height = '600px';
-    
+
     config = { ...DEFAULT_TEST_RENDER_CONFIG };
-    
+
     // Reset all mocks
     vi.clearAllMocks();
   });
@@ -190,7 +190,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
       const { Application } = await import('pixi.js');
       const AppConstructor = vi.mocked(Application);
       const mockApp = AppConstructor.mock.results[0]?.value;
-      
+
       expect(mockApp.init).toHaveBeenCalledWith({
         width: 1200,
         height: 800,
@@ -215,7 +215,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
       const { Application } = await import('pixi.js');
       const AppConstructor = vi.mocked(Application);
       const mockApp = AppConstructor.mock.results[0]?.value;
-      
+
       expect(mockApp.init).toHaveBeenCalledWith(
         expect.objectContaining({
           width: DEFAULT_TEST_RENDER_CONFIG.width,
@@ -227,7 +227,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
 
     it('should provide access to PIXI Application', async () => {
       await renderer.initialize(mockContainer, config);
-      
+
       const app = renderer.getApplication();
       expect(app).toBeTruthy();
       expect(app).toHaveProperty('canvas');
@@ -269,14 +269,14 @@ describe('SliderRenderer - Business Logic Tests', () => {
       // Verify scaling calculation (our business logic)
       const textureAspect = sprite.texture.width / sprite.texture.height;
       const viewportAspect = config.width / config.height;
-      
+
       let expectedScale: number;
       if (textureAspect > viewportAspect) {
         expectedScale = config.height / sprite.texture.height;
       } else {
         expectedScale = config.width / sprite.texture.width;
       }
-              expectedScale *= SCALE.EMPHASIS;
+      expectedScale *= SCALE.EMPHASIS;
 
       expect(sprite.scale.set).toHaveBeenCalledWith(expectedScale);
     });
@@ -295,7 +295,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
 
     it('should handle sprite removal correctly', async () => {
       const sprite = await renderer.createSprite('test-image.jpg', 0);
-      
+
       renderer.removeSprite(sprite);
 
       // Verify cleanup
@@ -327,7 +327,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
   });
 
   // =============================================================================
-  // 🎨 Filter Management Tests  
+  // 🎨 Filter Management Tests
   // =============================================================================
 
   describe('Filter Management', () => {
@@ -385,10 +385,10 @@ describe('SliderRenderer - Business Logic Tests', () => {
 
     it('should handle resize correctly', async () => {
       const sprite = await renderer.createSprite('test-image.jpg', 0);
-      
+
       // Reset position tracking
       sprite.scale.set = vi.fn();
-      
+
       // Resize renderer
       renderer.resize(1200, 800);
 
@@ -402,7 +402,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
 
     it('should recalculate sprite positions on resize', async () => {
       const sprite = await renderer.createSprite('test-image.jpg', 0);
-      
+
       // Resize to new dimensions
       renderer.resize(1000, 500);
 
@@ -447,7 +447,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
 
     it('should handle cleanup errors gracefully', async () => {
       const sprite = await renderer.createSprite('test-image.jpg', 0);
-      
+
       // Mock destroy to throw error using vi.fn approach
       const mockDestroy = vi.fn().mockImplementation(() => {
         throw new Error('Cleanup failed');
@@ -463,7 +463,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
         // Verify the error came from our mock (expected behavior)
         expect((error as Error).message).toBe('Cleanup failed');
       }
-      
+
       // Verify cleanup was attempted
       expect(mockDestroy).toHaveBeenCalled();
     });
@@ -480,17 +480,17 @@ describe('SliderRenderer - Business Logic Tests', () => {
 
     it('should optimize memory usage through proper cleanup', async () => {
       const sprites = [];
-      
+
       // Create multiple sprites
       for (let i = 0; i < 5; i++) {
         sprites.push(await renderer.createSprite(`image-${i}.jpg`, i));
       }
 
       // Remove all sprites
-      sprites.forEach(sprite => renderer.removeSprite(sprite));
+      sprites.forEach((sprite) => renderer.removeSprite(sprite));
 
       // Verify all sprites were destroyed
-      sprites.forEach(sprite => {
+      sprites.forEach((sprite) => {
         expect(sprite.destroy).toHaveBeenCalled();
       });
       expect(renderer.getSprites()).toHaveLength(0);
@@ -498,7 +498,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
 
     it('should handle manual render calls', async () => {
       const app = renderer.getApplication();
-      
+
       renderer.render();
 
       expect(app?.render).toHaveBeenCalled();
@@ -534,17 +534,17 @@ describe('SliderRenderer - Business Logic Tests', () => {
       };
       AppConstructor.mockReturnValueOnce(failingApp as never);
 
-      await expect(
-        renderer.initialize(mockContainer, config)
-      ).rejects.toThrow('Failed to initialize PIXI renderer');
+      await expect(renderer.initialize(mockContainer, config)).rejects.toThrow(
+        'Failed to initialize PIXI renderer'
+      );
     });
 
     it('should validate operations require initialization', async () => {
       // Don't initialize renderer
-      
-      await expect(
-        renderer.createSprite('test-image.jpg', 0)
-      ).rejects.toThrow(ERROR_MESSAGES.RENDERER_NOT_INITIALIZED);
+
+      await expect(renderer.createSprite('test-image.jpg', 0)).rejects.toThrow(
+        ERROR_MESSAGES.RENDERER_NOT_INITIALIZED
+      );
     });
 
     it('should handle resize on uninitialized renderer gracefully', () => {
@@ -552,4 +552,4 @@ describe('SliderRenderer - Business Logic Tests', () => {
       expect(() => renderer.resize(800, 600)).not.toThrow();
     });
   });
-}); 
+});

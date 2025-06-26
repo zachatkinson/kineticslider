@@ -16,7 +16,7 @@ export type {
 
 /**
  * @fileoverview Physics Facade
- * 
+ *
  * Facade for physics operations that coordinates between SliderPhysicsEngine and renderer.
  * Provides a simplified API for the main engine to interact with physics calculations.
  */
@@ -67,7 +67,7 @@ export class SliderPhysics implements ISliderPhysics {
   ): gsap.core.Timeline {
     // Input validation - handle null/undefined sprites gracefully
     const validSprites = sprites || [];
-    
+
     // Calculate animation sequence using pure engine
     const sequence = this.engine.calculateTransition(
       fromIndex,
@@ -93,7 +93,7 @@ export class SliderPhysics implements ISliderPhysics {
       // Return empty timeline for null sprites
       return gsap.timeline();
     }
-    
+
     // Calculate swipe animation using pure engine
     const animation = this.engine.calculateSwipe(direction, intensity);
 
@@ -115,7 +115,7 @@ export class SliderPhysics implements ISliderPhysics {
       // Return empty timeline for null sprites
       return gsap.timeline();
     }
-    
+
     // Calculate scale animation using pure engine
     const animation = this.engine.calculateScale(scale, duration);
 
@@ -130,7 +130,7 @@ export class SliderPhysics implements ISliderPhysics {
   setPhysicsConfig(config: Partial<PhysicsConfig>): void {
     // Input validation - handle null/undefined config gracefully
     if (!config) return;
-    
+
     this.engine.setConfig(config);
   }
 
@@ -214,7 +214,7 @@ export class SliderPhysics implements ISliderPhysics {
     // Input validation - handle null/undefined inputs gracefully
     const validSprites = sprites || [];
     const validAnimations = animations || [];
-    
+
     return this.renderer.applyBatchAnimations(validSprites, validAnimations);
   }
 }

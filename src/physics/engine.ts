@@ -156,7 +156,8 @@ export class SliderPhysicsEngine {
     const clampedIntensity = Math.max(0, Math.min(1, intensity));
 
     // Calculate movement based on direction and intensity
-    const moveDistance = direction * clampedIntensity * TEST_CONFIG.CALCULATION.MOVEMENT_BASE;
+    const moveDistance =
+      direction * clampedIntensity * TEST_CONFIG.CALCULATION.MOVEMENT_BASE;
     const scaleFactor = 1 + clampedIntensity * this.config.scaleIntensity;
 
     return {

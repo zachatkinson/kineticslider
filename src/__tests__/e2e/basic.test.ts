@@ -73,7 +73,7 @@ test.describe('KineticSlider Basic Functionality', () => {
   test('should display image meta title', async ({ page }) => {
     await navigateAndWait(page);
 
-    const text = await page.textContent('.image-meta title') || '';
+    const text = (await page.textContent('.image-meta title')) || '';
     expect(text).toMatch(/Image \d+ of \d+/);
   });
 });

@@ -55,4 +55,3 @@ export async function testViewportResponsiveness(
 
   return results;
 }
- 

@@ -13,6 +13,15 @@ lib/
 # Coverage reports
 coverage/
 
+# Test artifacts and reports
+test-results/
+test-results.json
+test-results.xml
+playwright-report/
+.last-run.json
+*.backup
+*.bak
+
 # IDE and editor files
 .idea/
 .vscode/

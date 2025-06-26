@@ -155,9 +155,12 @@ export class SliderController implements ISliderController {
     }
 
     // Prevent context menu on touch devices
-    this.addEventListenerWithCleanup(EVENT_NAMES.CONTEXT_MENU, (e: Event): void => {
-      e.preventDefault();
-    });
+    this.addEventListenerWithCleanup(
+      EVENT_NAMES.CONTEXT_MENU,
+      (e: Event): void => {
+        e.preventDefault();
+      }
+    );
   }
 
   /**
@@ -340,7 +343,8 @@ export class SliderController implements ISliderController {
       (activeElement.tagName === HTML_TAGS.INPUT ||
         activeElement.tagName === HTML_TAGS.TEXTAREA ||
         activeElement.tagName === HTML_TAGS.SELECT ||
-        activeElement.getAttribute(HTML_ATTRIBUTES.CONTENT_EDITABLE) === HTML_ATTRIBUTES.TRUE)
+        activeElement.getAttribute(HTML_ATTRIBUTES.CONTENT_EDITABLE) ===
+          HTML_ATTRIBUTES.TRUE)
     ) {
       return;
     }

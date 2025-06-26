@@ -1,9 +1,9 @@
 /**
  * @fileoverview Core Module Barrel Exports
- * 
+ *
  * Centralized exports to eliminate DRY violations in import statements.
  * Groups commonly used constants by usage patterns to reduce maintenance overhead.
- * 
+ *
  * @version 1.0.0
  * @since 1.0.0
  */
@@ -18,13 +18,13 @@ export type {
   ISliderPhysics,
   ISliderRenderer,
   ISliderController,
-  
+
   // Configuration types
   SliderConfig,
   PhysicsConfig,
   RenderConfig,
   InputConfig,
-  
+
   // State and data types
   SliderState,
   EventEmitter,
@@ -33,7 +33,7 @@ export type {
   FilterConfig,
   DisplacementConfig,
   SliderText,
-  
+
   // Service types
   ServiceKey,
 } from './types';
@@ -58,7 +58,7 @@ export {
 } from './constants';
 
 // =============================================================================
-// 🛠️ Configuration Constants Group  
+// 🛠️ Configuration Constants Group
 // =============================================================================
 
 export {
@@ -82,12 +82,7 @@ export {
 // 🖼️ Rendering Constants Group
 // =============================================================================
 
-export {
-  RENDERING,
-  SPRITES,
-  VIEWPORT,
-  LAYOUT,
-} from './constants';
+export { RENDERING, SPRITES, VIEWPORT, LAYOUT } from './constants';
 
 // =============================================================================
 // 🎮 Input and DOM Constants Group
@@ -135,4 +130,4 @@ export {
 // 🎯 Validation and Utilities
 // =============================================================================
 
-export { validateConstants } from './constants'; 
+export { validateConstants } from './constants';

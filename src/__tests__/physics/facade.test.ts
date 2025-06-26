@@ -76,7 +76,9 @@ describe('SliderPhysics', () => {
       pause: vi.fn(),
       kill: vi.fn(),
     };
-    vi.spyOn(mockRenderer, 'applyTransition').mockReturnValue(mockTimeline as never);
+    vi.spyOn(mockRenderer, 'applyTransition').mockReturnValue(
+      mockTimeline as never
+    );
     vi.spyOn(mockRenderer, 'applySwipe').mockReturnValue(mockTimeline as never);
     vi.spyOn(mockRenderer, 'applyScale').mockReturnValue(mockTimeline as never);
     vi.spyOn(mockRenderer, 'killAllAnimations').mockImplementation(() => {});
@@ -87,7 +89,9 @@ describe('SliderPhysics', () => {
       totalAnimations: 0,
     });
     vi.spyOn(mockRenderer, 'markSpritesForGSAP').mockImplementation(() => {});
-    vi.spyOn(mockRenderer, 'applyBatchAnimations').mockReturnValue(mockTimeline as never);
+    vi.spyOn(mockRenderer, 'applyBatchAnimations').mockReturnValue(
+      mockTimeline as never
+    );
 
     // Create test sprites
     sprites = createTestSprites(3);
@@ -108,7 +112,7 @@ describe('SliderPhysics', () => {
   describe('Initialization and Configuration', () => {
     it('should initialize with default configuration', () => {
       const config = physics.getPhysicsConfig();
-      
+
       expect(config).toEqual(DEFAULT_PHYSICS_CONFIG);
     });
 
@@ -124,7 +128,9 @@ describe('SliderPhysics', () => {
     });
 
     it('should retrieve current physics configuration', () => {
-      vi.mocked(mockEngine.getConfig).mockReturnValue(TEST_PHYSICS_CONFIGS.fast as PhysicsConfig);
+      vi.mocked(mockEngine.getConfig).mockReturnValue(
+        TEST_PHYSICS_CONFIGS.fast as PhysicsConfig
+      );
 
       const config = physics.getPhysicsConfig();
 
@@ -160,7 +166,10 @@ describe('SliderPhysics', () => {
       const timeline = physics.animateTransition(0, 0, []);
 
       expect(mockEngine.calculateTransition).toHaveBeenCalledWith(0, 0, 0);
-      expect(mockRenderer.applyTransition).toHaveBeenCalledWith([], expect.any(Object));
+      expect(mockRenderer.applyTransition).toHaveBeenCalledWith(
+        [],
+        expect.any(Object)
+      );
       expect(timeline).toBeDefined();
     });
 
@@ -175,7 +184,11 @@ describe('SliderPhysics', () => {
   describe('Swipe Animation', () => {
     it('should animate swipe gesture with momentum', () => {
       const sprite = sprites[0];
-      const timeline = physics.animateSwipe(sprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
+      const timeline = physics.animateSwipe(
+        sprite,
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.medium
+      );
 
       // Should calculate swipe using engine
       expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(
@@ -212,7 +225,11 @@ describe('SliderPhysics', () => {
       );
 
       // Test right swipe
-      physics.animateSwipe(sprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.high);
+      physics.animateSwipe(
+        sprite,
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.high
+      );
       expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(
         TEST_DIRECTIONS.right,
         TEST_INTENSITIES.high
@@ -221,7 +238,11 @@ describe('SliderPhysics', () => {
 
     it('should handle zero intensity swipe', () => {
       const sprite = sprites[0];
-      const timeline = physics.animateSwipe(sprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.zero);
+      const timeline = physics.animateSwipe(
+        sprite,
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.zero
+      );
 
       expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(
         TEST_DIRECTIONS.right,
@@ -232,7 +253,11 @@ describe('SliderPhysics', () => {
 
     it('should handle maximum intensity swipe', () => {
       const sprite = sprites[0];
-      const timeline = physics.animateSwipe(sprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.max);
+      const timeline = physics.animateSwipe(
+        sprite,
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.max
+      );
 
       expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(
         TEST_DIRECTIONS.right,
@@ -245,7 +270,10 @@ describe('SliderPhysics', () => {
   describe('Scale Animation', () => {
     it('should animate sprite scaling with default duration', () => {
       const sprite = sprites[0];
-      const timeline = physics.animateScale(sprite, TEST_CONFIG.SCALE_VALUES.SMALL);
+      const timeline = physics.animateScale(
+        sprite,
+        TEST_CONFIG.SCALE_VALUES.SMALL
+      );
 
       // Should calculate scale using engine
       expect(mockEngine.calculateScale).toHaveBeenCalledWith(
@@ -268,8 +296,12 @@ describe('SliderPhysics', () => {
     it('should animate sprite scaling with custom duration', () => {
       const sprite = sprites[0];
       const customDuration = ANIMATION_DURATION.SLOW;
-      
-      const timeline = physics.animateScale(sprite, TEST_CONFIG.SCALE_VALUES.LARGE, customDuration);
+
+      const timeline = physics.animateScale(
+        sprite,
+        TEST_CONFIG.SCALE_VALUES.LARGE,
+        customDuration
+      );
 
       expect(mockEngine.calculateScale).toHaveBeenCalledWith(
         TEST_CONFIG.SCALE_VALUES.LARGE,
@@ -301,12 +333,18 @@ describe('SliderPhysics', () => {
     it('should expose slide change threshold calculation', () => {
       const result = physics.shouldTriggerSlideChange(100, 0.5);
 
-      expect(mockEngine.shouldTriggerSlideChange).toHaveBeenCalledWith(100, 0.5);
+      expect(mockEngine.shouldTriggerSlideChange).toHaveBeenCalledWith(
+        100,
+        0.5
+      );
       expect(result).toBe(true);
     });
 
     it('should expose adaptive timing calculation', () => {
-      const result = physics.calculateAdaptiveTiming(TEST_CONFIG.INTERACTION.QUICK, TEST_INTENSITIES.high);
+      const result = physics.calculateAdaptiveTiming(
+        TEST_CONFIG.INTERACTION.QUICK,
+        TEST_INTENSITIES.high
+      );
 
       expect(mockEngine.calculateAdaptiveTiming).toHaveBeenCalledWith(
         TEST_CONFIG.INTERACTION.QUICK,
@@ -342,7 +380,10 @@ describe('SliderPhysics', () => {
 
       const timeline = physics.applyBatchAnimations(sprites, animations);
 
-      expect(mockRenderer.applyBatchAnimations).toHaveBeenCalledWith(sprites, animations);
+      expect(mockRenderer.applyBatchAnimations).toHaveBeenCalledWith(
+        sprites,
+        animations
+      );
       expect(timeline).toBeDefined();
     });
   });
@@ -366,19 +407,26 @@ describe('SliderPhysics', () => {
 
       expect(mockRenderer.cleanup).toHaveBeenCalledTimes(2);
     });
-
   });
 
   describe('Integration Scenarios', () => {
     it('should handle complete slide transition workflow', () => {
       // Start transition
       const transitionTimeline = physics.animateTransition(0, 1, sprites);
-      
+
       // Apply scale during interaction
-      const scaleTimeline = physics.animateScale(sprites[1], 1.1, ANIMATION_DURATION.STANDARD);
-      
+      const scaleTimeline = physics.animateScale(
+        sprites[1],
+        1.1,
+        ANIMATION_DURATION.STANDARD
+      );
+
       // Apply swipe gesture
-      const swipeTimeline = physics.animateSwipe(sprites[1], TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
+      const swipeTimeline = physics.animateSwipe(
+        sprites[1],
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.medium
+      );
 
       // All operations should complete successfully
       expect(transitionTimeline).toBeDefined();
@@ -422,7 +470,10 @@ describe('SliderPhysics', () => {
       const timeline = physics.applyBatchAnimations(sprites, animations);
 
       expect(timeline).toBeDefined();
-      expect(mockRenderer.applyBatchAnimations).toHaveBeenCalledWith(sprites, animations);
+      expect(mockRenderer.applyBatchAnimations).toHaveBeenCalledWith(
+        sprites,
+        animations
+      );
     });
   });
 
@@ -457,7 +508,7 @@ describe('SliderPhysics', () => {
       expect(() => {
         physics.cleanup();
       }).not.toThrow();
-      
+
       // But should have attempted cleanup
       expect(mockRenderer.cleanup).toHaveBeenCalled();
     });
@@ -469,10 +520,10 @@ describe('SliderPhysics', () => {
       // The facade should validate inputs
       const timeline1 = physics.animateTransition(0, 1, null as never);
       expect(timeline1).toBeDefined(); // Should return a timeline even with null sprites
-      
+
       const timeline2 = physics.animateSwipe(null as never, 1, 0.5);
       expect(timeline2).toBeDefined(); // Should return a timeline even with null sprite
-      
+
       const timeline3 = physics.animateScale(undefined as never, 1.5);
       expect(timeline3).toBeDefined(); // Should return a timeline even with undefined sprite
     });
@@ -482,15 +533,24 @@ describe('SliderPhysics', () => {
 
       // Invalid direction (should still work)
       physics.animateSwipe(sprite, 999, TEST_INTENSITIES.medium);
-      expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(999, TEST_INTENSITIES.medium);
+      expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(
+        999,
+        TEST_INTENSITIES.medium
+      );
 
       // Invalid intensity (should be handled by engine)
       physics.animateSwipe(sprite, TEST_DIRECTIONS.right, -5);
-      expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(TEST_DIRECTIONS.right, -5);
+      expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(
+        TEST_DIRECTIONS.right,
+        -5
+      );
 
       // Invalid scale (should be handled by engine)
       physics.animateScale(sprite, -1);
-      expect(mockEngine.calculateScale).toHaveBeenCalledWith(-1, ANIMATION_DURATION.STANDARD);
+      expect(mockEngine.calculateScale).toHaveBeenCalledWith(
+        -1,
+        ANIMATION_DURATION.STANDARD
+      );
     });
   });
-}); 
+});

@@ -19,7 +19,7 @@ describe('SliderController', () => {
     mockElement = document.createElement('div');
     vi.spyOn(mockElement, 'addEventListener');
     vi.spyOn(mockElement, 'removeEventListener');
-    
+
     // Create mock callbacks
     mockCallbacks = {
       onDragStart: vi.fn(),
@@ -43,7 +43,7 @@ describe('SliderController', () => {
   describe('Initialization and Configuration', () => {
     it('should initialize with default configuration', () => {
       const config = controller.getInputConfig();
-      
+
       expect(config).toEqual(DEFAULT_INPUT_CONFIG);
     });
 
@@ -93,7 +93,7 @@ describe('SliderController', () => {
   describe('Event Cleanup', () => {
     it('should properly clean up event listeners', () => {
       controller.initialize(mockElement, mockCallbacks);
-      
+
       controller.destroy();
 
       expect(mockElement.removeEventListener).toHaveBeenCalled();
@@ -102,7 +102,7 @@ describe('SliderController', () => {
     it('should handle multiple destroy calls gracefully', () => {
       controller.initialize(mockElement, mockCallbacks);
       controller.destroy();
-      
+
       // Second destroy should not throw
       expect(() => {
         controller.destroy();
@@ -134,4 +134,4 @@ describe('SliderController', () => {
       expect(updatedConfig.swipeThreshold).toBe(originalConfig.swipeThreshold);
     });
   });
-}); 
+});
