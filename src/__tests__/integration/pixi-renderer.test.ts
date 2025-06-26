@@ -217,18 +217,19 @@ describe('PixiSliderRenderer Integration', () => {
 
   describe('Scale Animation Application', () => {
     it('should apply scale animation to sprites', async () => {
-      const scaleAnimation: ScaleAnimation = physicsEngine.calculateScale(
-        TEST_CONFIG.SCALE_VALUES.SMALL,
-        ANIMATION_DURATION.MEDIUM
+      const medium = ANIMATION_DURATION.MEDIUM;
+      const result = physicsEngine.calculateScale(
+        SCALE.EMPHASIS,
+        medium
       );
       const targetSprite = sprites[0];
 
       // Use correct API: applyScale(sprite, animation)
-      const timeline = renderer.applyScale(targetSprite, scaleAnimation);
+      const timeline = renderer.applyScale(targetSprite, result);
 
       expect(timeline).toBeDefined();
       expect(timeline.duration()).toBeCloseTo(
-        scaleAnimation.duration,
+        result.duration,
         TEST_TOLERANCE.TIMING
       );
 

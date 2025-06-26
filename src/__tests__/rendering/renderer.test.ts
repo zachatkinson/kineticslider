@@ -338,7 +338,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
     it('should apply filters to sprites', async () => {
       const sprite = await renderer.createSprite('test-image.jpg', 0);
       const { Filter } = await import('pixi.js');
-      const filter = new Filter();
+      const filter = new Filter({});
 
       renderer.applyFilter(sprite, filter);
 
@@ -348,8 +348,8 @@ describe('SliderRenderer - Business Logic Tests', () => {
     it('should remove specific filters from sprites', async () => {
       const sprite = await renderer.createSprite('test-image.jpg', 0);
       const { Filter } = await import('pixi.js');
-      const filter1 = new Filter();
-      const filter2 = new Filter();
+      const filter1 = new Filter({});
+      const filter2 = new Filter({});
 
       // Apply multiple filters
       renderer.applyFilter(sprite, filter1);
@@ -365,7 +365,7 @@ describe('SliderRenderer - Business Logic Tests', () => {
     it('should clear all filters from sprites', async () => {
       const sprite = await renderer.createSprite('test-image.jpg', 0);
       const { Filter } = await import('pixi.js');
-      const filter = new Filter();
+      const filter = new Filter({});
 
       renderer.applyFilter(sprite, filter);
       renderer.clearFilters(sprite);

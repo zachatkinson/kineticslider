@@ -208,9 +208,9 @@ describe('SliderPhysicsEngine', () => {
 
     it('should use configuration values', () => {
       engine.setConfig({
-        scaleIntensity: TEST_CONFIG.SCALE_INTENSITY.LOW,
-        momentumDamping: TEST_CONFIG.DAMPING.LIGHT,
-        transitionDuration: TEST_CONFIG.DURATION.STANDARD,
+        scaleIntensity: INTENSITY.VERY_LOW as number,
+        momentumDamping: TEST_CONFIG.DAMPING.LIGHT as number,
+        transitionDuration: TEST_CONFIG.DURATION.STANDARD as number,
       });
 
       const animation = engine.calculateSwipe(
@@ -219,7 +219,7 @@ describe('SliderPhysicsEngine', () => {
       );
 
       assertSwipeAnimationValid(animation);
-      expect(animation.initialPhase.scale).toBe(TEST_CONFIG.EXPECTED.SCALE_11); // 1 + (0.5 * 0.2)
+      expect(animation.initialPhase.scale).toBe(TEST_CONFIG.EXPECTED.SCALE_105); // 1 + (0.5 * 0.1)
       expect(animation.springPhase.movement).toBe(
         TEST_CONFIG.EXPECTED.MOVEMENT_NEG_35
       ); // -50 * 0.7
@@ -319,11 +319,11 @@ describe('SliderPhysicsEngine', () => {
       const force1 = engine.calculateSpringForce(10, INTENSITY.VERY_LOW);
       const force2 = engine.calculateSpringForce(
         -5,
-        TEST_CONFIG.SCALE_INTENSITY.LOW
+        INTENSITY.VERY_LOW
       );
 
       expect(force1).toBe(TEST_CONFIG.EXPECTED.FORCE_NEG_1); // -10 * 0.1
-      expect(force2).toBe(TEST_CONFIG.EXPECTED.FORCE_1); // -(-5) * 0.2
+      expect(force2).toBe(TEST_CONFIG.EXPECTED.FORCE_05); // -(-5) * 0.1
     });
   });
 

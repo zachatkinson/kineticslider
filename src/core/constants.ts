@@ -300,7 +300,7 @@ export const PERFORMANCE = {
 // =============================================================================
 
 /** Standard animation durations (in seconds) */
-export const ANIMATION_DURATION = {
+export const ANIMATION_DURATION: Record<string, number> = {
   /** Quick animations (micro-interactions) */
   QUICK: 0.15,
   /** Fast animations (button hovers, tooltips) */
@@ -315,7 +315,7 @@ export const ANIMATION_DURATION = {
   VERY_SLOW: 1.0,
   /** Extended animations (special effects) */
   EXTENDED: 1.5,
-} as const;
+};
 
 /** GSAP easing constants */
 export const EASING = {
@@ -664,6 +664,7 @@ export const TEST_CONFIG = {
     // Force calculations
     FORCE_NEG_1: -1, // -10 * 0.1
     FORCE_1: 1, // -(-5) * 0.2
+    FORCE_05: 0.5, // -(-5) * 0.1
     // Timing calculations
     TIMING_065: 0.65, // Quick adaptive timing
     TIMING_18: 1.8, // Slow adaptive timing
