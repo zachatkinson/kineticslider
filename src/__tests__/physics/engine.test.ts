@@ -317,10 +317,7 @@ describe('SliderPhysicsEngine', () => {
 
     it('should calculate spring force', () => {
       const force1 = engine.calculateSpringForce(10, INTENSITY.VERY_LOW);
-      const force2 = engine.calculateSpringForce(
-        -5,
-        INTENSITY.VERY_LOW
-      );
+      const force2 = engine.calculateSpringForce(-5, INTENSITY.VERY_LOW);
 
       expect(force1).toBe(TEST_CONFIG.EXPECTED.FORCE_NEG_1); // -10 * 0.1
       expect(force2).toBe(TEST_CONFIG.EXPECTED.FORCE_05); // -(-5) * 0.1
