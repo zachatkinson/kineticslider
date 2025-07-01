@@ -1,17 +1,12 @@
 /**
- * @fileoverview VelocityTracker Tests  
+ * @fileoverview VelocityTracker Tests
  * Tests for the actual VelocityTracker implementation API
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { VelocityTracker } from '../../physics/velocity-tracker';
 import type { VelocityConfig } from '../../physics/velocity-tracker';
-import {
-  PHYSICS,
-  PERFORMANCE,
-  INPUT,
-  TEST_CONFIG,
-} from '../../core/constants';
+import { PHYSICS, PERFORMANCE, INPUT, TEST_CONFIG } from '../../core/constants';
 
 describe('VelocityTracker', () => {
   let tracker: VelocityTracker;
@@ -54,13 +49,16 @@ describe('VelocityTracker', () => {
       expect(partialTracker).toBeDefined();
       const resultConfig = partialTracker.getConfig();
       expect(resultConfig.bufferSize).toBe(partialConfig.bufferSize);
-      expect(resultConfig.throttleInterval).toBe(partialConfig.throttleInterval);
+      expect(resultConfig.throttleInterval).toBe(
+        partialConfig.throttleInterval
+      );
     });
   });
 
   describe('Sample Recording', () => {
     it('should record position samples correctly', () => {
-      const x = 100, y = 150;
+      const x = 100,
+        y = 150;
       const timestamp = performance.now();
 
       const result = tracker.addSample(x, y, timestamp);
@@ -91,7 +89,7 @@ describe('VelocityTracker', () => {
     it('should handle rapid sample recording with throttling', () => {
       const start = performance.now();
       let successfulSamples = 0;
-      
+
       for (let i = 0; i < 10; i++) {
         if (tracker.addSample(i, i, start + i)) {
           successfulSamples++;
@@ -106,7 +104,7 @@ describe('VelocityTracker', () => {
   describe('Velocity Calculation', () => {
     it('should calculate velocity from multiple samples', () => {
       const start = performance.now();
-      
+
       // Record samples with consistent movement
       tracker.addSample(0, 0, start);
       tracker.addSample(100, 0, start + 100); // 100 pixels in 100ms
@@ -127,7 +125,7 @@ describe('VelocityTracker', () => {
 
     it('should calculate velocity direction correctly', () => {
       const start = performance.now();
-      
+
       tracker.addSample(0, 0, start);
       tracker.addSample(100, 0, start + 100); // Moving right
 
@@ -137,7 +135,7 @@ describe('VelocityTracker', () => {
 
     it('should calculate velocity components correctly', () => {
       const start = performance.now();
-      
+
       tracker.addSample(0, 0, start);
       tracker.addSample(100, 0, start + 100); // Moving right
 
@@ -150,9 +148,9 @@ describe('VelocityTracker', () => {
   describe('Peak Velocity and Averages', () => {
     it('should detect peak velocity correctly', () => {
       const start = performance.now();
-      
+
       tracker.addSample(0, 0, start);
-      tracker.addSample(100, 0, start + 50);  // Fast movement
+      tracker.addSample(100, 0, start + 50); // Fast movement
       tracker.addSample(150, 0, start + 100); // Slower movement
 
       const peakVelocity = tracker.getPeakVelocity();
@@ -165,7 +163,7 @@ describe('VelocityTracker', () => {
 
     it('should calculate average velocity', () => {
       const start = performance.now();
-      
+
       tracker.addSample(0, 0, start);
       tracker.addSample(100, 0, start + 100);
       tracker.addSample(200, 0, start + 200);
@@ -197,7 +195,7 @@ describe('VelocityTracker', () => {
     it('should update configuration correctly', () => {
       const newConfig = { bufferSize: 15, maxVelocity: 500 };
       tracker.updateConfig(newConfig);
-      
+
       const updatedConfig = tracker.getConfig();
       expect(updatedConfig.bufferSize).toBe(newConfig.bufferSize);
       expect(updatedConfig.maxVelocity).toBe(newConfig.maxVelocity);
@@ -207,7 +205,7 @@ describe('VelocityTracker', () => {
   describe('Gesture Recognition', () => {
     it('should detect swipe gestures correctly', () => {
       const start = performance.now();
-      
+
       // Fast, long movement
       tracker.addSample(0, 0, start);
       tracker.addSample(100, 0, start + 50);
@@ -224,7 +222,7 @@ describe('VelocityTracker', () => {
 
     it('should calculate total distance correctly', () => {
       const start = performance.now();
-      
+
       tracker.addSample(0, 0, start);
       tracker.addSample(100, 0, start + 50);
       tracker.addSample(200, 0, start + 100);
@@ -235,7 +233,7 @@ describe('VelocityTracker', () => {
 
     it('should calculate motion duration correctly', () => {
       const start = performance.now();
-      
+
       tracker.addSample(0, 0, start);
       tracker.addSample(100, 0, start + 100);
 
@@ -247,7 +245,7 @@ describe('VelocityTracker', () => {
   describe('Position Prediction', () => {
     it('should predict future positions correctly', () => {
       const start = performance.now();
-      
+
       tracker.addSample(0, 0, start);
       tracker.addSample(100, 0, start + 100); // Moving right
 
@@ -295,8 +293,15 @@ describe('VelocityTracker', () => {
     });
 
     it('should handle zero time intervals in static calculation', () => {
-      const velocity = VelocityTracker.calculateVelocity(0, 0, 100, 100, 0, 100);
+      const velocity = VelocityTracker.calculateVelocity(
+        0,
+        0,
+        100,
+        100,
+        0,
+        100
+      );
       expect(velocity).toBe(0);
     });
   });
-}); 
+});

@@ -1,24 +1,40 @@
 /**
- * @fileoverview Physics Module Index - Phase 2.1 GSAP Physics Engine Extraction
+ * @fileoverview Physics Module Index - GSAP Physics Engine Integration
  *
- * Exported classes:
- * - KineticPhysics: Pure momentum and kinetic calculations
- * - GSAPTimelineFactory: Reusable GSAP timeline patterns
- * - SpringPhysics: GSAP spring-based interactions
- * - VelocityTracker: Optimized velocity calculation
+ * World-class GSAP physics engine providing smooth, natural motion.
+ * Includes kinetic physics, spring physics, velocity tracking, and timeline factory.
  *
  * @version 1.0.0
  */
 
-// Core physics classes
 export { KineticPhysics } from './kinetic-physics';
+export { PixiSliderRenderer } from './renderer';
+export { SpringPhysics } from './spring-physics';
+export { VelocityTracker } from './velocity-tracker';
+export { GSAPTimelineFactory } from './gsap-timeline-factory';
+export { SliderPhysicsEngine } from './engine';
+
+// Export the main facade - this is what tests expect
+export { SliderPhysics } from './facade';
+
 export type {
-  KineticPhysicsConfig,
   MomentumResult,
   SnapResult,
+  KineticPhysicsConfig,
 } from './kinetic-physics';
 
-export { GSAPTimelineFactory } from './gsap-timeline-factory';
+export type {
+  VelocitySample,
+  VelocityConfig,
+  VelocityResult,
+} from './velocity-tracker';
+
+export type {
+  SpringConfig,
+  DisplacementConfig,
+  SpringResult,
+} from './spring-physics';
+
 export type {
   TransitionConfig,
   MomentumConfig,
@@ -26,137 +42,44 @@ export type {
   ScaleConfig,
 } from './gsap-timeline-factory';
 
-export { SpringPhysics } from './spring-physics';
 export type {
-  SpringConfig,
-  DisplacementConfig,
-  SpringResult,
-} from './spring-physics';
+  RenderConfig,
+  SlideData,
+} from '../core/types';
 
-export { VelocityTracker } from './velocity-tracker';
-export type {
-  VelocitySample,
-  VelocityConfig,
-  VelocityResult,
-} from './velocity-tracker';
-
-// Legacy exports for compatibility during transition
-export { SliderPhysicsEngine } from './engine';
-export { PixiSliderRenderer } from './renderer';
-
-// Phase 2.1 Compatibility Facade
-// This provides the same API as before but uses our new modular components
-import type { Sprite } from 'pixi.js';
-import { gsap } from 'gsap';
-import type { ISliderPhysics, PhysicsConfig } from '../core/types';
-import { SliderPhysicsEngine } from './engine';
-import { PixiSliderRenderer } from './renderer';
-import { ANIMATION_DURATION } from '../core/constants';
+// Main physics controller facade
+export type { SliderPhysicsConfig } from './facade';
 
 /**
- * SliderPhysics - Compatibility facade for Phase 2.1 transition
+ * Core physics components overview:
  *
- * This maintains the same API as before while using our new modular components.
- * Future phases will gradually migrate consumers to the new component APIs.
+ * ## KineticPhysics
+ * - **Kinetic calculations** with momentum and snap
+ * - **Advanced GSAP integration** with timeline coordination
+ * - **Enhanced boundaries** with spring feedback
+ * - **Real-time momentum** calculation and prediction
+ *
+ * ## SpringPhysics  
+ * - **Spring-based animations** for natural feel
+ * - **Displacement correction** for smooth interactions
+ * - **Configurable spring parameters** for different behaviors
+ * - **GSAP timeline integration** for complex spring sequences
+ *
+ * ## VelocityTracker
+ * - **High-precision velocity** calculation for gesture recognition
+ * - **Momentum prediction** for smooth transitions  
+ * - **Optimized sampling** for best performance and accuracy
+ * - **Memory-efficient** sample management with automatic cleanup
+ *
+ * ## GSAPTimelineFactory
+ * - **Timeline coordination** for complex animation sequences
+ * - **Performance optimization** through timeline reuse and batching
+ * - **GSAP best practices** with proper cleanup and memory management
+ * - **Advanced timeline features** including callbacks and progress tracking
+ *
+ * ## PixiSliderRenderer
+ * - **GPU-accelerated PIXI.js rendering** for maximum performance  
+ * - **GSAP timeline integration** for smooth sprite animations
+ * - **Optimized sprite management** with efficient positioning
+ * - **Memory-efficient resource** management with proper cleanup
  */
-export class SliderPhysics implements ISliderPhysics {
-  private readonly engine: SliderPhysicsEngine;
-  private readonly renderer: PixiSliderRenderer;
-
-  constructor(
-    engine: SliderPhysicsEngine = new SliderPhysicsEngine(),
-    renderer: PixiSliderRenderer = new PixiSliderRenderer()
-  ) {
-    this.engine = engine;
-    this.renderer = renderer;
-  }
-
-  animateTransition(
-    fromIndex: number,
-    toIndex: number,
-    sprites: Sprite[]
-  ): gsap.core.Timeline {
-    const validSprites = sprites || [];
-    const sequence = this.engine.calculateTransition(
-      fromIndex,
-      toIndex,
-      validSprites.length
-    );
-    return this.renderer.applyTransition(validSprites, sequence);
-  }
-
-  animateSwipe(
-    sprite: Sprite,
-    direction: number,
-    intensity: number
-  ): gsap.core.Timeline {
-    if (!sprite) {
-      return gsap.timeline();
-    }
-    const animation = this.engine.calculateSwipe(direction, intensity);
-    return this.renderer.applySwipe(sprite, animation);
-  }
-
-  animateScale(
-    sprite: Sprite,
-    scale: number,
-    duration = ANIMATION_DURATION.STANDARD
-  ): gsap.core.Timeline {
-    if (!sprite) {
-      return gsap.timeline();
-    }
-    const animation = this.engine.calculateScale(scale, duration);
-    return this.renderer.applyScale(sprite, animation);
-  }
-
-  setPhysicsConfig(config: Partial<PhysicsConfig>): void {
-    if (!config) return;
-    this.engine.setConfig(config);
-  }
-
-  getPhysicsConfig(): PhysicsConfig {
-    return this.engine.getConfig();
-  }
-
-  killAllAnimations(): void {
-    this.renderer.killAllAnimations();
-  }
-
-  cleanup(): void {
-    try {
-      this.renderer.cleanup();
-    } catch {
-      // Silently handle cleanup errors to prevent cascading failures
-    }
-  }
-
-  shouldTriggerSlideChange(distance: number, velocity: number): boolean {
-    return this.engine.shouldTriggerSlideChange(distance, velocity);
-  }
-
-  calculateAdaptiveTiming(interactionTime: number, intensity: number): number {
-    return this.engine.calculateAdaptiveTiming(interactionTime, intensity);
-  }
-
-  getPerformanceStats(): {
-    activeTimelines: number;
-    activeTweens: number;
-    totalAnimations: number;
-  } {
-    return this.renderer.getPerformanceStats();
-  }
-
-  markSpritesForGSAP(sprites: Sprite[]): void {
-    const validSprites = sprites || [];
-    this.renderer.markSpritesForGSAP(validSprites);
-  }
-
-  applyBatchAnimations(
-    sprites: Sprite[],
-    animations: Array<{ spriteIndex: number; props: gsap.TweenVars }>
-  ): gsap.core.Timeline {
-    const validSprites = sprites || [];
-    const validAnimations = animations || [];
-    return this.renderer.applyBatchAnimations(validSprites, validAnimations);
-  }
-}

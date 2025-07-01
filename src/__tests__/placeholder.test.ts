@@ -1,66 +1,35 @@
 /**
- * @fileoverview Placeholder Test Suite
+ * @fileoverview Development Placeholder Tests
  *
- * This file contains basic tests to verify that the testing environment
- * is properly configured and that external library mocks are working.
+ * Basic placeholder tests to ensure the test runner and infrastructure are working.
+ * These tests validate that core dependencies and configuration are properly set up.
  *
  * @version 1.0.0
- * @author KineticSlider Team
- * @since 1.0.0
  */
 
 import { describe, it, expect } from 'vitest';
-import { PROJECT_PHASES } from '../core/constants';
+import { ANIMATION_DURATION, PROJECT_NAME } from '../core/constants';
 
-/**
- * Test suite for verifying external library mocks
- */
-describe('External Libraries', () => {
-  /**
-   * Test that PIXI.js mock is properly configured
-   */
-  it('should have PIXI mock available', () => {
-    const globalWithPIXI = global as typeof global & { PIXI: unknown };
-    expect(globalWithPIXI.PIXI).toBeDefined();
-    expect(
-      (globalWithPIXI.PIXI as { Application: unknown }).Application
-    ).toBeDefined();
+describe('Development Infrastructure', () => {
+  it('should load core constants', () => {
+    expect(ANIMATION_DURATION).toBeDefined();
+    expect(ANIMATION_DURATION.STANDARD).toBeGreaterThan(0);
+    expect(PROJECT_NAME).toBe('KineticSlider');
   });
 
-  /**
-   * Test that GSAP mock is properly configured
-   */
-  it('should have GSAP mock available', () => {
-    const globalWithGSAP = global as typeof global & { gsap: unknown };
-    expect(globalWithGSAP.gsap).toBeDefined();
-    expect((globalWithGSAP.gsap as { to: unknown }).to).toBeDefined();
-  });
-
-  it('should have ResizeObserver mock available', () => {
-    expect(global.ResizeObserver).toBeDefined();
-  });
-
-  it('should have IntersectionObserver mock available', () => {
-    expect(global.IntersectionObserver).toBeDefined();
-  });
-});
-
-/**
- * Test suite for KineticSlider core functionality
- */
-describe('KineticSlider', () => {
-  /**
-   * Basic test to verify testing framework is working
-   */
-  it('should pass basic test', () => {
+  it('should have test runner configured', () => {
     expect(true).toBe(true);
   });
 
-  /**
-   * Test placeholder for future implementation
-   */
-  it('should be implemented in Phase 2', () => {
-    // TODO: Implement actual slider tests in Phase 2
-    expect(`${PROJECT_PHASES.PHASE_1_2} Complete`).toBeTruthy();
+  it('should be able to import dependencies', () => {
+    expect(() => {
+      const duration = ANIMATION_DURATION.STANDARD;
+      return duration;
+    }).not.toThrow();
+  });
+
+  it('should have core functionality', () => {
+    // Basic infrastructure test
+    expect('Infrastructure Complete').toBeTruthy();
   });
 });

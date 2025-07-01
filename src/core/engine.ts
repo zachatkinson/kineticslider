@@ -49,6 +49,9 @@ export class SliderEngine implements ISliderEngine {
   private renderer: ISliderRenderer | null = null;
   private controller: ISliderController | null = null;
   private eventEmitter: EventEmitter | null = null;
+  
+  // Simple fallback event emitter for basic functionality
+  private fallbackEvents = new Map<string, ((...args: unknown[]) => void)[]>();
 
   /**
    * Initialize the slider engine with configuration
@@ -90,6 +93,9 @@ export class SliderEngine implements ISliderEngine {
         onDragEnd: (x, y) => this.handleDragEnd(x, y),
         onKeyLeft: () => this.previousSlide(),
         onKeyRight: () => this.nextSlide(),
+        onTogglePlayPause: () => this.togglePlayPause(),
+        onGoToSlide: (index: number) => this.goToSlide(index),
+        onEscape: () => this.handleEscape(),
       };
 
       this.setState({ loadingProgress: 60 });
@@ -105,6 +111,12 @@ export class SliderEngine implements ISliderEngine {
         isLoading: false,
         loadingProgress: 100,
       });
+
+      // Initialize accessibility state
+      if (this.controller) {
+        this.controller.updateSlideState(this.state.currentIndex, this.state.totalSlides);
+        this.controller.updatePlayState(this.state.isPlaying);
+      }
 
       this.emit(SLIDER_EVENTS.INITIALIZED, this.state);
     } catch (error) {
@@ -157,6 +169,11 @@ export class SliderEngine implements ISliderEngine {
         currentIndex: index,
         isTransitioning: false,
       });
+
+      // Update accessibility state for screen readers
+      if (this.controller) {
+        this.controller.updateSlideState(index, this.state.totalSlides);
+      }
 
       this.emit(SLIDER_EVENTS.SLIDE_CHANGED, {
         from: previousIndex,
@@ -216,24 +233,103 @@ export class SliderEngine implements ISliderEngine {
   }
 
   /**
+   * Toggle play/pause state for accessibility
+   */
+  togglePlayPause(): void {
+    const newPlayState = !this.state.isPlaying;
+    this.setState({ isPlaying: newPlayState });
+    
+    // Update accessibility state for screen readers
+    if (this.controller) {
+      this.controller.updatePlayState(newPlayState);
+    }
+    
+    // Emit play/pause state change event
+    this.emit(SLIDER_EVENTS.PLAY_STATE_CHANGED, {
+      isPlaying: newPlayState,
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Check if slider is playing
+   */
+  isPlaying(): boolean {
+    return this.state.isPlaying;
+  }
+
+  /**
+   * Handle escape key for accessibility
+   */
+  handleEscape(): void {
+    // Reset to first slide
+    this.goToSlide(0).catch((error) => {
+      // Handle error silently or emit error event
+      this.emit(SLIDER_EVENTS.ERROR, {
+        message: 'Failed to reset to first slide',
+        error,
+        timestamp: Date.now(),
+      });
+    });
+    
+    // Pause if playing
+    if (this.state.isPlaying) {
+      this.togglePlayPause();
+    }
+    
+    // Emit escape event
+    this.emit(SLIDER_EVENTS.ESCAPE_PRESSED, {
+      previousIndex: this.state.currentIndex,
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
    * Subscribe to events
    */
   on(event: string, callback: (...args: unknown[]) => void): void {
-    this.eventEmitter?.on(event, callback);
+    if (this.eventEmitter) {
+      this.eventEmitter.on(event, callback);
+    } else {
+      // Use fallback event system
+      if (!this.fallbackEvents.has(event)) {
+        this.fallbackEvents.set(event, []);
+      }
+      this.fallbackEvents.get(event)!.push(callback);
+    }
   }
 
   /**
    * Unsubscribe from events
    */
   off(event: string, callback: (...args: unknown[]) => void): void {
-    this.eventEmitter?.off(event, callback);
+    if (this.eventEmitter) {
+      this.eventEmitter.off(event, callback);
+    } else {
+      // Use fallback event system
+      const callbacks = this.fallbackEvents.get(event);
+      if (callbacks) {
+        const index = callbacks.indexOf(callback);
+        if (index > -1) {
+          callbacks.splice(index, 1);
+        }
+      }
+    }
   }
 
   /**
    * Emit events
    */
   emit(event: string, ...args: unknown[]): void {
-    this.eventEmitter?.emit(event, ...args);
+    if (this.eventEmitter) {
+      this.eventEmitter.emit(event, ...args);
+    } else {
+      // Use fallback event system
+      const callbacks = this.fallbackEvents.get(event);
+      if (callbacks) {
+        callbacks.forEach(callback => callback(...args));
+      }
+    }
   }
 
   /**

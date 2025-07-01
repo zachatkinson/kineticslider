@@ -66,6 +66,8 @@ describe('SliderEngine', () => {
       setInputConfig: vi.fn(),
       initialize: vi.fn(),
       destroy: vi.fn(),
+      updateSlideState: vi.fn(),
+      updatePlayState: vi.fn(),
     } as unknown as ISliderController;
 
     mockEventEmitter = {
@@ -267,6 +269,23 @@ describe('SliderEngine', () => {
       // At first slide, previous should wrap to last
       await engine.previousSlide();
       expect(engine.getCurrentIndex()).toBe(2);
+    });
+
+    it('should update accessibility state during navigation', async () => {
+      await engine.goToSlide(1);
+
+      // Verify that the controller's accessibility methods were called
+      expect(mockController.updateSlideState).toHaveBeenCalledWith(1, 3);
+    });
+
+    it('should update accessibility state during next/previous navigation', async () => {
+      await engine.nextSlide();
+
+      expect(mockController.updateSlideState).toHaveBeenCalledWith(1, 3);
+
+      await engine.previousSlide();
+
+      expect(mockController.updateSlideState).toHaveBeenCalledWith(0, 3);
     });
 
     it('should handle navigation errors gracefully', async () => {

@@ -14,13 +14,12 @@ import {
   TEST_TIMING,
   TEST_TOLERANCE,
   EVENT_NAMES,
-  WAIT_STRATEGIES,
 } from '../../core/constants';
+import { navigateAndWait } from './utils';
 
 test.describe('KineticSlider Foundation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState(WAIT_STRATEGIES.NETWORK_IDLE);
+    await navigateAndWait(page);
   });
 
   test.describe('Page Foundation', () => {
@@ -194,9 +193,7 @@ test.describe('KineticSlider Foundation', () => {
       });
 
       if (memoryInfo.available) {
-        expect(memoryInfo.used).toBeLessThan(
-          TEST_PERFORMANCE.MEMORY_WARNING
-        ); // Less than 25MB (in bytes)
+        expect(memoryInfo.used).toBeLessThan(TEST_PERFORMANCE.MEMORY_WARNING); // Less than 25MB (in bytes)
         expect(memoryInfo.efficiency).toBeGreaterThan(
           TEST_TOLERANCE.MEMORY_EFFICIENCY
         ); // At least 10% efficiency

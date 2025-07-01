@@ -7,6 +7,16 @@
 import { Page } from '@playwright/test';
 import { VIEWPORT, TEST_TIMING, WAIT_STRATEGIES } from '../../core/constants';
 
+declare global {
+  interface Window {
+    kineticSlider?: {
+      engine?: unknown;
+      currentIndex: number;
+      isPlaying: boolean;
+    };
+  }
+}
+
 // Viewport sizes for responsive testing
 export const VIEWPORT_SIZES = {
   mobile: VIEWPORT.MOBILE,
@@ -15,16 +25,24 @@ export const VIEWPORT_SIZES = {
 } as const;
 
 /**
- * Navigate to the base URL and wait for the page to be fully loaded
+ * Navigate to the demo page with real implementation and wait for it to be fully loaded
  */
 export async function navigateAndWait(
   page: Page,
-  path: string = '/'
+  path: string = '/demo.html'
 ): Promise<void> {
   await page.goto(path, {
     waitUntil: WAIT_STRATEGIES.NETWORK_IDLE,
     timeout: TEST_TIMING.E2E_TIMEOUT,
   });
+  
+  // Wait for the slider to initialize
+  await page.waitForSelector('[data-testid="kinetic-slider"]');
+  
+  // Wait for the real implementation to load
+  await page.waitForFunction(() => {
+    return window.kineticSlider && window.kineticSlider.engine;
+  }, { timeout: 10000 });
 }
 
 /**

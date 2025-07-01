@@ -64,17 +64,17 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], hasTouch: true },
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { ...devices['Desktop Firefox'], hasTouch: true },
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: { ...devices['Desktop Safari'], hasTouch: true },
     },
 
     /* Test against mobile viewports. */
@@ -90,7 +90,7 @@ export default defineConfig({
     /* Test against installed browsers only */
     {
       name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+      use: { ...devices['Desktop Chrome'], channel: 'chrome', hasTouch: true },
     },
   ],
 
@@ -102,9 +102,9 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: 'npx serve public -l 8080',
+        command: 'npm run build && npx serve public -l 8080',
         port: 8080,
         reuseExistingServer: !process.env.CI,
-        timeout: 30 * 1000,
+        timeout: 60 * 1000, // Allow time for build
       },
 });

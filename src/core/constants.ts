@@ -212,6 +212,10 @@ export const SLIDER_EVENTS = {
   DRAG_END: 'dragEnd',
   /** State events */
   STATE_CHANGED: 'stateChanged',
+  /** Playback events */
+  PLAY_STATE_CHANGED: 'playStateChanged',
+  /** Accessibility events */
+  ESCAPE_PRESSED: 'escapePressed',
   /** Error events */
   ERROR: 'error',
 } as const;
@@ -243,8 +247,11 @@ export const PERFORMANCE_API = {
 /** CSS selector patterns to eliminate DRY violations */
 export const CSS_SELECTORS = {
   /** App root selectors */
-  MAIN_SELECTORS: 'main, #root, [data-testid="app"]',
+  MAIN_SELECTORS: 'main, #root, [data-testid="app"], [data-testid="kinetic-slider"], .container',
   MAIN_ROLE: 'main, [role="main"]',
+  /** Slider specific selectors */
+  KINETIC_SLIDER: '[data-testid="kinetic-slider"]',
+  SLIDER_CONTAINER: '.container, [data-testid="slider-container"]',
   /** Meta tag selectors */
   VIEWPORT_META: 'meta[name="viewport"]',
   DESCRIPTION_META: 'meta[name="description"]',

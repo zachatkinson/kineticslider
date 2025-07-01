@@ -56,7 +56,7 @@ describe('SpringPhysics - Basic Tests', () => {
       const config1 = springPhysics.getConfig();
       config1.springConstant = 0.999; // Attempt to mutate
       const config2 = springPhysics.getConfig();
-      
+
       expect(config2.springConstant).toBe(PHYSICS.SPRING_CONSTANT);
     });
   });
@@ -158,41 +158,44 @@ describe('SpringPhysics - Basic Tests', () => {
   describe('Performance', () => {
     it('should efficiently calculate multiple spring forces', () => {
       const start = performance.now();
-      
+
       for (let i = 0; i < 1000; i++) {
-        SpringPhysics.calculateSpringForce(Math.random() * 200 - 100, Math.random());
+        SpringPhysics.calculateSpringForce(
+          Math.random() * 200 - 100,
+          Math.random()
+        );
       }
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(10); // Should complete in under 10ms
     });
 
     it('should efficiently calculate multiple elastic motions', () => {
       const start = performance.now();
-      
+
       for (let i = 0; i < 100; i++) {
         springPhysics.calculateElasticMotion(
           Math.random() * 200,
           Math.random() * 200
         );
       }
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(20); // Should complete in under 20ms
     });
 
     it('should handle rapid configuration updates efficiently', () => {
       const start = performance.now();
-      
+
       for (let i = 0; i < 100; i++) {
         springPhysics.updateConfig({
           springConstant: Math.random() * 0.5,
           damping: Math.random(),
         });
       }
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(5); // Should complete in under 5ms
     });
   });
-}); 
+});

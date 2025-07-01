@@ -61,13 +61,10 @@ beforeAll(() => {
   // Mock GSAP for testing
   const globalWithGSAP = global as typeof global & { gsap: unknown };
   globalWithGSAP.gsap = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    to: (target: any, vars: any): any => ({ target, vars }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    timeline: (vars?: any): any => ({ vars }),
+    to: (target: unknown, vars: unknown): unknown => ({ target, vars }),
+    timeline: (vars?: unknown): unknown => ({ vars }),
     registerPlugin: (): void => {},
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any;
+  } as unknown as typeof gsap;
 
   // Mock ResizeObserver
   global.ResizeObserver = class MockResizeObserver implements ResizeObserver {
@@ -99,4 +96,46 @@ beforeAll(() => {
   global.cancelAnimationFrame = (id: number): void => {
     clearTimeout(id);
   };
+
+  // Mock window.matchMedia for accessibility testing
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: (): void => {}, // Deprecated
+      removeListener: (): void => {}, // Deprecated
+      addEventListener: (): void => {},
+      removeEventListener: (): void => {},
+      dispatchEvent: (): boolean => true,
+    }),
+  });
+
+  // Mock document.body for DOM manipulation tests
+  Object.defineProperty(document, 'body', {
+    writable: true,
+    value: {
+      appendChild: vi.fn((element) => element),
+      removeChild: vi.fn((element) => element),
+    },
+  });
+
+  // Mock document.createElement for test elements
+  vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => ({
+    tagName: tagName.toUpperCase(),
+    textContent: '',
+    style: {},
+    setAttribute: vi.fn(),
+    getAttribute: vi.fn(),
+    hasAttribute: vi.fn(() => false),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    remove: vi.fn(),
+    focus: vi.fn(),
+    blur: vi.fn(),
+    parentNode: {
+      removeChild: vi.fn()
+    },
+  } as unknown as HTMLElement));
 });

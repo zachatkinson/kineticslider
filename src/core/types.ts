@@ -155,6 +155,13 @@ export interface ISliderEngine {
   goToSlide(index: number, animated?: boolean): Promise<void>;
   nextSlide(): Promise<void>;
   previousSlide(): Promise<void>;
+  
+  // Playback Control
+  togglePlayPause(): void;
+  isPlaying(): boolean;
+  
+  // Accessibility
+  handleEscape(): void;
 
   // Lifecycle
   initialize(config: SliderConfig): Promise<void>;
@@ -236,6 +243,10 @@ export interface ISliderController {
   setInputConfig(config: Partial<InputConfig>): void;
   getInputConfig(): InputConfig;
 
+  // Accessibility Updates
+  updateSlideState(currentIndex: number, totalSlides: number): void;
+  updatePlayState(isPlaying: boolean): void;
+
   // Cleanup
   destroy(): void;
 }
@@ -258,6 +269,12 @@ export interface InputCallbacks {
   onKeyLeft: () => void;
   /** Callback for key right */
   onKeyRight: () => void;
+  /** Callback for toggle play/pause */
+  onTogglePlayPause: () => void;
+  /** Callback for direct slide navigation */
+  onGoToSlide: (index: number) => void;
+  /** Callback for escape key */
+  onEscape: () => void;
 }
 
 /**

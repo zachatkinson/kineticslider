@@ -28,14 +28,14 @@ export const KINETIC_SLIDER_VERSION = VERSION;
 import { serviceContainer, SERVICE_KEYS } from './core/container';
 import { SliderEngine } from './core/engine';
 import { SliderPhysics } from './physics';
-import { PixiSliderRenderer } from './physics/renderer'; // FIXED: Use tested renderer
+import { SliderRenderer } from './rendering'; // UPDATED: Use unified renderer
 import { SliderController } from './input';
 import { SimpleEventEmitter } from './core/event-emitter';
 
 // Export all core components for external use
 export { SliderEngine } from './core/engine';
 export { SliderPhysics } from './physics';
-export { PixiSliderRenderer } from './physics/renderer'; // FIXED: Export tested class
+export { SliderRenderer } from './rendering'; // UPDATED: Export unified class
 export { SliderController } from './input';
 export { SimpleEventEmitter } from './core/event-emitter';
 export { serviceContainer, SERVICE_KEYS } from './core/container';
@@ -72,7 +72,7 @@ export function initializeSliderServices(): void {
 
   // Register renderer factory
   serviceContainer.register(SERVICE_KEYS.RENDERER, () => {
-    return new PixiSliderRenderer();
+    return new SliderRenderer();
   });
 
   // Register controller factory

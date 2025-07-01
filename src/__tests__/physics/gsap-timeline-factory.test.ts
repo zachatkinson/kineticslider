@@ -23,7 +23,10 @@ import {
   PHYSICS,
   TEST_CONFIG,
 } from '../../core/constants';
-import { createMockPixiSprite, createTestSprites } from '../utils/test-factories';
+import {
+  createMockPixiSprite,
+  createTestSprites,
+} from '../utils/test-factories';
 
 // Define proper interfaces for test mocks
 interface MockTimeline {
@@ -40,11 +43,10 @@ interface MockTimeline {
   seek: ReturnType<typeof vi.fn>;
 }
 
-
-
-type AnimationConfigFunction = (sprite: Sprite, index: number) => gsap.core.Tween;
-
-
+type AnimationConfigFunction = (
+  sprite: Sprite,
+  index: number
+) => gsap.core.Tween;
 
 // Mock GSAP for testing
 const mockTimeline: MockTimeline = {
@@ -121,7 +123,11 @@ describe('GSAPTimelineFactory', () => {
           ease: EASING.EASE_IN,
         };
 
-        GSAPTimelineFactory.createSlideTransition(mockSprites[0], mockSprites[1], config);
+        GSAPTimelineFactory.createSlideTransition(
+          mockSprites[0],
+          mockSprites[1],
+          config
+        );
 
         // Verify scale calculations with high intensity
         expect(mockTimeline.to).toHaveBeenCalledWith(
@@ -144,7 +150,11 @@ describe('GSAPTimelineFactory', () => {
         };
 
         expect(() => {
-          GSAPTimelineFactory.createSlideTransition(mockSprites[0], mockSprites[0], config);
+          GSAPTimelineFactory.createSlideTransition(
+            mockSprites[0],
+            mockSprites[0],
+            config
+          );
         }).not.toThrow();
       });
 
@@ -159,7 +169,11 @@ describe('GSAPTimelineFactory', () => {
         };
 
         expect(() => {
-          GSAPTimelineFactory.createSlideTransition(mockSprites[0], mockSprites[1], config);
+          GSAPTimelineFactory.createSlideTransition(
+            mockSprites[0],
+            mockSprites[1],
+            config
+          );
         }).not.toThrow();
       });
     });
@@ -174,7 +188,10 @@ describe('GSAPTimelineFactory', () => {
           onComplete: vi.fn(),
         };
 
-        const timeline = GSAPTimelineFactory.createMomentumAnimation(mockSprites[0], config);
+        const timeline = GSAPTimelineFactory.createMomentumAnimation(
+          mockSprites[0],
+          config
+        );
 
         expect(gsap.timeline).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -246,7 +263,10 @@ describe('GSAPTimelineFactory', () => {
           onComplete: vi.fn(),
         };
 
-        const timeline = GSAPTimelineFactory.createSnapAnimation(mockSprites[0], config);
+        const timeline = GSAPTimelineFactory.createSnapAnimation(
+          mockSprites[0],
+          config
+        );
 
         expect(gsap.timeline).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -299,7 +319,10 @@ describe('GSAPTimelineFactory', () => {
           onComplete: vi.fn(),
         };
 
-        const timeline = GSAPTimelineFactory.createScaleAnimation(mockSprites[0], config);
+        const timeline = GSAPTimelineFactory.createScaleAnimation(
+          mockSprites[0],
+          config
+        );
 
         expect(gsap.timeline).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -413,7 +436,10 @@ describe('GSAPTimelineFactory', () => {
       it('should create scale reset with custom target', () => {
         const targetScale = TEST_CONFIG.CALCULATION.SCALE_TEST_15;
 
-        const timeline = GSAPTimelineFactory.createScaleReset(mockSprites[0], targetScale);
+        const timeline = GSAPTimelineFactory.createScaleReset(
+          mockSprites[0],
+          targetScale
+        );
 
         expect(mockTimeline.to).toHaveBeenCalledWith(
           mockSprites[0].scale,
@@ -442,15 +468,21 @@ describe('GSAPTimelineFactory', () => {
         const createMockTween = () => vi.fn(() => ({ then: vi.fn() }));
         const mockTween1 = createMockTween()();
         const mockTween2 = createMockTween()();
-        const animations = [mockTween1, mockTween2] as unknown as gsap.core.Tween[];
-        
+        const animations = [
+          mockTween1,
+          mockTween2,
+        ] as unknown as gsap.core.Tween[];
+
         const options = {
           onStart: vi.fn(),
           onComplete: vi.fn(),
           delay: 0.2,
         };
 
-        const timeline = GSAPTimelineFactory.createAnimationGroup(animations, options);
+        const timeline = GSAPTimelineFactory.createAnimationGroup(
+          animations,
+          options
+        );
 
         expect(gsap.timeline).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -471,7 +503,9 @@ describe('GSAPTimelineFactory', () => {
 
       it('should use default options when not provided', () => {
         const createMockTween = () => vi.fn(() => ({ then: vi.fn() }));
-        const animations = [createMockTween()()] as unknown as gsap.core.Tween[];
+        const animations = [
+          createMockTween()(),
+        ] as unknown as gsap.core.Tween[];
 
         expect(() => {
           GSAPTimelineFactory.createAnimationGroup(animations);
@@ -482,7 +516,9 @@ describe('GSAPTimelineFactory', () => {
     describe('createStaggeredAnimation', () => {
       it('should create staggered animation with proper timing', () => {
         const sprites = createTestSprites(3);
-        const animationConfig = vi.fn(() => ({ then: vi.fn() })) as unknown as AnimationConfigFunction;
+        const animationConfig = vi.fn(() => ({
+          then: vi.fn(),
+        })) as unknown as AnimationConfigFunction;
         const staggerDelay = 0.1;
 
         const timeline = GSAPTimelineFactory.createStaggeredAnimation(
@@ -494,21 +530,38 @@ describe('GSAPTimelineFactory', () => {
         expect(gsap.timeline).toHaveBeenCalled();
         expect(animationConfig).toHaveBeenCalledTimes(3);
         expect(mockTimeline.add).toHaveBeenCalledTimes(3);
-        
+
         // Verify stagger timing
-        expect(mockTimeline.add).toHaveBeenNthCalledWith(1, expect.anything(), 0);
-        expect(mockTimeline.add).toHaveBeenNthCalledWith(2, expect.anything(), 0.1);
-        expect(mockTimeline.add).toHaveBeenNthCalledWith(3, expect.anything(), 0.2);
-        
+        expect(mockTimeline.add).toHaveBeenNthCalledWith(
+          1,
+          expect.anything(),
+          0
+        );
+        expect(mockTimeline.add).toHaveBeenNthCalledWith(
+          2,
+          expect.anything(),
+          0.1
+        );
+        expect(mockTimeline.add).toHaveBeenNthCalledWith(
+          3,
+          expect.anything(),
+          0.2
+        );
+
         expect(timeline).toBe(mockTimeline);
       });
 
-              it('should use default stagger delay when not provided', () => {
-          const sprites = createTestSprites(2);
-          const animationConfig = vi.fn(() => ({ then: vi.fn() })) as unknown as AnimationConfigFunction;
+      it('should use default stagger delay when not provided', () => {
+        const sprites = createTestSprites(2);
+        const animationConfig = vi.fn(() => ({
+          then: vi.fn(),
+        })) as unknown as AnimationConfigFunction;
 
         expect(() => {
-          GSAPTimelineFactory.createStaggeredAnimation(sprites, animationConfig);
+          GSAPTimelineFactory.createStaggeredAnimation(
+            sprites,
+            animationConfig
+          );
         }).not.toThrow();
       });
 
@@ -523,7 +576,10 @@ describe('GSAPTimelineFactory', () => {
 
     describe('createFadeTransition', () => {
       it('should create fade transition with default duration', () => {
-        const timeline = GSAPTimelineFactory.createFadeTransition(mockSprites[0], mockSprites[1]);
+        const timeline = GSAPTimelineFactory.createFadeTransition(
+          mockSprites[0],
+          mockSprites[1]
+        );
 
         expect(gsap.timeline).toHaveBeenCalled();
         expect(mockSprites[0].visible).toBe(true);
@@ -536,7 +592,11 @@ describe('GSAPTimelineFactory', () => {
       it('should create fade transition with custom duration', () => {
         const customDuration = ANIMATION_DURATION.SLOW;
 
-        GSAPTimelineFactory.createFadeTransition(mockSprites[0], mockSprites[1], customDuration);
+        GSAPTimelineFactory.createFadeTransition(
+          mockSprites[0],
+          mockSprites[1],
+          customDuration
+        );
 
         expect(mockTimeline.to).toHaveBeenCalledWith(
           mockSprites[0],
@@ -549,7 +609,10 @@ describe('GSAPTimelineFactory', () => {
 
       it('should handle same sprite fade transition', () => {
         expect(() => {
-          GSAPTimelineFactory.createFadeTransition(mockSprites[0], mockSprites[0]);
+          GSAPTimelineFactory.createFadeTransition(
+            mockSprites[0],
+            mockSprites[0]
+          );
         }).not.toThrow();
       });
     });
@@ -564,10 +627,16 @@ describe('GSAPTimelineFactory', () => {
           kill: vi.fn(),
           isActive: vi.fn(() => false),
         };
-        const childTimelines = [childTimeline1, childTimeline2] as unknown as gsap.core.Timeline[];
+        const childTimelines = [
+          childTimeline1,
+          childTimeline2,
+        ] as unknown as gsap.core.Timeline[];
         const onComplete = vi.fn();
 
-        const timeline = GSAPTimelineFactory.createManagedTimeline(childTimelines, onComplete);
+        const timeline = GSAPTimelineFactory.createManagedTimeline(
+          childTimelines,
+          onComplete
+        );
 
         expect(gsap.timeline).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -589,10 +658,13 @@ describe('GSAPTimelineFactory', () => {
       });
 
       it('should handle missing onComplete callback', () => {
-        const childTimelines = [{ kill: vi.fn(), isActive: vi.fn(() => true) }] as unknown as gsap.core.Timeline[];
+        const childTimelines = [
+          { kill: vi.fn(), isActive: vi.fn(() => true) },
+        ] as unknown as gsap.core.Timeline[];
 
         expect(() => {
-          const timeline = GSAPTimelineFactory.createManagedTimeline(childTimelines);
+          const timeline =
+            GSAPTimelineFactory.createManagedTimeline(childTimelines);
           expect(timeline).toBe(mockTimeline);
         }).not.toThrow();
       });
@@ -604,16 +676,21 @@ describe('GSAPTimelineFactory', () => {
       });
 
       it('should handle null child timelines gracefully', () => {
-        const childTimelines = [null, undefined, { kill: vi.fn(), isActive: vi.fn(() => true) }] as unknown as gsap.core.Timeline[];
+        const childTimelines = [
+          null,
+          undefined,
+          { kill: vi.fn(), isActive: vi.fn(() => true) },
+        ] as unknown as gsap.core.Timeline[];
 
-        const timeline = GSAPTimelineFactory.createManagedTimeline(childTimelines);
-        
+        const timeline =
+          GSAPTimelineFactory.createManagedTimeline(childTimelines);
+
         // Verify timeline was created successfully
         expect(timeline).toBe(mockTimeline);
-        
+
         // Trigger cleanup
         const timelineConfig = vi.mocked(gsap.timeline).mock.calls[0][0];
-        
+
         expect(() => {
           if (timelineConfig?.onComplete) {
             timelineConfig.onComplete();
@@ -626,24 +703,32 @@ describe('GSAPTimelineFactory', () => {
   describe('Performance and Resource Management', () => {
     it('should efficiently create multiple timelines', () => {
       const start = performance.now();
-      
+
       for (let i = 0; i < 100; i++) {
-        GSAPTimelineFactory.createFadeTransition(mockSprites[0], mockSprites[1]);
+        GSAPTimelineFactory.createFadeTransition(
+          mockSprites[0],
+          mockSprites[1]
+        );
         GSAPTimelineFactory.createScaleReset(mockSprites[0]);
         GSAPTimelineFactory.createDragEffect(mockSprites[0], i);
       }
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(50); // Should complete in under 50ms
     });
 
     it('should handle rapid timeline creation without memory issues', () => {
       const timelines: gsap.core.Timeline[] = [];
-      
+
       for (let i = 0; i < 1000; i++) {
-        timelines.push(GSAPTimelineFactory.createFadeTransition(mockSprites[0], mockSprites[1]));
+        timelines.push(
+          GSAPTimelineFactory.createFadeTransition(
+            mockSprites[0],
+            mockSprites[1]
+          )
+        );
       }
-      
+
       expect(timelines).toHaveLength(1000);
       expect(gsap.timeline).toHaveBeenCalledTimes(1000);
     });
@@ -674,12 +759,16 @@ describe('GSAPTimelineFactory', () => {
       };
 
       // Test consistent configuration across different timeline types
-      GSAPTimelineFactory.createSlideTransition(mockSprites[0], mockSprites[1], {
-        fromIndex: 0,
-        toIndex: 1,
-        scaleIntensity: 0.5,
-        ...config,
-      });
+      GSAPTimelineFactory.createSlideTransition(
+        mockSprites[0],
+        mockSprites[1],
+        {
+          fromIndex: 0,
+          toIndex: 1,
+          scaleIntensity: 0.5,
+          ...config,
+        }
+      );
 
       GSAPTimelineFactory.createSnapAnimation(mockSprites[0], {
         targetPosition: 100,
@@ -687,9 +776,13 @@ describe('GSAPTimelineFactory', () => {
       });
 
       // Verify consistent GSAP configuration
-      expect(vi.mocked(gsap.timeline).mock.calls.every(call => 
-        call[0]?.ease === config.ease || call[0]?.force3D === true
-      )).toBe(true);
+      expect(
+        vi
+          .mocked(gsap.timeline)
+          .mock.calls.every(
+            (call) => call[0]?.ease === config.ease || call[0]?.force3D === true
+          )
+      ).toBe(true);
     });
 
     it('should handle configuration validation gracefully', () => {
@@ -703,7 +796,11 @@ describe('GSAPTimelineFactory', () => {
       };
 
       expect(() => {
-        GSAPTimelineFactory.createSlideTransition(mockSprites[0], mockSprites[1], extremeConfig);
+        GSAPTimelineFactory.createSlideTransition(
+          mockSprites[0],
+          mockSprites[1],
+          extremeConfig
+        );
       }).not.toThrow();
     });
   });
@@ -711,9 +808,12 @@ describe('GSAPTimelineFactory', () => {
   describe('Error Handling and Edge Cases', () => {
     it('should handle null sprites gracefully', () => {
       expect(() => {
-        GSAPTimelineFactory.createFadeTransition(null as unknown as Sprite, mockSprites[1]);
+        GSAPTimelineFactory.createFadeTransition(
+          null as unknown as Sprite,
+          mockSprites[1]
+        );
       }).toThrow();
-      
+
       expect(() => {
         GSAPTimelineFactory.createScaleReset(null as unknown as Sprite);
       }).toThrow();
@@ -721,7 +821,10 @@ describe('GSAPTimelineFactory', () => {
 
     it('should handle undefined sprites gracefully', () => {
       expect(() => {
-        GSAPTimelineFactory.createDragEffect(undefined as unknown as Sprite, 50);
+        GSAPTimelineFactory.createDragEffect(
+          undefined as unknown as Sprite,
+          50
+        );
       }).toThrow();
     });
 
@@ -744,7 +847,10 @@ describe('GSAPTimelineFactory', () => {
       });
 
       expect(() => {
-        GSAPTimelineFactory.createFadeTransition(mockSprites[0], mockSprites[1]);
+        GSAPTimelineFactory.createFadeTransition(
+          mockSprites[0],
+          mockSprites[1]
+        );
       }).toThrow('GSAP Error');
     });
 
@@ -761,4 +867,4 @@ describe('GSAPTimelineFactory', () => {
       }).not.toThrow();
     });
   });
-}); 
+});

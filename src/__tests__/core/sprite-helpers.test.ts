@@ -27,13 +27,13 @@ function createMockSprite(overrides: Partial<MockSprite> = {}): MockSprite {
   return {
     x: 0,
     y: 0,
-    scale: { 
-      x: 1, 
+    scale: {
+      x: 1,
       y: 1,
-      set: function(x: number, y: number) {
+      set: function (x: number, y: number) {
         this.x = x;
         this.y = y;
-      }
+      },
     },
     alpha: 1,
     visible: true,
@@ -186,7 +186,7 @@ describe('Sprite Helpers', () => {
     it('should overwrite existing different x/y scales', () => {
       mockSprite.scale.x = 2.0;
       mockSprite.scale.y = 0.5;
-      
+
       applyUniformScale(mockSprite, 1.8);
       expect(mockSprite.scale.x).toBe(1.8);
       expect(mockSprite.scale.y).toBe(1.8);
@@ -300,7 +300,7 @@ describe('Sprite Helpers', () => {
       expect(() => {
         getBaseScale(null as unknown as Sprite);
       }).toThrow();
-      
+
       expect(() => {
         setBaseScale(null as unknown as Sprite, 1.5);
       }).toThrow();
@@ -310,7 +310,7 @@ describe('Sprite Helpers', () => {
       expect(() => {
         calculateFinalScale(undefined as unknown as Sprite, 2);
       }).toThrow();
-      
+
       expect(() => {
         applyUniformScale(undefined as unknown as Sprite, 1.5);
       }).toThrow();
@@ -318,11 +318,11 @@ describe('Sprite Helpers', () => {
 
     it('should handle sprites with missing properties', () => {
       const incompleteSprite = { x: 100 } as unknown as Sprite;
-      
+
       expect(() => {
         getBaseScale(incompleteSprite);
       }).not.toThrow();
-      
+
       expect(() => {
         setBaseScale(incompleteSprite, 1.2);
       }).not.toThrow();
@@ -332,10 +332,10 @@ describe('Sprite Helpers', () => {
       expect(() => {
         setBaseScale(mockSprite, Infinity);
       }).not.toThrow();
-      
+
       const result = calculateFinalScale(mockSprite, NaN);
       expect(result).toBeNaN();
-      
+
       expect(() => {
         applyUniformScale(mockSprite, Infinity);
       }).not.toThrow();
@@ -356,31 +356,31 @@ describe('Sprite Helpers', () => {
     it('should efficiently handle many scale operations', () => {
       const sprites = Array.from({ length: 1000 }, () => createMockSprite());
       const start = performance.now();
-      
+
       sprites.forEach((sprite, index) => {
         setBaseScale(sprite, 1 + index * 0.001);
         const finalScale = calculateFinalScale(sprite, 1.5);
         applyUniformScale(sprite, finalScale);
       });
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(50); // Should complete in under 50ms
     });
 
     it('should efficiently normalize many scales', () => {
       const start = performance.now();
-      
+
       for (let i = 0; i < 1000; i++) {
         normalizeScale(Math.random() * 10 - 5); // Random values from -5 to 5
       }
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(5); // Should complete in under 5ms
     });
 
     it('should efficiently calculate many drag scale factors', () => {
       const start = performance.now();
-      
+
       for (let i = 0; i < 1000; i++) {
         calculateDragScaleFactor(
           Math.random() * 200,
@@ -388,7 +388,7 @@ describe('Sprite Helpers', () => {
           Math.random() * 0.5
         );
       }
-      
+
       const duration = performance.now() - start;
       expect(duration).toBeLessThan(10); // Should complete in under 10ms
     });
@@ -398,20 +398,20 @@ describe('Sprite Helpers', () => {
     it('should work together for common drag interaction pattern', () => {
       // Simulate a common drag interaction workflow
       const sprite = createMockSprite();
-      
+
       // 1. Set initial base scale
       setBaseScale(sprite, 1.2);
-      
+
       // 2. Calculate drag scale factor
       const dragFactor = calculateDragScaleFactor(60, 100, 0.3); // 60px drag, 100px threshold, 0.3 intensity
-      
+
       // 3. Calculate final scale
       const finalScale = calculateFinalScale(sprite, dragFactor);
-      
+
       // 4. Normalize and apply scale
       const normalizedScale = normalizeScale(finalScale);
       applyUniformScale(sprite, normalizedScale);
-      
+
       // Verify the complete workflow
       expect(getBaseScale(sprite)).toBe(1.2);
       expect(dragFactor).toBeCloseTo(1.18, 5); // 1 + 0.6 * 0.3
@@ -423,20 +423,20 @@ describe('Sprite Helpers', () => {
     it('should maintain consistency across multiple operations', () => {
       const sprite = createMockSprite();
       setBaseScale(sprite, 1.5);
-      
+
       // Apply multiple transformations
       const factor1 = calculateDragScaleFactor(25, 100, 0.2);
       const scale1 = calculateFinalScale(sprite, factor1);
       applyUniformScale(sprite, normalizeScale(scale1));
-      
+
       const factor2 = calculateDragScaleFactor(75, 100, 0.1);
       const scale2 = calculateFinalScale(sprite, factor2);
       applyUniformScale(sprite, normalizeScale(scale2));
-      
+
       // Base scale should remain unchanged
       expect(getBaseScale(sprite)).toBe(1.5);
       // Final scale should be properly calculated
       expect(sprite.scale.x).toBe(sprite.scale.y); // Uniform scaling maintained
     });
   });
-}); 
+});

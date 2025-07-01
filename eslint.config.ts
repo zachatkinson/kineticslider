@@ -4,9 +4,8 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import security from 'eslint-plugin-security';
 import tseslint from 'typescript-eslint';
-import type { TSESLint } from '@typescript-eslint/utils';
 
-const config: TSESLint.FlatConfig.ConfigArray = tseslint.config(
+const config = tseslint.config(
   {
     ignores: [
       'dist',
@@ -63,6 +62,7 @@ const config: TSESLint.FlatConfig.ConfigArray = tseslint.config(
     rules: {
       'no-console': 'off', // Allow console in test files
       '@typescript-eslint/explicit-function-return-type': 'off',
+      'security/detect-object-injection': 'off', // Disable for test files - legitimate testing utilities
     },
   }
 );
