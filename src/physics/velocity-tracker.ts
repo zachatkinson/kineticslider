@@ -8,11 +8,7 @@
  * @version 1.0.0
  */
 
-import {
-  PHYSICS,
-  PERFORMANCE,
-  INPUT,
-} from '../core/constants';
+import { PHYSICS, PERFORMANCE, INPUT } from '../core/constants';
 
 /**
  * Velocity sample for tracking motion
@@ -67,7 +63,7 @@ export interface VelocityResult {
 
 /**
  * Optimized velocity calculation with smoothing and throttling
- * 
+ *
  * Based on patterns from:
  * - useMouseDrag.ts: throttled event handling and velocity calculation
  * - Main branch: gesture recognition and momentum calculations
@@ -109,7 +105,7 @@ export class VelocityTracker {
     const deltaX = x2 - x1;
     const deltaY = y2 - y1;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
+
     return distance / (deltaTime / 1000); // Convert to pixels per second
   }
 
@@ -132,10 +128,10 @@ export class VelocityTracker {
    * Pattern for noise reduction
    */
   private applySmoothingFilter(newVelocity: number): number {
-    this.smoothedVelocity = 
+    this.smoothedVelocity =
       this.smoothedVelocity * (1 - this.config.smoothingFactor) +
       newVelocity * this.config.smoothingFactor;
-    
+
     return this.smoothedVelocity;
   }
 
@@ -165,8 +161,8 @@ export class VelocityTracker {
 
     if (this.lastPosition) {
       distance = Math.sqrt(
-        Math.pow(x - this.lastPosition.x, 2) + 
-        Math.pow(y - this.lastPosition.y, 2)
+        Math.pow(x - this.lastPosition.x, 2) +
+          Math.pow(y - this.lastPosition.y, 2)
       );
 
       // Only track meaningful motion
@@ -250,7 +246,9 @@ export class VelocityTracker {
     const smoothedVelocity = this.applySmoothingFilter(currentVelocity);
 
     // Calculate average velocity over the buffer
-    const averageVelocity = this.samples.reduce((sum, sample) => sum + sample.velocity, 0) / this.samples.length;
+    const averageVelocity =
+      this.samples.reduce((sum, sample) => sum + sample.velocity, 0) /
+      this.samples.length;
 
     return {
       velocity: currentVelocity,
@@ -268,8 +266,8 @@ export class VelocityTracker {
    */
   getPeakVelocity(): number {
     if (this.samples.length === 0) return 0;
-    
-    return Math.max(...this.samples.map(sample => sample.velocity));
+
+    return Math.max(...this.samples.map((sample) => sample.velocity));
   }
 
   /**
@@ -300,10 +298,10 @@ export class VelocityTracker {
    */
   getMotionDuration(): number {
     if (this.samples.length < 2) return 0;
-    
+
     const firstSample = this.samples[0];
     const lastSample = this.samples[this.samples.length - 1];
-    
+
     return lastSample.timestamp - firstSample.timestamp;
   }
 
@@ -355,4 +353,4 @@ export class VelocityTracker {
   getConfig(): VelocityConfig {
     return { ...this.config };
   }
-} 
+}

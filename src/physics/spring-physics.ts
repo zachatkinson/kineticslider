@@ -17,10 +17,7 @@ import {
   SCALE,
   GSAP_DEFAULTS,
 } from '../core/constants';
-import {
-  getBaseScale,
-  calculateFinalScale,
-} from '../core/sprite-helpers';
+import { getBaseScale, calculateFinalScale } from '../core/sprite-helpers';
 
 /**
  * Configuration for spring animations
@@ -68,7 +65,7 @@ export interface SpringResult {
 
 /**
  * GSAP spring-based physics interactions
- * 
+ *
  * Based on patterns from:
  * - useDisplacementEffects.ts: filter scale animations and spring effects
  * - useMouseDrag.ts: spring reset animations and elastic behavior
@@ -105,17 +102,21 @@ export class SpringPhysics {
   calculateElasticMotion(
     currentPosition: number,
     targetPosition: number,
-    velocity: number = 0
+    _velocity: number = 0
   ): SpringResult {
     const displacement = currentPosition - targetPosition;
-    const force = SpringPhysics.calculateSpringForce(displacement, this.config.springConstant);
-    
+    const force = SpringPhysics.calculateSpringForce(
+      displacement,
+      this.config.springConstant
+    );
+
     // Calculate duration based on displacement and spring constant
     const distanceFactor = Math.min(
-      Math.abs(displacement) / PHYSICS.DISTANCE_NORMALIZATION, 
+      Math.abs(displacement) / PHYSICS.DISTANCE_NORMALIZATION,
       1
     );
-    const springFactor = 1 / Math.max(this.config.springConstant, PHYSICS.SPRING_MIN_CONSTANT);
+    const springFactor =
+      1 / Math.max(this.config.springConstant, PHYSICS.SPRING_MIN_CONSTANT);
     const duration = this.config.duration * distanceFactor * springFactor;
 
     return {
@@ -139,7 +140,7 @@ export class SpringPhysics {
     const timeline = gsap.timeline(GSAP_DEFAULTS.PERFORMANCE);
 
     const springConfig = { ...this.config, ...options };
-    
+
     // Calculate spring motion for both axes
     const springX = this.calculateElasticMotion(sprite.x, targetX);
     const springY = this.calculateElasticMotion(sprite.y, targetY);
@@ -220,9 +221,9 @@ export class SpringPhysics {
 
     // Apply spring damping based on intensity
     const dampedIntensity = intensity * this.config.damping;
-    const springDuration = this.config.duration * (
-      1 - dampedIntensity * PHYSICS.DURATION_FACTORS.SPRING_DAMPING_FACTOR
-    );
+    const springDuration =
+      this.config.duration *
+      (1 - dampedIntensity * PHYSICS.DURATION_FACTORS.SPRING_DAMPING_FACTOR);
 
     timeline.to(sprite, {
       x: targetX,
@@ -252,9 +253,10 @@ export class SpringPhysics {
 
     // Create bouncing effect
     for (let i = 0; i < bounceCount; i++) {
-      const bounceIntensity = 1 - (i / bounceCount);
-      const bounceScale = finalValue + (peakValue - finalValue) * bounceIntensity;
-      
+      const bounceIntensity = 1 - i / bounceCount;
+      const bounceScale =
+        finalValue + (peakValue - finalValue) * bounceIntensity;
+
       timeline.to(sprite.scale, {
         x: bounceScale,
         y: bounceScale,
@@ -292,7 +294,7 @@ export class SpringPhysics {
     for (let i = 0; i < frequency; i++) {
       const wobbleX = originalX + amplitude * Math.sin(i * Math.PI);
       const wobbleY = originalY + amplitude * Math.cos(i * Math.PI);
-      
+
       timeline.to(sprite, {
         x: wobbleX,
         y: wobbleY,
@@ -328,10 +330,11 @@ export class SpringPhysics {
     const deltaX = attractorX - sprite.x;
     const deltaY = attractorY - sprite.y;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
+
     // Magnetic force decreases with distance
-    const normalizedForce = magneticForce / Math.max(distance / PHYSICS.DISTANCE_NORMALIZATION, 1);
-    
+    const normalizedForce =
+      magneticForce / Math.max(distance / PHYSICS.DISTANCE_NORMALIZATION, 1);
+
     // Apply spring physics to the attraction
     const attractionX = sprite.x + deltaX * normalizedForce;
     const attractionY = sprite.y + deltaY * normalizedForce;
@@ -358,7 +361,7 @@ export class SpringPhysics {
   ): gsap.core.Timeline {
     const timeline = gsap.timeline(GSAP_DEFAULTS.TIMELINE);
 
-    sprites.forEach((sprite, index) => {
+    sprites.forEach((sprite, _index) => {
       // Calculate distance from center
       const deltaX = sprite.x - centerX;
       const deltaY = sprite.y - centerY;
@@ -367,9 +370,9 @@ export class SpringPhysics {
       if (distance <= maxRadius) {
         // Calculate ripple delay based on distance
         const delay = (distance / maxRadius) * this.config.duration;
-        
+
         // Calculate ripple intensity (closer = stronger)
-        const intensity = 1 - (distance / maxRadius);
+        const intensity = 1 - distance / maxRadius;
         const pushDistance = 20 * intensity;
 
         // Normalize direction
@@ -380,19 +383,27 @@ export class SpringPhysics {
         const pushX = sprite.x + directionX * pushDistance;
         const pushY = sprite.y + directionY * pushDistance;
 
-        timeline.to(sprite, {
-          x: pushX,
-          y: pushY,
-          duration: this.config.duration / 3,
-          ease: EASING.EASE_OUT,
-        }, delay);
+        timeline.to(
+          sprite,
+          {
+            x: pushX,
+            y: pushY,
+            duration: this.config.duration / 3,
+            ease: EASING.EASE_OUT,
+          },
+          delay
+        );
 
-        timeline.to(sprite, {
-          x: sprite.x,
-          y: sprite.y,
-          duration: this.config.duration * 2 / 3,
-          ease: this.config.ease,
-        }, delay + this.config.duration / 3);
+        timeline.to(
+          sprite,
+          {
+            x: sprite.x,
+            y: sprite.y,
+            duration: (this.config.duration * 2) / 3,
+            ease: this.config.ease,
+          },
+          delay + this.config.duration / 3
+        );
       }
     });
 
@@ -412,4 +423,4 @@ export class SpringPhysics {
   getConfig(): SpringConfig {
     return { ...this.config };
   }
-} 
+}

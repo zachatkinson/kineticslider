@@ -1,15 +1,815 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.002090875">
-    <testsuite name="src/__tests__/placeholder.test.ts" timestamp="2025-06-21T17:43:51.048Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.002090875">
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have working test environment" time="0.000605166">
+<testsuites name="vitest tests" tests="390" failures="0" errors="0" time="0.5903325">
+    <testsuite name="src/__tests__/placeholder.test.ts" timestamp="2025-07-01T03:02:20.611Z" hostname="MacBookPro.lan" tests="6" failures="0" errors="0" skipped="0" time="0.003554208">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="External Libraries &gt; should have PIXI mock available" time="0.001991042">
         </testcase>
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have PIXI mock available" time="0.000173708">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="External Libraries &gt; should have GSAP mock available" time="0.000101917">
         </testcase>
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have GSAP mock available" time="0.00015325">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="External Libraries &gt; should have ResizeObserver mock available" time="0.000055666">
         </testcase>
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have ResizeObserver mock available" time="0.000059792">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="External Libraries &gt; should have IntersectionObserver mock available" time="0.000046791">
         </testcase>
-        <testcase classname="src/__tests__/placeholder.test.ts" name="Project Setup &gt; should have IntersectionObserver mock available" time="0.00011725">
+        <testcase classname="src/__tests__/placeholder.test.ts" name="KineticSlider &gt; should pass basic test" time="0.000213541">
+        </testcase>
+        <testcase classname="src/__tests__/placeholder.test.ts" name="KineticSlider &gt; should be implemented in Phase 2" time="0.000071417">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/core/container.test.ts" timestamp="2025-07-01T03:02:20.612Z" hostname="MacBookPro.lan" tests="11" failures="0" errors="0" skipped="0" time="0.003839834">
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Service Registration &gt; should register and resolve a factory function" time="0.000860166">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Service Registration &gt; should register and resolve an instance" time="0.000097">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Service Registration &gt; should create new instances for factory registrations" time="0.000645708">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Service Registration &gt; should return same instance for singleton registrations" time="0.000084375">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Service Resolution &gt; should throw error for unregistered service" time="0.000491042">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Service Resolution &gt; should check if service exists" time="0.000089833">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Container Management &gt; should clear all services" time="0.000100083">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; SERVICE_KEYS Constants &gt; should have all required service keys" time="0.000108125">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; SERVICE_KEYS Constants &gt; should have unique service key values" time="0.000063959">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Error Handling &gt; should handle factory function errors gracefully" time="0.000118041">
+        </testcase>
+        <testcase classname="src/__tests__/core/container.test.ts" name="Service Container &gt; Error Handling &gt; should provide meaningful error messages" time="0.0000895">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/core/engine.test.ts" timestamp="2025-07-01T03:02:20.614Z" hostname="MacBookPro.lan" tests="30" failures="0" errors="0" skipped="0" time="0.147785583">
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Initialization &gt; should initialize successfully with valid config" time="0.01604825">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Initialization &gt; should handle initialization errors gracefully" time="0.001096417">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Initialization &gt; should set loading progress during initialization" time="0.000478792">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Navigation &gt; should navigate to specific slide" time="0.00055725">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Navigation &gt; should use physics for animated transitions" time="0.0004145">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Navigation &gt; should skip animation for instant transitions" time="0.000373375">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Navigation &gt; should reject invalid slide indices" time="0.000269583">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Navigation &gt; should prevent navigation during transitions" time="0.104240333">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Navigation &gt; should navigate to next slide with wraparound" time="0.000583541">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Navigation &gt; should navigate to previous slide with wraparound" time="0.000342125">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Navigation &gt; should handle navigation errors gracefully" time="0.000563083">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; State Management &gt; should return current state" time="0.000419709">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; State Management &gt; should return current index" time="0.000395041">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; State Management &gt; should return total slides" time="0.0008505">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; State Management &gt; should return transition status" time="0.000783792">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; State Management &gt; should emit state change events" time="0.000808292">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Event Handling &gt; should subscribe to events" time="0.001131417">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Event Handling &gt; should unsubscribe from events" time="0.000598167">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Event Handling &gt; should emit events" time="0.000466958">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Drag Interactions &gt; should handle drag start events" time="0.000530583">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Drag Interactions &gt; should apply scale effect during drag move" time="0.00052725">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Drag Interactions &gt; should reset scale on drag end" time="0.000545333">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Input Callbacks &gt; should handle swipe left input" time="0.000524792">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Input Callbacks &gt; should handle swipe right input" time="0.003054">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Input Callbacks &gt; should handle keyboard left input" time="0.000699334">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Input Callbacks &gt; should handle keyboard right input" time="0.007649875">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Cleanup and Destruction &gt; should destroy all services and reset state" time="0.0008425">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Edge Cases &gt; should handle empty image array" time="0.000374416">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Edge Cases &gt; should handle navigation before initialization" time="0.000339083">
+        </testcase>
+        <testcase classname="src/__tests__/core/engine.test.ts" name="SliderEngine &gt; Edge Cases &gt; should handle missing services gracefully" time="0.000389042">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/core/event-emitter.test.ts" timestamp="2025-07-01T03:02:20.616Z" hostname="MacBookPro.lan" tests="13" failures="0" errors="0" skipped="0" time="0.038820041">
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Subscription &gt; should register event listeners" time="0.00132875">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Subscription &gt; should handle multiple listeners for same event" time="0.0023035">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Subscription &gt; should handle multiple events independently" time="0.000371083">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Emission &gt; should emit events with correct data" time="0.00011875">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Emission &gt; should handle events with no listeners" time="0.000469666">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Emission &gt; should emit events without data" time="0.000101916">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Unsubscription &gt; should remove specific listener" time="0.000190375">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Unsubscription &gt; should remove all listeners for an event" time="0.000183125">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Unsubscription &gt; should handle removing non-existent listener" time="0.0001245">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Unsubscription &gt; should handle removing from non-existent event" time="0.000094042">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Event Listener Management &gt; should not affect other events when removing listeners" time="0.000228041">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Error Handling &gt; should handle listener errors gracefully" time="0.000231583">
+        </testcase>
+        <testcase classname="src/__tests__/core/event-emitter.test.ts" name="SimpleEventEmitter &gt; Memory Management &gt; should not leak memory when adding/removing many listeners" time="0.022005125">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/core/sprite-helpers.test.ts" timestamp="2025-07-01T03:02:20.617Z" hostname="MacBookPro.lan" tests="52" failures="0" errors="0" skipped="0" time="0.007306417">
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; getBaseScale &gt; should return baseScale when property exists" time="0.000803459">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; getBaseScale &gt; should return SCALE.DEFAULT when baseScale is undefined" time="0.000098792">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; getBaseScale &gt; should return SCALE.DEFAULT when baseScale is null" time="0.000067792">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; getBaseScale &gt; should return SCALE.DEFAULT when baseScale is 0" time="0.000057833">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; getBaseScale &gt; should handle very small baseScale values" time="0.000055875">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; getBaseScale &gt; should handle very large baseScale values" time="0.000053666">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; getBaseScale &gt; should handle negative baseScale values" time="0.000052834">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; setBaseScale &gt; should set baseScale property on sprite" time="0.000151666">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; setBaseScale &gt; should overwrite existing baseScale" time="0.000058375">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; setBaseScale &gt; should handle zero scale" time="0.000053">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; setBaseScale &gt; should handle negative scale" time="0.000050125">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; setBaseScale &gt; should handle decimal scale values" time="0.000048666">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; setBaseScale &gt; should handle very large scale values" time="0.000047875">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateFinalScale &gt; should multiply base scale by multiplier" time="0.000109583">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateFinalScale &gt; should use SCALE.DEFAULT when baseScale not set" time="0.000054083">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateFinalScale &gt; should handle zero multiplier" time="0.000053208">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateFinalScale &gt; should handle negative multiplier" time="0.000050167">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateFinalScale &gt; should handle very small multipliers" time="0.000051834">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateFinalScale &gt; should handle very large multipliers" time="0.000048667">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; applyUniformScale &gt; should apply scale to both x and y" time="0.00008375">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; applyUniformScale &gt; should handle zero scale" time="0.000136792">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; applyUniformScale &gt; should handle negative scales" time="0.000064792">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; applyUniformScale &gt; should overwrite existing different x/y scales" time="0.000064042">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; applyUniformScale &gt; should handle very small scales" time="0.000057333">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; applyUniformScale &gt; should handle very large scales" time="0.000056708">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; normalizeScale &gt; should return scale within bounds unchanged" time="0.000066958">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; normalizeScale &gt; should clamp scale to minimum" time="0.000051708">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; normalizeScale &gt; should clamp scale to maximum" time="0.000046916">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; normalizeScale &gt; should handle scale exactly at minimum" time="0.000048042">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; normalizeScale &gt; should handle scale exactly at maximum" time="0.000046708">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; normalizeScale &gt; should handle zero scale" time="0.00005125">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; normalizeScale &gt; should handle very small positive scales" time="0.000096">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should calculate scale factor from drag distance" time="0.000066125">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should cap at maximum when distance exceeds threshold" time="0.000048417">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should handle zero distance" time="0.000046292">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should handle negative distance (absolute value)" time="0.0000485">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should handle zero intensity" time="0.0000455">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should handle negative intensity" time="0.000045">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should handle zero threshold gracefully" time="0.00004475">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should handle very small thresholds" time="0.000045125">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; calculateDragScaleFactor &gt; should handle high intensity values" time="0.000045666">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Edge Cases and Error Handling &gt; should throw appropriate errors for null sprites" time="0.000545667">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Edge Cases and Error Handling &gt; should throw appropriate errors for undefined sprites" time="0.000142792">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Edge Cases and Error Handling &gt; should handle sprites with missing properties" time="0.000138625">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Edge Cases and Error Handling &gt; should handle infinite and NaN values" time="0.00014675">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Edge Cases and Error Handling &gt; should handle NaN in normalize scale" time="0.000052">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Edge Cases and Error Handling &gt; should handle Infinity in normalize scale" time="0.000049208">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Performance &gt; should efficiently handle many scale operations" time="0.000575292">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Performance &gt; should efficiently normalize many scales" time="0.000259541">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Performance &gt; should efficiently calculate many drag scale factors" time="0.0002525">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Integration Scenarios &gt; should work together for common drag interaction pattern" time="0.000108458">
+        </testcase>
+        <testcase classname="src/__tests__/core/sprite-helpers.test.ts" name="Sprite Helpers &gt; Integration Scenarios &gt; should maintain consistency across multiple operations" time="0.000075625">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/input/controller.test.ts" timestamp="2025-07-01T03:02:20.620Z" hostname="MacBookPro.lan" tests="10" failures="0" errors="0" skipped="0" time="0.008049792">
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Initialization and Configuration &gt; should initialize with default configuration" time="0.002481916">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Initialization and Configuration &gt; should initialize with element and callbacks" time="0.001574333">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Initialization and Configuration &gt; should update configuration correctly" time="0.000607375">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Initialization and Configuration &gt; should setup event listeners during initialization" time="0.000404583">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Enable/Disable Functionality &gt; should enable input handling" time="0.000349666">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Enable/Disable Functionality &gt; should disable input handling" time="0.000357833">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Event Cleanup &gt; should properly clean up event listeners" time="0.00023125">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Event Cleanup &gt; should handle multiple destroy calls gracefully" time="0.000262208">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Configuration Management &gt; should handle partial configuration updates" time="0.000222833">
+        </testcase>
+        <testcase classname="src/__tests__/input/controller.test.ts" name="SliderController &gt; Configuration Management &gt; should preserve unmodified configuration properties" time="0.000283667">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/integration/complete-system.test.ts" timestamp="2025-07-01T03:02:20.621Z" hostname="MacBookPro.lan" tests="25" failures="0" errors="0" skipped="0" time="0.089746208">
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; System Initialization &gt; should initialize all components without errors" time="0.00332225">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; System Initialization &gt; should have consistent configuration across components" time="0.001388708">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; System Initialization &gt; should handle initialization with missing configuration gracefully" time="0.002041458">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Input to Physics Integration &gt; should handle swipe left gesture through complete pipeline" time="0.0023105">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Input to Physics Integration &gt; should handle swipe right gesture through complete pipeline" time="0.005697125">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Input to Physics Integration &gt; should handle keyboard navigation through system" time="0.001839041">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Input to Physics Integration &gt; should handle drag interactions with physics feedback" time="0.001843042">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Physics to Rendering Integration &gt; should apply physics calculations to rendered sprites" time="0.001808542">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Physics to Rendering Integration &gt; should handle transition animations between sprites" time="0.00144875">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Physics to Rendering Integration &gt; should maintain sprite state consistency during animations" time="0.007813125">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Physics to Rendering Integration &gt; should handle rapid animation sequences without conflicts" time="0.005084">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Complete Workflow Integration &gt; should handle complete slide transition workflow" time="0.00157675">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Complete Workflow Integration &gt; should maintain performance during complex interactions" time="0.001307542">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Complete Workflow Integration &gt; should handle edge cases in integrated workflow" time="0.002885875">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Error Handling and Recovery &gt; should handle renderer initialization failure gracefully" time="0.0020825">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Error Handling and Recovery &gt; should handle physics calculation errors without breaking system" time="0.00140875">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Error Handling and Recovery &gt; should handle input event errors without breaking system" time="0.001272375">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Resource Management and Cleanup &gt; should properly cleanup all system resources" time="0.0012775">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Resource Management and Cleanup &gt; should handle cleanup errors gracefully" time="0.001517416">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Resource Management and Cleanup &gt; should prevent memory leaks during long-running operations" time="0.010975125">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Configuration and State Synchronization &gt; should synchronize configuration changes across components" time="0.002672084">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Configuration and State Synchronization &gt; should maintain state consistency during navigation" time="0.00277">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Configuration and State Synchronization &gt; should handle concurrent state changes gracefully" time="0.003448292">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Performance Integration &gt; should maintain 60fps performance target during animations" time="0.0157555">
+        </testcase>
+        <testcase classname="src/__tests__/integration/complete-system.test.ts" name="Complete System Integration &gt; Performance Integration &gt; should optimize rendering performance with asset caching" time="0.004110292">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/integration/physics-integration.test.ts" timestamp="2025-07-01T03:02:20.623Z" hostname="MacBookPro.lan" tests="14" failures="0" errors="0" skipped="0" time="0.101567417">
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Cross-Physics Integration Workflows &gt; should handle complete drag-to-momentum-to-snap workflow" time="0.002381334">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Cross-Physics Integration Workflows &gt; should coordinate multiple physics calculations for gesture recognition" time="0.000319583">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Cross-Physics Integration Workflows &gt; should handle spring-based displacement corrections" time="0.000394333">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Cross-Physics Integration Workflows &gt; should coordinate timeline sequencing for complex animations" time="0.000438125">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Performance Integration &gt; should maintain performance across multiple physics calculations" time="0.009989958">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Performance Integration &gt; should handle memory efficiently with large datasets" time="0.001055375">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Performance Integration &gt; should coordinate physics calculations under stress" time="0.060269041">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Error Handling Integration &gt; should handle cascading errors gracefully" time="0.014227584">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Error Handling Integration &gt; should maintain system stability with invalid inputs" time="0.004154958">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Error Handling Integration &gt; should recover from timeline creation failures" time="0.0008495">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Configuration Integration &gt; should maintain consistent configuration across components" time="0.000438959">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Configuration Integration &gt; should handle configuration validation across components" time="0.000334084">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Real-World Scenario Integration &gt; should handle complete user interaction simulation" time="0.000408042">
+        </testcase>
+        <testcase classname="src/__tests__/integration/physics-integration.test.ts" name="Phase 2.1 Physics Integration &gt; Real-World Scenario Integration &gt; should handle multi-sprite coordinated animations" time="0.005134167">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/integration/pixi-renderer.test.ts" timestamp="2025-07-01T03:02:20.623Z" hostname="MacBookPro.lan" tests="22" failures="0" errors="0" skipped="0" time="0.020123959">
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Transition Animation Application &gt; should apply transition sequence to real sprites" time="0.009346125">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Transition Animation Application &gt; should handle source sprite exit animation" time="0.000702584">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Transition Animation Application &gt; should apply target sprite animation correctly" time="0.000316959">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Swipe Animation Application &gt; should apply swipe animation to sprites" time="0.000452042">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Swipe Animation Application &gt; should handle different swipe directions" time="0.000217083">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Swipe Animation Application &gt; should handle zero intensity swipe" time="0.000129833">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Scale Animation Application &gt; should apply scale animation to sprites" time="0.000182667">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Scale Animation Application &gt; should handle minimum scale constraints" time="0.000123917">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Scale Animation Application &gt; should handle large scale values" time="0.000126167">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Timeline Management &gt; should track active timelines" time="0.00047075">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Timeline Management &gt; should cleanup timelines properly" time="0.000479708">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Timeline Management &gt; should handle multiple concurrent animations" time="0.001083625">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Error Handling Integration &gt; should handle missing sprites gracefully" time="0.00025225">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Error Handling Integration &gt; should handle empty sprite array" time="0.0001615">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Error Handling Integration &gt; should handle malformed animation data" time="0.000206667">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; GSAP Integration &gt; should use GSAP timeline features" time="0.000166042">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; GSAP Integration &gt; should respect GSAP easing configurations" time="0.000159958">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; GSAP Integration &gt; should handle GSAP animation completion" time="0.000120375">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Performance Integration &gt; should create timelines efficiently" time="0.000335416">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Performance Integration &gt; should handle rapid animation requests" time="0.002078458">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Performance Stats Integration &gt; should track performance statistics" time="0.000806792">
+        </testcase>
+        <testcase classname="src/__tests__/integration/pixi-renderer.test.ts" name="PixiSliderRenderer Integration &gt; Performance Stats Integration &gt; should update stats after cleanup" time="0.000748666">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/physics/engine.test.ts" timestamp="2025-07-01T03:02:20.625Z" hostname="MacBookPro.lan" tests="24" failures="0" errors="0" skipped="0" time="0.011011">
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Configuration Management &gt; should have default configuration" time="0.002325625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Configuration Management &gt; should update configuration partially" time="0.000215583">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Configuration Management &gt; should update multiple configuration properties" time="0.00021775">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Transition Calculations &gt; should calculate basic transition sequence" time="0.000896459">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Transition Calculations &gt; should include source sprite exit when different from target" time="0.000238083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Transition Calculations &gt; should not include source sprite when same as target" time="0.000186292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Transition Calculations &gt; should handle invalid indices gracefully" time="0.000166125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Transition Calculations &gt; should use configuration values in calculations" time="0.000277375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Swipe Calculations &gt; should calculate swipe animation with positive direction" time="0.000324291">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Swipe Calculations &gt; should calculate swipe animation with negative direction" time="0.00017175">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Swipe Calculations &gt; should clamp intensity to valid range" time="0.000236167">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Swipe Calculations &gt; should use configuration values" time="0.000185083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Scale Calculations &gt; should calculate basic scale animation" time="0.000140375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Scale Calculations &gt; should use custom duration" time="0.000074792">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Scale Calculations &gt; should prevent zero or negative scale" time="0.000077209">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Scale Calculations &gt; should enforce minimum duration" time="0.000072833">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Advanced Calculations &gt; should determine slide change threshold" time="0.000114875">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Advanced Calculations &gt; should calculate adaptive timing" time="0.000156833">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Advanced Calculations &gt; should calculate momentum decay" time="0.000084541">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Advanced Calculations &gt; should calculate spring force" time="0.000074917">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Edge Cases &gt; should handle empty sprite array transition" time="0.000190583">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Edge Cases &gt; should handle single sprite transition" time="0.000175583">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Edge Cases &gt; should handle zero intensity swipe" time="0.000168125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/engine.test.ts" name="SliderPhysicsEngine &gt; Edge Cases &gt; should handle maximum intensity swipe" time="0.00014575">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/physics/facade.test.ts" timestamp="2025-07-01T03:02:20.626Z" hostname="MacBookPro.lan" tests="29" failures="0" errors="0" skipped="0" time="0.079849417">
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Initialization and Configuration &gt; should initialize with default configuration" time="0.002202792">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Initialization and Configuration &gt; should update physics configuration" time="0.001096959">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Initialization and Configuration &gt; should retrieve current physics configuration" time="0.000326417">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Transition Animation &gt; should animate transition between slides" time="0.001433167">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Transition Animation &gt; should handle edge case with empty sprite array" time="0.001970667">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Transition Animation &gt; should handle invalid indices gracefully" time="0.008906125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Swipe Animation &gt; should animate swipe gesture with momentum" time="0.021996916">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Swipe Animation &gt; should handle different swipe directions" time="0.000553083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Swipe Animation &gt; should handle zero intensity swipe" time="0.000337708">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Swipe Animation &gt; should handle maximum intensity swipe" time="0.000476875">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Scale Animation &gt; should animate sprite scaling with default duration" time="0.000452291">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Scale Animation &gt; should animate sprite scaling with custom duration" time="0.000357042">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Scale Animation &gt; should handle edge scale values" time="0.000345583">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Advanced Engine Methods &gt; should expose slide change threshold calculation" time="0.000415375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Advanced Engine Methods &gt; should expose adaptive timing calculation" time="0.000357125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Performance and Statistics &gt; should expose performance statistics" time="0.000367375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Performance and Statistics &gt; should mark sprites for GSAP targeting" time="0.00040175">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Performance and Statistics &gt; should apply batch animations efficiently" time="0.000489083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Animation Control and Cleanup &gt; should kill all active animations" time="0.009536375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Animation Control and Cleanup &gt; should cleanup physics resources" time="0.000788375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Animation Control and Cleanup &gt; should handle multiple cleanup calls gracefully" time="0.008893709">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Integration Scenarios &gt; should handle complete slide transition workflow" time="0.000793042">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Integration Scenarios &gt; should handle rapid successive animations" time="0.000362334">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Integration Scenarios &gt; should maintain performance under load" time="0.000454625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Error Handling &gt; should handle engine calculation errors gracefully" time="0.000820709">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Error Handling &gt; should handle renderer application errors gracefully" time="0.000414">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Error Handling &gt; should handle cleanup errors gracefully" time="0.000625292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Edge Cases &gt; should handle null/undefined sprites gracefully" time="0.000436417">
+        </testcase>
+        <testcase classname="src/__tests__/physics/facade.test.ts" name="SliderPhysics &gt; Edge Cases &gt; should handle invalid animation parameters" time="0.000472583">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/physics/gsap-timeline-factory.test.ts" timestamp="2025-07-01T03:02:20.628Z" hostname="MacBookPro.lan" tests="44" failures="0" errors="0" skipped="0" time="0.03259475">
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createSlideTransition &gt; should create slide transition timeline with proper configuration" time="0.00341825">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createSlideTransition &gt; should handle different scale intensities" time="0.0006585">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createSlideTransition &gt; should handle same sprite transition gracefully" time="0.000667041">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createSlideTransition &gt; should handle missing callbacks gracefully" time="0.000160625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createMomentumAnimation &gt; should create momentum animation with physics calculations" time="0.000350542">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createMomentumAnimation &gt; should calculate momentum distance correctly" time="0.000250292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createMomentumAnimation &gt; should handle zero velocity" time="0.000146125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createMomentumAnimation &gt; should handle extreme damping values" time="0.000205417">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createSnapAnimation &gt; should create snap animation to target position" time="0.000291083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createSnapAnimation &gt; should handle negative target positions" time="0.000226375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createSnapAnimation &gt; should handle zero target position" time="0.000126292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createScaleAnimation &gt; should create scale animation with proper calculations" time="0.000408125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createScaleAnimation &gt; should handle scale calculations with different base scales" time="0.000184417">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createScaleAnimation &gt; should handle zero target scale" time="0.000132791">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createDragEffect &gt; should create drag effect with scale calculations" time="0.000280208">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createDragEffect &gt; should use default scale intensity when not provided" time="0.000128292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createDragEffect &gt; should handle zero drag distance" time="0.000121208">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createDragEffect &gt; should handle negative drag distance" time="0.000112833">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createScaleReset &gt; should create scale reset with default target" time="0.0002115">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createScaleReset &gt; should create scale reset with custom target" time="0.000181625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createScaleReset &gt; should handle sprites without baseScale" time="0.000289709">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createAnimationGroup &gt; should create coordinated animation group" time="0.0003145">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createAnimationGroup &gt; should handle empty animation array" time="0.000132917">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createAnimationGroup &gt; should use default options when not provided" time="0.000165584">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createStaggeredAnimation &gt; should create staggered animation with proper timing" time="0.000359125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createStaggeredAnimation &gt; should use default stagger delay when not provided" time="0.000186709">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createStaggeredAnimation &gt; should handle empty sprite array" time="0.000148167">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createFadeTransition &gt; should create fade transition with default duration" time="0.000205125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createFadeTransition &gt; should create fade transition with custom duration" time="0.00017875">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createFadeTransition &gt; should handle same sprite fade transition" time="0.000138375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createManagedTimeline &gt; should create managed timeline with cleanup" time="0.000433834">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createManagedTimeline &gt; should handle missing onComplete callback" time="0.000185792">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createManagedTimeline &gt; should handle empty child timeline array" time="0.000136459">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Static Timeline Creation Methods &gt; createManagedTimeline &gt; should handle null child timelines gracefully" time="0.000197209">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Performance and Resource Management &gt; should efficiently create multiple timelines" time="0.000781208">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Performance and Resource Management &gt; should handle rapid timeline creation without memory issues" time="0.002124208">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Performance and Resource Management &gt; should properly configure GSAP defaults" time="0.000224333">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Integration and Configuration &gt; should maintain timeline consistency across methods" time="0.000167375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Integration and Configuration &gt; should handle configuration validation gracefully" time="0.000167666">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Error Handling and Edge Cases &gt; should handle null sprites gracefully" time="0.0138945">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Error Handling and Edge Cases &gt; should handle undefined sprites gracefully" time="0.00033475">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Error Handling and Edge Cases &gt; should handle sprites with missing properties" time="0.000179041">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Error Handling and Edge Cases &gt; should handle GSAP timeline creation failures" time="0.000250792">
+        </testcase>
+        <testcase classname="src/__tests__/physics/gsap-timeline-factory.test.ts" name="GSAPTimelineFactory &gt; Error Handling and Edge Cases &gt; should handle invalid animation configurations" time="0.000158208">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/physics/kinetic-physics.test.ts" timestamp="2025-07-01T03:02:20.631Z" hostname="MacBookPro.lan" tests="39" failures="0" errors="0" skipped="0" time="0.0052865">
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Initialization and Configuration &gt; should initialize with default configuration" time="0.000880958">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Initialization and Configuration &gt; should accept custom configuration" time="0.000143583">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Initialization and Configuration &gt; should update configuration" time="0.000097917">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Initialization and Configuration &gt; should reset configuration to defaults" time="0.000088875">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Velocity Calculations &gt; should calculate velocity from distance and time" time="0.000074834">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Velocity Calculations &gt; should calculate velocity with zero time" time="0.000056458">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Velocity Calculations &gt; should calculate velocity with negative distance (absolute value)" time="0.000052583">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Velocity Calculations &gt; should handle very small time values" time="0.0001315">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Friction Calculations &gt; should apply friction to reduce velocity" time="0.00010125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Friction Calculations &gt; should handle zero friction (no change)" time="0.00005225">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Friction Calculations &gt; should handle maximum friction (stop)" time="0.000048708">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Friction Calculations &gt; should handle negative velocity" time="0.000108583">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Snap Position Calculations &gt; should calculate snap to nearest slide position" time="0.000134708">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Snap Position Calculations &gt; should snap to exact slide position" time="0.000065125">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Snap Position Calculations &gt; should handle negative positions" time="0.000060167">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Static Snap Position Calculations &gt; should calculate duration based on distance" time="0.000052708">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Momentum Calculations &gt; should calculate momentum physics from drag interaction" time="0.000163208">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Momentum Calculations &gt; should clamp velocity to maximum" time="0.000061667">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Momentum Calculations &gt; should apply friction over time" time="0.000073625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Momentum Calculations &gt; should calculate scale factor from drag distance" time="0.000059">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Drag Scale Calculations &gt; should calculate scale from drag distance" time="0.000075292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Drag Scale Calculations &gt; should use custom base scale" time="0.000056208">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Drag Scale Calculations &gt; should handle zero drag distance" time="0.000051375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Drag Scale Calculations &gt; should clamp drag distance to threshold" time="0.000050291">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Slide Change Detection &gt; should trigger on distance threshold" time="0.000075834">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Slide Change Detection &gt; should trigger on velocity threshold" time="0.000059417">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Slide Change Detection &gt; should handle negative distance (absolute value)" time="0.000058917">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Slide Change Detection &gt; should trigger if either threshold is met" time="0.000069375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Spring Reset Calculations &gt; should calculate spring physics for scale reset" time="0.000118375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Spring Reset Calculations &gt; should use default target scale" time="0.000065459">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Spring Reset Calculations &gt; should calculate duration based on scale difference" time="0.000052167">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Spring Reset Calculations &gt; should cap maximum duration" time="0.00005525">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Edge Cases &gt; should handle zero values gracefully" time="0.0000745">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Edge Cases &gt; should handle very large numbers" time="0.000058917">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Edge Cases &gt; should handle very small numbers" time="0.000046292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Edge Cases &gt; should prevent division by zero" time="0.000044292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Performance and Integration &gt; should efficiently calculate many velocity values" time="0.000201333">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Performance and Integration &gt; should handle rapid configuration updates efficiently" time="0.000074541">
+        </testcase>
+        <testcase classname="src/__tests__/physics/kinetic-physics.test.ts" name="KineticPhysics &gt; Performance and Integration &gt; should maintain configuration immutability" time="0.00005125">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/physics/spring-physics-basic.test.ts" timestamp="2025-07-01T03:02:20.634Z" hostname="MacBookPro.lan" tests="20" failures="0" errors="0" skipped="0" time="0.005612">
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Initialization and Configuration &gt; should initialize with default configuration" time="0.000911958">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Initialization and Configuration &gt; should accept custom configuration" time="0.000508333">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Initialization and Configuration &gt; should update configuration" time="0.000120875">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Initialization and Configuration &gt; should get immutable configuration copy" time="0.000064916">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Static Spring Force Calculations &gt; should calculate spring force from displacement" time="0.000074292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Static Spring Force Calculations &gt; should calculate spring force with negative displacement" time="0.000057167">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Static Spring Force Calculations &gt; should handle zero displacement" time="0.000102209">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Static Spring Force Calculations &gt; should handle zero spring constant" time="0.000281292">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Static Spring Force Calculations &gt; should use default spring constant when not provided" time="0.000058">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Elastic Motion Calculations &gt; should calculate elastic motion from position difference" time="0.000174792">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Elastic Motion Calculations &gt; should handle zero displacement" time="0.000170666">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Elastic Motion Calculations &gt; should handle negative displacement" time="0.000067291">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Elastic Motion Calculations &gt; should calculate duration based on displacement magnitude" time="0.000060084">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Elastic Motion Calculations &gt; should respect spring configuration" time="0.000057291">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Edge Cases &gt; should handle very small spring constants" time="0.000069791">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Edge Cases &gt; should handle very large displacements" time="0.000073042">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Edge Cases &gt; should handle negative positions" time="0.000059875">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Performance &gt; should efficiently calculate multiple spring forces" time="0.000181917">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Performance &gt; should efficiently calculate multiple elastic motions" time="0.000108625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/spring-physics-basic.test.ts" name="SpringPhysics - Basic Tests &gt; Performance &gt; should handle rapid configuration updates efficiently" time="0.00007925">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/physics/velocity-tracker.test.ts" timestamp="2025-07-01T03:02:20.635Z" hostname="MacBookPro.lan" tests="27" failures="0" errors="0" skipped="0" time="0.008960708">
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Initialization and Configuration &gt; should initialize with provided configuration" time="0.000879083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Initialization and Configuration &gt; should initialize with default configuration when none provided" time="0.000117208">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Initialization and Configuration &gt; should handle partial configuration" time="0.000100083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Sample Recording &gt; should record position samples correctly" time="0.000625083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Sample Recording &gt; should respect buffer size limits" time="0.00015175">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Sample Recording &gt; should handle rapid sample recording with throttling" time="0.000084625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Velocity Calculation &gt; should calculate velocity from multiple samples" time="0.000155625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Velocity Calculation &gt; should return zero velocity with insufficient samples" time="0.000169167">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Velocity Calculation &gt; should calculate velocity direction correctly" time="0.000107333">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Velocity Calculation &gt; should calculate velocity components correctly" time="0.000183375">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Peak Velocity and Averages &gt; should detect peak velocity correctly" time="0.000080875">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Peak Velocity and Averages &gt; should return zero for no samples" time="0.0000515">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Peak Velocity and Averages &gt; should calculate average velocity" time="0.000059833">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; State Management &gt; should reset tracker state correctly" time="0.00016675">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; State Management &gt; should maintain configuration after reset" time="0.000409625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; State Management &gt; should update configuration correctly" time="0.000087708">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Gesture Recognition &gt; should detect swipe gestures correctly" time="0.000096625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Gesture Recognition &gt; should reject non-swipe movements" time="0.000051417">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Gesture Recognition &gt; should calculate total distance correctly" time="0.000060083">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Gesture Recognition &gt; should calculate motion duration correctly" time="0.000068625">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Position Prediction &gt; should predict future positions correctly" time="0.000103666">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Position Prediction &gt; should handle prediction with no data" time="0.000063542">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Performance &gt; should efficiently handle large numbers of samples" time="0.000321042">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Performance &gt; should handle invalid inputs gracefully" time="0.000416291">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Static Methods &gt; should calculate velocity between two points" time="0.000061042">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Static Methods &gt; should calculate direction between two points" time="0.000051958">
+        </testcase>
+        <testcase classname="src/__tests__/physics/velocity-tracker.test.ts" name="VelocityTracker &gt; Static Methods &gt; should handle zero time intervals in static calculation" time="0.000049375">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/__tests__/rendering/renderer.test.ts" timestamp="2025-07-01T03:02:20.637Z" hostname="MacBookPro.lan" tests="24" failures="0" errors="0" skipped="0" time="0.026224666">
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Configuration Management &gt; should accept and store render configuration" time="0.004283875">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Configuration Management &gt; should use default configuration values" time="0.001282583">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Configuration Management &gt; should provide access to PIXI Application" time="0.000514416">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Sprite Management &gt; should create sprite with correct properties" time="0.000752958">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Sprite Management &gt; should position sprites correctly using business logic" time="0.000425125">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Sprite Management &gt; should calculate sprite scaling correctly" time="0.000522666">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Sprite Management &gt; should manage sprite array correctly" time="0.000847875">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Sprite Management &gt; should handle sprite removal correctly" time="0.000638">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Sprite Management &gt; should handle sprite creation errors gracefully" time="0.001170542">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Sprite Management &gt; should cache textures for performance" time="0.000617833">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Filter Management &gt; should apply filters to sprites" time="0.000756833">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Filter Management &gt; should remove specific filters from sprites" time="0.000733667">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Filter Management &gt; should clear all filters from sprites" time="0.000651542">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Resize and Viewport Management &gt; should handle resize correctly" time="0.000729625">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Resize and Viewport Management &gt; should recalculate sprite positions on resize" time="0.000609292">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Resource Management &gt; should handle renderer not initialized error" time="0.000775375">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Resource Management &gt; should cleanup resources on destroy" time="0.00188675">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Resource Management &gt; should handle cleanup errors gracefully" time="0.000946458">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Performance Optimization &gt; should optimize memory usage through proper cleanup" time="0.001213833">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Performance Optimization &gt; should handle manual render calls" time="0.003383666">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Performance Optimization &gt; should manage sprite visibility efficiently" time="0.000717083">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Error Handling &gt; should handle initialization errors gracefully" time="0.000650917">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Error Handling &gt; should validate operations require initialization" time="0.00046025">
+        </testcase>
+        <testcase classname="src/__tests__/rendering/renderer.test.ts" name="SliderRenderer - Business Logic Tests &gt; Error Handling &gt; should handle resize on uninitialized renderer gracefully" time="0.000399541">
         </testcase>
     </testsuite>
 </testsuites>

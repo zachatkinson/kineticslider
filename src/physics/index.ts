@@ -55,7 +55,7 @@ import { ANIMATION_DURATION } from '../core/constants';
 
 /**
  * SliderPhysics - Compatibility facade for Phase 2.1 transition
- * 
+ *
  * This maintains the same API as before while using our new modular components.
  * Future phases will gradually migrate consumers to the new component APIs.
  */

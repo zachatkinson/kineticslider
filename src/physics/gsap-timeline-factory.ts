@@ -95,7 +95,7 @@ export interface ScaleConfig {
 
 /**
  * Factory for creating reusable GSAP timeline patterns
- * 
+ *
  * Based on patterns from:
  * - AnimationCoordinator.ts: timeline grouping and coordination
  * - useSlides.ts: slide transition animations
@@ -128,41 +128,57 @@ export class GSAPTimelineFactory {
     nextSlide.alpha = 0;
     const currentBaseScale = getBaseScale(currentSlide);
     const nextBaseScale = getBaseScale(nextSlide);
-    
+
     // Set initial scale for next slide using helper
     applyUniformScale(nextSlide, nextBaseScale * scaleMultiplier);
 
     // Create slide out animations
-    timeline.to(currentSlide.scale, {
-      x: currentBaseScale * scaleMultiplier,
-      y: currentBaseScale * scaleMultiplier,
-      duration: config.duration,
-      ease: config.ease,
-    }, 0);
-
-    timeline.to(currentSlide, {
-      alpha: 0,
-      duration: config.duration,
-      ease: config.ease,
-      onComplete: () => {
-        // Hide after transition completes
-        currentSlide.visible = false;
+    timeline.to(
+      currentSlide.scale,
+      {
+        x: currentBaseScale * scaleMultiplier,
+        y: currentBaseScale * scaleMultiplier,
+        duration: config.duration,
+        ease: config.ease,
       },
-    }, 0);
+      0
+    );
+
+    timeline.to(
+      currentSlide,
+      {
+        alpha: 0,
+        duration: config.duration,
+        ease: config.ease,
+        onComplete: () => {
+          // Hide after transition completes
+          currentSlide.visible = false;
+        },
+      },
+      0
+    );
 
     // Create slide in animations
-    timeline.to(nextSlide.scale, {
-      x: nextBaseScale,
-      y: nextBaseScale,
-      duration: config.duration,
-      ease: config.ease,
-    }, 0);
+    timeline.to(
+      nextSlide.scale,
+      {
+        x: nextBaseScale,
+        y: nextBaseScale,
+        duration: config.duration,
+        ease: config.ease,
+      },
+      0
+    );
 
-    timeline.to(nextSlide, {
-      alpha: 1,
-      duration: config.duration,
-      ease: config.ease,
-    }, 0);
+    timeline.to(
+      nextSlide,
+      {
+        alpha: 1,
+        duration: config.duration,
+        ease: config.ease,
+      },
+      0
+    );
 
     return timeline;
   }
@@ -181,8 +197,9 @@ export class GSAPTimelineFactory {
     });
 
     // Calculate momentum distance
-    const momentumDistance = config.velocity * config.direction * config.duration;
-    
+    const momentumDistance =
+      config.velocity * config.direction * config.duration;
+
     // Apply momentum decay over time
     const decayFactor = Math.pow(config.damping, config.duration);
     const finalDistance = momentumDistance * decayFactor;
@@ -256,8 +273,8 @@ export class GSAPTimelineFactory {
 
     const baseScale = getBaseScale(sprite);
     const scaleFactor = calculateDragScaleFactor(
-      dragDistance, 
-      PHYSICS.DISTANCE_NORMALIZATION, 
+      dragDistance,
+      PHYSICS.DISTANCE_NORMALIZATION,
       scaleIntensity
     );
     const newScale = baseScale * scaleFactor;
@@ -358,20 +375,28 @@ export class GSAPTimelineFactory {
     toSprite.alpha = 0;
 
     // Fade out current, fade in next
-    timeline.to(fromSprite, {
-      alpha: 0,
-      duration,
-      ease: EASING.EASE_OUT,
-      onComplete: () => {
-        fromSprite.visible = false;
+    timeline.to(
+      fromSprite,
+      {
+        alpha: 0,
+        duration,
+        ease: EASING.EASE_OUT,
+        onComplete: () => {
+          fromSprite.visible = false;
+        },
       },
-    }, 0);
+      0
+    );
 
-    timeline.to(toSprite, {
-      alpha: 1,
-      duration,
-      ease: EASING.EASE_OUT,
-    }, 0);
+    timeline.to(
+      toSprite,
+      {
+        alpha: 1,
+        duration,
+        ease: EASING.EASE_OUT,
+      },
+      0
+    );
 
     return timeline;
   }
@@ -393,7 +418,7 @@ export class GSAPTimelineFactory {
             timeline.kill();
           }
         });
-        
+
         if (onComplete) {
           onComplete();
         }
@@ -407,4 +432,4 @@ export class GSAPTimelineFactory {
 
     return masterTimeline;
   }
-} 
+}

@@ -10,7 +10,6 @@
 import { test, expect } from '@playwright/test';
 import {
   VIEWPORT,
-  PERFORMANCE,
   TEST_PERFORMANCE,
   TEST_TIMING,
   TEST_TOLERANCE,
@@ -196,8 +195,8 @@ test.describe('KineticSlider Foundation', () => {
 
       if (memoryInfo.available) {
         expect(memoryInfo.used).toBeLessThan(
-          PERFORMANCE.MEMORY_WARNING_THRESHOLD
-        ); // Less than 50MB
+          TEST_PERFORMANCE.MEMORY_WARNING
+        ); // Less than 25MB (in bytes)
         expect(memoryInfo.efficiency).toBeGreaterThan(
           TEST_TOLERANCE.MEMORY_EFFICIENCY
         ); // At least 10% efficiency

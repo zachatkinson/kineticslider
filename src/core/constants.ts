@@ -528,6 +528,16 @@ export const INTERACTION = {
   MAX_INTERACTION_TIME: 2000,
 } as const;
 
+/** Gesture recognition constants */
+export const GESTURE_RECOGNITION = {
+  /** Minimum time interval between samples for velocity tracking */
+  MIN_SAMPLE_INTERVAL: 8, // ~120fps for high precision tracking
+  /** Minimum velocity threshold for gesture detection */
+  MIN_VELOCITY_THRESHOLD: 50,
+  /** Maximum time window for gesture analysis */
+  MAX_GESTURE_WINDOW: 200,
+} as const;
+
 // =============================================================================
 // 🖼️ Rendering and Graphics Constants
 // =============================================================================
@@ -609,6 +619,8 @@ export const TEST_TOLERANCE = {
   CALCULATION: 0.01,
   /** Test assertion tolerance (20% tolerance) */
   ASSERTION: 1.2,
+  /** Velocity calculation precision tolerance */
+  VELOCITY_PRECISION: 2,
 } as const;
 
 /** Test configuration constants - NEVER use hardcoded values in tests! */
@@ -640,6 +652,18 @@ export const TEST_CONFIG = {
   INTERACTION: {
     QUICK: 500,
     SLOW: 2000,
+  },
+  /** Test buffer size values */
+  BUFFER_SIZE: {
+    SMALL: 5,
+    MEDIUM: 10,
+    LARGE: 20,
+  },
+  /** Test throttle values */
+  THROTTLE: {
+    LIGHT: 16,
+    MEDIUM: 33,
+    HEAVY: 50,
   },
   /** Test calculation base values */
   CALCULATION: {

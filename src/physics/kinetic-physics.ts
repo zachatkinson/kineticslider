@@ -61,7 +61,7 @@ export interface SnapResult {
 
 /**
  * Pure kinetic physics calculations extracted from main branch
- * 
+ *
  * Based on patterns from:
  * - useMouseDrag.ts: drag momentum and scale calculations
  * - useSlides.ts: transition scale intensity and velocity
@@ -110,14 +110,14 @@ export class KineticPhysics {
     const slideIndex = Math.round(position / slideWidth);
     const targetPosition = slideIndex * slideWidth;
     const snapDistance = Math.abs(targetPosition - position);
-    
+
     // Calculate duration based on distance (further = longer)
     const baseDuration = ANIMATION_DURATION.STANDARD;
     const distanceFactor = Math.min(snapDistance / slideWidth, 1);
-    const duration = baseDuration * (
-      PHYSICS.DURATION_FACTORS.MIN_OFFSET + 
-      distanceFactor * PHYSICS.DURATION_FACTORS.MAX_OFFSET
-    );
+    const duration =
+      baseDuration *
+      (PHYSICS.DURATION_FACTORS.MIN_OFFSET +
+        distanceFactor * PHYSICS.DURATION_FACTORS.MAX_OFFSET);
 
     return {
       targetPosition,
@@ -143,7 +143,10 @@ export class KineticPhysics {
 
     // Apply friction over time
     const friction = this.config.friction * (timeDelta / 1000);
-    const finalVelocity = KineticPhysics.applyFriction(clampedVelocity, friction);
+    const finalVelocity = KineticPhysics.applyFriction(
+      clampedVelocity,
+      friction
+    );
 
     // Calculate distance traveled
     const distance = finalVelocity * timeDelta;
@@ -156,7 +159,10 @@ export class KineticPhysics {
     const scaleFactor = 1 + normalizedDistance * this.config.scaleIntensity;
 
     // Duration based on velocity (faster = shorter)
-    const velocityFactor = Math.max(0.1, finalVelocity / this.config.maxVelocity);
+    const velocityFactor = Math.max(
+      0.1,
+      finalVelocity / this.config.maxVelocity
+    );
     const duration = ANIMATION_DURATION.FAST / velocityFactor;
 
     return {
@@ -183,7 +189,7 @@ export class KineticPhysics {
 
     // Apply scale intensity
     const scaleMultiplier = 1 + normalizedFactor * this.config.scaleIntensity;
-    
+
     return baseScale * scaleMultiplier;
   }
 
@@ -191,13 +197,11 @@ export class KineticPhysics {
    * Determine if swipe meets threshold for slide change
    * Pattern from main branch swipe detection logic
    */
-  shouldTriggerSlideChange(
-    distance: number,
-    velocity: number
-  ): boolean {
-    const meetsDistanceThreshold = Math.abs(distance) >= this.config.swipeThreshold;
+  shouldTriggerSlideChange(distance: number, velocity: number): boolean {
+    const meetsDistanceThreshold =
+      Math.abs(distance) >= this.config.swipeThreshold;
     const meetsVelocityThreshold = velocity >= this.config.velocityThreshold;
-    
+
     return meetsDistanceThreshold || meetsVelocityThreshold;
   }
 
@@ -210,11 +214,11 @@ export class KineticPhysics {
     targetScale: number = SCALE.DEFAULT
   ): { scaleDelta: number; duration: number; ease: string } {
     const scaleDelta = Math.abs(currentScale - targetScale);
-    
+
     // Longer duration for larger scale differences
     const durationMultiplier = Math.min(scaleDelta / SCALE.EMPHASIS, 1);
-    const duration = ANIMATION_DURATION.FAST + 
-                    (durationMultiplier * ANIMATION_DURATION.FAST);
+    const duration =
+      ANIMATION_DURATION.FAST + durationMultiplier * ANIMATION_DURATION.FAST;
 
     return {
       scaleDelta,
@@ -249,4 +253,4 @@ export class KineticPhysics {
       swipeThreshold: INPUT.SWIPE_THRESHOLD,
     };
   }
-} 
+}
