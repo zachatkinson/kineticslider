@@ -247,7 +247,8 @@ export const PERFORMANCE_API = {
 /** CSS selector patterns to eliminate DRY violations */
 export const CSS_SELECTORS = {
   /** App root selectors */
-  MAIN_SELECTORS: 'main, #root, [data-testid="app"], [data-testid="kinetic-slider"], .container',
+  MAIN_SELECTORS:
+    'main, #root, [data-testid="app"], [data-testid="kinetic-slider"], .container',
   MAIN_ROLE: 'main, [role="main"]',
   /** Slider specific selectors */
   KINETIC_SLIDER: '[data-testid="kinetic-slider"]',

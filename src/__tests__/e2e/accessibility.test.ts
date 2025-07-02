@@ -7,7 +7,9 @@ test.describe('Accessibility E2E', () => {
   });
 
   test.describe('ARIA and Screen Reader Integration', () => {
-    test('should coordinate keyboard navigation with screen reader announcements', async ({ page }) => {
+    test('should coordinate keyboard navigation with screen reader announcements', async ({
+      page,
+    }) => {
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await expect(slider).toBeVisible();
 
@@ -34,7 +36,9 @@ test.describe('Accessibility E2E', () => {
       await expect(liveRegion).toBeVisible();
     });
 
-    test('should provide proper ARIA attributes and focus management', async ({ page }) => {
+    test('should provide proper ARIA attributes and focus management', async ({
+      page,
+    }) => {
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await expect(slider).toBeVisible();
 
@@ -58,17 +62,19 @@ test.describe('Accessibility E2E', () => {
       expect(ariaDescribedBy).toBeTruthy();
     });
 
-    test('should respect motion preferences in gesture handling', async ({ page }) => {
+    test('should respect motion preferences in gesture handling', async ({
+      page,
+    }) => {
       // Test reduced motion preference
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      
+
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await expect(slider).toBeVisible();
 
       // Perform interaction
       await slider.focus();
       await page.keyboard.press('ArrowRight');
-      
+
       // Wait for any animations (should be minimal with reduced motion)
       await page.waitForTimeout(500);
 
@@ -80,18 +86,18 @@ test.describe('Accessibility E2E', () => {
     test('should handle high contrast mode', async ({ page }) => {
       // Test high contrast mode compatibility
       await page.emulateMedia({ colorScheme: 'dark' });
-      
+
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await expect(slider).toBeVisible();
 
       // Test that focus indicators are still visible
       await slider.focus();
-      
+
       // Check that the slider is still accessible in high contrast
       const computedStyle = await slider.evaluate((el) => {
         return window.getComputedStyle(el).visibility;
       });
-      
+
       expect(computedStyle).toBe('visible');
     });
   });
@@ -105,29 +111,29 @@ test.describe('Accessibility E2E', () => {
 
       // Test arrow keys
       const initialAriaValue = await slider.getAttribute('aria-valuenow');
-      
+
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(300);
-      
+
       const afterRightAriaValue = await slider.getAttribute('aria-valuenow');
       expect(afterRightAriaValue).not.toBe(initialAriaValue);
 
       await page.keyboard.press('ArrowLeft');
       await page.waitForTimeout(300);
-      
+
       const afterLeftAriaValue = await slider.getAttribute('aria-valuenow');
       expect(afterLeftAriaValue).toBe(initialAriaValue);
 
       // Test Home/End keys
       await page.keyboard.press('Home');
       await page.waitForTimeout(300);
-      
+
       const homeAriaValue = await slider.getAttribute('aria-valuenow');
       expect(homeAriaValue).toBe('1');
 
       await page.keyboard.press('End');
       await page.waitForTimeout(300);
-      
+
       const endAriaValue = await slider.getAttribute('aria-valuenow');
       expect(parseInt(endAriaValue || '1')).toBeGreaterThan(1);
     });
@@ -139,18 +145,18 @@ test.describe('Accessibility E2E', () => {
       await slider.focus();
 
       const initialAriaValue = await slider.getAttribute('aria-valuenow');
-      
+
       // Test D key (right)
       await page.keyboard.press('d');
       await page.waitForTimeout(300);
-      
+
       const afterDAriaValue = await slider.getAttribute('aria-valuenow');
       expect(afterDAriaValue).not.toBe(initialAriaValue);
 
       // Test A key (left)
       await page.keyboard.press('a');
       await page.waitForTimeout(300);
-      
+
       const afterAAriaValue = await slider.getAttribute('aria-valuenow');
       expect(afterAAriaValue).toBe(initialAriaValue);
     });
@@ -166,7 +172,7 @@ test.describe('Accessibility E2E', () => {
       if (ariaDescribedBy) {
         const instructionsElement = page.locator(`#${ariaDescribedBy}`);
         await expect(instructionsElement).toBeAttached();
-        
+
         const instructionsText = await instructionsElement.textContent();
         expect(instructionsText).toContain('arrow keys');
       }
@@ -198,7 +204,7 @@ test.describe('Accessibility E2E', () => {
       // Check initial values
       const initialValueNow = await slider.getAttribute('aria-valuenow');
       const initialValueText = await slider.getAttribute('aria-valuetext');
-      
+
       expect(initialValueNow).toBeTruthy();
       expect(initialValueText).toBeTruthy();
 
@@ -219,14 +225,17 @@ test.describe('Accessibility E2E', () => {
     test('should work with touch and voice controls', async ({ page }) => {
       // Simulate mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
-      
+
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await expect(slider).toBeVisible();
 
       // Test touch interaction
       const box = await slider.boundingBox();
       if (box) {
-        await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+        await page.touchscreen.tap(
+          box.x + box.width / 2,
+          box.y + box.height / 2
+        );
         await page.waitForTimeout(300);
       }
 
@@ -235,23 +244,25 @@ test.describe('Accessibility E2E', () => {
       expect(ariaLabel).toBeTruthy();
     });
 
-    test('should maintain accessibility in portrait and landscape', async ({ page }) => {
+    test('should maintain accessibility in portrait and landscape', async ({
+      page,
+    }) => {
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await expect(slider).toBeVisible();
 
       // Test portrait
       await page.setViewportSize({ width: 375, height: 667 });
       await expect(slider).toBeVisible();
-      
+
       let ariaLabel = await slider.getAttribute('aria-label');
       expect(ariaLabel).toBeTruthy();
 
       // Test landscape
       await page.setViewportSize({ width: 667, height: 375 });
       await expect(slider).toBeVisible();
-      
+
       ariaLabel = await slider.getAttribute('aria-label');
       expect(ariaLabel).toBeTruthy();
     });
   });
-}); 
+});

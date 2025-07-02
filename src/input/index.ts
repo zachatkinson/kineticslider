@@ -14,7 +14,11 @@ import type {
   InputCallbacks,
 } from '../core/types';
 import { EventThrottler } from './event-throttler';
-import { GestureRecognizer, GestureType, GestureInfo } from './gesture-recognizer';
+import {
+  GestureRecognizer,
+  GestureType,
+  GestureInfo,
+} from './gesture-recognizer';
 import { KeyboardNavigator, KeyboardCallbacks } from './keyboard-navigator';
 import { VelocityTracker } from '../physics/velocity-tracker';
 
@@ -75,14 +79,14 @@ export class SliderController implements ISliderController {
     this.setupGestureRecognizer();
     this.setupKeyboardNavigator();
     this.setupEventListeners();
-    
+
     // Initialize physics components
     this.velocityTracker = new VelocityTracker({
       bufferSize: 5,
       throttleInterval: 16, // 60fps
       smoothingFactor: 0.3,
     });
-    
+
     this.enable();
   }
 
@@ -97,7 +101,7 @@ export class SliderController implements ISliderController {
       swipeThreshold: this.config.swipeThreshold,
       tapThreshold: this.config.dragThreshold,
     });
-    
+
     // Handle gesture events
     this.gestureRecognizer.onGesture = (gesture: GestureInfo): void => {
       this.handleGesture(gesture);

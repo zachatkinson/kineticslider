@@ -49,7 +49,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
   beforeEach(() => {
     // Create test sprites
     mockSprites = createTestSprites(3);
-    
+
     // Create test configuration
     const testConfig = {
       slideCount: 3,
@@ -101,7 +101,9 @@ describe('SliderPhysics Facade Unit Tests', () => {
       pause: vi.fn(),
       kill: vi.fn(),
     };
-    vi.spyOn(mockRenderer, 'applyTransition').mockReturnValue(mockTimeline as never);
+    vi.spyOn(mockRenderer, 'applyTransition').mockReturnValue(
+      mockTimeline as never
+    );
     vi.spyOn(mockRenderer, 'applySwipe').mockReturnValue(mockTimeline as never);
     vi.spyOn(mockRenderer, 'applyScale').mockReturnValue(mockTimeline as never);
     vi.spyOn(mockRenderer, 'killAllAnimations').mockImplementation(() => {});
@@ -112,7 +114,9 @@ describe('SliderPhysics Facade Unit Tests', () => {
       totalAnimations: 0,
     });
     vi.spyOn(mockRenderer, 'markSpritesForGSAP').mockImplementation(() => {});
-    vi.spyOn(mockRenderer, 'applyBatchAnimations').mockReturnValue(mockTimeline as never);
+    vi.spyOn(mockRenderer, 'applyBatchAnimations').mockReturnValue(
+      mockTimeline as never
+    );
 
     // Create facade with dependency injection (unit test style)
     facade = new SliderPhysics(testConfig, mockEngine, mockRenderer);
@@ -193,7 +197,11 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
     it('should coordinate swipe animation between engine and renderer', () => {
       const sprite = mockSprites[0];
-      const timeline = facade.animateSwipe(sprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
+      const timeline = facade.animateSwipe(
+        sprite,
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.medium
+      );
 
       // Should delegate calculation to engine
       expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(
@@ -220,10 +228,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
       const timeline = facade.animateScale(sprite, 1.5);
 
       // Should delegate calculation to engine
-      expect(mockEngine.calculateScale).toHaveBeenCalledWith(
-        1.5,
-        undefined
-      );
+      expect(mockEngine.calculateScale).toHaveBeenCalledWith(1.5, undefined);
 
       // Should delegate rendering to renderer with engine result
       expect(mockRenderer.applyScale).toHaveBeenCalledWith(
@@ -247,10 +252,14 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
     it('should handle sprite addition for swipe animations', () => {
       const newSprite = createTestSprites(1)[0];
-      
+
       // Should handle sprite not in managed array
-      const timeline = facade.animateSwipe(newSprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
-      
+      const timeline = facade.animateSwipe(
+        newSprite,
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.medium
+      );
+
       expect(timeline).toBeDefined();
       expect(mockRenderer.markSpritesForGSAP).toHaveBeenCalled();
     });
@@ -263,7 +272,10 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
       const timeline = facade.applyBatchAnimations(mockSprites, animations);
 
-      expect(mockRenderer.applyBatchAnimations).toHaveBeenCalledWith(mockSprites, animations);
+      expect(mockRenderer.applyBatchAnimations).toHaveBeenCalledWith(
+        mockSprites,
+        animations
+      );
       expect(timeline).toBeDefined();
     });
   });
@@ -285,7 +297,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
     it('should handle momentum calculations through kinetic physics', () => {
       const momentum = facade.calculateMomentum(10, 100, 200);
-      
+
       // Should return a momentum result
       expect(momentum).toBeDefined();
       expect(typeof momentum.velocity).toBe('number');
@@ -293,8 +305,8 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
     it('should handle spring calculations through spring physics', () => {
       const spring = facade.calculateSpring(50, 0, 5);
-      
-      // Should return a spring result  
+
+      // Should return a spring result
       expect(spring).toBeDefined();
       expect(typeof spring.targetPosition).toBe('number');
     });
@@ -311,21 +323,25 @@ describe('SliderPhysics Facade Unit Tests', () => {
       // Config should not be set on injected engine (unit test scenario)
       const configWithPhysics = {
         ...testConfig,
-        physicsConfig: { transitionDuration: 2.0 }
+        physicsConfig: { transitionDuration: 2.0 },
       };
-      
-      const physicsWithConfig = new SliderPhysics(configWithPhysics, mockEngine, mockRenderer);
-      
+
+      const physicsWithConfig = new SliderPhysics(
+        configWithPhysics,
+        mockEngine,
+        mockRenderer
+      );
+
       // Should not call setConfig since engine was injected
       expect(mockEngine.setConfig).not.toHaveBeenCalled();
-      
+
       physicsWithConfig.destroy();
     });
 
     it('should handle sprite management correctly', () => {
       const newSprites = createTestSprites(5);
       facade.setSprites(newSprites);
-      
+
       // Should delegate marking to renderer
       expect(mockRenderer.markSpritesForGSAP).toHaveBeenCalledWith(newSprites);
     });
@@ -335,7 +351,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
     it('should handle edge cases in transition animation', () => {
       const timeline1 = facade.animateTransition(-1, 10, mockSprites);
       const timeline2 = facade.animateTransition(0, 0, []);
-      
+
       expect(timeline1).toBeDefined();
       expect(timeline2).toBeDefined();
       expect(mockEngine.calculateTransition).toHaveBeenCalledTimes(2);
@@ -345,7 +361,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
       const sprite = mockSprites[0];
       const timeline1 = facade.animateSwipe(sprite, 999, TEST_INTENSITIES.zero);
       const timeline2 = facade.animateSwipe(sprite, TEST_DIRECTIONS.left, -5);
-      
+
       expect(timeline1).toBeDefined();
       expect(timeline2).toBeDefined();
       expect(mockEngine.calculateSwipe).toHaveBeenCalledTimes(2);
@@ -354,8 +370,8 @@ describe('SliderPhysics Facade Unit Tests', () => {
     it('should handle multiple cleanup calls gracefully', () => {
       facade.cleanup();
       facade.cleanup();
-      
+
       expect(mockRenderer.cleanup).toHaveBeenCalledTimes(2);
     });
   });
-}); 
+});

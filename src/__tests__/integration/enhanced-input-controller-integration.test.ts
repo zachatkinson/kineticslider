@@ -49,8 +49,14 @@ describe('Enhanced Input Controller Integration', () => {
       setPointerCapture: vi.fn(),
       releasePointerCapture: vi.fn(),
       getBoundingClientRect: vi.fn(() => ({
-        x: 0, y: 0, width: 800, height: 600,
-        top: 0, left: 0, bottom: 600, right: 800
+        x: 0,
+        y: 0,
+        width: 800,
+        height: 600,
+        top: 0,
+        left: 0,
+        bottom: 600,
+        right: 800,
       })),
       style: {} as CSSStyleDeclaration,
       tabIndex: 0,
@@ -64,8 +70,12 @@ describe('Enhanced Input Controller Integration', () => {
     } as unknown as HTMLElement;
 
     vi.spyOn(document, 'createElement').mockReturnValue(mockAnnouncer);
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnnouncer);
-    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnnouncer);
+    vi.spyOn(document.body, 'appendChild').mockImplementation(
+      () => mockAnnouncer
+    );
+    vi.spyOn(document.body, 'removeChild').mockImplementation(
+      () => mockAnnouncer
+    );
 
     mockCallbacks = {
       onSwipeLeft: vi.fn(),
@@ -102,12 +112,9 @@ describe('Enhanced Input Controller Integration', () => {
         'keydown',
         expect.any(Function)
       );
-      
+
       // Verify accessibility setup
-      expect(mockElement.setAttribute).toHaveBeenCalledWith(
-        'role',
-        'region'
-      );
+      expect(mockElement.setAttribute).toHaveBeenCalledWith('role', 'region');
     });
 
     it('should coordinate gesture recognition with physics calculations', async () => {
@@ -125,7 +132,7 @@ describe('Enhanced Input Controller Integration', () => {
       // Simulate gesture sequence with physics timing
       for (let i = 0; i < swipeEvents.length; i++) {
         const event = swipeEvents[i];
-         
+
         const eventObj = {
           type: event.type,
           pointerId: event.pointerId,
@@ -147,18 +154,18 @@ describe('Enhanced Input Controller Integration', () => {
         }
 
         if (i < swipeEvents.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 5));
+          await new Promise((resolve) => setTimeout(resolve, 5));
         }
       }
 
       // Should detect gesture and apply physics calculations
-      await new Promise(resolve => setTimeout(resolve, 50));
-      
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       // Verify gesture was recognized (may trigger swipe callback)
       expect(
-        mockCallbacks.onSwipeLeft || 
-        mockCallbacks.onSwipeRight || 
-        mockCallbacks.onGesture
+        mockCallbacks.onSwipeLeft ||
+          mockCallbacks.onSwipeRight ||
+          mockCallbacks.onGesture
       ).toBeDefined();
     });
 
@@ -195,7 +202,7 @@ describe('Enhanced Input Controller Integration', () => {
       })) as unknown as PointerEvent[];
 
       // Process events through throttler
-      rapidEvents.forEach(event => {
+      rapidEvents.forEach((event) => {
         controller['eventThrottler']?.throttle(
           'pointermove',
           event as unknown as Event,
@@ -203,7 +210,7 @@ describe('Enhanced Input Controller Integration', () => {
         );
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const duration = measure.end();
 
@@ -241,7 +248,7 @@ describe('Enhanced Input Controller Integration', () => {
       ];
 
       // Process through throttler and gesture recognizer
-      gestureEvents.forEach(eventData => {
+      gestureEvents.forEach((eventData) => {
         const event = {
           clientX: eventData.clientX,
           clientY: eventData.clientY,
@@ -251,14 +258,18 @@ describe('Enhanced Input Controller Integration', () => {
           timeStamp: performance.now(),
         } as unknown as PointerEvent;
 
-        throttler.throttle('pointermove', event as unknown as Event, (events) => {
-          events.forEach(e => {
-            gestureRecognizer['handlePointerMove'](e as PointerEvent);
-          });
-        });
+        throttler.throttle(
+          'pointermove',
+          event as unknown as Event,
+          (events) => {
+            events.forEach((e) => {
+              gestureRecognizer['handlePointerMove'](e as PointerEvent);
+            });
+          }
+        );
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Cleanup
       throttler.destroy();
@@ -325,7 +336,7 @@ describe('Enhanced Input Controller Integration', () => {
       // Test that controller properly delegates physics calculations
       // The controller should handle input and delegate physics to the physics layer
       // rather than implementing physics directly
-      
+
       // Simulate a gesture that would trigger physics calculations
       const gestureEvent = {
         type: 'pointermove',
@@ -373,13 +384,13 @@ describe('Enhanced Input Controller Integration', () => {
         { x: 250, y: 100, time: 150 },
       ];
 
-      positions.forEach(pos => {
+      positions.forEach((pos) => {
         controller['velocityTracker']?.addSample(pos.x, pos.y, pos.time);
       });
 
       const velocity = controller['velocityTracker']?.getVelocity();
       expect(velocity).toBeDefined();
-      
+
       if (velocity) {
         expect(velocity.velocity).toBeGreaterThan(0);
         expect(velocity.direction).toBeDefined();
@@ -401,16 +412,16 @@ describe('Enhanced Input Controller Integration', () => {
         const events = Array.from({ length: 20 }, (_, i) => ({
           type: 'pointermove',
           pointerId: 1,
-          clientX: 100 + (frame * 50) + i,
+          clientX: 100 + frame * 50 + i,
           clientY: 300,
           timeStamp: frameStart + i,
           preventDefault: vi.fn(),
         }));
 
         // Process events through all systems
-        events.forEach(eventData => {
+        events.forEach((eventData) => {
           const event = eventData as unknown as PointerEvent;
-          
+
           // Event throttling
           controller['eventThrottler']?.throttle(
             'pointermove',
@@ -438,19 +449,17 @@ describe('Enhanced Input Controller Integration', () => {
 
         controller['keyboardNavigator']?.['handleKeyDown'](keyEvent);
 
-        await new Promise(resolve => setTimeout(resolve, 16)); // 60fps frame
+        await new Promise((resolve) => setTimeout(resolve, 16)); // 60fps frame
 
         const frameDuration = performance.now() - frameStart;
         frameDurations.push(frameDuration);
       }
 
       // Average frame duration should be within 60fps budget
-      const avgFrameDuration = frameDurations.reduce((a, b) => a + b, 0) / frameCount;
-      
-      assertPerformanceWithinBenchmark(
-        avgFrameDuration,
-        'fps60'
-      );
+      const avgFrameDuration =
+        frameDurations.reduce((a, b) => a + b, 0) / frameCount;
+
+      assertPerformanceWithinBenchmark(avgFrameDuration, 'fps60');
     });
 
     it('should efficiently handle concurrent gesture and keyboard input', async () => {
@@ -459,7 +468,7 @@ describe('Enhanced Input Controller Integration', () => {
       const measure = performanceMeasure.start('concurrent-input');
 
       // Simulate concurrent input streams
-      const gesturePromise = new Promise<void>(resolve => {
+      const gesturePromise = new Promise<void>((resolve) => {
         const gestureEvents = Array.from({ length: 50 }, (_, i) => ({
           clientX: 100 + i * 2,
           clientY: 300,
@@ -469,7 +478,7 @@ describe('Enhanced Input Controller Integration', () => {
           preventDefault: vi.fn(),
         }));
 
-        gestureEvents.forEach(eventData => {
+        gestureEvents.forEach((eventData) => {
           const event = eventData as unknown as PointerEvent;
           controller['gestureRecognizer']?.['handlePointerMove'](event);
         });
@@ -477,9 +486,9 @@ describe('Enhanced Input Controller Integration', () => {
         resolve();
       });
 
-      const keyboardPromise = new Promise<void>(resolve => {
+      const keyboardPromise = new Promise<void>((resolve) => {
         const keys = ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'];
-        
+
         keys.forEach((key, i) => {
           setTimeout(() => {
             const keyEvent = {
@@ -489,7 +498,7 @@ describe('Enhanced Input Controller Integration', () => {
             } as unknown as KeyboardEvent;
 
             controller['keyboardNavigator']?.['handleKeyDown'](keyEvent);
-            
+
             if (i === keys.length - 1) resolve();
           }, i * 10);
         });
@@ -520,7 +529,9 @@ describe('Enhanced Input Controller Integration', () => {
       } as unknown as PointerEvent;
 
       expect(() => {
-        controller['gestureRecognizer']?.['handlePointerMove'](malformedPointer);
+        controller['gestureRecognizer']?.['handlePointerMove'](
+          malformedPointer
+        );
       }).not.toThrow();
 
       // Test malformed keyboard event
@@ -586,7 +597,7 @@ describe('Enhanced Input Controller Integration', () => {
 
       controller['gestureRecognizer']?.['handlePointerDown'](swipeDown);
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Immediately switch to keyboard
       const keyEvent = {
@@ -612,7 +623,7 @@ describe('Enhanced Input Controller Integration', () => {
         { type: 'pointerup', pointerType: 'touch', pointerId: 1 },
       ];
 
-      touchEvents.forEach(eventData => {
+      touchEvents.forEach((eventData) => {
         const event = {
           ...eventData,
           clientX: 300,
@@ -634,4 +645,4 @@ describe('Enhanced Input Controller Integration', () => {
       expect(mockElement.setPointerCapture).toHaveBeenCalled();
     });
   });
-}); 
+});

@@ -31,7 +31,7 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
 
     it('should toggle from not playing to playing', () => {
       const engine = new SliderEngine();
-      
+
       // Initially not playing
       expect(engine.isPlaying()).toBe(false);
 
@@ -42,7 +42,7 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
 
     it('should toggle from playing to not playing', () => {
       const engine = new SliderEngine();
-      
+
       // Set to playing first
       engine.togglePlayPause();
       expect(engine.isPlaying()).toBe(true);
@@ -54,16 +54,16 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
 
     it('should maintain play state through multiple toggles', () => {
       const engine = new SliderEngine();
-      
+
       // Multiple toggles
       expect(engine.isPlaying()).toBe(false);
-      
+
       engine.togglePlayPause();
       expect(engine.isPlaying()).toBe(true);
-      
+
       engine.togglePlayPause();
       expect(engine.isPlaying()).toBe(false);
-      
+
       engine.togglePlayPause();
       expect(engine.isPlaying()).toBe(true);
     });
@@ -86,7 +86,7 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
 
     it('should update accessibility state when toggling play/pause', () => {
       const engine = new SliderEngine();
-      
+
       // Mock the controller property to test accessibility integration
       // @ts-expect-error - Accessing private property for testing
       engine.controller = mockController;
@@ -102,7 +102,7 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
 
     it('should handle accessibility updates gracefully when controller is not available', () => {
       const engine = new SliderEngine();
-      
+
       // Ensure controller is undefined
       // @ts-expect-error - Accessing private property for testing
       engine.controller = undefined;
@@ -117,7 +117,7 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
   describe('Escape Key Feature', () => {
     it('should handle escape without throwing errors', () => {
       const engine = new SliderEngine();
-      
+
       // Should not throw error even before initialization
       expect(() => engine.handleEscape()).not.toThrow();
     });
@@ -129,14 +129,16 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
 
       // Mock goToSlide to fail
       const originalGoToSlide = engine.goToSlide;
-      engine.goToSlide = vi.fn().mockRejectedValue(new Error('Navigation failed'));
+      engine.goToSlide = vi
+        .fn()
+        .mockRejectedValue(new Error('Navigation failed'));
 
       // Handle escape
       engine.handleEscape();
-      
+
       // Wait for async error handling
-      await new Promise(resolve => setTimeout(resolve, 50));
-      
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       expect(errorListener).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Failed to reset to first slide',
@@ -151,38 +153,38 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
 
     it('should pause if playing when escape is pressed', () => {
       const engine = new SliderEngine();
-      
+
       // Set to playing state
       engine.togglePlayPause();
       expect(engine.isPlaying()).toBe(true);
-      
+
       // Mock goToSlide to avoid service dependency
       engine.goToSlide = vi.fn().mockResolvedValue(undefined);
-      
+
       // Handle escape
       engine.handleEscape();
-      
+
       // Should now be paused
       expect(engine.isPlaying()).toBe(false);
     });
 
     it('should update accessibility state when escape resets play state', () => {
       const engine = new SliderEngine();
-      
+
       // Mock the controller for accessibility testing
       // @ts-expect-error - Accessing private property for testing
       engine.controller = mockController;
-      
+
       // Set to playing state
       engine.togglePlayPause();
       expect(engine.isPlaying()).toBe(true);
-      
+
       // Mock goToSlide to avoid service dependency
       engine.goToSlide = vi.fn().mockResolvedValue(undefined);
-      
+
       // Handle escape
       engine.handleEscape();
-      
+
       // Should have called updatePlayState with false (paused)
       expect(mockController.updatePlayState).toHaveBeenCalledWith(false);
     });
@@ -191,20 +193,20 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
   describe('Integration Behavior', () => {
     it('should maintain independent state for play/pause and escape features', () => {
       const engine = new SliderEngine();
-      
+
       // Set playing state
       engine.togglePlayPause();
       expect(engine.isPlaying()).toBe(true);
-      
+
       // Mock goToSlide to avoid service dependencies
       engine.goToSlide = vi.fn().mockResolvedValue(undefined);
-      
+
       // Handle escape (which pauses)
       engine.handleEscape();
-      
+
       // Should now be paused
       expect(engine.isPlaying()).toBe(false);
-      
+
       // Toggle again should work independently
       engine.togglePlayPause();
       expect(engine.isPlaying()).toBe(true);
@@ -213,18 +215,18 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
     it('should emit appropriate events for all new features', () => {
       const engine = new SliderEngine();
       const eventListener = vi.fn();
-      
+
       // Listen to all events
       engine.on(SLIDER_EVENTS.PLAY_STATE_CHANGED, eventListener);
       engine.on(SLIDER_EVENTS.ESCAPE_PRESSED, eventListener);
-      
+
       // Mock goToSlide to avoid service dependencies
       engine.goToSlide = vi.fn().mockResolvedValue(undefined);
-      
+
       // Use features
       engine.togglePlayPause(); // Should emit PLAY_STATE_CHANGED
       engine.handleEscape(); // Should emit ESCAPE_PRESSED and another PLAY_STATE_CHANGED (pause)
-      
+
       // Should have emitted multiple events
       expect(eventListener).toHaveBeenCalledTimes(3);
     });
@@ -233,20 +235,20 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
   describe('Type Safety and API Consistency', () => {
     it('should have consistent return types', () => {
       const engine = new SliderEngine();
-      
+
       // isPlaying should always return boolean
       expect(typeof engine.isPlaying()).toBe('boolean');
-      
+
       // togglePlayPause should return void
       expect(engine.togglePlayPause()).toBeUndefined();
-      
+
       // handleEscape should return void
       expect(engine.handleEscape()).toBeUndefined();
     });
 
     it('should work correctly when called in any order', () => {
       const engine = new SliderEngine();
-      
+
       // Should not throw regardless of call order
       expect(() => {
         engine.handleEscape();
@@ -257,4 +259,4 @@ describe('SliderEngine - New Features (Phase 2.2)', () => {
       }).not.toThrow();
     });
   });
-}); 
+});

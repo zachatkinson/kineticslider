@@ -8,7 +8,7 @@
  * Key Features:
  * - Unified pointer event handling (mouse, touch, pen)
  * - Multi-touch gesture recognition (pinch, pan, swipe)
- * - Pointer capture for smooth interactions  
+ * - Pointer capture for smooth interactions
  * - Physics-driven gesture classification
  * - Memory-efficient pointer tracking
  * - Cross-platform compatibility
@@ -124,7 +124,7 @@ interface ActivePointer {
  * @example
  * ```typescript
  * const recognizer = new GestureRecognizer(element);
- * 
+ *
  * recognizer.onGesture = (gesture) => {
  *   switch (gesture.type) {
  *     case GestureType.SWIPE_LEFT:
@@ -144,14 +144,11 @@ export class GestureRecognizer {
   private lastTapTime = 0;
   private lastTapPosition = { x: 0, y: 0 };
   private longPressTimer: number | null = null;
-  
+
   /** Callback for when gestures are detected */
   public onGesture: ((gesture: GestureInfo) => void) | null = null;
 
-  constructor(
-    element: HTMLElement,
-    config: Partial<GestureConfig> = {}
-  ) {
+  constructor(element: HTMLElement, config: Partial<GestureConfig> = {}) {
     this.element = element;
     this.config = {
       enableMultiTouch: true,
@@ -174,14 +171,26 @@ export class GestureRecognizer {
    */
   private setupEventListeners(): void {
     // Use modern Pointer Events for unified input handling
-    this.element.addEventListener('pointerdown', this.handlePointerDown.bind(this));
-    this.element.addEventListener('pointermove', this.handlePointerMove.bind(this));
+    this.element.addEventListener(
+      'pointerdown',
+      this.handlePointerDown.bind(this)
+    );
+    this.element.addEventListener(
+      'pointermove',
+      this.handlePointerMove.bind(this)
+    );
     this.element.addEventListener('pointerup', this.handlePointerUp.bind(this));
-    this.element.addEventListener('pointercancel', this.handlePointerCancel.bind(this));
-    
+    this.element.addEventListener(
+      'pointercancel',
+      this.handlePointerCancel.bind(this)
+    );
+
     // Handle pointer capture lost
-    this.element.addEventListener('lostpointercapture', this.handlePointerCancel.bind(this));
-    
+    this.element.addEventListener(
+      'lostpointercapture',
+      this.handlePointerCancel.bind(this)
+    );
+
     // Prevent context menu on touch devices for better gesture handling
     this.element.addEventListener('contextmenu', (e) => e.preventDefault());
   }
@@ -247,10 +256,7 @@ export class GestureRecognizer {
 
     // Check if pointer has moved beyond tap threshold
     if (!activePointer.hasMoved) {
-      const distance = this.calculateDistance(
-        activePointer.startEvent,
-        event
-      );
+      const distance = this.calculateDistance(activePointer.startEvent, event);
       if (distance > this.config.tapThreshold) {
         activePointer.hasMoved = true;
         this.cancelLongPressDetection();
@@ -341,14 +347,28 @@ export class GestureRecognizer {
     }
 
     // Swipe gesture (distance OR velocity for test environment compatibility)
-    if (distance > this.config.swipeThreshold && 
-        (velocity > this.config.swipeVelocityThreshold || velocity === 0)) {
-      return this.createSwipeGesture(startEvent, endEvent, distance, velocity, duration);
+    if (
+      distance > this.config.swipeThreshold &&
+      (velocity > this.config.swipeVelocityThreshold || velocity === 0)
+    ) {
+      return this.createSwipeGesture(
+        startEvent,
+        endEvent,
+        distance,
+        velocity,
+        duration
+      );
     }
 
     // Pan gesture (moved but not fast enough for swipe)
     if (pointer.hasMoved) {
-      return this.createPanGesture(startEvent, endEvent, distance, velocity, duration);
+      return this.createPanGesture(
+        startEvent,
+        endEvent,
+        distance,
+        velocity,
+        duration
+      );
     }
 
     return null;
@@ -363,17 +383,19 @@ export class GestureRecognizer {
     duration: number
   ): GestureInfo {
     const currentTime = performance.now();
-    
+
     // Check for double-tap
     const timeSinceLastTap = currentTime - this.lastTapTime;
     const distanceFromLastTap = Math.sqrt(
       Math.pow(startEvent.clientX - this.lastTapPosition.x, 2) +
-      Math.pow(startEvent.clientY - this.lastTapPosition.y, 2)
+        Math.pow(startEvent.clientY - this.lastTapPosition.y, 2)
     );
 
     let gestureType = GestureType.TAP;
-    if (timeSinceLastTap < this.config.doubleTapTimeout &&
-        distanceFromLastTap < this.config.tapThreshold) {
+    if (
+      timeSinceLastTap < this.config.doubleTapTimeout &&
+      distanceFromLastTap < this.config.tapThreshold
+    ) {
       gestureType = GestureType.DOUBLE_TAP;
     }
 
@@ -470,15 +492,23 @@ export class GestureRecognizer {
     const scale = currentDistance / initialDistance;
 
     // Detect pinch gesture
-    if (Math.abs(scale - 1) > 0.1) { // 10% change threshold
+    if (Math.abs(scale - 1) > 0.1) {
+      // 10% change threshold
       const gesture: GestureInfo = {
         type: GestureType.PINCH,
         direction: GestureDirection.NONE,
-        startPoint: this.calculateMidpoint(pointer1.startEvent, pointer2.startEvent),
-        currentPoint: this.calculateMidpoint(pointer1.currentEvent, pointer2.currentEvent),
+        startPoint: this.calculateMidpoint(
+          pointer1.startEvent,
+          pointer2.startEvent
+        ),
+        currentPoint: this.calculateMidpoint(
+          pointer1.currentEvent,
+          pointer2.currentEvent
+        ),
         distance: Math.abs(currentDistance - initialDistance),
         velocity: 0, // TODO: Calculate pinch velocity
-        duration: performance.now() - Math.min(pointer1.startTime, pointer2.startTime),
+        duration:
+          performance.now() - Math.min(pointer1.startTime, pointer2.startTime),
         scale,
         pointerCount: 2,
         pointers: [pointer1.currentEvent, pointer2.currentEvent],
@@ -493,11 +523,11 @@ export class GestureRecognizer {
    */
   private startLongPressDetection(event: PointerEvent): void {
     this.cancelLongPressDetection();
-    
+
     this.longPressTimer = setTimeout(() => {
       if (this.activePointers.has(event.pointerId)) {
         const pointer = this.activePointers.get(event.pointerId)!;
-        
+
         // Only trigger if pointer hasn't moved significantly
         if (!pointer.hasMoved) {
           const gesture: GestureInfo = {
@@ -531,7 +561,10 @@ export class GestureRecognizer {
   /**
    * Calculate distance between two pointer events
    */
-  private calculateDistance(event1: PointerEvent, event2: PointerEvent): number {
+  private calculateDistance(
+    event1: PointerEvent,
+    event2: PointerEvent
+  ): number {
     const dx = event2.clientX - event1.clientX;
     const dy = event2.clientY - event1.clientY;
     return Math.sqrt(dx * dx + dy * dy);
@@ -570,7 +603,9 @@ export class GestureRecognizer {
   /**
    * Convert swipe direction to gesture type
    */
-  private swipeDirectionToGestureType(direction: GestureDirection): GestureType {
+  private swipeDirectionToGestureType(
+    direction: GestureDirection
+  ): GestureType {
     switch (direction) {
       case GestureDirection.LEFT:
         return GestureType.SWIPE_LEFT;
@@ -605,11 +640,23 @@ export class GestureRecognizer {
   destroy(): void {
     this.cancelLongPressDetection();
     this.activePointers.clear();
-    
+
     // Remove event listeners
-    this.element.removeEventListener('pointerdown', this.handlePointerDown.bind(this));
-    this.element.removeEventListener('pointermove', this.handlePointerMove.bind(this));
-    this.element.removeEventListener('pointerup', this.handlePointerUp.bind(this));
-    this.element.removeEventListener('pointercancel', this.handlePointerCancel.bind(this));
+    this.element.removeEventListener(
+      'pointerdown',
+      this.handlePointerDown.bind(this)
+    );
+    this.element.removeEventListener(
+      'pointermove',
+      this.handlePointerMove.bind(this)
+    );
+    this.element.removeEventListener(
+      'pointerup',
+      this.handlePointerUp.bind(this)
+    );
+    this.element.removeEventListener(
+      'pointercancel',
+      this.handlePointerCancel.bind(this)
+    );
   }
-} 
+}

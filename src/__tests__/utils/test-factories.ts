@@ -494,9 +494,9 @@ export const createMockElement = (tagName = 'div') =>
     focus: vi.fn(),
     blur: vi.fn(),
     parentNode: {
-      removeChild: vi.fn()
+      removeChild: vi.fn(),
     },
-  } as unknown as HTMLElement);
+  }) as unknown as HTMLElement;
 
 export const createMockGSAP = () => ({
   timeline: vi.fn(() => createMockGSAPTimeline()),
@@ -754,7 +754,7 @@ export const createMockKeyboardEvent = (
   // Handle both function signatures: (type, key, options) and (type, { key, ...options })
   let key: string;
   let eventOptions: Partial<KeyboardEvent>;
-  
+
   if (typeof keyOrOptions === 'string') {
     key = keyOrOptions;
     eventOptions = options;

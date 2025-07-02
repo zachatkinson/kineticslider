@@ -42,10 +42,7 @@ export type {
   ScaleConfig,
 } from './gsap-timeline-factory';
 
-export type {
-  RenderConfig,
-  SlideData,
-} from '../core/types';
+export type { RenderConfig, SlideData } from '../core/types';
 
 // Main physics controller facade
 export type { SliderPhysicsConfig } from './facade';
@@ -59,7 +56,7 @@ export type { SliderPhysicsConfig } from './facade';
  * - **Enhanced boundaries** with spring feedback
  * - **Real-time momentum** calculation and prediction
  *
- * ## SpringPhysics  
+ * ## SpringPhysics
  * - **Spring-based animations** for natural feel
  * - **Displacement correction** for smooth interactions
  * - **Configurable spring parameters** for different behaviors
@@ -67,7 +64,7 @@ export type { SliderPhysicsConfig } from './facade';
  *
  * ## VelocityTracker
  * - **High-precision velocity** calculation for gesture recognition
- * - **Momentum prediction** for smooth transitions  
+ * - **Momentum prediction** for smooth transitions
  * - **Optimized sampling** for best performance and accuracy
  * - **Memory-efficient** sample management with automatic cleanup
  *
@@ -78,7 +75,7 @@ export type { SliderPhysicsConfig } from './facade';
  * - **Advanced timeline features** including callbacks and progress tracking
  *
  * ## PixiSliderRenderer
- * - **GPU-accelerated PIXI.js rendering** for maximum performance  
+ * - **GPU-accelerated PIXI.js rendering** for maximum performance
  * - **GSAP timeline integration** for smooth sprite animations
  * - **Optimized sprite management** with efficient positioning
  * - **Memory-efficient resource** management with proper cleanup

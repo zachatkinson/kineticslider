@@ -9,7 +9,11 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GestureRecognizer, GestureType, GestureDirection } from '../../input/gesture-recognizer';
+import {
+  GestureRecognizer,
+  GestureType,
+  GestureDirection,
+} from '../../input/gesture-recognizer';
 import {
   createPerformanceMeasure,
   assertPerformanceWithinBenchmark,
@@ -20,48 +24,49 @@ import { INPUT } from '../../core/constants';
 const createMockPointerEvent = (
   type: string,
   options: Partial<PointerEvent> = {}
-): PointerEvent => ({
-  type,
-  pointerId: 1,
-  clientX: 100,
-  clientY: 100,
-  pageX: 100,
-  pageY: 100,
-  screenX: 100,
-  screenY: 100,
-  movementX: 0,
-  movementY: 0,
-  button: 0,
-  buttons: 1,
-  ctrlKey: false,
-  shiftKey: false,
-  altKey: false,
-  metaKey: false,
-  bubbles: true,
-  cancelable: true,
-  composed: true,
-  currentTarget: null,
-  defaultPrevented: false,
-  eventPhase: 0,
-  isTrusted: true,
-  target: null,
-  timeStamp: performance.now(),
-  width: 1,
-  height: 1,
-  pressure: 1,
-  tangentialPressure: 0,
-  tiltX: 0,
-  tiltY: 0,
-  twist: 0,
-  pointerType: 'mouse',
-  isPrimary: true,
-  preventDefault: vi.fn(),
-  stopPropagation: vi.fn(),
-  stopImmediatePropagation: vi.fn(),
-  composedPath: vi.fn(() => []),
-  initEvent: vi.fn(),
-  ...options,
-} as unknown as PointerEvent);
+): PointerEvent =>
+  ({
+    type,
+    pointerId: 1,
+    clientX: 100,
+    clientY: 100,
+    pageX: 100,
+    pageY: 100,
+    screenX: 100,
+    screenY: 100,
+    movementX: 0,
+    movementY: 0,
+    button: 0,
+    buttons: 1,
+    ctrlKey: false,
+    shiftKey: false,
+    altKey: false,
+    metaKey: false,
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    currentTarget: null,
+    defaultPrevented: false,
+    eventPhase: 0,
+    isTrusted: true,
+    target: null,
+    timeStamp: performance.now(),
+    width: 1,
+    height: 1,
+    pressure: 1,
+    tangentialPressure: 0,
+    tiltX: 0,
+    tiltY: 0,
+    twist: 0,
+    pointerType: 'mouse',
+    isPrimary: true,
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+    stopImmediatePropagation: vi.fn(),
+    composedPath: vi.fn(() => []),
+    initEvent: vi.fn(),
+    ...options,
+  }) as unknown as PointerEvent;
 
 describe('GestureRecognizer', () => {
   let recognizer: GestureRecognizer;
@@ -80,7 +85,7 @@ describe('GestureRecognizer', () => {
 
     gestureCallback = vi.fn();
     performanceMeasure = createPerformanceMeasure();
-    
+
     recognizer = new GestureRecognizer(mockElement, {
       enableMultiTouch: true,
       swipeThreshold: INPUT.SWIPE_THRESHOLD,
@@ -99,7 +104,7 @@ describe('GestureRecognizer', () => {
     it('should initialize with default configuration', () => {
       const defaultRecognizer = new GestureRecognizer(mockElement);
       expect(defaultRecognizer).toBeDefined();
-      
+
       // Verify event listeners are set up
       expect(mockElement.addEventListener).toHaveBeenCalledWith(
         'pointerdown',
@@ -128,7 +133,7 @@ describe('GestureRecognizer', () => {
         tapTimeout: 200,
         longPressTimeout: 800,
       };
-      
+
       const customRecognizer = new GestureRecognizer(mockElement, customConfig);
       expect(customRecognizer).toBeDefined();
       customRecognizer.destroy();
@@ -136,8 +141,11 @@ describe('GestureRecognizer', () => {
 
     it('should handle partial configuration updates', () => {
       const partialConfig = { swipeThreshold: 150 };
-      const partialRecognizer = new GestureRecognizer(mockElement, partialConfig);
-      
+      const partialRecognizer = new GestureRecognizer(
+        mockElement,
+        partialConfig
+      );
+
       expect(partialRecognizer).toBeDefined();
       partialRecognizer.destroy();
     });
@@ -156,10 +164,10 @@ describe('GestureRecognizer', () => {
 
       // Simulate tap sequence
       recognizer['handlePointerDown'](pointerDown);
-      
+
       // Short delay within tap timeout
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       recognizer['handlePointerUp'](pointerUp);
 
       expect(gestureCallback).toHaveBeenCalledTimes(1);
@@ -174,26 +182,29 @@ describe('GestureRecognizer', () => {
 
     it('should recognize double tap gesture', async () => {
       const firstTap = {
-        down: createMockPointerEvent('pointerdown', { clientX: 100, clientY: 100 }),
+        down: createMockPointerEvent('pointerdown', {
+          clientX: 100,
+          clientY: 100,
+        }),
         up: createMockPointerEvent('pointerup', { clientX: 100, clientY: 100 }),
       };
-      
+
       const secondTap = {
-        down: createMockPointerEvent('pointerdown', { 
+        down: createMockPointerEvent('pointerdown', {
           pointerId: 1, // Same pointer ID as first tap for double tap detection
           clientX: 102, // Within tap threshold (5px) from first tap
-          clientY: 102 
+          clientY: 102,
         }),
-        up: createMockPointerEvent('pointerup', { 
+        up: createMockPointerEvent('pointerup', {
           pointerId: 1, // Same pointer ID as first tap for double tap detection
-          clientX: 102, 
-          clientY: 102 
+          clientX: 102,
+          clientY: 102,
         }),
       };
 
       // First tap
       recognizer['handlePointerDown'](firstTap.down);
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       recognizer['handlePointerUp'](firstTap.up);
 
       // Verify first tap was detected
@@ -207,9 +218,9 @@ describe('GestureRecognizer', () => {
       gestureCallback.mockClear();
 
       // Second tap (within double tap timeout)
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       recognizer['handlePointerDown'](secondTap.down);
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       recognizer['handlePointerUp'](secondTap.up);
 
       expect(gestureCallback).toHaveBeenCalled();
@@ -232,9 +243,9 @@ describe('GestureRecognizer', () => {
       });
 
       longPressRecognizer['handlePointerDown'](pointerDown);
-      
+
       // Wait for long press timeout
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       expect(gestureCallback).toHaveBeenCalled();
       const longPressCall = gestureCallback.mock.lastCall;
@@ -259,13 +270,13 @@ describe('GestureRecognizer', () => {
 
       // Simulate fast left swipe
       recognizer['handlePointerDown'](swipeEvents[0]);
-      
+
       for (let i = 1; i < swipeEvents.length - 1; i++) {
-        await new Promise(resolve => setTimeout(resolve, 5)); // Fast movement
+        await new Promise((resolve) => setTimeout(resolve, 5)); // Fast movement
         recognizer['handlePointerMove'](swipeEvents[i]);
       }
-      
-      await new Promise(resolve => setTimeout(resolve, 5));
+
+      await new Promise((resolve) => setTimeout(resolve, 5));
       recognizer['handlePointerUp'](swipeEvents[swipeEvents.length - 1]);
 
       expect(gestureCallback).toHaveBeenCalled();
@@ -289,13 +300,13 @@ describe('GestureRecognizer', () => {
 
       // Simulate fast right swipe
       recognizer['handlePointerDown'](swipeEvents[0]);
-      
+
       for (let i = 1; i < swipeEvents.length - 1; i++) {
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise((resolve) => setTimeout(resolve, 5));
         recognizer['handlePointerMove'](swipeEvents[i]);
       }
-      
-      await new Promise(resolve => setTimeout(resolve, 5));
+
+      await new Promise((resolve) => setTimeout(resolve, 5));
       recognizer['handlePointerUp'](swipeEvents[swipeEvents.length - 1]);
 
       expect(gestureCallback).toHaveBeenCalled();
@@ -317,7 +328,7 @@ describe('GestureRecognizer', () => {
 
       recognizer['handlePointerDown'](upSwipe[0]);
       for (let i = 1; i < upSwipe.length - 1; i++) {
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise((resolve) => setTimeout(resolve, 5));
         recognizer['handlePointerMove'](upSwipe[i]);
       }
       recognizer['handlePointerUp'](upSwipe[upSwipe.length - 1]);
@@ -343,13 +354,13 @@ describe('GestureRecognizer', () => {
 
       // Simulate slow pan movement
       recognizer['handlePointerDown'](panEvents[0]);
-      
+
       for (let i = 1; i < panEvents.length - 1; i++) {
-        await new Promise(resolve => setTimeout(resolve, 50)); // Slow movement
+        await new Promise((resolve) => setTimeout(resolve, 50)); // Slow movement
         recognizer['handlePointerMove'](panEvents[i]);
       }
-      
-      await new Promise(resolve => setTimeout(resolve, 50));
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
       recognizer['handlePointerUp'](panEvents[panEvents.length - 1]);
 
       expect(gestureCallback).toHaveBeenCalled();
@@ -376,7 +387,7 @@ describe('GestureRecognizer', () => {
         clientX: 100,
         clientY: 100,
       });
-      
+
       // Second pointer
       const pointer2Down = createMockPointerEvent('pointerdown', {
         pointerId: 2,
@@ -390,7 +401,7 @@ describe('GestureRecognizer', () => {
         clientX: 130,
         clientY: 100,
       });
-      
+
       const pointer2Move = createMockPointerEvent('pointermove', {
         pointerId: 2,
         clientX: 170,
@@ -400,9 +411,9 @@ describe('GestureRecognizer', () => {
       // Simulate multi-touch pinch
       multiTouchRecognizer['handlePointerDown'](pointer1Down);
       multiTouchRecognizer['handlePointerDown'](pointer2Down);
-      
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       multiTouchRecognizer['handlePointerMove'](pointer1Move);
       multiTouchRecognizer['handlePointerMove'](pointer2Move);
 
@@ -440,20 +451,24 @@ describe('GestureRecognizer', () => {
 
   describe('Pointer Capture Management', () => {
     it('should set pointer capture on pointer down', () => {
-      const pointerDown = createMockPointerEvent('pointerdown', { pointerId: 1 });
-      
+      const pointerDown = createMockPointerEvent('pointerdown', {
+        pointerId: 1,
+      });
+
       recognizer['handlePointerDown'](pointerDown);
-      
+
       expect(mockElement.setPointerCapture).toHaveBeenCalledWith(1);
     });
 
     it('should release pointer capture on pointer up', () => {
-      const pointerDown = createMockPointerEvent('pointerdown', { pointerId: 1 });
+      const pointerDown = createMockPointerEvent('pointerdown', {
+        pointerId: 1,
+      });
       const pointerUp = createMockPointerEvent('pointerup', { pointerId: 1 });
-      
+
       recognizer['handlePointerDown'](pointerDown);
       recognizer['handlePointerUp'](pointerUp);
-      
+
       expect(mockElement.releasePointerCapture).toHaveBeenCalledWith(1);
     });
 
@@ -463,8 +478,10 @@ describe('GestureRecognizer', () => {
         throw new Error('Capture failed');
       });
 
-      const pointerDown = createMockPointerEvent('pointerdown', { pointerId: 1 });
-      
+      const pointerDown = createMockPointerEvent('pointerdown', {
+        pointerId: 1,
+      });
+
       expect(() => {
         recognizer['handlePointerDown'](pointerDown);
       }).not.toThrow();
@@ -477,9 +494,9 @@ describe('GestureRecognizer', () => {
 
       // Simulate complex gesture sequence
       const events = Array.from({ length: 50 }, (_, i) =>
-        createMockPointerEvent('pointermove', { 
-          clientX: 100 + i * 2, 
-          clientY: 100 
+        createMockPointerEvent('pointermove', {
+          clientX: 100 + i * 2,
+          clientY: 100,
         })
       );
 
@@ -508,9 +525,9 @@ describe('GestureRecognizer', () => {
       const startTime = performance.now();
 
       for (let i = 0; i < eventCount; i++) {
-        const event = createMockPointerEvent('pointermove', { 
+        const event = createMockPointerEvent('pointermove', {
           clientX: 100 + (i % 100),
-          clientY: 100 
+          clientY: 100,
         });
         recognizer['handlePointerMove'](event);
       }
@@ -525,7 +542,9 @@ describe('GestureRecognizer', () => {
 
   describe('Memory Management', () => {
     it('should clean up active pointers on destroy', () => {
-      const pointerDown = createMockPointerEvent('pointerdown', { pointerId: 1 });
+      const pointerDown = createMockPointerEvent('pointerdown', {
+        pointerId: 1,
+      });
       recognizer['handlePointerDown'](pointerDown);
 
       expect(recognizer['activePointers'].size).toBe(1);
@@ -559,7 +578,7 @@ describe('GestureRecognizer', () => {
 
     it('should handle multiple destroy calls gracefully', () => {
       recognizer.destroy();
-      
+
       expect(() => {
         recognizer.destroy();
       }).not.toThrow();
@@ -568,19 +587,25 @@ describe('GestureRecognizer', () => {
 
   describe('Edge Cases', () => {
     it('should handle cancelled pointers', () => {
-      const pointerDown = createMockPointerEvent('pointerdown', { pointerId: 1 });
-      const pointerCancel = createMockPointerEvent('pointercancel', { pointerId: 1 });
-      
+      const pointerDown = createMockPointerEvent('pointerdown', {
+        pointerId: 1,
+      });
+      const pointerCancel = createMockPointerEvent('pointercancel', {
+        pointerId: 1,
+      });
+
       recognizer['handlePointerDown'](pointerDown);
       expect(recognizer['activePointers'].size).toBe(1);
-      
+
       recognizer['handlePointerCancel'](pointerCancel);
       expect(recognizer['activePointers'].size).toBe(0);
     });
 
     it('should handle unknown pointer IDs', () => {
-      const unknownPointerUp = createMockPointerEvent('pointerup', { pointerId: 999 });
-      
+      const unknownPointerUp = createMockPointerEvent('pointerup', {
+        pointerId: 999,
+      });
+
       expect(() => {
         recognizer['handlePointerUp'](unknownPointerUp);
       }).not.toThrow();
@@ -591,7 +616,7 @@ describe('GestureRecognizer', () => {
         type: 'pointerdown',
         pointerId: null,
       } as unknown as PointerEvent;
-      
+
       expect(() => {
         recognizer['handlePointerDown'](malformedEvent);
       }).not.toThrow();
@@ -604,7 +629,7 @@ describe('GestureRecognizer', () => {
         clientX: undefined,
         clientY: undefined,
       } as unknown as PointerEvent;
-      
+
       expect(() => {
         recognizer['handlePointerMove'](minimalEvent);
       }).not.toThrow();
@@ -617,7 +642,7 @@ describe('GestureRecognizer', () => {
         pointerType: 'mouse',
         pointerId: 1,
       });
-      
+
       expect(() => {
         recognizer['handlePointerDown'](mouseDown);
       }).not.toThrow();
@@ -629,7 +654,7 @@ describe('GestureRecognizer', () => {
         pointerId: 1,
         pressure: 1,
       });
-      
+
       expect(() => {
         recognizer['handlePointerDown'](touchDown);
       }).not.toThrow();
@@ -643,14 +668,12 @@ describe('GestureRecognizer', () => {
         tiltX: 15,
         tiltY: 10,
       });
-      
+
       expect(() => {
         recognizer['handlePointerDown'](penDown);
       }).not.toThrow();
     });
   });
-
-
 
   it('should handle pointer events', () => {
     const pointerEvent = {
@@ -662,9 +685,9 @@ describe('GestureRecognizer', () => {
       isPrimary: true,
       timeStamp: performance.now(),
     } as unknown as PointerEvent;
-    
+
     expect(() => {
       recognizer['handlePointerDown'](pointerEvent);
     }).not.toThrow();
   });
-}); 
+});

@@ -34,8 +34,14 @@ describe('KeyboardNavigator', () => {
       querySelector: vi.fn(() => null),
       querySelectorAll: vi.fn(() => []),
       getBoundingClientRect: vi.fn(() => ({
-        x: 0, y: 0, width: 100, height: 100,
-        top: 0, left: 0, bottom: 100, right: 100
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+        top: 0,
+        left: 0,
+        bottom: 100,
+        right: 100,
       })),
       tabIndex: 0,
       tagName: 'DIV',
@@ -57,8 +63,12 @@ describe('KeyboardNavigator', () => {
     // Mock document methods
     vi.spyOn(document, 'createElement').mockReturnValue(mockAnnouncer);
     vi.spyOn(document, 'getElementById').mockReturnValue(null);
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnnouncer);
-    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnnouncer);
+    vi.spyOn(document.body, 'appendChild').mockImplementation(
+      () => mockAnnouncer
+    );
+    vi.spyOn(document.body, 'removeChild').mockImplementation(
+      () => mockAnnouncer
+    );
 
     // Create mock callbacks matching actual interface
     mockCallbacks = {
@@ -70,7 +80,7 @@ describe('KeyboardNavigator', () => {
       onGoToSlide: vi.fn(),
       onEscape: vi.fn(),
     };
-    
+
     // Create navigator with callbacks in constructor
     navigator = new KeyboardNavigator(mockElement, mockCallbacks, {
       enableArrowKeys: true,
@@ -95,9 +105,12 @@ describe('KeyboardNavigator', () => {
 
   describe('Initialization', () => {
     it('should initialize with callbacks in constructor', () => {
-      const defaultNavigator = new KeyboardNavigator(mockElement, mockCallbacks);
+      const defaultNavigator = new KeyboardNavigator(
+        mockElement,
+        mockCallbacks
+      );
       expect(defaultNavigator).toBeDefined();
-      
+
       // Verify keyboard event listeners are set up
       expect(mockElement.addEventListener).toHaveBeenCalledWith(
         'keydown',
@@ -116,14 +129,8 @@ describe('KeyboardNavigator', () => {
     });
 
     it('should set up proper ARIA attributes', () => {
-      expect(mockElement.setAttribute).toHaveBeenCalledWith(
-        'role',
-        'region'
-      );
-      expect(mockElement.setAttribute).toHaveBeenCalledWith(
-        'tabindex',
-        '0'
-      );
+      expect(mockElement.setAttribute).toHaveBeenCalledWith('role', 'region');
+      expect(mockElement.setAttribute).toHaveBeenCalledWith('tabindex', '0');
       expect(mockElement.setAttribute).toHaveBeenCalledWith(
         'aria-label',
         'Interactive image slider'
@@ -137,7 +144,10 @@ describe('KeyboardNavigator', () => {
     it('should create screen reader announcer element', () => {
       expect(document.createElement).toHaveBeenCalledWith('div');
       expect(mockAnnouncer.setAttribute).toHaveBeenCalledWith('role', 'status');
-      expect(mockAnnouncer.setAttribute).toHaveBeenCalledWith('aria-live', 'polite');
+      expect(mockAnnouncer.setAttribute).toHaveBeenCalledWith(
+        'aria-live',
+        'polite'
+      );
       expect(document.body.appendChild).toHaveBeenCalledWith(mockAnnouncer);
     });
 
@@ -147,14 +157,22 @@ describe('KeyboardNavigator', () => {
         matches: true,
         addEventListener: vi.fn(),
       };
-      const matchMediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mockMediaQuery as unknown as MediaQueryList);
+      const matchMediaSpy = vi
+        .spyOn(window, 'matchMedia')
+        .mockReturnValue(mockMediaQuery as unknown as MediaQueryList);
 
-      const motionPreferenceNavigator = new KeyboardNavigator(mockElement, mockCallbacks, {
-        respectMotionPreferences: true,
-      });
+      const motionPreferenceNavigator = new KeyboardNavigator(
+        mockElement,
+        mockCallbacks,
+        {
+          respectMotionPreferences: true,
+        }
+      );
 
       // Should detect prefers-reduced-motion
-      expect(matchMediaSpy).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)');
+      expect(matchMediaSpy).toHaveBeenCalledWith(
+        '(prefers-reduced-motion: reduce)'
+      );
 
       motionPreferenceNavigator.destroy();
     });
@@ -163,30 +181,34 @@ describe('KeyboardNavigator', () => {
   describe('Arrow Key Navigation', () => {
     it('should handle right arrow key', () => {
       const keyEvent = createMockKeyboardEvent('keydown', 'ArrowRight');
-      
+
       navigator!['handleKeyDown'](keyEvent as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onNext).toHaveBeenCalled();
       expect(keyEvent.preventDefault).toHaveBeenCalled();
     });
 
     it('should handle left arrow key', () => {
       const keyEvent = createMockKeyboardEvent('keydown', 'ArrowLeft');
-      
+
       navigator!['handleKeyDown'](keyEvent as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onPrevious).toHaveBeenCalled();
       expect(keyEvent.preventDefault).toHaveBeenCalled();
     });
 
     it('should respect disabled arrow keys', () => {
-      const disabledNavigator = new KeyboardNavigator(mockElement, mockCallbacks, {
-        enableArrowKeys: false,
-      });
+      const disabledNavigator = new KeyboardNavigator(
+        mockElement,
+        mockCallbacks,
+        {
+          enableArrowKeys: false,
+        }
+      );
 
       const keyEvent = createMockKeyboardEvent('keydown', 'ArrowRight');
       disabledNavigator['handleKeyDown'](keyEvent as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onNext).not.toHaveBeenCalled();
       expect(keyEvent.preventDefault).not.toHaveBeenCalled();
 
@@ -210,23 +232,29 @@ describe('KeyboardNavigator', () => {
       keys.forEach(({ key, callback }) => {
         const keyEvent = createMockKeyboardEvent('keydown', key);
         navigator!['handleKeyDown'](keyEvent as unknown as KeyboardEvent);
-        
-        expect(mockCallbacks[callback as keyof KeyboardCallbacks]).toHaveBeenCalled();
+
+        expect(
+          mockCallbacks[callback as keyof KeyboardCallbacks]
+        ).toHaveBeenCalled();
         expect(keyEvent.preventDefault).toHaveBeenCalled();
-        
+
         // Reset mocks for next iteration
         vi.clearAllMocks();
       });
     });
 
     it('should respect disabled WASD keys', () => {
-      const disabledNavigator = new KeyboardNavigator(mockElement, mockCallbacks, {
-        enableWASD: false,
-      });
+      const disabledNavigator = new KeyboardNavigator(
+        mockElement,
+        mockCallbacks,
+        {
+          enableWASD: false,
+        }
+      );
 
       const keyEvent = createMockKeyboardEvent('keydown', 'd');
       disabledNavigator['handleKeyDown'](keyEvent as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onNext).not.toHaveBeenCalled();
 
       disabledNavigator.destroy();
@@ -237,22 +265,26 @@ describe('KeyboardNavigator', () => {
     it('should handle Home and End keys', () => {
       const homeKey = createMockKeyboardEvent('keydown', 'Home');
       const endKey = createMockKeyboardEvent('keydown', 'End');
-      
+
       navigator!['handleKeyDown'](homeKey as unknown as KeyboardEvent);
       expect(mockCallbacks.onFirst).toHaveBeenCalled();
-      
+
       navigator!['handleKeyDown'](endKey as unknown as KeyboardEvent);
       expect(mockCallbacks.onLast).toHaveBeenCalled();
     });
 
     it('should respect disabled Home/End keys', () => {
-      const disabledNavigator = new KeyboardNavigator(mockElement, mockCallbacks, {
-        enableHomeEnd: false,
-      });
+      const disabledNavigator = new KeyboardNavigator(
+        mockElement,
+        mockCallbacks,
+        {
+          enableHomeEnd: false,
+        }
+      );
 
       const homeKey = createMockKeyboardEvent('keydown', 'Home');
       disabledNavigator['handleKeyDown'](homeKey as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onFirst).not.toHaveBeenCalled();
 
       disabledNavigator.destroy();
@@ -263,10 +295,10 @@ describe('KeyboardNavigator', () => {
     it('should handle Page Up and Page Down keys', () => {
       const pageUpKey = createMockKeyboardEvent('keydown', 'PageUp');
       const pageDownKey = createMockKeyboardEvent('keydown', 'PageDown');
-      
+
       navigator!['handleKeyDown'](pageUpKey as unknown as KeyboardEvent);
       expect(mockCallbacks.onPrevious).toHaveBeenCalled();
-      
+
       navigator!['handleKeyDown'](pageDownKey as unknown as KeyboardEvent);
       expect(mockCallbacks.onNext).toHaveBeenCalled();
     });
@@ -275,27 +307,27 @@ describe('KeyboardNavigator', () => {
   describe('Activation Keys', () => {
     it('should handle Space key activation', () => {
       const spaceKey = createMockKeyboardEvent('keydown', ' ');
-      
+
       navigator!['handleKeyDown'](spaceKey as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onTogglePlayPause).toHaveBeenCalled();
       expect(spaceKey.preventDefault).toHaveBeenCalled();
     });
 
     it('should handle Enter key activation', () => {
       const enterKey = createMockKeyboardEvent('keydown', 'Enter');
-      
+
       navigator!['handleKeyDown'](enterKey as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onTogglePlayPause).toHaveBeenCalled();
       expect(enterKey.preventDefault).toHaveBeenCalled();
     });
 
     it('should handle Escape key', () => {
       const escapeKey = createMockKeyboardEvent('keydown', 'Escape');
-      
+
       navigator!['handleKeyDown'](escapeKey as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onEscape).toHaveBeenCalled();
       expect(escapeKey.preventDefault).toHaveBeenCalled();
     });
@@ -305,14 +337,18 @@ describe('KeyboardNavigator', () => {
     it('should handle custom key bindings', () => {
       const customHandler = vi.fn();
       const customBindings = new Map([['f', customHandler]]);
-      
-      const customNavigator = new KeyboardNavigator(mockElement, mockCallbacks, {
-        customBindings,
-      });
-      
+
+      const customNavigator = new KeyboardNavigator(
+        mockElement,
+        mockCallbacks,
+        {
+          customBindings,
+        }
+      );
+
       const customKey = createMockKeyboardEvent('keydown', 'f');
       customNavigator['handleKeyDown'](customKey as unknown as KeyboardEvent);
-      
+
       expect(customHandler).toHaveBeenCalled();
       expect(customKey.preventDefault).toHaveBeenCalled();
 
@@ -330,29 +366,38 @@ describe('KeyboardNavigator', () => {
     it('should not create live region when announcements disabled', () => {
       // Clear previous calls
       vi.clearAllMocks();
-      
+
       // Create spy to check what gets appended to document body
       const appendChildSpy = vi.spyOn(document.body, 'appendChild');
-      
-      const silentNavigator = new KeyboardNavigator(mockElement, mockCallbacks, {
-        enableAnnouncements: false,
-      });
+
+      const silentNavigator = new KeyboardNavigator(
+        mockElement,
+        mockCallbacks,
+        {
+          enableAnnouncements: false,
+        }
+      );
 
       // Should append keyboard instructions but NOT live region
       const appendCalls = appendChildSpy.mock.calls;
-      const liveRegionAppends = appendCalls.filter(call => 
-        call[0] && (call[0] as unknown as HTMLElement).id === 'slider-live-region'
+      const liveRegionAppends = appendCalls.filter(
+        (call) =>
+          call[0] &&
+          (call[0] as unknown as HTMLElement).id === 'slider-live-region'
       );
       expect(liveRegionAppends).toHaveLength(0);
-      
-      // Should still create keyboard instructions (for accessibility)  
-      const instructionAppends = appendCalls.filter(call => 
-        call[0] && (call[0] as unknown as HTMLElement).id === 'slider-keyboard-instructions'
+
+      // Should still create keyboard instructions (for accessibility)
+      const instructionAppends = appendCalls.filter(
+        (call) =>
+          call[0] &&
+          (call[0] as unknown as HTMLElement).id ===
+            'slider-keyboard-instructions'
       );
       expect(instructionAppends).toHaveLength(1);
 
       silentNavigator.destroy();
-      
+
       // Restore spy
       appendChildSpy.mockRestore();
     });
@@ -361,16 +406,16 @@ describe('KeyboardNavigator', () => {
   describe('Focus Management', () => {
     it('should handle focus events', () => {
       const focusEvent = new FocusEvent('focus');
-      
+
       navigator!['handleFocus'](focusEvent);
-      
+
       // Should call announceCurrentState (which sets textContent)
       expect(mockAnnouncer.textContent).toBeDefined();
     });
 
     it('should handle blur events', () => {
       const blurEvent = new FocusEvent('blur');
-      
+
       // Should not throw error
       expect(() => {
         navigator!['handleBlur'](blurEvent);
@@ -384,20 +429,20 @@ describe('KeyboardNavigator', () => {
       navigator!.updateConfig({
         enableArrowKeys: false,
       });
-      
+
       const arrowKey = createMockKeyboardEvent('keydown', 'ArrowRight');
       navigator!['handleKeyDown'](arrowKey as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onNext).not.toHaveBeenCalled();
     });
 
     it('should add custom key bindings', () => {
       const customHandler = vi.fn();
       navigator!.addKeyBinding('x', customHandler);
-      
+
       const customKey = createMockKeyboardEvent('keydown', 'x');
       navigator!['handleKeyDown'](customKey as unknown as KeyboardEvent);
-      
+
       expect(customHandler).toHaveBeenCalled();
     });
 
@@ -405,10 +450,10 @@ describe('KeyboardNavigator', () => {
       const customHandler = vi.fn();
       navigator!.addKeyBinding('x', customHandler);
       navigator!.removeKeyBinding('x');
-      
+
       const customKey = createMockKeyboardEvent('keydown', 'x');
       navigator!['handleKeyDown'](customKey as unknown as KeyboardEvent);
-      
+
       expect(customHandler).not.toHaveBeenCalled();
     });
   });
@@ -416,7 +461,7 @@ describe('KeyboardNavigator', () => {
   describe('Slide State Management', () => {
     it('should set total slides', () => {
       navigator!.setTotalSlides(5);
-      
+
       expect(mockElement.setAttribute).toHaveBeenCalledWith(
         'aria-valuemax',
         '5'
@@ -427,16 +472,16 @@ describe('KeyboardNavigator', () => {
       // Set total slides first so the index isn't clamped to 0
       navigator!.setTotalSlides(5);
       navigator!.setCurrentSlide(2);
-      
+
       expect(mockElement.setAttribute).toHaveBeenCalledWith(
         'aria-valuenow',
-        '3'  // Implementation uses 1-based indexing for ARIA (currentSlide + 1)
+        '3' // Implementation uses 1-based indexing for ARIA (currentSlide + 1)
       );
     });
 
     it('should set playing state', () => {
       navigator!.setPlayingState(true);
-      
+
       // Should not throw error
       expect(() => {
         navigator!.setPlayingState(false);
@@ -447,13 +492,13 @@ describe('KeyboardNavigator', () => {
   describe('Utility Methods', () => {
     it('should focus element', () => {
       navigator!.focus();
-      
+
       expect(mockElement.focus).toHaveBeenCalled();
     });
 
     it('should get focus state', () => {
       const focusState = navigator!.getFocusState();
-      
+
       expect(focusState).toBeDefined();
       expect(typeof focusState.currentIndex).toBe('number');
       expect(typeof focusState.isTrapped).toBe('boolean');
@@ -463,7 +508,7 @@ describe('KeyboardNavigator', () => {
   describe('Memory Management', () => {
     it('should clean up event listeners on destroy', () => {
       navigator!.destroy();
-      
+
       expect(mockElement.removeEventListener).toHaveBeenCalledWith(
         'keydown',
         expect.any(Function)
@@ -480,7 +525,7 @@ describe('KeyboardNavigator', () => {
 
     it('should remove announcer element on destroy', () => {
       navigator!.destroy();
-      
+
       // Verify announcer cleanup was attempted
       expect(mockAnnouncer.remove).toHaveBeenCalled();
     });
@@ -500,7 +545,7 @@ describe('KeyboardNavigator', () => {
       });
 
       const keyEvent = createMockKeyboardEvent('keydown', 'ArrowRight');
-      
+
       expect(() => {
         minimalNavigator['handleKeyDown'](keyEvent as unknown as KeyboardEvent);
       }).not.toThrow();
@@ -509,10 +554,12 @@ describe('KeyboardNavigator', () => {
     });
 
     it('should ignore modifier key combinations', () => {
-      const ctrlKey = createMockKeyboardEvent('keydown', 'ArrowRight', { ctrlKey: true });
-      
+      const ctrlKey = createMockKeyboardEvent('keydown', 'ArrowRight', {
+        ctrlKey: true,
+      });
+
       navigator!['handleKeyDown'](ctrlKey as unknown as KeyboardEvent);
-      
+
       expect(mockCallbacks.onNext).not.toHaveBeenCalled();
       expect(ctrlKey.preventDefault).not.toHaveBeenCalled();
     });
@@ -532,4 +579,4 @@ describe('KeyboardNavigator', () => {
       expect(document.body.appendChild).toHaveBeenCalled();
     });
   });
-}); 
+});

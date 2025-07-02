@@ -3,11 +3,11 @@
  *
  * Complete PIXI.js rendering system that handles:
  * 1. PIXI Application initialization and management
- * 2. Sprite creation, loading, and lifecycle management  
+ * 2. Sprite creation, loading, and lifecycle management
  * 3. GSAP-powered physics-based animations
  * 4. GPU-optimized rendering pipeline
  *
- * This unified renderer eliminates the confusion between "SliderRenderer" 
+ * This unified renderer eliminates the confusion between "SliderRenderer"
  * and "PixiSliderRenderer" by providing one comprehensive solution.
  *
  * @version 1.0.0
@@ -18,12 +18,16 @@
 import { Application, Sprite, Texture, Filter, Assets } from 'pixi.js';
 import { gsap } from 'gsap';
 import type { ISliderRenderer, RenderConfig } from '../core/types';
-import type { AnimationSequence, SwipeAnimation, ScaleAnimation } from '../physics/engine';
+import type {
+  AnimationSequence,
+  SwipeAnimation,
+  ScaleAnimation,
+} from '../physics/engine';
 import { GSAP_DEFAULTS } from '../core/constants';
 
 /**
  * Unified PIXI.js Renderer with Complete Pipeline
- * 
+ *
  * Handles everything from PIXI app initialization to GSAP animations.
  * Eliminates the need for separate "PixiSliderRenderer" animation applier.
  */
@@ -33,11 +37,11 @@ export class SliderRenderer implements ISliderRenderer {
   private container: HTMLElement | null = null;
   private config: RenderConfig | null = null;
   private isInitialized = false;
-  
+
   // Animation management
   private activeTimelines = new Set<gsap.core.Timeline>();
   private activeTweens = new Set<gsap.core.Tween>();
-  
+
   // Animation defaults
   private readonly animationDefaults: gsap.TweenVars = {
     ease: 'power2.out',
@@ -51,10 +55,15 @@ export class SliderRenderer implements ISliderRenderer {
   /**
    * Initialize the PIXI application and setup rendering pipeline
    */
-  async initialize(container: HTMLElement, config: RenderConfig): Promise<void> {
+  async initialize(
+    container: HTMLElement,
+    config: RenderConfig
+  ): Promise<void> {
     try {
       if (!container) {
-        throw new Error('Container element is required for renderer initialization');
+        throw new Error(
+          'Container element is required for renderer initialization'
+        );
       }
 
       // Store configuration
@@ -107,13 +116,16 @@ export class SliderRenderer implements ISliderRenderer {
   /**
    * Create and load sprite from texture
    */
-  async createSprite(texture: string | Texture, index: number): Promise<Sprite> {
+  async createSprite(
+    texture: string | Texture,
+    index: number
+  ): Promise<Sprite> {
     if (!this.app) {
       throw new Error('Renderer not initialized');
     }
 
     let pixiTexture: Texture;
-    
+
     if (typeof texture === 'string') {
       // Load texture from URL using Assets API
       pixiTexture = await Assets.load(texture);
@@ -122,18 +134,18 @@ export class SliderRenderer implements ISliderRenderer {
     }
 
     const sprite = new Sprite(pixiTexture);
-    
+
     // Configure sprite
     sprite.anchor.set(0.5);
     sprite.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
-    
+
     // Add GSAP data attributes for targeting
     this.markSpriteForGSAP(sprite, index);
-    
+
     // Add to stage and track
     this.app.stage.addChild(sprite);
     this.sprites[index] = sprite;
-    
+
     return sprite;
   }
 
@@ -144,7 +156,7 @@ export class SliderRenderer implements ISliderRenderer {
     if (!this.app) return;
 
     this.app.stage.removeChild(sprite);
-    
+
     // Remove from tracking array
     const index = this.sprites.indexOf(sprite);
     if (index !== -1) {
@@ -181,7 +193,7 @@ export class SliderRenderer implements ISliderRenderer {
     if (!sprite.filters) {
       sprite.filters = [];
     }
-    
+
     // Ensure filters is an array before pushing
     if (Array.isArray(sprite.filters)) {
       sprite.filters.push(filter);
@@ -195,7 +207,7 @@ export class SliderRenderer implements ISliderRenderer {
    */
   removeFilter(sprite: Sprite, filter: Filter): void {
     if (!sprite.filters || !Array.isArray(sprite.filters)) return;
-    
+
     const index = sprite.filters.indexOf(filter);
     if (index !== -1) {
       sprite.filters.splice(index, 1);
@@ -216,7 +228,10 @@ export class SliderRenderer implements ISliderRenderer {
   /**
    * Apply transition animation sequence to PIXI sprites
    */
-  applyTransition(sprites: Sprite[], sequence: AnimationSequence): gsap.core.Timeline {
+  applyTransition(
+    sprites: Sprite[],
+    sequence: AnimationSequence
+  ): gsap.core.Timeline {
     const timeline = this.createManagedTimeline();
 
     // Hide sprites that should be hidden
@@ -232,9 +247,12 @@ export class SliderRenderer implements ISliderRenderer {
 
     // Get target sprite with safe array access
     const targetIndex = sequence.targetSprite.index;
-    const targetSprite = (typeof targetIndex === 'number' && targetIndex >= 0 && targetIndex < sprites.length) 
-      ? sprites[targetIndex] 
-      : null;
+    const targetSprite =
+      typeof targetIndex === 'number' &&
+      targetIndex >= 0 &&
+      targetIndex < sprites.length
+        ? sprites[targetIndex]
+        : null;
     if (!targetSprite) return timeline;
 
     // Set initial state for target sprite
@@ -265,9 +283,12 @@ export class SliderRenderer implements ISliderRenderer {
     if (sequence.sourceSprite) {
       // Safe array access with bounds checking
       const sourceIndex = sequence.sourceSprite.index;
-      const sourceSprite = (typeof sourceIndex === 'number' && sourceIndex >= 0 && sourceIndex < sprites.length) 
-        ? sprites[sourceIndex] 
-        : null;
+      const sourceSprite =
+        typeof sourceIndex === 'number' &&
+        sourceIndex >= 0 &&
+        sourceIndex < sprites.length
+          ? sprites[sourceIndex]
+          : null;
       if (sourceSprite) {
         timeline.to(
           sourceSprite,
@@ -344,7 +365,11 @@ export class SliderRenderer implements ISliderRenderer {
 
     animations.forEach(({ spriteIndex, props }) => {
       // Safe array access with bounds checking to prevent object injection
-      if (typeof spriteIndex === 'number' && spriteIndex >= 0 && spriteIndex < sprites.length) {
+      if (
+        typeof spriteIndex === 'number' &&
+        spriteIndex >= 0 &&
+        spriteIndex < sprites.length
+      ) {
         const sprite = sprites[spriteIndex];
         if (sprite) {
           timeline.to(
@@ -380,10 +405,10 @@ export class SliderRenderer implements ISliderRenderer {
       alpha: props.alpha,
       rotation: props.rotation,
     };
-    
+
     const tween = gsap.to(sprite, safeProps);
     this.activeTweens.add(tween);
-    
+
     return tween;
   }
 
@@ -456,7 +481,7 @@ export class SliderRenderer implements ISliderRenderer {
     this.killAllAnimations();
 
     // Cleanup sprites
-    this.sprites.forEach(sprite => {
+    this.sprites.forEach((sprite) => {
       if (sprite.parent) {
         sprite.parent.removeChild(sprite);
       }
@@ -499,7 +524,10 @@ export class SliderRenderer implements ISliderRenderer {
    */
   private markSpriteForGSAP(sprite: Sprite, index: number): void {
     // Add simple data properties for GSAP targeting with proper typing
-    (sprite as Sprite & { 'data-slider-sprite': boolean })['data-slider-sprite'] = true;
-    (sprite as Sprite & { 'data-sprite-index': number })['data-sprite-index'] = index;
+    (sprite as Sprite & { 'data-slider-sprite': boolean })[
+      'data-slider-sprite'
+    ] = true;
+    (sprite as Sprite & { 'data-sprite-index': number })['data-sprite-index'] =
+      index;
   }
-} 
+}

@@ -25,9 +25,10 @@ describe('Complete System API Integration', () => {
       currentIndex: 0,
       isPlaying: false,
     };
-    
+
     // Simple mock setup without complex JSDOM
-    (global as unknown as { kineticSlider: MockKineticSlider }).kineticSlider = mockKineticSlider;
+    (global as unknown as { kineticSlider: MockKineticSlider }).kineticSlider =
+      mockKineticSlider;
   });
 
   describe('JavaScript API Integration', () => {
@@ -40,26 +41,26 @@ describe('Complete System API Integration', () => {
     it('should maintain state consistency across API calls', () => {
       const initialIndex = mockKineticSlider.currentIndex;
       mockKineticSlider.currentIndex = 2;
-      
+
       expect(mockKineticSlider.currentIndex).toBe(2);
       expect(mockKineticSlider.currentIndex).not.toBe(initialIndex);
     });
 
     it('should coordinate gesture recognition with internal state', () => {
       mockKineticSlider.currentIndex = 1;
-      
+
       // Simulate gesture input affecting state
       mockKineticSlider.currentIndex = (mockKineticSlider.currentIndex + 1) % 5;
-      
+
       expect(mockKineticSlider.currentIndex).toBe(2);
     });
 
     it('should coordinate play/pause state via API', () => {
       expect(mockKineticSlider.isPlaying).toBe(false);
-      
+
       mockKineticSlider.isPlaying = true;
       expect(mockKineticSlider.isPlaying).toBe(true);
-      
+
       mockKineticSlider.isPlaying = false;
       expect(mockKineticSlider.isPlaying).toBe(false);
     });
@@ -68,16 +69,16 @@ describe('Complete System API Integration', () => {
   describe('Component Integration via API', () => {
     it('should coordinate between physics engine and UI state', () => {
       const initialIndex = mockKineticSlider.currentIndex;
-      
+
       // Simulate physics calculation affecting state
       mockKineticSlider.currentIndex = (initialIndex + 1) % 5;
-      
+
       expect(mockKineticSlider.currentIndex).not.toBe(initialIndex);
     });
 
     it('should maintain engine state consistency', () => {
       expect(mockKineticSlider.engine).toBeDefined();
-      
+
       // Simulate multiple interactions
       for (let i = 0; i < 3; i++) {
         mockKineticSlider.currentIndex = i;
@@ -87,12 +88,13 @@ describe('Complete System API Integration', () => {
 
     it('should handle rapid API state changes', () => {
       const initialIndex = mockKineticSlider.currentIndex;
-      
+
       // Rapid state changes (avoid modulo wrapping back to initial value)
       for (let i = 0; i < 3; i++) {
-        mockKineticSlider.currentIndex = (mockKineticSlider.currentIndex + 1) % 5;
+        mockKineticSlider.currentIndex =
+          (mockKineticSlider.currentIndex + 1) % 5;
       }
-      
+
       expect(mockKineticSlider.currentIndex).toBeGreaterThan(initialIndex);
       expect(typeof mockKineticSlider.currentIndex).toBe('number');
     });
@@ -118,4 +120,4 @@ describe('Complete System API Integration', () => {
       }
     });
   });
-}); 
+});

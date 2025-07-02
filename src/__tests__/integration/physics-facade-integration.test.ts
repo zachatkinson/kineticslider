@@ -26,7 +26,7 @@ describe('SliderPhysics Facade Integration', () => {
   beforeEach(() => {
     // Create test sprites
     mockSprites = createTestSprites(3);
-    
+
     // Create test configuration
     const testConfig = {
       slideCount: 3,
@@ -53,7 +53,7 @@ describe('SliderPhysics Facade Integration', () => {
     it('should initialize with real components and coordinate them', () => {
       // Test that the facade creates and coordinates real components
       expect(facade).toBeDefined();
-      
+
       // Test basic functionality works with real components
       const config = facade.getPhysicsConfig();
       expect(config).toBeDefined();
@@ -63,7 +63,7 @@ describe('SliderPhysics Facade Integration', () => {
     it('should coordinate physics calculations with renderer', () => {
       // Test actual component coordination (not mocks)
       const timeline = facade.animateTransition(0, 1, mockSprites);
-      
+
       // Should return actual GSAP timeline from real renderer
       expect(timeline).toBeDefined();
       expect(typeof timeline.duration).toBe('function');
@@ -73,9 +73,13 @@ describe('SliderPhysics Facade Integration', () => {
     it('should handle sprite management across components', () => {
       // Test sprite coordination between components
       facade.setSprites(mockSprites);
-      
+
       // Should be able to animate sprites through real component pipeline
-      const timeline = facade.animateSwipe(mockSprites[0], TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
+      const timeline = facade.animateSwipe(
+        mockSprites[0],
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.medium
+      );
       expect(timeline).toBeDefined();
     });
 
@@ -86,7 +90,7 @@ describe('SliderPhysics Facade Integration', () => {
       };
 
       facade.setPhysicsConfig(newConfig);
-      
+
       // Configuration should be updated in real engine
       const updatedConfig = facade.getPhysicsConfig();
       expect(updatedConfig.transitionDuration).toBe(1.5);
@@ -98,13 +102,17 @@ describe('SliderPhysics Facade Integration', () => {
       // Test full workflow: transition → scale → swipe
       const transitionTimeline = facade.animateTransition(0, 1, mockSprites);
       const scaleTimeline = facade.animateScale(mockSprites[1], 1.2);
-      const swipeTimeline = facade.animateSwipe(mockSprites[1], TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
+      const swipeTimeline = facade.animateSwipe(
+        mockSprites[1],
+        TEST_DIRECTIONS.right,
+        TEST_INTENSITIES.medium
+      );
 
       // All should return real GSAP timelines
       expect(transitionTimeline).toBeDefined();
       expect(scaleTimeline).toBeDefined();
       expect(swipeTimeline).toBeDefined();
-      
+
       // Timelines should have expected GSAP methods
       expect(typeof transitionTimeline.play).toBe('function');
       expect(typeof scaleTimeline.kill).toBe('function');
@@ -115,9 +123,9 @@ describe('SliderPhysics Facade Integration', () => {
       // Create some animations to generate stats
       facade.animateScale(mockSprites[0], 1.1);
       facade.animateScale(mockSprites[1], 1.2);
-      
+
       const stats = facade.getPerformanceStats();
-      
+
       // Should return real performance data
       expect(stats).toBeDefined();
       expect(typeof stats.activeTimelines).toBe('number');
@@ -132,7 +140,7 @@ describe('SliderPhysics Facade Integration', () => {
       ];
 
       const timeline = facade.applyBatchAnimations(mockSprites, animations);
-      
+
       // Should coordinate real batch animation
       expect(timeline).toBeDefined();
       expect(typeof timeline.duration).toBe('function');
@@ -151,7 +159,7 @@ describe('SliderPhysics Facade Integration', () => {
       }
 
       // All should be real timelines
-      timelines.forEach(timeline => {
+      timelines.forEach((timeline) => {
         expect(timeline).toBeDefined();
         expect(typeof timeline.duration).toBe('function');
       });
@@ -161,7 +169,7 @@ describe('SliderPhysics Facade Integration', () => {
       // Create some animations
       facade.animateScale(mockSprites[0], 1.1);
       facade.animateTransition(0, 1, mockSprites);
-      
+
       // Should clean up real components without errors
       expect(() => {
         facade.killAllAnimations();
@@ -172,8 +180,12 @@ describe('SliderPhysics Facade Integration', () => {
     it('should handle edge cases with real component coordination', () => {
       // Test edge cases that would fail with mock mismatches but work with real components
       const timeline1 = facade.animateTransition(-1, 10, mockSprites);
-      const timeline2 = facade.animateSwipe(mockSprites[0], 999, TEST_INTENSITIES.zero);
-      
+      const timeline2 = facade.animateSwipe(
+        mockSprites[0],
+        999,
+        TEST_INTENSITIES.zero
+      );
+
       // Real components should handle edge cases gracefully
       expect(timeline1).toBeDefined();
       expect(timeline2).toBeDefined();
@@ -185,7 +197,7 @@ describe('SliderPhysics Facade Integration', () => {
       // Test that physics calculations actually affect rendered output
       const result = facade.shouldTriggerSlideChange(100, 0.5);
       expect(typeof result).toBe('boolean');
-      
+
       const timing = facade.calculateAdaptiveTiming(500, 0.8);
       expect(typeof timing).toBe('number');
       expect(timing).toBeGreaterThan(0);
@@ -197,7 +209,7 @@ describe('SliderPhysics Facade Integration', () => {
       expect(typeof momentum.velocity).toBe('number');
       expect(typeof momentum.distance).toBe('number');
       expect(typeof momentum.duration).toBe('number');
-      
+
       const spring = facade.calculateSpring(50, 0, 5);
       expect(spring).toBeDefined();
       expect(typeof spring.targetPosition).toBe('number');
@@ -210,17 +222,21 @@ describe('SliderPhysics Facade Integration', () => {
       // Test that the facade supports dependency injection for unit testing
       const mockEngine = createTestPhysicsEngine();
       const mockRenderer = createTestRenderer();
-      
+
       const testConfig = {
         slideCount: 3,
         slideWidth: 400,
         container: document.createElement('div'),
         sprites: mockSprites,
       };
-      
-      const unitTestPhysics = new SliderPhysics(testConfig, mockEngine, mockRenderer);
+
+      const unitTestPhysics = new SliderPhysics(
+        testConfig,
+        mockEngine,
+        mockRenderer
+      );
       expect(unitTestPhysics).toBeDefined();
-      
+
       cleanupRenderer(mockRenderer);
     });
 
@@ -232,21 +248,25 @@ describe('SliderPhysics Facade Integration', () => {
         container: document.createElement('div'),
         sprites: mockSprites,
       };
-      
+
       // Integration test (real components)
       const integrationPhysics = new SliderPhysics(testConfig);
       expect(integrationPhysics).toBeDefined();
-      
-      // Unit test setup (mocked components)  
+
+      // Unit test setup (mocked components)
       const mockEngine = createTestPhysicsEngine();
       const mockRenderer = createTestRenderer();
-      const unitPhysics = new SliderPhysics(testConfig, mockEngine, mockRenderer);
+      const unitPhysics = new SliderPhysics(
+        testConfig,
+        mockEngine,
+        mockRenderer
+      );
       expect(unitPhysics).toBeDefined();
-      
+
       // Both should provide the same API
       expect(integrationPhysics.getPhysicsConfig).toBeDefined();
       expect(unitPhysics.getPhysicsConfig).toBeDefined();
-      
+
       cleanupRenderer(mockRenderer);
     });
   });

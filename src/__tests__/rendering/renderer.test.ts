@@ -15,7 +15,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
-import { SliderRenderer } from '../../rendering';  // Use unified renderer
+import { SliderRenderer } from '../../rendering'; // Use unified renderer
 import type { RenderConfig } from '../../core/types';
 import { RENDERING, VIEWPORT } from '../../core';
 
@@ -122,7 +122,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
 
   describe('Initialization', () => {
     it('should initialize with default configuration', async () => {
-      await expect(renderer.initialize(mockContainer, DEFAULT_TEST_RENDER_CONFIG)).resolves.not.toThrow();
+      await expect(
+        renderer.initialize(mockContainer, DEFAULT_TEST_RENDER_CONFIG)
+      ).resolves.not.toThrow();
     });
 
     it('should handle initialization with custom container', async () => {
@@ -132,7 +134,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
         height: 768,
       };
 
-      await expect(renderer.initialize(mockContainer, customConfig)).resolves.not.toThrow();
+      await expect(
+        renderer.initialize(mockContainer, customConfig)
+      ).resolves.not.toThrow();
     });
   });
 
@@ -144,14 +148,14 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
     it('should create sprites from image URLs', async () => {
       const imageUrl = 'test-image.jpg';
       const sprite = await renderer.createSprite(imageUrl, 0);
-      
+
       expect(sprite).toBeDefined();
       expect(sprite.texture).toBeDefined();
     });
 
     it('should handle multiple sprite creation', async () => {
       const urls = ['image1.jpg', 'image2.jpg', 'image3.jpg'];
-      
+
       for (let i = 0; i < urls.length; i++) {
         const sprite = await renderer.createSprite(urls[i], i);
         expect(sprite).toBeDefined();
@@ -194,7 +198,10 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
         },
       };
 
-      const mockSprite = { x: 0, scale: { x: 1, y: 1 } } as unknown as import('pixi.js').Sprite;
+      const mockSprite = {
+        x: 0,
+        scale: { x: 1, y: 1 },
+      } as unknown as import('pixi.js').Sprite;
       expect(() => renderer.applySwipe(mockSprite, mockSwipe)).not.toThrow();
     });
 
@@ -205,7 +212,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
         ease: 'power2.out',
       };
 
-      const mockSprite = { scale: { x: 1, y: 1 } } as unknown as import('pixi.js').Sprite;
+      const mockSprite = {
+        scale: { x: 1, y: 1 },
+      } as unknown as import('pixi.js').Sprite;
       expect(() => renderer.applyScale(mockSprite, mockScale)).not.toThrow();
     });
   });
@@ -221,7 +230,7 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
 
     it('should provide performance stats', () => {
       const stats = renderer.getPerformanceStats();
-      
+
       expect(stats).toHaveProperty('activeTimelines');
       expect(stats).toHaveProperty('activeTweens');
       expect(stats).toHaveProperty('totalAnimations');
@@ -242,14 +251,21 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
   describe('Error Handling', () => {
     it('should handle initialization errors gracefully', async () => {
       const invalidConfig = {} as RenderConfig;
-      
+
       // Should handle invalid config gracefully
-      await expect(renderer.initialize(mockContainer, invalidConfig)).resolves.not.toThrow();
+      await expect(
+        renderer.initialize(mockContainer, invalidConfig)
+      ).resolves.not.toThrow();
     });
 
     it('should handle missing container gracefully', async () => {
       // Should throw an error for null container (proper error handling)
-      await expect(renderer.initialize(null as unknown as HTMLElement, DEFAULT_TEST_RENDER_CONFIG)).rejects.toThrow();
+      await expect(
+        renderer.initialize(
+          null as unknown as HTMLElement,
+          DEFAULT_TEST_RENDER_CONFIG
+        )
+      ).rejects.toThrow();
     });
   });
 });

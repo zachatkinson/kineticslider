@@ -7,8 +7,16 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SliderRenderer } from '../../rendering';
-import { createTestSprites, createTestRenderer, cleanupRenderer } from '../utils/test-factories';
-import type { AnimationSequence, SwipeAnimation, ScaleAnimation } from '../../physics/engine';
+import {
+  createTestSprites,
+  createTestRenderer,
+  cleanupRenderer,
+} from '../utils/test-factories';
+import type {
+  AnimationSequence,
+  SwipeAnimation,
+  ScaleAnimation,
+} from '../../physics/engine';
 import { EASING } from '../../core/constants';
 import type { Sprite } from 'pixi.js';
 

@@ -35,14 +35,17 @@ export async function navigateAndWait(
     waitUntil: WAIT_STRATEGIES.NETWORK_IDLE,
     timeout: TEST_TIMING.E2E_TIMEOUT,
   });
-  
+
   // Wait for the slider to initialize
   await page.waitForSelector('[data-testid="kinetic-slider"]');
-  
+
   // Wait for the real implementation to load
-  await page.waitForFunction(() => {
-    return window.kineticSlider && window.kineticSlider.engine;
-  }, { timeout: 10000 });
+  await page.waitForFunction(
+    () => {
+      return window.kineticSlider && window.kineticSlider.engine;
+    },
+    { timeout: 10000 }
+  );
 }
 
 /**

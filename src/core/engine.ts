@@ -49,7 +49,7 @@ export class SliderEngine implements ISliderEngine {
   private renderer: ISliderRenderer | null = null;
   private controller: ISliderController | null = null;
   private eventEmitter: EventEmitter | null = null;
-  
+
   // Simple fallback event emitter for basic functionality
   private fallbackEvents = new Map<string, ((...args: unknown[]) => void)[]>();
 
@@ -114,7 +114,10 @@ export class SliderEngine implements ISliderEngine {
 
       // Initialize accessibility state
       if (this.controller) {
-        this.controller.updateSlideState(this.state.currentIndex, this.state.totalSlides);
+        this.controller.updateSlideState(
+          this.state.currentIndex,
+          this.state.totalSlides
+        );
         this.controller.updatePlayState(this.state.isPlaying);
       }
 
@@ -238,12 +241,12 @@ export class SliderEngine implements ISliderEngine {
   togglePlayPause(): void {
     const newPlayState = !this.state.isPlaying;
     this.setState({ isPlaying: newPlayState });
-    
+
     // Update accessibility state for screen readers
     if (this.controller) {
       this.controller.updatePlayState(newPlayState);
     }
-    
+
     // Emit play/pause state change event
     this.emit(SLIDER_EVENTS.PLAY_STATE_CHANGED, {
       isPlaying: newPlayState,
@@ -271,12 +274,12 @@ export class SliderEngine implements ISliderEngine {
         timestamp: Date.now(),
       });
     });
-    
+
     // Pause if playing
     if (this.state.isPlaying) {
       this.togglePlayPause();
     }
-    
+
     // Emit escape event
     this.emit(SLIDER_EVENTS.ESCAPE_PRESSED, {
       previousIndex: this.state.currentIndex,
@@ -327,7 +330,7 @@ export class SliderEngine implements ISliderEngine {
       // Use fallback event system
       const callbacks = this.fallbackEvents.get(event);
       if (callbacks) {
-        callbacks.forEach(callback => callback(...args));
+        callbacks.forEach((callback) => callback(...args));
       }
     }
   }

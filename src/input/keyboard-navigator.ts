@@ -101,7 +101,7 @@ export interface KeyboardCallbacks {
  *   onPrevious: () => slider.previousSlide(),
  *   onTogglePlayPause: () => slider.togglePlayPause(),
  * });
- * 
+ *
  * navigator.setTotalSlides(5);
  * navigator.setCurrentSlide(0);
  * ```
@@ -181,7 +181,7 @@ export class KeyboardNavigator {
    */
   private createKeyboardInstructions(): string {
     const instructionsId = 'slider-keyboard-instructions';
-    
+
     // Remove existing instructions
     const existing = document.getElementById(instructionsId);
     if (existing) {
@@ -192,14 +192,14 @@ export class KeyboardNavigator {
     instructions.id = instructionsId;
     instructions.className = 'sr-only';
     instructions.setAttribute('aria-hidden', 'true');
-    
+
     const instructionText = [
       'Use arrow keys or WASD to navigate slides.',
       'Press space to play or pause.',
       'Press home to go to first slide, end to go to last slide.',
       'Press escape to exit.',
     ].join(' ');
-    
+
     instructions.textContent = instructionText;
     document.body.appendChild(instructions);
 
@@ -213,7 +213,7 @@ export class KeyboardNavigator {
     if (!this.config.enableAnnouncements) return;
 
     const liveRegionId = 'slider-live-region';
-    
+
     // Remove existing live region
     const existing = document.getElementById(liveRegionId);
     if (existing) {
@@ -226,7 +226,7 @@ export class KeyboardNavigator {
     this.liveRegion.setAttribute('aria-live', 'polite');
     this.liveRegion.setAttribute('aria-atomic', 'true');
     this.liveRegion.setAttribute('role', 'status');
-    
+
     document.body.appendChild(this.liveRegion);
   }
 
@@ -260,7 +260,7 @@ export class KeyboardNavigator {
         'Reduced motion detected. Animations will be minimized.',
         AnnouncementType.INFO
       );
-      
+
       // Set CSS custom property for reduced motion
       document.documentElement.style.setProperty(
         '--slider-motion-preference',
@@ -415,7 +415,7 @@ export class KeyboardNavigator {
    */
   private handleFocus(event: FocusEvent): void {
     this.focusState.previousElement = event.relatedTarget as HTMLElement;
-    
+
     // Announce current state when focused
     this.announceCurrentState();
   }
@@ -445,8 +445,9 @@ export class KeyboardNavigator {
     }
 
     // Check for contenteditable (with safe fallback for test environments)
-    if (element.getAttribute && 
-        element.getAttribute(HTML_ATTRIBUTES.CONTENT_EDITABLE) ===
+    if (
+      element.getAttribute &&
+      element.getAttribute(HTML_ATTRIBUTES.CONTENT_EDITABLE) ===
         HTML_ATTRIBUTES.TRUE
     ) {
       return true;
@@ -505,7 +506,7 @@ export class KeyboardNavigator {
   private togglePlayPause(): void {
     this.callbacks.onTogglePlayPause();
     this.isPlaying = !this.isPlaying;
-    
+
     const action = this.isPlaying ? 'Playing' : 'Paused';
     this.announce(`${action}`, AnnouncementType.STATUS);
   }
@@ -521,14 +522,18 @@ export class KeyboardNavigator {
   /**
    * Announce text to screen readers
    */
-  private announce(text: string, type: AnnouncementType = AnnouncementType.INFO): void {
+  private announce(
+    text: string,
+    type: AnnouncementType = AnnouncementType.INFO
+  ): void {
     if (!this.config.enableAnnouncements || !this.liveRegion) return;
 
     // Clear previous announcement
     this.liveRegion.textContent = '';
 
     // Add type prefix for context
-    const prefixedText = type === AnnouncementType.INFO ? text : `${type}: ${text}`;
+    const prefixedText =
+      type === AnnouncementType.INFO ? text : `${type}: ${text}`;
 
     // Use setTimeout to ensure the clearing is processed first
     setTimeout(() => {
@@ -575,8 +580,14 @@ export class KeyboardNavigator {
    */
   setCurrentSlide(index: number): void {
     this.currentSlide = Math.max(0, Math.min(index, this.totalSlides - 1));
-    this.element.setAttribute('aria-valuenow', (this.currentSlide + 1).toString());
-    this.element.setAttribute('aria-valuetext', this.getCurrentSlideAnnouncement());
+    this.element.setAttribute(
+      'aria-valuenow',
+      (this.currentSlide + 1).toString()
+    );
+    this.element.setAttribute(
+      'aria-valuetext',
+      this.getCurrentSlideAnnouncement()
+    );
   }
 
   /**
@@ -641,7 +652,9 @@ export class KeyboardNavigator {
     }
 
     // Clean up instructions
-    const instructions = document.getElementById('slider-keyboard-instructions');
+    const instructions = document.getElementById(
+      'slider-keyboard-instructions'
+    );
     if (instructions) {
       instructions.remove();
     }
@@ -649,4 +662,4 @@ export class KeyboardNavigator {
     // Clear custom bindings
     this.config.customBindings.clear();
   }
-} 
+}

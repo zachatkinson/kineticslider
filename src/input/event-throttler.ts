@@ -59,7 +59,7 @@ export interface ThrottleMetrics {
  * @example
  * ```typescript
  * const throttler = new EventThrottler();
- * 
+ *
  * element.addEventListener('pointermove', (e) => {
  *   throttler.throttle('pointermove', e, (events) => {
  *     // Process batched events for smooth 60fps handling
@@ -97,7 +97,7 @@ export class EventThrottler {
 
   /**
    * Throttle an event with intelligent batching
-   * 
+   *
    * @param eventType - Type of event for grouping
    * @param event - Event to throttle
    * @param handler - Function to call with batched events
@@ -108,7 +108,7 @@ export class EventThrottler {
     handler: (events: Event[]) => void
   ): void {
     this.updateMetrics(eventType);
-    
+
     // Store handler for this event type
     this.handlerCallbacks.set(eventType, handler);
 
@@ -116,7 +116,7 @@ export class EventThrottler {
     if (!this.eventQueue.has(eventType)) {
       this.eventQueue.set(eventType, []);
     }
-    
+
     const queue = this.eventQueue.get(eventType)!;
     queue.push(event);
 
@@ -136,10 +136,11 @@ export class EventThrottler {
     handler: (events: PointerEvent[]) => void
   ): void {
     // Use coalesced events if available for maximum precision
-    const events = 'getCoalescedEvents' in event && 
+    const events =
+      'getCoalescedEvents' in event &&
       typeof event.getCoalescedEvents === 'function'
-      ? event.getCoalescedEvents()
-      : [event];
+        ? event.getCoalescedEvents()
+        : [event];
 
     this.throttle('pointermove', event, () => {
       handler(events as PointerEvent[]);
@@ -216,7 +217,7 @@ export class EventThrottler {
     if (!this.config.enableMetrics) return;
 
     this.metrics.totalEvents++;
-    
+
     // Count as throttled if we have pending events
     const hasQueuedEvents = this.eventQueue.get(eventType)?.length || 0;
     if (hasQueuedEvents > 0) {
@@ -224,9 +225,10 @@ export class EventThrottler {
     }
 
     // Update performance score based on throttling efficiency
-    const throttleRatio = this.metrics.throttledEvents / this.metrics.totalEvents;
+    const throttleRatio =
+      this.metrics.throttledEvents / this.metrics.totalEvents;
     this.metrics.performanceScore = Math.max(0.1, 1 - throttleRatio * 0.5);
-    
+
     this.metrics.lastUpdate = performance.now();
   }
 
@@ -238,9 +240,8 @@ export class EventThrottler {
 
     // Update rolling average batch size
     const currentAverage = this.metrics.averageBatchSize;
-    this.metrics.averageBatchSize = currentAverage === 0 
-      ? batchSize 
-      : (currentAverage * 0.9) + (batchSize * 0.1);
+    this.metrics.averageBatchSize =
+      currentAverage === 0 ? batchSize : currentAverage * 0.9 + batchSize * 0.1;
   }
 
   /**
@@ -277,7 +278,7 @@ export class EventThrottler {
     if (eventType) {
       return this.eventQueue.get(eventType)?.length || 0;
     }
-    
+
     // Return total queue size across all event types
     let totalSize = 0;
     for (const queue of this.eventQueue.values()) {
@@ -298,7 +299,7 @@ export class EventThrottler {
       }
       this.rafId = null;
     }
-    
+
     this.dispatchBatchedEvents();
   }
 
@@ -318,4 +319,4 @@ export class EventThrottler {
   updateConfig(newConfig: Partial<ThrottleConfig>): void {
     this.config = { ...this.config, ...newConfig };
   }
-} 
+}

@@ -81,10 +81,23 @@ test.describe('Physics E2E Tests', () => {
 
       await page.mouse.up();
 
-      // Wait for physics calculations to complete
-      await page.waitForTimeout(100);
+      // Wait for physics calculations to complete with robust polling
+      await page.waitForFunction(
+        () => {
+          // Multiple indicators of physics completion
+          const noLoadingIndicator = !document.querySelector('[data-physics-loading="true"]');
+          const noActiveAnimations = !document.querySelector('[data-animating="true"]');
+          const systemReady = document.readyState === 'complete';
+          
+          return noLoadingIndicator && noActiveAnimations && systemReady;
+        },
+        {
+          timeout: 5000, // 5 second timeout (generous for Firefox)
+          polling: 100,  // Check every 100ms
+        }
+      );
 
-      // Verify physics workflow completed
+      // Verify physics workflow completed (this should now always pass)
       const hasCompleted = await page.evaluate(() => {
         return !document.querySelector('[data-physics-loading="true"]');
       });
@@ -108,8 +121,15 @@ test.describe('Physics E2E Tests', () => {
       await page.mouse.move(bounds!.x + 300, bounds!.y + 50, { steps: 3 });
       await page.mouse.up();
 
-      // Wait for gesture recognition
-      await page.waitForTimeout(200);
+      // Wait for gesture recognition with robust polling
+      await page.waitForFunction(
+        () => {
+          const noGestureError = !document.querySelector('[data-gesture-error="true"]');
+          const noProcessing = !document.querySelector('[data-processing="true"]');
+          return noGestureError && noProcessing;
+        },
+        { timeout: 3000, polling: 50 }
+      );
 
       // Verify gesture was processed
       const gestureProcessed = await page.evaluate(() => {
@@ -136,8 +156,16 @@ test.describe('Physics E2E Tests', () => {
       await page.mouse.move(bounds!.x + 600, bounds!.y + 50, { steps: 10 });
       await page.mouse.up();
 
-      // Wait for spring physics to apply correction
-      await page.waitForTimeout(500);
+      // Wait for spring physics to apply correction with robust polling
+      await page.waitForFunction(
+        () => {
+          const noSpringError = !document.querySelector('[data-spring-error="true"]');
+          const noSpringProcessing = !document.querySelector('[data-spring-processing="true"]');
+          const systemStable = document.readyState === 'complete';
+          return noSpringError && noSpringProcessing && systemStable;
+        },
+        { timeout: 3000, polling: 100 }
+      );
 
       // Verify spring correction was applied
       const springCorrected = await page.evaluate(() => {
@@ -172,8 +200,14 @@ test.describe('Physics E2E Tests', () => {
       await page.mouse.move(bounds!.x + 400, bounds!.y + 50, { steps: 5 });
       await page.mouse.up();
 
-      // Wait for timeline coordination to complete
-      await page.waitForTimeout(1000);
+      // Wait for timeline coordination to complete with robust polling
+      await page.waitForFunction(
+        () => {
+          const data = (window as WindowWithTestData).timelineTestData;
+          return data?.sequenceExecuted && data?.coordinationSuccessful;
+        },
+        { timeout: 5000, polling: 100 }
+      );
 
       const timelineData = await page.evaluate(
         () => (window as WindowWithTestData).timelineTestData
@@ -274,8 +308,9 @@ test.describe('Physics E2E Tests', () => {
     }) => {
       // Check if memory measurement is available
       const memorySupported = await page.evaluate(() => {
-        return !!(performance as Performance & { memory?: { usedJSHeapSize: number } })
-          .memory?.usedJSHeapSize;
+        return !!(
+          performance as Performance & { memory?: { usedJSHeapSize: number } }
+        ).memory?.usedJSHeapSize;
       });
 
       const initialMemory = await page.evaluate(() => {
@@ -340,21 +375,25 @@ test.describe('Physics E2E Tests', () => {
       // Secondary test: Memory measurement (only if supported)
       if (memorySupported && initialMemory > 0 && finalMemory > 0) {
         const memoryIncrease = finalMemory - initialMemory;
-        
+
         // More generous memory threshold to reduce flakiness
         // Also account for browser overhead and other variables
         const maxReasonableIncrease = 50 * 1024 * 1024; // 50MB (increased from 20MB)
-        
+
         if (memoryIncrease > maxReasonableIncrease) {
-          console.warn(`Memory increase ${memoryIncrease / 1024 / 1024}MB exceeds threshold`);
+          console.warn(
+            `Memory increase ${memoryIncrease / 1024 / 1024}MB exceeds threshold`
+          );
           // Don't fail the test, just warn - memory measurement is too variable
         }
-        
+
         // Always pass if system is responsive (primary concern)
         expect(isResponsive).toBe(true);
       } else {
         // If memory measurement not available, just verify responsiveness
-        console.log('Memory measurement not available, testing responsiveness only');
+        console.log(
+          'Memory measurement not available, testing responsiveness only'
+        );
         expect(isResponsive).toBe(true);
       }
     });

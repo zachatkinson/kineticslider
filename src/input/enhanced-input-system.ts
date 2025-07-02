@@ -8,7 +8,7 @@
  */
 
 export * from './event-throttler';
-export * from './gesture-recognizer'; 
+export * from './gesture-recognizer';
 export * from './keyboard-navigator';
 export * from './index'; // Enhanced SliderController
 
@@ -26,7 +26,7 @@ export * from './index'; // Enhanced SliderController
  * - **Batch Processing**: Intelligent event batching for optimal performance
  * - **Memory Efficient**: Automatic cleanup and resource management
  *
- * ### GestureRecognizer  
+ * ### GestureRecognizer
  * - **Touch/Mouse**: Unified pointer event handling
  * - **Velocity Tracking**: Real-time velocity calculation for momentum
  * - **Gesture Detection**: Swipe, drag, tap, and pinch recognition
@@ -36,11 +36,11 @@ export * from './index'; // Enhanced SliderController
  * - **Screen Reader**: Live region announcements
  * - **Keyboard Navigation**: Arrow keys, shortcuts, focus management
  *
- * ### Enhanced SliderController  
+ * ### Enhanced SliderController
  *    - Integrates all enhanced input components seamlessly
  *    - Leverages GSAP physics for natural feedback:
  *      * KineticPhysics for momentum calculations
- *      * SpringPhysics for boundary interactions  
+ *      * SpringPhysics for boundary interactions
  *      * VelocityTracker for gesture recognition
  *      * GSAPTimelineFactory for smooth animations
  *
@@ -70,9 +70,9 @@ export * from './index'; // Enhanced SliderController
  * - Provides keyboard accessibility
  * - Integrates with GSAP timelines
  * - Maintains 60fps performance under load
- * 
+ *
  * ## Performance Characteristics
- * 
+ *
  * - **Event Processing**: <16ms per frame (60fps)
  * - **Memory Usage**: <2MB for all components
  * - **Gesture Recognition**: <5ms latency
@@ -104,4 +104,4 @@ export type {
   VelocitySample,
   VelocityConfig,
   VelocityResult,
-} from '../physics/velocity-tracker'; 
+} from '../physics/velocity-tracker';

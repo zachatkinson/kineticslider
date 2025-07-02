@@ -155,11 +155,11 @@ export interface ISliderEngine {
   goToSlide(index: number, animated?: boolean): Promise<void>;
   nextSlide(): Promise<void>;
   previousSlide(): Promise<void>;
-  
+
   // Playback Control
   togglePlayPause(): void;
   isPlaying(): boolean;
-  
+
   // Accessibility
   handleEscape(): void;
 

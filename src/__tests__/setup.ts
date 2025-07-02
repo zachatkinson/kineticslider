@@ -122,20 +122,23 @@ beforeAll(() => {
   });
 
   // Mock document.createElement for test elements
-  vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => ({
-    tagName: tagName.toUpperCase(),
-    textContent: '',
-    style: {},
-    setAttribute: vi.fn(),
-    getAttribute: vi.fn(),
-    hasAttribute: vi.fn(() => false),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    remove: vi.fn(),
-    focus: vi.fn(),
-    blur: vi.fn(),
-    parentNode: {
-      removeChild: vi.fn()
-    },
-  } as unknown as HTMLElement));
+  vi.spyOn(document, 'createElement').mockImplementation(
+    (tagName: string) =>
+      ({
+        tagName: tagName.toUpperCase(),
+        textContent: '',
+        style: {},
+        setAttribute: vi.fn(),
+        getAttribute: vi.fn(),
+        hasAttribute: vi.fn(() => false),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        remove: vi.fn(),
+        focus: vi.fn(),
+        blur: vi.fn(),
+        parentNode: {
+          removeChild: vi.fn(),
+        },
+      }) as unknown as HTMLElement
+  );
 });

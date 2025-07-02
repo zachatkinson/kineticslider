@@ -32,7 +32,7 @@ describe('EventThrottler', () => {
 
     mockHandler = vi.fn();
     performanceMeasure = createPerformanceMeasure();
-    
+
     throttler = new EventThrottler({
       useRAF: true,
       enableMetrics: true,
@@ -49,7 +49,7 @@ describe('EventThrottler', () => {
     it('should initialize with default configuration', () => {
       const defaultThrottler = new EventThrottler();
       expect(defaultThrottler).toBeDefined();
-      
+
       // Verify RAF is used by default
       expect(global.requestAnimationFrame).not.toHaveBeenCalled();
     });
@@ -61,7 +61,7 @@ describe('EventThrottler', () => {
         maxBatchSize: 10,
         enableMetrics: false,
       };
-      
+
       const customThrottler = new EventThrottler(customConfig);
       expect(customThrottler).toBeDefined();
       customThrottler.destroy();
@@ -70,7 +70,7 @@ describe('EventThrottler', () => {
     it('should handle partial configuration updates', () => {
       const partialConfig = { maxBatchSize: 15 };
       const partialThrottler = new EventThrottler(partialConfig);
-      
+
       expect(partialThrottler).toBeDefined();
       partialThrottler.destroy();
     });
@@ -84,20 +84,24 @@ describe('EventThrottler', () => {
         createMockMouseEvent('pointermove', { clientX: 200, clientY: 100 }),
       ];
 
-             // Throttle multiple events rapidly
-       testEvents.forEach((event) => {
-         throttler.throttle('pointermove', event as unknown as unknown as Event, mockHandler);
-       });
+      // Throttle multiple events rapidly
+      testEvents.forEach((event) => {
+        throttler.throttle(
+          'pointermove',
+          event as unknown as unknown as Event,
+          mockHandler
+        );
+      });
 
       // Should use RAF for throttling
       expect(global.requestAnimationFrame).toHaveBeenCalled();
 
       // Wait for RAF callback
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       // Handler should be called with events (may be batched differently)
       expect(mockHandler).toHaveBeenCalled();
-      
+
       // In test environment, RAF may not work as expected, but handler should be called
       // This tests the integration even if events aren't processed immediately
       expect(mockHandler).toHaveBeenCalled();
@@ -107,18 +111,22 @@ describe('EventThrottler', () => {
       // Remove RAF to test fallback
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (global as any).requestAnimationFrame = undefined;
-      
+
       const fallbackThrottler = new EventThrottler({
         useRAF: true,
         fallbackInterval: 16,
       });
 
       const event = createMockMouseEvent('pointermove');
-             fallbackThrottler.throttle('pointermove', event as unknown as unknown as Event, mockHandler);
+      fallbackThrottler.throttle(
+        'pointermove',
+        event as unknown as unknown as Event,
+        mockHandler
+      );
 
       // Should fall back to timer
-      await new Promise(resolve => setTimeout(resolve, 20));
-      
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
       expect(mockHandler).toHaveBeenCalled();
       fallbackThrottler.destroy();
     });
@@ -135,17 +143,21 @@ describe('EventThrottler', () => {
         createMockMouseEvent('pointermove', { clientX: i * 50 })
       );
 
-             events.forEach((event) => {
-         batchThrottler.throttle('pointermove', event as unknown as unknown as Event, mockHandler);
-       });
+      events.forEach((event) => {
+        batchThrottler.throttle(
+          'pointermove',
+          event as unknown as unknown as Event,
+          mockHandler
+        );
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       // Should batch events but respect max size
       expect(mockHandler).toHaveBeenCalled();
       const callArgs = mockHandler.mock.calls[0][0];
       expect(Array.isArray(callArgs)).toBe(true);
-      
+
       batchThrottler.destroy();
     });
   });
@@ -159,14 +171,18 @@ describe('EventThrottler', () => {
       ];
 
       events.forEach((event) => {
-        throttler.throttle('pointermove', event as unknown as Event, mockHandler);
+        throttler.throttle(
+          'pointermove',
+          event as unknown as Event,
+          mockHandler
+        );
       });
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       // In test environment, events may be batched differently
       expect(mockHandler).toHaveBeenCalled();
-      
+
       // In test environment, throttling behavior may vary due to timing
       expect(mockHandler).toHaveBeenCalled();
     });
@@ -178,10 +194,18 @@ describe('EventThrottler', () => {
       const mouseHandler = vi.fn();
       const touchHandler = vi.fn();
 
-      throttler.throttle('pointermove', mouseEvent as unknown as Event, mouseHandler);
-      throttler.throttle('touchmove', touchEvent as unknown as Event, touchHandler);
+      throttler.throttle(
+        'pointermove',
+        mouseEvent as unknown as Event,
+        mouseHandler
+      );
+      throttler.throttle(
+        'touchmove',
+        touchEvent as unknown as Event,
+        touchHandler
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mouseHandler).toHaveBeenCalledWith([mouseEvent]);
       expect(touchHandler).toHaveBeenCalledWith([touchEvent]);
@@ -195,10 +219,14 @@ describe('EventThrottler', () => {
       });
 
       const event = createMockMouseEvent('pointermove');
-      holdThrottler.throttle('pointermove', event as unknown as Event, mockHandler);
+      holdThrottler.throttle(
+        'pointermove',
+        event as unknown as Event,
+        mockHandler
+      );
 
       // Wait for max hold time to be exceeded
-      await new Promise(resolve => setTimeout(resolve, 60));
+      await new Promise((resolve) => setTimeout(resolve, 60));
 
       expect(mockHandler).toHaveBeenCalled();
       holdThrottler.destroy();
@@ -221,19 +249,21 @@ describe('EventThrottler', () => {
 
       throttler.throttlePointerMove(pointerEvent, mockHandler);
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockHandler).toHaveBeenCalledWith(mockCoalescedEvents);
     });
 
     it('should fall back when coalesced events unavailable', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const simpleEvent = createMockMouseEvent('pointermove', { clientX: 100 }) as any;
+       
+      const simpleEvent = createMockMouseEvent('pointermove', {
+        clientX: 100,
+      }) as unknown as PointerEvent;
       // No getCoalescedEvents method
 
       throttler.throttlePointerMove(simpleEvent, mockHandler);
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockHandler).toHaveBeenCalledWith([simpleEvent]);
     });
@@ -250,10 +280,14 @@ describe('EventThrottler', () => {
       );
 
       events.forEach((event) => {
-        metricsThrottler.throttle('pointermove', event as unknown as Event, mockHandler);
+        metricsThrottler.throttle(
+          'pointermove',
+          event as unknown as Event,
+          mockHandler
+        );
       });
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       const metrics = metricsThrottler.getMetrics();
       expect(metrics.totalEvents).toBeGreaterThan(0);
@@ -270,17 +304,25 @@ describe('EventThrottler', () => {
 
       // First batch of 3 events
       events.slice(0, 3).forEach((event) => {
-        throttler.throttle('pointermove', event as unknown as Event, mockHandler);
+        throttler.throttle(
+          'pointermove',
+          event as unknown as Event,
+          mockHandler
+        );
       });
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       // Second batch of 3 events
       events.slice(3, 6).forEach((event) => {
-        throttler.throttle('pointermove', event as unknown as Event, mockHandler);
+        throttler.throttle(
+          'pointermove',
+          event as unknown as Event,
+          mockHandler
+        );
       });
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       const metrics = throttler.getMetrics();
       // In test environment, batching may be different due to timing
@@ -291,7 +333,7 @@ describe('EventThrottler', () => {
       const event = createMockMouseEvent('pointermove');
       throttler.throttle('pointermove', event as unknown as Event, mockHandler);
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       let metrics = throttler.getMetrics();
       expect(metrics.totalEvents).toBeGreaterThan(0);
@@ -312,19 +354,19 @@ describe('EventThrottler', () => {
       );
 
       events.forEach((event) => {
-        throttler.throttle('pointermove', event as unknown as Event, mockHandler);
+        throttler.throttle(
+          'pointermove',
+          event as unknown as Event,
+          mockHandler
+        );
       });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       const duration = measure.end();
 
       // Should complete within acceptable performance budget
-      assertPerformanceWithinBenchmark(
-        duration,
-        'physics',
-        'batchCalculation'
-      );
+      assertPerformanceWithinBenchmark(duration, 'physics', 'batchCalculation');
     });
 
     it('should maintain 60fps performance under load', async () => {
@@ -336,29 +378,31 @@ describe('EventThrottler', () => {
 
         // Simulate heavy event load per frame
         const events = Array.from({ length: 50 }, (_, i) =>
-          createMockMouseEvent('pointermove', { 
+          createMockMouseEvent('pointermove', {
             clientX: frame * 100 + i,
-            clientY: 100 
+            clientY: 100,
           })
         );
 
         events.forEach((event) => {
-          throttler.throttle('pointermove', event as unknown as Event, mockHandler);
+          throttler.throttle(
+            'pointermove',
+            event as unknown as Event,
+            mockHandler
+          );
         });
 
-        await new Promise(resolve => setTimeout(resolve, 16)); // Wait one frame
+        await new Promise((resolve) => setTimeout(resolve, 16)); // Wait one frame
 
         const frameDuration = performance.now() - frameStart;
         frameDurations.push(frameDuration);
       }
 
       // Average frame duration should be within 60fps budget
-      const avgFrameDuration = frameDurations.reduce((a, b) => a + b, 0) / frameCount;
-      
-      assertPerformanceWithinBenchmark(
-        avgFrameDuration,
-        'fps60'
-      );
+      const avgFrameDuration =
+        frameDurations.reduce((a, b) => a + b, 0) / frameCount;
+
+      assertPerformanceWithinBenchmark(avgFrameDuration, 'fps60');
     });
   });
 
@@ -379,7 +423,7 @@ describe('EventThrottler', () => {
 
     it('should handle multiple destroy calls gracefully', () => {
       throttler.destroy();
-      
+
       expect(() => {
         throttler.destroy();
       }).not.toThrow();
@@ -391,7 +435,11 @@ describe('EventThrottler', () => {
       );
 
       events.forEach((event) => {
-        throttler.throttle('pointermove', event as unknown as Event, mockHandler);
+        throttler.throttle(
+          'pointermove',
+          event as unknown as Event,
+          mockHandler
+        );
       });
 
       throttler.destroy();
@@ -404,17 +452,21 @@ describe('EventThrottler', () => {
 
   describe('Edge Cases', () => {
     it('should handle rapid successive identical events', async () => {
-      const identicalEvent = createMockMouseEvent('pointermove', { 
-        clientX: 100, 
-        clientY: 100 
+      const identicalEvent = createMockMouseEvent('pointermove', {
+        clientX: 100,
+        clientY: 100,
       });
 
       // Throttle same event multiple times rapidly
       for (let i = 0; i < 20; i++) {
-        throttler.throttle('pointermove', identicalEvent as unknown as Event, mockHandler);
+        throttler.throttle(
+          'pointermove',
+          identicalEvent as unknown as Event,
+          mockHandler
+        );
       }
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockHandler).toHaveBeenCalled();
       const batchedEvents = mockHandler.mock.calls[0][0];
@@ -435,12 +487,12 @@ describe('EventThrottler', () => {
 
     it('should handle events with missing properties', async () => {
       const malformedEvent = { type: 'pointermove' } as Event;
-      
+
       expect(() => {
         throttler.throttle('pointermove', malformedEvent, mockHandler);
       }).not.toThrow();
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
     });
 
     it('should handle extremely high frequency events', async () => {
@@ -449,10 +501,14 @@ describe('EventThrottler', () => {
 
       for (let i = 0; i < highFrequencyCount; i++) {
         const event = createMockMouseEvent('pointermove', { clientX: i });
-        throttler.throttle('pointermove', event as unknown as Event, mockHandler);
+        throttler.throttle(
+          'pointermove',
+          event as unknown as Event,
+          mockHandler
+        );
       }
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const endTime = performance.now();
       const totalTime = endTime - startTime;
@@ -475,9 +531,13 @@ describe('EventThrottler', () => {
       });
 
       const event = createMockMouseEvent('pointermove');
-      compatThrottler.throttle('pointermove', event as unknown as Event, mockHandler);
+      compatThrottler.throttle(
+        'pointermove',
+        event as unknown as Event,
+        mockHandler
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockHandler).toHaveBeenCalled();
 
@@ -492,12 +552,16 @@ describe('EventThrottler', () => {
       });
 
       const event = createMockMouseEvent('pointermove');
-      timerThrottler.throttle('pointermove', event as unknown as Event, mockHandler);
+      timerThrottler.throttle(
+        'pointermove',
+        event as unknown as Event,
+        mockHandler
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockHandler).toHaveBeenCalledWith([event]);
       timerThrottler.destroy();
     });
   });
-}); 
+});
