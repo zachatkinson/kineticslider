@@ -255,7 +255,6 @@ describe('EventThrottler', () => {
     });
 
     it('should fall back when coalesced events unavailable', async () => {
-       
       const simpleEvent = createMockMouseEvent('pointermove', {
         clientX: 100,
       }) as unknown as PointerEvent;

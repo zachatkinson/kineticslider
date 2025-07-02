@@ -85,15 +85,19 @@ test.describe('Physics E2E Tests', () => {
       await page.waitForFunction(
         () => {
           // Multiple indicators of physics completion
-          const noLoadingIndicator = !document.querySelector('[data-physics-loading="true"]');
-          const noActiveAnimations = !document.querySelector('[data-animating="true"]');
+          const noLoadingIndicator = !document.querySelector(
+            '[data-physics-loading="true"]'
+          );
+          const noActiveAnimations = !document.querySelector(
+            '[data-animating="true"]'
+          );
           const systemReady = document.readyState === 'complete';
-          
+
           return noLoadingIndicator && noActiveAnimations && systemReady;
         },
         {
           timeout: 5000, // 5 second timeout (generous for Firefox)
-          polling: 100,  // Check every 100ms
+          polling: 100, // Check every 100ms
         }
       );
 
@@ -124,8 +128,12 @@ test.describe('Physics E2E Tests', () => {
       // Wait for gesture recognition with robust polling
       await page.waitForFunction(
         () => {
-          const noGestureError = !document.querySelector('[data-gesture-error="true"]');
-          const noProcessing = !document.querySelector('[data-processing="true"]');
+          const noGestureError = !document.querySelector(
+            '[data-gesture-error="true"]'
+          );
+          const noProcessing = !document.querySelector(
+            '[data-processing="true"]'
+          );
           return noGestureError && noProcessing;
         },
         { timeout: 3000, polling: 50 }
@@ -159,8 +167,12 @@ test.describe('Physics E2E Tests', () => {
       // Wait for spring physics to apply correction with robust polling
       await page.waitForFunction(
         () => {
-          const noSpringError = !document.querySelector('[data-spring-error="true"]');
-          const noSpringProcessing = !document.querySelector('[data-spring-processing="true"]');
+          const noSpringError = !document.querySelector(
+            '[data-spring-error="true"]'
+          );
+          const noSpringProcessing = !document.querySelector(
+            '[data-spring-processing="true"]'
+          );
           const systemStable = document.readyState === 'complete';
           return noSpringError && noSpringProcessing && systemStable;
         },
