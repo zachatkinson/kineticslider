@@ -258,7 +258,7 @@ export class AnimationManager extends SimpleEventEmitter {
             queueItem.config,
             queueItem.context
           );
-          queueItem.resolve(timeline);
+          queueItem.resolve(timeline as gsap.core.Timeline);
         } catch (error) {
           this.handleAnimationError(
             queueItem.id,

@@ -7,16 +7,6 @@
 import { Page } from '@playwright/test';
 import { VIEWPORT, TEST_TIMING, WAIT_STRATEGIES } from '../../core/constants';
 
-declare global {
-  interface Window {
-    kineticSlider?: {
-      engine?: unknown;
-      currentIndex: number;
-      isPlaying: boolean;
-    };
-  }
-}
-
 // Viewport sizes for responsive testing
 export const VIEWPORT_SIZES = {
   mobile: VIEWPORT.MOBILE,
@@ -42,7 +32,8 @@ export async function navigateAndWait(
   // Wait for the real implementation to load
   await page.waitForFunction(
     () => {
-      return window.kineticSlider && window.kineticSlider.engine;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (window as any).kineticSlider && (window as any).kineticSlider.engine;
     },
     { timeout: 10000 }
   );

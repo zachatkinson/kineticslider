@@ -1,5 +1,43 @@
 import { test, expect } from '@playwright/test';
 
+// Proper TypeScript interfaces for E2E testing
+interface AnimationResult {
+  activeAnimations: number;
+  queueLength: number;
+}
+
+interface AnimationMetrics {
+  animations?: { active?: number; total?: number };
+  fps?: { current?: number };
+}
+
+interface AnimationManager {
+  getDefaultDuration?: () => number;
+  getPerformanceStats?: () => Record<string, unknown>;
+}
+
+interface PerformanceMonitor {
+  getMetrics?: () => AnimationMetrics;
+}
+
+interface AnimationQueue {
+  getStats?: () => { totalItems?: number };
+}
+
+interface KineticSliderManagers {
+  animationManager?: AnimationManager;
+  performanceMonitor?: PerformanceMonitor;
+  memoryManager?: Record<string, unknown>;
+  animationQueue?: AnimationQueue;
+}
+
+interface KineticSlider {
+  engine?: unknown;
+  currentIndex: number;
+  isPlaying: boolean;
+  managers?: KineticSliderManagers;
+}
+
 test.describe('Animation Coordination Accessibility E2E', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
@@ -50,7 +88,7 @@ test.describe('Animation Coordination Accessibility E2E', () => {
       await page.click('[data-testid="motion-controlled-animation"]');
 
       const animationResult = await page.evaluate(() => {
-        return new Promise((resolve) => {
+        return new Promise<AnimationResult>((resolve) => {
           setTimeout(() => {
             const managers = window.kineticSlider?.managers;
             resolve({
@@ -204,15 +242,22 @@ test.describe('Animation Coordination Accessibility E2E', () => {
         };
       });
 
-      expect(visibility.isVisible).toBe(true);
-      expect(visibility.opacity).toBeGreaterThan(0.5);
+      if (visibility) {
+        expect(visibility.isVisible).toBe(true);
+        expect(visibility.opacity).toBeGreaterThan(0.5);
+      }
     });
 
     test('should respect color contrast requirements', async ({ page }) => {
       // Get color contrast ratios of animated elements
       const contrastData = await page.evaluate(() => {
         const elements = document.querySelectorAll('[data-animated="true"]');
-        const contrasts = [];
+        const contrasts: Array<{
+          element: string | null;
+          backgroundColor: string;
+          textColor: string;
+          hasGoodContrast: boolean;
+        }> = [];
 
         elements.forEach((element) => {
           const styles = window.getComputedStyle(element);
@@ -275,7 +320,7 @@ test.describe('Animation Coordination Accessibility E2E', () => {
           role: el.getAttribute('role'),
           label: el.getAttribute('aria-label'),
           describedBy: el.getAttribute('aria-describedby'),
-          isVisible: el.offsetWidth > 0 && el.offsetHeight > 0,
+          isVisible: (el as HTMLElement).offsetWidth > 0 && (el as HTMLElement).offsetHeight > 0,
         }));
       });
 
@@ -302,7 +347,7 @@ test.describe('Animation Coordination Accessibility E2E', () => {
       // Verify error message content
       const errorText = await errorMessage.textContent();
       expect(errorText).toMatch(/error|failed|problem/i);
-      expect(errorText.length).toBeGreaterThan(10); // Meaningful message
+      expect(errorText?.length || 0).toBeGreaterThan(10); // Meaningful message
     });
 
     test('should offer recovery options accessibly', async ({ page }) => {
@@ -384,9 +429,9 @@ test.describe('Animation Coordination Accessibility E2E', () => {
         const managers = window.kineticSlider?.managers;
         return {
           animationsTriggered:
-            managers?.performanceMonitor?.getMetrics?.()?.animations?.total > 0,
+            (managers?.performanceMonitor?.getMetrics?.()?.animations?.total || 0) > 0,
           systemResponsive:
-            managers?.performanceMonitor?.getMetrics?.()?.fps?.current > 0,
+            (managers?.performanceMonitor?.getMetrics?.()?.fps?.current || 0) > 0,
         };
       });
 
@@ -399,13 +444,6 @@ test.describe('Animation Coordination Accessibility E2E', () => {
 // Global type extensions for accessibility testing
 declare global {
   interface Window {
-    kineticSlider?: {
-      managers?: {
-        animationManager?: never;
-        performanceMonitor?: never;
-        memoryManager?: never;
-        animationQueue?: never;
-      };
-    };
+    kineticSlider?: KineticSlider;
   }
 }
