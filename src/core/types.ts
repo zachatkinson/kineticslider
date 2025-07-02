@@ -355,6 +355,107 @@ export const SERVICE_KEYS = {
 
 export type ServiceKey = (typeof SERVICE_KEYS)[keyof typeof SERVICE_KEYS];
 
+// =============================================================================
+// 🎬 Phase 2.3 Animation Coordination Types
+// =============================================================================
+
+/**
+ * Animation configuration for the coordination system
+ */
+export interface AnimationConfig {
+  /** Array of animation steps */
+  animations?: Array<{
+    targets: gsap.TweenTarget;
+    properties: Record<string, unknown>;
+    duration?: number;
+    ease?: string;
+    delay?: number;
+  }>;
+  /** Overall animation duration */
+  duration?: number;
+  /** Animation easing function */
+  ease?: string;
+  /** Animation delay */
+  delay?: number;
+  /** Custom properties */
+  [key: string]: unknown;
+}
+
+/**
+ * Animation priority levels for queue management
+ */
+export type AnimationPriority = number;
+
+/**
+ * Animation context for debugging and tracking
+ */
+export interface AnimationContext {
+  /** Context group identifier */
+  groupId?: string;
+  /** Whether this is a grouped animation */
+  isGroup?: boolean;
+  /** Animation source identifier */
+  source?: string;
+  /** Additional context data */
+  data?: unknown;
+}
+
+/**
+ * Timeline group for coordinated animations
+ */
+export interface TimelineGroup {
+  /** Unique group identifier */
+  id: string;
+  /** Master timeline coordinating all child timelines */
+  masterTimeline: gsap.core.Timeline;
+  /** Map of child timelines */
+  childTimelines: Map<string, gsap.core.Timeline>;
+  /** Dependency graph for execution order */
+  dependencies: Map<string, string[]>;
+  /** Set of completed timeline IDs */
+  completedTimelines: Set<string>;
+  /** Whether group should execute sequentially */
+  isSequential: boolean;
+  /** Delay between sequential timelines */
+  staggerDelay: number;
+}
+
+/**
+ * Animation system state for debugging
+ */
+export interface AnimationState {
+  /** Whether queue is currently being processed */
+  isProcessingQueue: boolean;
+  /** List of active animation IDs */
+  activeAnimations: string[];
+  /** List of queued animations with metadata */
+  queuedAnimations: Array<{
+    id: string;
+    priority: AnimationPriority;
+    context: AnimationContext;
+  }>;
+  /** List of active timeline group IDs */
+  timelineGroups: string[];
+  /** Current performance statistics */
+  performanceStats: {
+    activeAnimations: number;
+    queueLength: number;
+    activeTimelines: number;
+    activeTimelineGroups: number;
+    currentAnimationCount: number;
+  };
+}
+
+/**
+ * Animation event data
+ */
+export interface AnimationEventData {
+  /** Animation identifier */
+  id: string;
+  /** Event-specific data */
+  data?: unknown;
+}
+
 // YAGNI: Removed unused interfaces for Phase 2+ features:
 // - FilterConfig (filters not implemented yet)
 // - DisplacementConfig (displacement effects not implemented yet)

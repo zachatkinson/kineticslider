@@ -31,6 +31,10 @@ export {
   INTENSITY,
   ANIMATION_PRESETS,
   GSAP_DEFAULTS,
+  ANIMATION_PRIORITIES,
+  ANIMATION_EVENTS,
+  PERFORMANCE_THRESHOLDS,
+  ANIMATION_ERROR_CODES,
 } from './constants';
 
 // =============================================================================

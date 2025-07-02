@@ -9,6 +9,14 @@ yarn.lock
 dist/
 build/
 lib/
+*.js.map
+*.d.ts.map
+
+# Misplaced build artifacts (should go to dist/)
+public/*.js
+public/*.js.map
+public/*.css.map
+public/*.d.ts
 
 # Coverage reports
 coverage/
@@ -21,16 +29,42 @@ playwright-report/
 .last-run.json
 *.backup
 *.bak
+*.temp
+*.tmp
+
+# Temporary documentation and planning files
+*.temp.md
+*_FIX.md
+*_PLAN.md
+*_TODO.md
+*_NOTES.md
+TEMP_*.md
+TODO_*.md
 
 # IDE and editor files
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
 .DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 .env
 .env.local
 .env.*.local
+
+# Additional backup patterns
+*.orig
+*.copy
+*.old
+package.json.*
+pnpm-lock.yaml.*
+tsconfig.*.backup
+*.config.backup
 
 # Logs
 logs/

@@ -1319,3 +1319,391 @@ export const assertVelocityTrackingValid = (tracker: TestVelocityTracker) => {
   expect(typeof tracker.getVelocity).toBe('function');
   expect(typeof tracker.reset).toBe('function');
 };
+
+// =============================================================================
+// ✨ Phase 2.3: Animation Coordination Test Factories
+// =============================================================================
+
+/**
+ * Create mock AnimationManager for testing coordination
+ */
+export const createMockAnimationManager = () => ({
+  queueAnimation: vi.fn().mockResolvedValue(createMockGSAPTimeline()),
+  executeImmediate: vi.fn().mockResolvedValue(createMockGSAPTimeline()),
+  createTimelineGroup: vi.fn().mockResolvedValue(createMockGSAPTimeline()),
+  getPerformanceStats: vi.fn(() => ({
+    activeAnimations: 2,
+    completedAnimations: 15,
+    failedAnimations: 0,
+    averageExecutionTime: 150,
+    peakMemoryUsage: 50 * 1024 * 1024,
+    currentAnimationCount: 2,
+    queueLength: 3,
+    activeTimelineGroups: 1,
+    activeTimelines: 2,
+  })),
+  getAnimationState: vi.fn(() => ({
+    isProcessingQueue: true,
+    activeAnimations: ['anim-1', 'anim-2'],
+    queuedAnimations: [
+      { id: 'anim-3', priority: 800, context: {} },
+      { id: 'anim-4', priority: 500, context: {} },
+    ],
+    timelineGroups: ['group-1'],
+    performanceStats: {},
+  })),
+  dispose: vi.fn(),
+  on: vi.fn(),
+  off: vi.fn(),
+  emit: vi.fn(),
+  removeAllListeners: vi.fn(),
+});
+
+/**
+ * Create mock PerformanceMonitor for testing performance tracking
+ */
+export const createMockPerformanceMonitor = () => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  getMetrics: vi.fn(() => ({
+    fps: { current: 58, average: 56, min: 45, max: 60 },
+    memory: {
+      used: 45 * 1024 * 1024,
+      total: 100 * 1024 * 1024,
+      percentage: 45,
+      peak: 50 * 1024 * 1024,
+    },
+    animations: {
+      active: 3,
+      completed: 25,
+      failed: 1,
+      averageExecutionTime: 180,
+    },
+    system: { cpuUsage: 25, loadTime: 1200, responseTime: 50 },
+  })),
+  getHistory: vi.fn(() => []),
+  recordAnimationStart: vi.fn(),
+  recordAnimationComplete: vi.fn(),
+  recordAnimationFailed: vi.fn(),
+  getPerformanceGrade: vi.fn(() => 'A'),
+  dispose: vi.fn(),
+  on: vi.fn(),
+  off: vi.fn(),
+  emit: vi.fn(),
+  removeAllListeners: vi.fn(),
+});
+
+/**
+ * Create mock MemoryManager for testing resource management
+ */
+export const createMockMemoryManager = () => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  trackResource: vi.fn(),
+  addReference: vi.fn(),
+  removeReference: vi.fn(),
+  cleanupResource: vi.fn().mockReturnValue(true),
+  forceCleanup: vi.fn().mockReturnValue(5),
+  getMemoryStats: vi.fn(() => ({
+    totalResources: 15,
+    activeResources: 12,
+    estimatedMemoryUsage: 25 * 1024 * 1024,
+    byType: {
+      timeline: { count: 5, memory: 10 * 1024 * 1024 },
+      tween: { count: 3, memory: 5 * 1024 * 1024 },
+      sprite: { count: 4, memory: 8 * 1024 * 1024 },
+      texture: { count: 2, memory: 2 * 1024 * 1024 },
+      filter: { count: 1, memory: 1024 * 1024 },
+    },
+    cleanup: {
+      totalCleaned: 8,
+      memoryReclaimed: 15 * 1024 * 1024,
+      lastCleanupAt: Date.now() - 30000,
+    },
+  })),
+  getResourceInfo: vi.fn(),
+  getAllResources: vi.fn(() => []),
+  detectMemoryLeaks: vi.fn(() => []),
+  configure: vi.fn(),
+  dispose: vi.fn(),
+  on: vi.fn(),
+  off: vi.fn(),
+  emit: vi.fn(),
+  removeAllListeners: vi.fn(),
+});
+
+/**
+ * Create mock AnimationQueue for testing priority scheduling
+ */
+export const createMockAnimationQueue = () => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  enqueue: vi.fn().mockResolvedValue({ animationId: 'test', completed: true }),
+  dequeue: vi.fn().mockReturnValue(true),
+  clear: vi.fn(),
+  getStats: vi.fn(() => ({
+    totalItems: 8,
+    byPriority: {
+      critical: 1,
+      high: 2,
+      normal: 3,
+      low: 2,
+      minimal: 0,
+    },
+    processing: {
+      currentlyProcessing: 2,
+      processed: 45,
+      failed: 3,
+      retried: 8,
+    },
+    timing: {
+      averageWaitTime: 120,
+      averageExecutionTime: 250,
+      totalWaitTime: 5400,
+      totalExecutionTime: 11250,
+    },
+  })),
+  getQueueState: vi.fn(() => ({
+    queueLength: 6,
+    processingCount: 2,
+    nextItems: [],
+  })),
+  configure: vi.fn(),
+  dispose: vi.fn(),
+  on: vi.fn(),
+  off: vi.fn(),
+  emit: vi.fn(),
+  removeAllListeners: vi.fn(),
+});
+
+/**
+ * Create test animation configurations for Phase 2.3 testing
+ */
+export const createTestAnimationConfigs = () => ({
+  simple: {
+    duration: ANIMATION_DURATION.STANDARD,
+    ease: EASING.EASE_OUT,
+    animations: [
+      {
+        targets: '.test-sprite',
+        properties: { x: 100, alpha: 1 },
+        duration: ANIMATION_DURATION.STANDARD,
+        ease: EASING.EASE_OUT,
+      },
+    ],
+  },
+  complex: {
+    duration: ANIMATION_DURATION.SLOW,
+    ease: EASING.ELASTIC,
+    animations: [
+      {
+        targets: '.test-sprite-1',
+        properties: { x: 200, y: 100, scale: 1.2, rotation: 45 },
+        duration: ANIMATION_DURATION.MEDIUM,
+        ease: EASING.BACK,
+      },
+      {
+        targets: '.test-sprite-2',
+        properties: { alpha: 0, scale: 0.8 },
+        duration: ANIMATION_DURATION.FAST,
+        ease: EASING.EASE_IN,
+        delay: 0.1,
+      },
+    ],
+  },
+  grouped: {
+    duration: ANIMATION_DURATION.EXTENDED,
+    ease: EASING.EASE_IN_OUT,
+    animations: [
+      {
+        targets: '.group-1',
+        properties: { x: 300 },
+        duration: ANIMATION_DURATION.STANDARD,
+      },
+      {
+        targets: '.group-2',
+        properties: { y: 200 },
+        duration: ANIMATION_DURATION.MEDIUM,
+        delay: 0.2,
+      },
+    ],
+  },
+});
+
+/**
+ * Create test resource information for memory management testing
+ */
+export const createTestResourceInfo = (
+  id: string = 'test-resource',
+  type: 'timeline' | 'tween' | 'sprite' | 'texture' | 'filter' = 'timeline'
+) => ({
+  id,
+  type,
+  createdAt: Date.now() - 5000,
+  lastAccessed: Date.now() - 1000,
+  refCount: 1,
+  memorySize: 1024 * 1024, // 1MB
+  isActive: true,
+  metadata: {
+    [type]: type === 'timeline' ? createMockGSAPTimeline() : { mock: true },
+  },
+});
+
+/**
+ * Create test performance metrics for performance monitoring
+ */
+export const createTestPerformanceMetrics = () => ({
+  fps: {
+    current: 58,
+    average: 56,
+    min: 45,
+    max: 60,
+  },
+  memory: {
+    used: 45 * 1024 * 1024,
+    total: 100 * 1024 * 1024,
+    percentage: 45,
+    peak: 50 * 1024 * 1024,
+  },
+  animations: {
+    active: 3,
+    completed: 25,
+    failed: 1,
+    averageExecutionTime: 180,
+  },
+  system: {
+    cpuUsage: 25,
+    loadTime: 1200,
+    responseTime: 50,
+  },
+});
+
+/**
+ * Create test queue items for animation queue testing
+ */
+export const createTestQueueItem = (
+  id: string = 'test-item',
+  priority: number = 500
+) => ({
+  id,
+  config: createTestAnimationConfigs().simple,
+  priority,
+  context: { source: 'test', groupId: 'test-group' },
+  createdAt: Date.now() - 1000,
+  estimatedDuration: 300,
+  retryCount: 0,
+  maxRetries: 3,
+  resolve: vi.fn(),
+  reject: vi.fn(),
+});
+
+/**
+ * Test helper for animation coordination workflow
+ */
+export const testAnimationCoordination = async (
+  managers: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
+    animationManager: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
+    performanceMonitor: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
+    memoryManager: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
+    animationQueue: any;
+  },
+  scenario: {
+    animationId: string;
+    priority: number;
+    expectSuccess: boolean;
+  }
+) => {
+  const { performanceMonitor, memoryManager, animationQueue } = managers;
+  const { animationId, priority, expectSuccess } = scenario;
+
+  try {
+    // Start monitoring
+    performanceMonitor.start();
+    memoryManager.start();
+    animationQueue.start();
+
+    // Queue animation
+    const animationPromise = animationQueue.enqueue(
+      animationId,
+      createTestAnimationConfigs().simple,
+      priority
+    );
+
+    // Track performance
+    performanceMonitor.recordAnimationStart();
+
+    // Execute animation
+    const result = await animationPromise;
+
+    // Verify results
+    if (expectSuccess) {
+      expect(result).toBeDefined();
+      performanceMonitor.recordAnimationComplete(250);
+    }
+
+    return { success: true, result };
+  } catch (error) {
+    if (!expectSuccess) {
+      performanceMonitor.recordAnimationFailed();
+      return { success: false, error };
+    }
+    throw error;
+  }
+};
+
+/**
+ * Test helper for memory management validation
+ */
+export const testMemoryManagement = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
+  memoryManager: any,
+  resources: Array<{ id: string; type: string; size: number }>
+) => {
+  // Track resources
+  resources.forEach((resource) => {
+    memoryManager.trackResource({
+      id: resource.id,
+      type: resource.type,
+      memorySize: resource.size,
+      isActive: true,
+    });
+  });
+
+  // Verify tracking
+  const stats = memoryManager.getMemoryStats();
+  expect(stats.totalResources).toBe(resources.length);
+  expect(stats.estimatedMemoryUsage).toBeGreaterThan(0);
+
+  // Test cleanup
+  const cleanedCount = memoryManager.forceCleanup();
+  expect(cleanedCount).toBeGreaterThanOrEqual(0);
+
+  return { stats, cleanedCount };
+};
+
+/**
+ * Test helper for performance monitoring validation
+ */
+export const testPerformanceMonitoring = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
+  performanceMonitor: any,
+  _duration: number = 1000
+) => {
+  performanceMonitor.start();
+
+  // Simulate performance data
+  performanceMonitor.recordAnimationStart();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  performanceMonitor.recordAnimationComplete(250);
+
+  const metrics = performanceMonitor.getMetrics();
+  const grade = performanceMonitor.getPerformanceGrade();
+
+  performanceMonitor.stop();
+
+  return { metrics, grade };
+};

@@ -45,10 +45,10 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:8080',
+    baseURL: process.env.CI ? 'http://localhost:4173' : 'https://localhost:3003',
     
     /* Ignore HTTPS errors for local development */
-    ignoreHTTPSErrors: false,
+    ignoreHTTPSErrors: true,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -99,12 +99,13 @@ export default defineConfig({
   globalTeardown: './src/__tests__/e2e/global-teardown.ts',
 
   /* Run your local dev server before starting the tests */
-  webServer: process.env.CI
-    ? undefined
-    : {
-        command: 'npm run build && npx serve public -l 8080',
-        port: 8080,
-        reuseExistingServer: !process.env.CI,
-        timeout: 60 * 1000, // Allow time for build
-      },
+  // Note: Start dev server manually with `pnpm run dev` before running E2E tests
+  // webServer: process.env.CI
+  //   ? undefined
+  //   : {
+  //       command: 'pnpm run dev',
+  //       port: 3003, // Actual port where dev server runs
+  //       reuseExistingServer: !process.env.CI,
+  //       timeout: 120 * 1000, // Allow time for dev server startup
+  //     },
 });

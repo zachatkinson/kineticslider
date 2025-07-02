@@ -964,3 +964,97 @@ export function validateConstants(): boolean {
     throw new Error(ERROR_MESSAGES.CONSTANTS_VALIDATION_FAILED(error));
   }
 }
+
+// =============================================================================
+// 🎯 Phase 2.3 Animation Coordination Constants
+// =============================================================================
+
+/** Animation priority levels for queue management */
+export const ANIMATION_PRIORITIES = {
+  /** Critical system animations (highest priority) */
+  CRITICAL: 1000,
+  /** High priority user interactions */
+  HIGH: 800,
+  /** Standard priority animations */
+  NORMAL: 500,
+  /** Low priority background animations */
+  LOW: 300,
+  /** Lowest priority decorative animations */
+  MINIMAL: 100,
+};
+
+/** Animation event names for the event system */
+export const ANIMATION_EVENTS = {
+  /** Animation queued for execution */
+  ANIMATION_QUEUED: 'animation:queued',
+  /** Animation started executing */
+  ANIMATION_STARTED: 'animation:started',
+  /** Animation completed successfully */
+  ANIMATION_COMPLETED: 'animation:completed',
+  /** Animation encountered an error */
+  ANIMATION_ERROR: 'animation:error',
+  /** Animation was cancelled */
+  ANIMATION_CANCELLED: 'animation:cancelled',
+  /** Timeline group created */
+  GROUP_CREATED: 'group:created',
+  /** Timeline group completed */
+  GROUP_COMPLETED: 'group:completed',
+  /** Timeline group paused */
+  GROUP_PAUSED: 'group:paused',
+  /** Timeline group resumed */
+  GROUP_RESUMED: 'group:resumed',
+  /** Timeline group killed */
+  GROUP_KILLED: 'group:killed',
+  /** Timeline group cleaned up */
+  GROUP_CLEANED: 'group:cleaned',
+  /** Timeline group completed (specific timeline completion) */
+  TIMELINE_GROUP_COMPLETED: 'timeline:group:completed',
+  /** All animations paused */
+  ALL_PAUSED: 'all:paused',
+  /** All animations resumed */
+  ALL_RESUMED: 'all:resumed',
+  /** All animations killed */
+  ALL_KILLED: 'all:killed',
+  /** Animation executed immediately */
+  ANIMATION_EXECUTED: 'animation:executed',
+} as const;
+
+/** Performance thresholds for the animation system */
+export const PERFORMANCE_THRESHOLDS = {
+  /** Maximum concurrent animations for performance */
+  MAX_CONCURRENT_ANIMATIONS: 10,
+  /** Maximum queue size before warnings */
+  MAX_QUEUE_SIZE: 50,
+  /** Memory usage warning threshold (bytes) */
+  MEMORY_WARNING_THRESHOLD: 100 * 1024 * 1024, // 100MB
+  /** Memory usage critical threshold (bytes) */
+  MEMORY_CRITICAL_THRESHOLD: 200 * 1024 * 1024, // 200MB
+  /** Animation execution time warning (ms) */
+  EXECUTION_TIME_WARNING: 1000,
+  /** Animation execution time critical (ms) */
+  EXECUTION_TIME_CRITICAL: 2000,
+  /** Frame rate minimum threshold */
+  MIN_FPS: 30,
+  /** Frame rate target threshold */
+  TARGET_FPS: 60,
+} as const;
+
+/** Error codes specific to animation coordination system */
+export const ANIMATION_ERROR_CODES = {
+  /** Invalid animation configuration */
+  INVALID_ANIMATION_CONFIG: 'ANIM_INVALID_CONFIG',
+  /** Resource limit exceeded */
+  RESOURCE_LIMIT_EXCEEDED: 'ANIM_RESOURCE_LIMIT',
+  /** Timeline creation failed */
+  TIMELINE_CREATION_FAILED: 'ANIM_TIMELINE_FAILED',
+  /** Animation execution failed */
+  EXECUTION_FAILED: 'ANIM_EXECUTION_FAILED',
+  /** Group coordination failed */
+  GROUP_COORDINATION_FAILED: 'ANIM_GROUP_FAILED',
+  /** Memory limit exceeded */
+  MEMORY_LIMIT_EXCEEDED: 'ANIM_MEMORY_LIMIT',
+  /** Performance degradation detected */
+  PERFORMANCE_DEGRADED: 'ANIM_PERFORMANCE_DEGRADED',
+  /** Queue overflow */
+  QUEUE_OVERFLOW: 'ANIM_QUEUE_OVERFLOW',
+} as const;
