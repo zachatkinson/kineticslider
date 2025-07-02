@@ -67,7 +67,13 @@ export function initializeSliderServices(): void {
 
   // Register physics engine factory
   serviceContainer.register(SERVICE_KEYS.PHYSICS, () => {
-    return new SliderPhysics();
+    // Minimal config for factory registration - actual config provided during usage
+    return new SliderPhysics({
+      slideCount: 1,
+      slideWidth: 800,
+      container: document.createElement('div'), // Temporary container
+      sprites: [],
+    });
   });
 
   // Register renderer factory

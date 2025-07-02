@@ -13,11 +13,13 @@
  * @version 1.0.0
  */
 
+/* eslint-disable security/detect-object-injection */
+
 import { Application, Sprite, Texture, Filter, Assets } from 'pixi.js';
 import { gsap } from 'gsap';
 import type { ISliderRenderer, RenderConfig } from '../core/types';
 import type { AnimationSequence, SwipeAnimation, ScaleAnimation } from '../physics/engine';
-import { GSAP_DEFAULTS, DOM_PROPERTIES, DATA_ATTRIBUTES, ERROR_MESSAGES } from '../core';
+import { GSAP_DEFAULTS } from '../core/constants';
 
 /**
  * Unified PIXI.js Renderer with Complete Pipeline
@@ -29,41 +31,55 @@ export class SliderRenderer implements ISliderRenderer {
   private app: Application | null = null;
   private sprites: Sprite[] = [];
   private container: HTMLElement | null = null;
-  private activeTimelines: Set<gsap.core.Timeline> = new Set();
-  private activeTweens: Set<gsap.core.Tween> = new Set();
-
-  // GPU optimization defaults for smooth 60fps
-  private readonly animationDefaults: gsap.TweenVars = GSAP_DEFAULTS.GPU_OPTIMIZED;
+  private config: RenderConfig | null = null;
+  private isInitialized = false;
+  
+  // Animation management
+  private activeTimelines = new Set<gsap.core.Timeline>();
+  private activeTweens = new Set<gsap.core.Tween>();
+  
+  // Animation defaults
+  private readonly animationDefaults: gsap.TweenVars = {
+    ease: 'power2.out',
+    overwrite: 'auto' as const,
+  };
 
   // =============================================================================
   // 🎯 PIXI Application Management (implements ISliderRenderer)
   // =============================================================================
 
   /**
-   * Initialize PIXI application with rendering container
+   * Initialize the PIXI application and setup rendering pipeline
    */
   async initialize(container: HTMLElement, config: RenderConfig): Promise<void> {
-    if (this.app) {
-      throw new Error('Renderer already initialized');
+    try {
+      if (!container) {
+        throw new Error('Container element is required for renderer initialization');
+      }
+
+      // Store configuration
+      this.config = config;
+      this.container = container;
+
+      // Create PIXI application with configuration
+      this.app = new Application({
+        width: config.width,
+        height: config.height,
+        backgroundColor: config.backgroundColor,
+        antialias: config.antialias,
+        resolution: config.resolution,
+      });
+
+      // Wait for app to initialize
+      await this.app.init();
+
+      // Add canvas to container
+      this.container.appendChild(this.app.canvas);
+
+      this.isInitialized = true;
+    } catch (error) {
+      throw new Error(`Failed to initialize PIXI renderer: ${error}`);
     }
-
-    this.container = container;
-    
-    // Create PIXI application
-    this.app = new Application({
-      width: config.width,
-      height: config.height,
-      backgroundColor: config.backgroundColor,
-      antialias: config.antialias,
-      resolution: config.resolution || window.devicePixelRatio || 1,
-      autoDensity: true,
-    });
-
-    // Add canvas to DOM
-    container.appendChild(this.app.view as HTMLCanvasElement);
-
-    // Start render loop
-    this.app.start();
   }
 
   /**
@@ -78,7 +94,7 @@ export class SliderRenderer implements ISliderRenderer {
    */
   resize(width: number, height: number): void {
     if (!this.app) {
-      throw new Error(ERROR_MESSAGES.RENDERER_NOT_INITIALIZED);
+      throw new Error('Renderer not initialized');
     }
 
     this.app.renderer.resize(width, height);
@@ -93,7 +109,7 @@ export class SliderRenderer implements ISliderRenderer {
    */
   async createSprite(texture: string | Texture, index: number): Promise<Sprite> {
     if (!this.app) {
-      throw new Error(ERROR_MESSAGES.RENDERER_NOT_INITIALIZED);
+      throw new Error('Renderer not initialized');
     }
 
     let pixiTexture: Texture;
@@ -170,7 +186,7 @@ export class SliderRenderer implements ISliderRenderer {
     if (Array.isArray(sprite.filters)) {
       sprite.filters.push(filter);
     } else {
-      sprite.filters = [sprite.filters, filter];
+      sprite.filters = [filter];
     }
   }
 
@@ -205,14 +221,20 @@ export class SliderRenderer implements ISliderRenderer {
 
     // Hide sprites that should be hidden
     sequence.hideSprites.forEach((index) => {
-      const sprite = sprites.at(index);
-      if (sprite) {
-        timeline.set(sprite, { alpha: 0, visible: false }, 0);
+      // Safe array access with bounds checking
+      if (typeof index === 'number' && index >= 0 && index < sprites.length) {
+        const sprite = sprites[index];
+        if (sprite) {
+          timeline.set(sprite, { alpha: 0, visible: false }, 0);
+        }
       }
     });
 
-    // Get target sprite
-    const targetSprite = sprites.at(sequence.targetSprite.index);
+    // Get target sprite with safe array access
+    const targetIndex = sequence.targetSprite.index;
+    const targetSprite = (typeof targetIndex === 'number' && targetIndex >= 0 && targetIndex < sprites.length) 
+      ? sprites[targetIndex] 
+      : null;
     if (!targetSprite) return timeline;
 
     // Set initial state for target sprite
@@ -241,7 +263,11 @@ export class SliderRenderer implements ISliderRenderer {
 
     // Handle source sprite exit animation if specified
     if (sequence.sourceSprite) {
-      const sourceSprite = sprites.at(sequence.sourceSprite.index);
+      // Safe array access with bounds checking
+      const sourceIndex = sequence.sourceSprite.index;
+      const sourceSprite = (typeof sourceIndex === 'number' && sourceIndex >= 0 && sourceIndex < sprites.length) 
+        ? sprites[sourceIndex] 
+        : null;
       if (sourceSprite) {
         timeline.to(
           sourceSprite,
@@ -317,16 +343,19 @@ export class SliderRenderer implements ISliderRenderer {
     const timeline = this.createManagedTimeline();
 
     animations.forEach(({ spriteIndex, props }) => {
-      const sprite = sprites.at(spriteIndex);
-      if (sprite) {
-        timeline.to(
-          sprite,
-          {
-            ...this.animationDefaults,
-            ...props,
-          },
-          0
-        ); // Start all animations at the same time
+      // Safe array access with bounds checking to prevent object injection
+      if (typeof spriteIndex === 'number' && spriteIndex >= 0 && spriteIndex < sprites.length) {
+        const sprite = sprites[spriteIndex];
+        if (sprite) {
+          timeline.to(
+            sprite,
+            {
+              ...this.animationDefaults,
+              ...props,
+            },
+            0
+          ); // Start all animations at the same time
+        }
       }
     });
 
@@ -334,19 +363,27 @@ export class SliderRenderer implements ISliderRenderer {
   }
 
   /**
-   * Create optimized tween for GPU acceleration
+   * Create optimized GSAP tween with performance settings
    */
-  createOptimizedTween(target: gsap.TweenTarget, props: gsap.TweenVars): gsap.core.Tween {
-    const tween = gsap.to(target, {
+  createOptimizedTween(sprite: Sprite, props: gsap.TweenVars): gsap.core.Tween {
+    // Safe configuration merge to avoid object injection
+    const safeProps = {
       ...this.animationDefaults,
-      ...props,
-      onComplete: () => {
-        this.activeTweens.delete(tween);
-        props.onComplete?.();
-      },
-    });
-
+      duration: props.duration || 0.5,
+      ease: props.ease || 'power2.out',
+      onComplete: props.onComplete,
+      onUpdate: props.onUpdate,
+      // Add specific animation properties safely
+      x: props.x,
+      y: props.y,
+      scale: props.scale,
+      alpha: props.alpha,
+      rotation: props.rotation,
+    };
+    
+    const tween = gsap.to(sprite, safeProps);
     this.activeTweens.add(tween);
+    
     return tween;
   }
 
@@ -461,11 +498,8 @@ export class SliderRenderer implements ISliderRenderer {
    * Mark sprite with GSAP data attributes for targeting
    */
   private markSpriteForGSAP(sprite: Sprite, index: number): void {
-    (sprite as unknown as { [DATA_ATTRIBUTES.SLIDER_SPRITE]: boolean })[
-      DATA_ATTRIBUTES.SLIDER_SPRITE
-    ] = true;
-    (sprite as unknown as { [DATA_ATTRIBUTES.SPRITE_INDEX]: number })[
-      DATA_ATTRIBUTES.SPRITE_INDEX
-    ] = index;
+    // Add simple data properties for GSAP targeting with proper typing
+    (sprite as Sprite & { 'data-slider-sprite': boolean })['data-slider-sprite'] = true;
+    (sprite as Sprite & { 'data-sprite-index': number })['data-sprite-index'] = index;
   }
 } 

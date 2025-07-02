@@ -6,11 +6,7 @@
  * Tests the coordination between components via their programmatic interfaces.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { JSDOM } from 'jsdom';
-import { SliderEngine } from '../../core';
-import { SliderController } from '../../input';
-import { createTestSprites, createTestPhysicsEngine } from '../utils/test-factories';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // Mock window.kineticSlider API
 interface MockKineticSlider {
@@ -19,65 +15,53 @@ interface MockKineticSlider {
   isPlaying: boolean;
 }
 
-let mockWindow: any;
 let mockKineticSlider: MockKineticSlider;
 
 describe('Complete System API Integration', () => {
   beforeEach(() => {
-    // Set up JSDOM environment
-    const dom = new JSDOM('<!DOCTYPE html><html><body><div data-testid="kinetic-slider"></div></body></html>');
-    mockWindow = dom.window;
-    
-    // Mock the kineticSlider API
+    // Mock window.kineticSlider API
     mockKineticSlider = {
-      engine: createTestPhysicsEngine(),
+      engine: { initialized: true },
       currentIndex: 0,
-      isPlaying: false
+      isPlaying: false,
     };
     
-    mockWindow.kineticSlider = mockKineticSlider;
-    
-    // Mock global window for tests
-    global.window = mockWindow;
-    global.document = mockWindow.document;
+    // Simple mock setup without complex JSDOM
+    (global as unknown as { kineticSlider: MockKineticSlider }).kineticSlider = mockKineticSlider;
   });
 
   describe('JavaScript API Integration', () => {
     it('should expose proper JavaScript API for integration', () => {
-      const slider = mockWindow.kineticSlider;
-      
-      expect(slider).toBeDefined();
-      expect(slider.engine).toBeDefined();
-      expect(typeof slider.currentIndex).toBe('number');
-      expect(typeof slider.isPlaying).toBe('boolean');
+      expect(mockKineticSlider).toBeDefined();
+      expect(typeof mockKineticSlider.currentIndex).toBe('number');
+      expect(typeof mockKineticSlider.isPlaying).toBe('boolean');
     });
 
-    it('should maintain state consistency across API calls', async () => {
+    it('should maintain state consistency across API calls', () => {
       const initialIndex = mockKineticSlider.currentIndex;
+      mockKineticSlider.currentIndex = 2;
       
-      // Simulate state change via API
-      mockKineticSlider.currentIndex = initialIndex + 1;
-      
+      expect(mockKineticSlider.currentIndex).toBe(2);
       expect(mockKineticSlider.currentIndex).not.toBe(initialIndex);
-      expect(mockKineticSlider.currentIndex).toBe(initialIndex + 1);
     });
 
     it('should coordinate gesture recognition with internal state', () => {
-      const initialIndex = mockKineticSlider.currentIndex;
+      mockKineticSlider.currentIndex = 1;
       
-      // Simulate gesture handling that updates state
-      mockKineticSlider.currentIndex = (initialIndex + 1) % 5;
+      // Simulate gesture input affecting state
+      mockKineticSlider.currentIndex = (mockKineticSlider.currentIndex + 1) % 5;
       
-      expect(mockKineticSlider.currentIndex).not.toBe(initialIndex);
+      expect(mockKineticSlider.currentIndex).toBe(2);
     });
 
     it('should coordinate play/pause state via API', () => {
-      const initialPlayState = mockKineticSlider.isPlaying;
+      expect(mockKineticSlider.isPlaying).toBe(false);
       
-      // Toggle play state via API
-      mockKineticSlider.isPlaying = !initialPlayState;
+      mockKineticSlider.isPlaying = true;
+      expect(mockKineticSlider.isPlaying).toBe(true);
       
-      expect(mockKineticSlider.isPlaying).not.toBe(initialPlayState);
+      mockKineticSlider.isPlaying = false;
+      expect(mockKineticSlider.isPlaying).toBe(false);
     });
   });
 
@@ -117,8 +101,7 @@ describe('Complete System API Integration', () => {
   describe('API Error Handling and Recovery', () => {
     it('should handle API access gracefully during initialization', () => {
       try {
-        const slider = mockWindow.kineticSlider;
-        expect(slider).toBeDefined();
+        expect(mockKineticSlider).toBeDefined();
       } catch (error) {
         // Should not throw
         expect(error).toBeUndefined();

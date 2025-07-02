@@ -194,7 +194,7 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
         },
       };
 
-      const mockSprite = { x: 0, scale: { x: 1, y: 1 } } as any;
+      const mockSprite = { x: 0, scale: { x: 1, y: 1 } } as unknown as import('pixi.js').Sprite;
       expect(() => renderer.applySwipe(mockSprite, mockSwipe)).not.toThrow();
     });
 
@@ -205,7 +205,7 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
         ease: 'power2.out',
       };
 
-      const mockSprite = { scale: { x: 1, y: 1 } } as any;
+      const mockSprite = { scale: { x: 1, y: 1 } } as unknown as import('pixi.js').Sprite;
       expect(() => renderer.applyScale(mockSprite, mockScale)).not.toThrow();
     });
   });
@@ -249,7 +249,7 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
 
     it('should handle missing container gracefully', async () => {
       // Should throw an error for null container (proper error handling)
-      await expect(renderer.initialize(null as any, DEFAULT_TEST_RENDER_CONFIG)).rejects.toThrow();
+      await expect(renderer.initialize(null as unknown as HTMLElement, DEFAULT_TEST_RENDER_CONFIG)).rejects.toThrow();
     });
   });
 });

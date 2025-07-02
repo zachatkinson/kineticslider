@@ -11,7 +11,6 @@ import { vi, expect } from 'vitest';
 import { Sprite, Texture } from 'pixi.js';
 import { SliderPhysicsEngine } from '../../physics/engine';
 import { SliderRenderer } from '../../rendering';
-import { PixiSliderRenderer } from '../../physics/renderer';
 import { serviceContainer } from '../../core/container';
 import { SimpleEventEmitter } from '../../core/event-emitter';
 import type { PhysicsConfig } from '../../core/types';

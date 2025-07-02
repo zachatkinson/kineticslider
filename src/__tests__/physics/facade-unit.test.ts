@@ -10,39 +10,52 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SliderPhysics } from '../../physics';
 import { SliderPhysicsEngine } from '../../physics/engine';
 import { SliderRenderer } from '../../rendering';
-import type { PhysicsConfig } from '../../core/types';
 import type { Sprite } from 'pixi.js';
 import {
   createTestSprites,
   createTestPhysicsEngine,
   createTestRenderer,
-  TEST_PHYSICS_CONFIGS,
   TEST_INTENSITIES,
   TEST_DIRECTIONS,
 } from '../utils/test-factories';
-import {
-  ANIMATION_DURATION,
-  DEFAULT_PHYSICS_CONFIG,
-  TEST_CONFIG,
-} from '../../core/constants';
+
+// Test constants
+const DEFAULT_PHYSICS_CONFIG = {
+  transitionDuration: 1.0,
+  swipeThreshold: 50,
+  scaleIntensity: 0.1,
+  dampingFactor: 0.8,
+  transitionEase: 'power2.out',
+  momentumDamping: 0.95,
+};
+
+const ANIMATION_DURATION = {
+  STANDARD: 1.0,
+  FAST: 0.3,
+};
+
+const testConfig = {
+  slideCount: 3,
+  slideWidth: 400,
+  container: document.createElement('div'),
+};
 
 describe('SliderPhysics Facade Unit Tests', () => {
-  let physics: SliderPhysics;
+  let facade: SliderPhysics;
   let mockEngine: SliderPhysicsEngine;
   let mockRenderer: SliderRenderer;
-  let sprites: Sprite[];
-  let testConfig: any;
+  let mockSprites: Sprite[];
 
   beforeEach(() => {
     // Create test sprites
-    sprites = createTestSprites(3);
+    mockSprites = createTestSprites(3);
     
     // Create test configuration
-    testConfig = {
+    const testConfig = {
       slideCount: 3,
       slideWidth: 400,
       container: document.createElement('div'),
-      sprites,
+      sprites: mockSprites,
     };
 
     // Create mocked dependencies for unit testing
@@ -55,7 +68,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
         index: 1,
         initialState: { visible: true, alpha: 0, scale: 1.1 },
         finalState: { alpha: 1, scale: 1 },
-        duration: TEST_CONFIG.DURATION?.STANDARD ?? ANIMATION_DURATION.STANDARD,
+        duration: ANIMATION_DURATION.STANDARD,
         ease: 'power2.out',
       },
     });
@@ -68,7 +81,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
       springPhase: {
         movement: -42.5,
         scale: 1,
-        duration: TEST_CONFIG.DURATION?.STANDARD ?? ANIMATION_DURATION.STANDARD,
+        duration: ANIMATION_DURATION.STANDARD,
         ease: 'elastic.out',
       },
     });
@@ -102,12 +115,12 @@ describe('SliderPhysics Facade Unit Tests', () => {
     vi.spyOn(mockRenderer, 'applyBatchAnimations').mockReturnValue(mockTimeline as never);
 
     // Create facade with dependency injection (unit test style)
-    physics = new SliderPhysics(testConfig, mockEngine, mockRenderer);
+    facade = new SliderPhysics(testConfig, mockEngine, mockRenderer);
   });
 
   afterEach(() => {
     try {
-      physics.destroy();
+      facade.destroy();
     } catch {
       // Ignore cleanup errors in tests
     }
@@ -116,7 +129,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
   describe('Facade API and Delegation', () => {
     it('should delegate getPhysicsConfig to engine', () => {
-      const config = physics.getPhysicsConfig();
+      const config = facade.getPhysicsConfig();
 
       expect(mockEngine.getConfig).toHaveBeenCalled();
       expect(config).toEqual(DEFAULT_PHYSICS_CONFIG);
@@ -128,13 +141,13 @@ describe('SliderPhysics Facade Unit Tests', () => {
         swipeThreshold: 60,
       };
 
-      physics.setPhysicsConfig(newConfig);
+      facade.setPhysicsConfig(newConfig);
 
       expect(mockEngine.setConfig).toHaveBeenCalledWith(newConfig);
     });
 
     it('should delegate performance stats to renderer', () => {
-      const stats = physics.getPerformanceStats();
+      const stats = facade.getPerformanceStats();
 
       expect(mockRenderer.getPerformanceStats).toHaveBeenCalled();
       expect(stats).toEqual({
@@ -145,13 +158,13 @@ describe('SliderPhysics Facade Unit Tests', () => {
     });
 
     it('should delegate cleanup to renderer', () => {
-      physics.cleanup();
+      facade.cleanup();
 
       expect(mockRenderer.cleanup).toHaveBeenCalled();
     });
 
     it('should delegate killAllAnimations to renderer', () => {
-      physics.killAllAnimations();
+      facade.killAllAnimations();
 
       expect(mockRenderer.killAllAnimations).toHaveBeenCalled();
     });
@@ -159,14 +172,14 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
   describe('Animation Coordination Logic', () => {
     it('should coordinate transition animation between engine and renderer', () => {
-      const timeline = physics.animateTransition(0, 1, sprites);
+      const timeline = facade.animateTransition(0, 1, mockSprites);
 
       // Should delegate calculation to engine
       expect(mockEngine.calculateTransition).toHaveBeenCalledWith(0, 1, 3);
 
       // Should delegate rendering to renderer with engine result
       expect(mockRenderer.applyTransition).toHaveBeenCalledWith(
-        sprites,
+        mockSprites,
         expect.objectContaining({
           hideSprites: [0, 2],
           targetSprite: expect.objectContaining({
@@ -179,8 +192,8 @@ describe('SliderPhysics Facade Unit Tests', () => {
     });
 
     it('should coordinate swipe animation between engine and renderer', () => {
-      const sprite = sprites[0];
-      const timeline = physics.animateSwipe(sprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
+      const sprite = mockSprites[0];
+      const timeline = facade.animateSwipe(sprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
 
       // Should delegate calculation to engine
       expect(mockEngine.calculateSwipe).toHaveBeenCalledWith(
@@ -203,8 +216,8 @@ describe('SliderPhysics Facade Unit Tests', () => {
     });
 
     it('should coordinate scale animation between engine and renderer', () => {
-      const sprite = sprites[0];
-      const timeline = physics.animateScale(sprite, 1.5);
+      const sprite = mockSprites[0];
+      const timeline = facade.animateScale(sprite, 1.5);
 
       // Should delegate calculation to engine
       expect(mockEngine.calculateScale).toHaveBeenCalledWith(
@@ -227,16 +240,16 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
   describe('Sprite Management Logic', () => {
     it('should manage sprite array and delegate to renderer', () => {
-      physics.markSpritesForGSAP(sprites);
+      facade.markSpritesForGSAP(mockSprites);
 
-      expect(mockRenderer.markSpritesForGSAP).toHaveBeenCalledWith(sprites);
+      expect(mockRenderer.markSpritesForGSAP).toHaveBeenCalledWith(mockSprites);
     });
 
     it('should handle sprite addition for swipe animations', () => {
       const newSprite = createTestSprites(1)[0];
       
       // Should handle sprite not in managed array
-      const timeline = physics.animateSwipe(newSprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
+      const timeline = facade.animateSwipe(newSprite, TEST_DIRECTIONS.right, TEST_INTENSITIES.medium);
       
       expect(timeline).toBeDefined();
       expect(mockRenderer.markSpritesForGSAP).toHaveBeenCalled();
@@ -248,30 +261,30 @@ describe('SliderPhysics Facade Unit Tests', () => {
         { spriteIndex: 1, props: { scale: 1.2 } },
       ];
 
-      const timeline = physics.applyBatchAnimations(sprites, animations);
+      const timeline = facade.applyBatchAnimations(mockSprites, animations);
 
-      expect(mockRenderer.applyBatchAnimations).toHaveBeenCalledWith(sprites, animations);
+      expect(mockRenderer.applyBatchAnimations).toHaveBeenCalledWith(mockSprites, animations);
       expect(timeline).toBeDefined();
     });
   });
 
   describe('Advanced Delegation Methods', () => {
     it('should delegate shouldTriggerSlideChange to kinetic physics', () => {
-      const result = physics.shouldTriggerSlideChange(100, 0.5);
+      const result = facade.shouldTriggerSlideChange(100, 0.5);
 
       // This uses kinetics, not engine, but facade should handle the delegation
       expect(result).toBe(true);
     });
 
     it('should delegate calculateAdaptiveTiming to engine', () => {
-      const result = physics.calculateAdaptiveTiming(500, 0.8);
+      const result = facade.calculateAdaptiveTiming(500, 0.8);
 
       expect(mockEngine.calculateAdaptiveTiming).toHaveBeenCalledWith(500, 0.8);
       expect(result).toBe(0.8);
     });
 
     it('should handle momentum calculations through kinetic physics', () => {
-      const momentum = physics.calculateMomentum(10, 100, 200);
+      const momentum = facade.calculateMomentum(10, 100, 200);
       
       // Should return a momentum result
       expect(momentum).toBeDefined();
@@ -279,7 +292,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
     });
 
     it('should handle spring calculations through spring physics', () => {
-      const spring = physics.calculateSpring(50, 0, 5);
+      const spring = facade.calculateSpring(50, 0, 5);
       
       // Should return a spring result  
       expect(spring).toBeDefined();
@@ -289,9 +302,9 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
   describe('Facade State Management', () => {
     it('should initialize with proper dependencies', () => {
-      expect(physics).toBeDefined();
-      expect(physics.getPhysicsConfig).toBeDefined();
-      expect(physics.animateTransition).toBeDefined();
+      expect(facade).toBeDefined();
+      expect(facade.getPhysicsConfig).toBeDefined();
+      expect(facade.animateTransition).toBeDefined();
     });
 
     it('should handle configuration correctly during injection', () => {
@@ -311,7 +324,7 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
     it('should handle sprite management correctly', () => {
       const newSprites = createTestSprites(5);
-      physics.setSprites(newSprites);
+      facade.setSprites(newSprites);
       
       // Should delegate marking to renderer
       expect(mockRenderer.markSpritesForGSAP).toHaveBeenCalledWith(newSprites);
@@ -320,8 +333,8 @@ describe('SliderPhysics Facade Unit Tests', () => {
 
   describe('Error Handling and Edge Cases', () => {
     it('should handle edge cases in transition animation', () => {
-      const timeline1 = physics.animateTransition(-1, 10, sprites);
-      const timeline2 = physics.animateTransition(0, 0, []);
+      const timeline1 = facade.animateTransition(-1, 10, mockSprites);
+      const timeline2 = facade.animateTransition(0, 0, []);
       
       expect(timeline1).toBeDefined();
       expect(timeline2).toBeDefined();
@@ -329,9 +342,9 @@ describe('SliderPhysics Facade Unit Tests', () => {
     });
 
     it('should handle edge cases in swipe animation', () => {
-      const sprite = sprites[0];
-      const timeline1 = physics.animateSwipe(sprite, 999, TEST_INTENSITIES.zero);
-      const timeline2 = physics.animateSwipe(sprite, TEST_DIRECTIONS.left, -5);
+      const sprite = mockSprites[0];
+      const timeline1 = facade.animateSwipe(sprite, 999, TEST_INTENSITIES.zero);
+      const timeline2 = facade.animateSwipe(sprite, TEST_DIRECTIONS.left, -5);
       
       expect(timeline1).toBeDefined();
       expect(timeline2).toBeDefined();
@@ -339,8 +352,8 @@ describe('SliderPhysics Facade Unit Tests', () => {
     });
 
     it('should handle multiple cleanup calls gracefully', () => {
-      physics.cleanup();
-      physics.cleanup();
+      facade.cleanup();
+      facade.cleanup();
       
       expect(mockRenderer.cleanup).toHaveBeenCalledTimes(2);
     });
