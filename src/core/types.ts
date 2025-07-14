@@ -356,6 +356,296 @@ export const SERVICE_KEYS = {
 export type ServiceKey = (typeof SERVICE_KEYS)[keyof typeof SERVICE_KEYS];
 
 // =============================================================================
+// 🎯 PIXI.js Integration Types
+// =============================================================================
+
+/**
+ * Configuration for PIXI.js application initialization
+ */
+export interface PixiConfig {
+  /** Maximum initialization time in milliseconds */
+  maxInitTime?: number;
+  /** Enable development mode features */
+  developmentMode?: boolean;
+  /** Shader cache configuration */
+  shaderCache?: {
+    enabled: boolean;
+    maxSize: number;
+  };
+  /** Texture pool configuration */
+  texturePool?: {
+    initialSize: number;
+    maxSize: number;
+  };
+}
+
+/**
+ * Texture loading and caching configuration
+ */
+export interface TextureConfig {
+  /** Supported image formats */
+  supportedFormats: readonly string[];
+  /** Default quality setting */
+  quality: number;
+  /** Cache size for preloaded textures */
+  cacheSize: number;
+  /** Lazy loading threshold */
+  lazyLoadThreshold: number;
+  /** Loading timeout in milliseconds */
+  loadTimeout: number;
+  /** Maximum retry attempts */
+  maxRetries: number;
+  /** Retry delay configuration */
+  retryDelay: {
+    base: number;
+    multiplier: number;
+  };
+}
+
+/**
+ * Resource loading progress information
+ */
+export interface LoadingProgress {
+  /** Current number of loaded resources */
+  loaded: number;
+  /** Total number of resources to load */
+  total: number;
+  /** Loading progress as percentage (0-100) */
+  percentage: number;
+  /** Currently loading resource URL */
+  currentResource?: string;
+  /** Estimated time remaining in milliseconds */
+  estimatedTimeRemaining?: number;
+}
+
+/**
+ * Resource management configuration
+ */
+export interface ResourceConfig {
+  /** Cleanup interval in milliseconds */
+  cleanupInterval: number;
+  /** Idle timeout before cleanup */
+  idleTimeout: number;
+  /** Memory pressure threshold (0-1) */
+  memoryPressureThreshold: number;
+  /** Critical memory threshold (0-1) */
+  criticalMemoryThreshold: number;
+  /** Enable reference tracking */
+  trackReferences: boolean;
+  /** Enable automatic cleanup */
+  autoCleanup: boolean;
+}
+
+/**
+ * Sprite pool configuration
+ */
+export interface SpritePoolConfig {
+  /** Initial pool size */
+  initialSize: number;
+  /** Maximum pool size */
+  maxSize: number;
+  /** Growth factor for pool expansion */
+  growthFactor: number;
+  /** Shrink threshold for pool reduction */
+  shrinkThreshold: number;
+  /** Properties to reset when returning sprite to pool */
+  resetProperties: readonly string[];
+}
+
+/**
+ * Shader management configuration
+ */
+export interface ShaderConfig {
+  /** Compilation timeout in milliseconds */
+  compileTimeout: number;
+  /** Cache expiration time */
+  cacheExpiry: number;
+  /** Maximum number of cached shaders */
+  maxCached: number;
+  /** Maximum recompilation attempts */
+  maxRecompiles: number;
+  /** Enable shader debugging */
+  enableDebugging?: boolean;
+}
+
+/**
+ * Performance monitoring metrics
+ */
+export interface PerformanceMetrics {
+  /** Frames per second statistics */
+  fps: {
+    current: number;
+    average: number;
+    min: number;
+    max: number;
+  };
+  /** Memory usage statistics */
+  memory: {
+    used: number;
+    total: number;
+    percentage: number;
+    peak: number;
+  };
+  /** Rendering statistics */
+  rendering: {
+    drawCalls: number;
+    triangles: number;
+    textures: number;
+    shaders: number;
+  };
+  /** Loading statistics */
+  loading: {
+    totalAssets: number;
+    loadedAssets: number;
+    failedAssets: number;
+    averageLoadTime: number;
+  };
+}
+
+/**
+ * Resource information for tracking and management
+ */
+export interface ResourceInfo {
+  /** Unique resource identifier */
+  id: string;
+  /** Resource type */
+  type: 'texture' | 'sprite' | 'shader' | 'filter' | 'audio';
+  /** Resource URL or source */
+  source: string;
+  /** Memory size in bytes */
+  memorySize: number;
+  /** Creation timestamp */
+  createdAt: number;
+  /** Last accessed timestamp */
+  lastAccessed: number;
+  /** Reference count */
+  refCount: number;
+  /** Whether resource is actively used */
+  isActive: boolean;
+  /** Additional metadata */
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Core PixiRenderer interface for clean PIXI.js application management
+ */
+export interface IPixiRenderer {
+  /** Initialize PIXI application */
+  initialize(container: HTMLElement, config?: PixiConfig): Promise<void>;
+  /** Create sprite from texture */
+  createSlide(texture: string | Texture): Promise<Sprite>;
+  /** Update viewport dimensions */
+  updateViewport(width: number, height: number): void;
+  /** Get current performance metrics */
+  getPerformanceMetrics(): PerformanceMetrics;
+  /** Dispose of renderer and cleanup resources */
+  dispose(): void;
+}
+
+/**
+ * TextureManager interface for efficient texture loading and caching
+ */
+export interface ITextureManager {
+  /** Load single texture with progress tracking */
+  loadTexture(url: string, priority?: number): Promise<Texture>;
+  /** Load multiple textures with progress */
+  loadTextures(
+    urls: string[],
+    onProgress?: (progress: LoadingProgress) => void
+  ): Promise<Texture[]>;
+  /** Preload textures for future use */
+  preloadTextures(urls: string[]): Promise<void>;
+  /** Get cached texture */
+  getCachedTexture(url: string): Texture | null;
+  /** Clear texture cache */
+  clearCache(): void;
+  /** Get memory usage statistics */
+  getMemoryUsage(): { used: number; cached: number; total: number };
+  /** Dispose of texture manager */
+  dispose(): void;
+}
+
+/**
+ * ResourceLoader interface for progressive loading with error handling
+ */
+export interface IResourceLoader {
+  /** Load resources with progress tracking */
+  loadResources(
+    resources: Array<{ url: string; type: string }>,
+    onProgress?: (progress: LoadingProgress) => void
+  ): Promise<Map<string, unknown>>;
+  /** Load single resource with retry logic */
+  loadResource(url: string, type: string): Promise<unknown>;
+  /** Cancel ongoing loading operations */
+  cancelLoading(): void;
+  /** Get loading statistics */
+  getLoadingStats(): { pending: number; completed: number; failed: number };
+  /** Dispose of resource loader */
+  dispose(): void;
+}
+
+/**
+ * SpritePool interface for object pooling and performance optimization
+ */
+export interface ISpritePool {
+  /** Get sprite from pool (creates new if pool is empty) */
+  getSprite(texture?: Texture): Sprite;
+  /** Return sprite to pool for reuse */
+  returnSprite(sprite: Sprite): void;
+  /** Clear all sprites from pool */
+  clear(): void;
+  /** Get pool statistics */
+  getStats(): { available: number; inUse: number; total: number };
+  /** Resize pool capacity */
+  resize(newSize: number): void;
+  /** Dispose of sprite pool */
+  dispose(): void;
+}
+
+/**
+ * ShaderManager interface for optimized shader compilation and reuse
+ */
+export interface IShaderManager {
+  /** Compile and cache shader */
+  compileShader(
+    vertexSrc: string,
+    fragmentSrc: string,
+    name?: string
+  ): Promise<unknown>;
+  /** Get cached shader */
+  getShader(name: string): unknown | null;
+  /** Clear shader cache */
+  clearCache(): void;
+  /** Get compilation statistics */
+  getStats(): { cached: number; compiled: number; failed: number };
+  /** Dispose of shader manager */
+  dispose(): void;
+}
+
+/**
+ * Performance monitoring interface for FPS and memory tracking
+ */
+export interface IPerformanceMonitor {
+  /** Start performance monitoring */
+  start(): void;
+  /** Stop performance monitoring */
+  stop(): void;
+  /** Get current performance metrics */
+  getMetrics(): PerformanceMetrics;
+  /** Get performance history */
+  getHistory(duration?: number): PerformanceMetrics[];
+  /** Reset performance counters */
+  reset(): void;
+  /** Set performance warning thresholds */
+  setThresholds(
+    warning: Partial<PerformanceMetrics>,
+    critical: Partial<PerformanceMetrics>
+  ): void;
+  /** Dispose of performance monitor */
+  dispose(): void;
+}
+
+// =============================================================================
 // 🎬 Phase 2.3 Animation Coordination Types
 // =============================================================================
 

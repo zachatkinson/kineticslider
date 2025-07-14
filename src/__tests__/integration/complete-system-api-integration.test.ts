@@ -2,7 +2,7 @@
  * @fileoverview Complete System API Integration Tests
  *
  * Integration tests for JavaScript API interactions and internal state management.
- * These were moved from E2E tests since they test JavaScript APIs rather than user workflows.
+ * These are integration tests for JavaScript APIs rather than user workflows.
  * Tests the coordination between components via their programmatic interfaces.
  */
 

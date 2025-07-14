@@ -4,7 +4,7 @@
  * Playwright-specific utilities that don't conflict with Vitest imports
  */
 
-import { Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { VIEWPORT, TEST_TIMING, WAIT_STRATEGIES } from '../../core/constants';
 
 // Viewport sizes for responsive testing
@@ -32,8 +32,10 @@ export async function navigateAndWait(
   // Wait for the real implementation to load
   await page.waitForFunction(
     () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (window as any).kineticSlider && (window as any).kineticSlider.engine;
+       
+      return (
+        (window as { kineticSlider?: { engine?: unknown } }).kineticSlider?.engine
+      );
     },
     { timeout: 10000 }
   );

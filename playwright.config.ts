@@ -6,7 +6,8 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './src/__tests__/e2e',
 
-
+  /* Global timeout for the entire test suite (10 minutes) */
+  globalTimeout: 10 * 60 * 1000,
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -17,8 +18,8 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 1,
 
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 2 : undefined,
+  /* Optimize workers for better performance */
+  workers: process.env.CI ? 4 : '75%',
 
   /* Global timeout for each test */
   timeout: 30 * 1000,
@@ -45,7 +46,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.CI ? 'http://localhost:4173' : 'https://localhost:3003',
+    baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:3000',
     
     /* Ignore HTTPS errors for local development */
     ignoreHTTPSErrors: true,
@@ -99,13 +100,10 @@ export default defineConfig({
   globalTeardown: './src/__tests__/e2e/global-teardown.ts',
 
   /* Run your local dev server before starting the tests */
-  // Note: Start dev server manually with `pnpm run dev` before running E2E tests
-  // webServer: process.env.CI
-  //   ? undefined
-  //   : {
-  //       command: 'pnpm run dev',
-  //       port: 3003, // Actual port where dev server runs
-  //       reuseExistingServer: !process.env.CI,
-  //       timeout: 120 * 1000, // Allow time for dev server startup
-  //     },
+  webServer: {
+    command: 'pnpm run dev',
+    port: 3000,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // Allow time for dev server startup
+  },
 });

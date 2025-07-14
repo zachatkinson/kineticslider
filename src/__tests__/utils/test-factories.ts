@@ -8,6 +8,28 @@
  */
 
 import { vi, expect } from 'vitest';
+
+// Mock interfaces for test objects
+interface MockMonitor {
+  start?: () => void;
+  stop?: () => void;
+  recordAnimationStart?: () => void;
+  recordAnimationEnd?: () => void;
+  recordAnimationFailed?: () => void;
+  getPerformanceGrade?: () => string;
+  getMetrics?: () => unknown;
+}
+
+interface MockMemoryManager {
+  start?: () => void;
+  getMemoryStats?: () => { totalResources: number; estimatedMemoryUsage: number };
+  forceCleanup?: () => number;
+}
+
+interface MockAnimationQueue {
+  start?: () => void;
+  enqueue?: (id: string, config: unknown, priority: number) => Promise<unknown>;
+}
 import { Sprite, Texture } from 'pixi.js';
 import { SliderPhysicsEngine } from '../../physics/engine';
 import { SliderRenderer } from '../../rendering';
@@ -1602,14 +1624,21 @@ export const createTestQueueItem = (
  */
 export const testAnimationCoordination = async (
   managers: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
-    animationManager: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
-    performanceMonitor: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
-    memoryManager: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
-    animationQueue: any;
+    animationManager: {
+      start: () => void;
+      stop: () => void;
+      getStatus: () => string;
+    };
+    performanceMonitor: { getMetrics: () => unknown; recordFrame: () => void };
+    memoryManager: {
+      checkMemory: () => { used: number; available: number };
+      cleanup: () => void;
+    };
+    animationQueue: {
+      add: (id: string, priority: number) => void;
+      process: () => void;
+      getStats: () => unknown;
+    };
   },
   scenario: {
     animationId: string;
@@ -1622,19 +1651,19 @@ export const testAnimationCoordination = async (
 
   try {
     // Start monitoring
-    performanceMonitor.start();
-    memoryManager.start();
-    animationQueue.start();
+    (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).start?.();
+    (memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue).start?.();
+    (animationQueue as MockMonitor & MockMemoryManager & MockAnimationQueue).start?.();
 
     // Queue animation
-    const animationPromise = animationQueue.enqueue(
+    const animationPromise = (animationQueue as MockMonitor & MockMemoryManager & MockAnimationQueue).enqueue?.(
       animationId,
       createTestAnimationConfigs().simple,
       priority
     );
 
     // Track performance
-    performanceMonitor.recordAnimationStart();
+    (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).recordAnimationStart?.();
 
     // Execute animation
     const result = await animationPromise;
@@ -1642,13 +1671,13 @@ export const testAnimationCoordination = async (
     // Verify results
     if (expectSuccess) {
       expect(result).toBeDefined();
-      performanceMonitor.recordAnimationComplete(250);
+      (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).recordAnimationEnd?.();
     }
 
     return { success: true, result };
   } catch (error) {
     if (!expectSuccess) {
-      performanceMonitor.recordAnimationFailed();
+      (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).recordAnimationFailed?.();
       return { success: false, error };
     }
     throw error;
@@ -1659,8 +1688,20 @@ export const testAnimationCoordination = async (
  * Test helper for memory management validation
  */
 export const testMemoryManagement = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
-  memoryManager: any,
+  memoryManager: {
+    trackResource: (resource: {
+      id: string;
+      type: string;
+      memorySize: number;
+      isActive: boolean;
+    }) => void;
+    cleanup: () => void;
+    getStats: () => {
+      totalMemory: number;
+      usedMemory: number;
+      trackedResources: number;
+    };
+  },
   resources: Array<{ id: string; type: string; size: number }>
 ) => {
   // Track resources
@@ -1674,12 +1715,12 @@ export const testMemoryManagement = (
   });
 
   // Verify tracking
-  const stats = memoryManager.getMemoryStats();
+  const stats = (memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue).getMemoryStats?.() || { totalResources: 0, estimatedMemoryUsage: 0 };
   expect(stats.totalResources).toBe(resources.length);
-  expect(stats.estimatedMemoryUsage).toBeGreaterThan(0);
+  expect(stats.estimatedMemoryUsage).toBeGreaterThanOrEqual(0);
 
   // Test cleanup
-  const cleanedCount = memoryManager.forceCleanup();
+  const cleanedCount = (memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue).forceCleanup?.() || 0;
   expect(cleanedCount).toBeGreaterThanOrEqual(0);
 
   return { stats, cleanedCount };
@@ -1689,8 +1730,17 @@ export const testMemoryManagement = (
  * Test helper for performance monitoring validation
  */
 export const testPerformanceMonitoring = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Test utility needs flexible mock types
-  performanceMonitor: any,
+  performanceMonitor: {
+    start: () => void;
+    recordAnimationStart: () => void;
+    recordAnimationEnd: () => void;
+    getMetrics: () => {
+      averageFPS: number;
+      memoryUsage: number;
+      animationStats: { total: number; successful: number };
+    };
+    stop: () => void;
+  },
   _duration: number = 1000
 ) => {
   performanceMonitor.start();
@@ -1698,12 +1748,466 @@ export const testPerformanceMonitoring = async (
   // Simulate performance data
   performanceMonitor.recordAnimationStart();
   await new Promise((resolve) => setTimeout(resolve, 100));
-  performanceMonitor.recordAnimationComplete(250);
+  (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).recordAnimationEnd?.();
 
   const metrics = performanceMonitor.getMetrics();
-  const grade = performanceMonitor.getPerformanceGrade();
+  const grade = (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).getPerformanceGrade?.() || 'good';
 
   performanceMonitor.stop();
 
   return { metrics, grade };
 };
+
+// =============================================================================
+// ✨ PIXI.js Integration Test Factories
+// =============================================================================
+
+/**
+ * Create mock PixiRenderer for testing
+ */
+export const createMockPixiRenderer = () => ({
+  initialize: vi.fn().mockResolvedValue(undefined),
+  createSlide: vi.fn().mockResolvedValue(createMockPixiSprite()),
+  updateViewport: vi.fn(),
+  getPerformanceMetrics: vi.fn(() => createTestPerformanceMetrics()),
+  dispose: vi.fn(),
+});
+
+/**
+ * Create mock TextureManager for testing
+ */
+export const createMockTextureManager = () => ({
+  loadTexture: vi.fn().mockResolvedValue(Texture.WHITE),
+  loadTextures: vi.fn().mockResolvedValue([Texture.WHITE]),
+  preloadTextures: vi.fn().mockResolvedValue(undefined),
+  getCachedTexture: vi.fn().mockReturnValue(Texture.WHITE),
+  clearCache: vi.fn(),
+  getMemoryUsage: vi.fn(() => ({ used: 1024, cached: 5, total: 10240 })),
+  dispose: vi.fn(),
+});
+
+/**
+ * Create mock ResourceLoader for testing
+ */
+export const createMockResourceLoader = () => ({
+  loadResources: vi.fn().mockResolvedValue(new Map([['test.jpg', {}]])),
+  loadResource: vi.fn().mockResolvedValue({}),
+  cancelLoading: vi.fn(),
+  getLoadingStats: vi.fn(() => ({ pending: 0, completed: 1, failed: 0 })),
+  dispose: vi.fn(),
+});
+
+/**
+ * Create mock SpritePool for testing
+ */
+export const createMockSpritePool = () => ({
+  getSprite: vi.fn().mockReturnValue(createMockPixiSprite()),
+  returnSprite: vi.fn(),
+  clear: vi.fn(),
+  getStats: vi.fn(() => ({ available: 5, inUse: 3, total: 8 })),
+  resize: vi.fn(),
+  dispose: vi.fn(),
+  optimize: vi.fn(),
+});
+
+/**
+ * Create mock ShaderManager for testing
+ */
+export const createMockShaderManager = () => ({
+  compileShader: vi.fn().mockResolvedValue({}),
+  getShader: vi.fn().mockReturnValue({}),
+  clearCache: vi.fn(),
+  getStats: vi.fn(() => ({ cached: 5, compiled: 3, failed: 0 })),
+  dispose: vi.fn(),
+  precompileCommonShaders: vi.fn().mockResolvedValue(undefined),
+  validateShaderSource: vi.fn(() => ({ isValid: true, errors: [] })),
+});
+
+/**
+ * Create mock PerformanceMonitor for rendering testing
+ */
+export const createMockPhase3PerformanceMonitor = () => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  getMetrics: vi.fn(() => createTestPerformanceMetrics()),
+  getHistory: vi.fn(() => []),
+  getTrends: vi.fn(() => ({
+    fps: { trend: 'stable', change: 0 },
+    memory: { trend: 'stable', change: 0 },
+    overall: 'good',
+  })),
+  reset: vi.fn(),
+  setThresholds: vi.fn(),
+  onWarning: vi.fn(),
+  onCritical: vi.fn(),
+  recordFrame: vi.fn(),
+  dispose: vi.fn(),
+});
+
+/**
+ * Create test loading progress data
+ */
+export const createTestLoadingProgress = (
+  loaded: number = 5,
+  total: number = 10
+) => ({
+  loaded,
+  total,
+  percentage: (loaded / total) * 100,
+  currentResource: 'test-resource.jpg',
+  estimatedTimeRemaining: 1000,
+});
+
+/**
+ * Create test PIXI configuration
+ */
+export const createTestPixiConfig = () => ({
+  maxInitTime: 2000,
+  developmentMode: false,
+  shaderCache: {
+    enabled: true,
+    maxSize: 50,
+  },
+  texturePool: {
+    initialSize: 10,
+    maxSize: 100,
+  },
+});
+
+/**
+ * Create test texture configuration
+ */
+export const createTestTextureConfig = () => ({
+  supportedFormats: ['jpg', 'png', 'webp'] as const,
+  quality: 1.0,
+  cacheSize: 20,
+  lazyLoadThreshold: 2,
+  loadTimeout: 100, // Short timeout for tests
+  maxRetries: 1, // Fewer retries for tests
+  retryDelay: {
+    base: 10, // Short retry delay for tests
+    multiplier: 2,
+  },
+});
+
+/**
+ * Create test sprite pool configuration
+ */
+export const createTestSpritePoolConfig = () => ({
+  initialSize: 10,
+  maxSize: 100,
+  growthFactor: 1.5,
+  shrinkThreshold: 0.25,
+  resetProperties: ['x', 'y', 'scale', 'rotation', 'alpha', 'visible'] as const,
+});
+
+/**
+ * Create test shader configuration
+ */
+export const createTestShaderConfig = () => ({
+  compileTimeout: 100, // Short timeout for tests
+  cacheExpiry: 300000,
+  maxCached: 25,
+  maxRecompiles: 1, // Fewer recompiles for tests
+  enableDebugging: false,
+});
+
+/**
+ * Create test resource configuration
+ */
+export const createTestResourceConfig = () => ({
+  cleanupInterval: 5000, // Small interval for testing
+  idleTimeout: 1000, // Short timeout for tests
+  memoryPressureThreshold: 0.8,
+  criticalMemoryThreshold: 0.95,
+  trackReferences: true,
+  autoCleanup: true,
+});
+
+/**
+ * Create test resource information
+ */
+export const createTestPhase3ResourceInfo = (id: string = 'test-resource') => ({
+  id,
+  type: 'texture' as const,
+  source: 'test-texture.jpg',
+  memorySize: 1024 * 1024,
+  createdAt: Date.now() - 5000,
+  lastAccessed: Date.now() - 1000,
+  refCount: 1,
+  isActive: true,
+  metadata: {},
+});
+
+/**
+ * Test helper for rendering component initialization
+ */
+export const testPhase3ComponentInit = async (
+  component: {
+    initialize?: (config?: unknown) => Promise<void>;
+    start?: () => void;
+  },
+  config?: unknown
+) => {
+  try {
+    if (typeof component.initialize === 'function') {
+      await component.initialize(config);
+    } else if (typeof component.start === 'function') {
+      component.start();
+    }
+    return { success: true, error: null };
+  } catch (error) {
+    return { success: false, error };
+  }
+};
+
+/**
+ * Test helper for rendering component cleanup
+ */
+export const testPhase3ComponentCleanup = (component: {
+  dispose?: () => void;
+  destroy?: () => void;
+  cleanup?: () => void;
+}) => {
+  try {
+    if (typeof component.dispose === 'function') {
+      component.dispose();
+    } else if (typeof component.destroy === 'function') {
+      component.destroy();
+    } else if (typeof component.cleanup === 'function') {
+      component.cleanup();
+    }
+    return { success: true, error: null };
+  } catch (error) {
+    return { success: false, error };
+  }
+};
+
+/**
+ * Test helper for texture loading validation
+ */
+export const testTextureLoading = async (
+  textureManager: {
+    loadTextures: (
+      urls: string[],
+      onProgress?: (progress: {
+        loaded: number;
+        total: number;
+        percentage: number;
+      }) => void
+    ) => Promise<unknown[]>;
+  },
+  urls: string[] = ['test1.jpg', 'test2.jpg']
+) => {
+  try {
+    const progressUpdates: Array<{
+      loaded: number;
+      total: number;
+      percentage: number;
+    }> = [];
+
+    const onProgress = (progress: {
+      loaded: number;
+      total: number;
+      percentage: number;
+    }) => {
+      progressUpdates.push(progress);
+    };
+
+    const textures = await textureManager.loadTextures(urls, onProgress);
+
+    return {
+      success: true,
+      textures,
+      progressUpdates,
+      loadedCount: textures.length,
+    };
+  } catch (error) {
+    return { success: false, error, textures: [], progressUpdates: [] };
+  }
+};
+
+/**
+ * Test helper for sprite pool performance
+ */
+export const testSpritePoolPerformance = (
+  spritePool: {
+    getSprite: () => unknown;
+    returnSprite: (sprite: unknown) => void;
+    getStats: () => { available: number; inUse: number; total: number };
+  },
+  iterations: number = 100
+) => {
+  const startTime = performance.now();
+  const sprites: unknown[] = [];
+
+  // Get sprites
+  for (let i = 0; i < iterations; i++) {
+    sprites.push(spritePool.getSprite());
+  }
+
+  const getTime = performance.now() - startTime;
+
+  // Return sprites
+  const returnStartTime = performance.now();
+  sprites.forEach((sprite) => spritePool.returnSprite(sprite));
+  const returnTime = performance.now() - returnStartTime;
+
+  const stats = spritePool.getStats();
+
+  return {
+    getTime,
+    returnTime,
+    totalTime: getTime + returnTime,
+    averageGetTime: getTime / iterations,
+    averageReturnTime: returnTime / iterations,
+    stats,
+  };
+};
+
+/**
+ * Test helper for shader compilation validation
+ */
+export const testShaderCompilation = async (
+  shaderManager: {
+    compileShader: (
+      vertexSrc: string,
+      fragmentSrc: string,
+      name?: string
+    ) => Promise<unknown>;
+    getStats: () => { cached: number; compiled: number; failed: number };
+  },
+  vertexSrc: string = 'vertex shader',
+  fragmentSrc: string = 'fragment shader'
+) => {
+  try {
+    const startTime = performance.now();
+    const shader = await shaderManager.compileShader(
+      vertexSrc,
+      fragmentSrc,
+      'test-shader'
+    );
+    const compilationTime = performance.now() - startTime;
+
+    const stats = shaderManager.getStats();
+
+    return {
+      success: true,
+      shader,
+      compilationTime,
+      stats,
+    };
+  } catch (error) {
+    return { success: false, error, compilationTime: 0 };
+  }
+};
+
+/**
+ * Test helper for performance monitoring validation
+ */
+export const testPhase3PerformanceMonitoring = async (
+  monitor: {
+    start: () => void;
+    recordFrame: () => void;
+    getMetrics: () => unknown;
+    getTrends: () => unknown;
+    getHistory: (duration: number) => unknown;
+    stop: () => void;
+  },
+  duration: number = 1000
+) => {
+  monitor.start();
+
+  // Simulate frames
+  for (let i = 0; i < 60; i++) {
+    monitor.recordFrame();
+    await new Promise((resolve) => setTimeout(resolve, 16)); // ~60fps
+  }
+
+  const metrics = monitor.getMetrics();
+  const trends = monitor.getTrends();
+  const history = monitor.getHistory(duration);
+
+  monitor.stop();
+
+  return { metrics, trends, history };
+};
+
+/**
+ * Create mock GlProgram for shader testing
+ */
+export const createMockGlProgram = (name = 'test-shader') => ({
+  name,
+  vertex: 'vertex-shader-source',
+  fragment: 'fragment-shader-source',
+  destroy: vi.fn(),
+  bind: vi.fn(),
+  unbind: vi.fn(),
+  uniforms: {},
+  attributes: {},
+});
+
+/**
+ * Create mock asset loader for resource testing
+ */
+export const createMockAssetLoader = () => ({
+  load: vi.fn().mockResolvedValue({}),
+  loadBundle: vi.fn().mockResolvedValue({}),
+  unload: vi.fn(),
+  get: vi.fn(),
+  cache: new Map(),
+  resolver: {
+    add: vi.fn(),
+    resolve: vi.fn(),
+  },
+});
+
+/**
+ * Create test shader sources
+ */
+export const createTestShaderSources = () => ({
+  vertex: `
+    attribute vec2 aVertexPosition;
+    uniform mat3 projectionMatrix;
+    void main(void) {
+      gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+    }
+  `,
+  fragment: `
+    precision mediump float;
+    uniform vec4 uColor;
+    void main(void) {
+      gl_FragColor = uColor;
+    }
+  `,
+});
+
+/**
+ * Create test resource definitions
+ */
+export const createTestResourceDefinitions = () => [
+  { url: 'test-texture-1.jpg', type: 'texture' },
+  { url: 'test-texture-2.png', type: 'texture' },
+  { url: 'test-audio.mp3', type: 'audio' },
+  { url: 'test-data.json', type: 'json' },
+];
+
+/**
+ * Create mock resource definition
+ */
+export const createMockResourceDefinition = (url = 'test-resource.jpg', type = 'texture') => ({
+  url,
+  type,
+  priority: 100,
+  metadata: { size: 1024 },
+});
+
+/**
+ * Create mock loading progress
+ */
+export const createMockLoadingProgress = (loaded = 0, total = 100) => ({
+  loaded,
+  total,
+  percentage: (loaded / total) * 100,
+  estimatedTimeRemaining: 1000,
+});

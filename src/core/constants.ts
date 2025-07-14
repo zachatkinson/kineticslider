@@ -966,7 +966,122 @@ export function validateConstants(): boolean {
 }
 
 // =============================================================================
-// 🎯 Phase 2.3 Animation Coordination Constants
+// 🎯 PIXI.js Integration Constants
+// =============================================================================
+
+/** PIXI.js application initialization constants */
+export const PIXI_CONFIG = {
+  /** Maximum initialization time (2 seconds target) */
+  MAX_INIT_TIME: 2000,
+  /** Default shader cache size */
+  SHADER_CACHE_SIZE: 50,
+  /** Texture pool default size */
+  TEXTURE_POOL_SIZE: 100,
+  /** Resource loader concurrent limit */
+  LOADER_CONCURRENT_LIMIT: 5,
+  /** Texture memory limit (150MB target) */
+  TEXTURE_MEMORY_LIMIT: 150 * 1024 * 1024,
+  /** Garbage collection threshold */
+  GC_THRESHOLD: 0.8,
+  /** Progressive loading chunk size */
+  PROGRESSIVE_CHUNK_SIZE: 10,
+} as const;
+
+/** Texture loading and caching constants */
+export const TEXTURE_CONSTANTS = {
+  /** Supported image formats */
+  SUPPORTED_FORMATS: ['jpg', 'jpeg', 'png', 'webp', 'svg'] as const,
+  /** Default texture quality */
+  DEFAULT_QUALITY: 1.0,
+  /** Preload cache size */
+  PRELOAD_CACHE_SIZE: 20,
+  /** Lazy load threshold distance */
+  LAZY_LOAD_THRESHOLD: 2,
+  /** Texture loading timeout */
+  LOAD_TIMEOUT: 5000,
+  /** Retry attempts for failed loads */
+  MAX_RETRY_ATTEMPTS: 3,
+  /** Retry delay (exponential backoff base) */
+  RETRY_DELAY_BASE: 1000,
+} as const;
+
+/** Resource management constants */
+export const RESOURCE_CONSTANTS = {
+  /** Resource cleanup interval */
+  CLEANUP_INTERVAL: 30000,
+  /** Resource idle timeout */
+  IDLE_TIMEOUT: 60000,
+  /** Memory pressure threshold */
+  MEMORY_PRESSURE_THRESHOLD: 0.75,
+  /** Critical memory threshold */
+  CRITICAL_MEMORY_THRESHOLD: 0.9,
+  /** Resource reference tracking */
+  TRACK_REFERENCES: true,
+  /** Auto-cleanup enabled */
+  AUTO_CLEANUP: true,
+} as const;
+
+/** Sprite pooling constants */
+export const SPRITE_POOL_CONSTANTS = {
+  /** Initial pool size */
+  INITIAL_SIZE: 10,
+  /** Maximum pool size */
+  MAX_SIZE: 100,
+  /** Pool growth factor */
+  GROWTH_FACTOR: 1.5,
+  /** Pool shrink threshold */
+  SHRINK_THRESHOLD: 0.25,
+  /** Sprite reset properties */
+  RESET_PROPERTIES: [
+    'x',
+    'y',
+    'scale',
+    'rotation',
+    'alpha',
+    'visible',
+  ] as const,
+} as const;
+
+/** Shader management constants */
+export const SHADER_CONSTANTS = {
+  /** Shader compilation timeout */
+  COMPILE_TIMEOUT: 1000,
+  /** Cache expiration time */
+  CACHE_EXPIRY: 300000, // 5 minutes
+  /** Maximum cached shaders */
+  MAX_CACHED: 25,
+  /** Shader recompilation limit */
+  MAX_RECOMPILES: 3,
+  /** Default vertex shader */
+  DEFAULT_VERTEX: 'default',
+  /** Default fragment shader */
+  DEFAULT_FRAGMENT: 'default',
+} as const;
+
+/** Performance monitoring constants for rendering */
+export const RENDERING_PERFORMANCE = {
+  /** FPS monitoring interval */
+  FPS_MONITOR_INTERVAL: 1000,
+  /** Memory check interval */
+  MEMORY_CHECK_INTERVAL: 5000,
+  /** Performance sample size */
+  SAMPLE_SIZE: 60,
+  /** Warning thresholds */
+  WARNING_THRESHOLDS: {
+    FPS_LOW: 45,
+    MEMORY_HIGH: 0.8,
+    LOAD_TIME_HIGH: 2000,
+  },
+  /** Critical thresholds */
+  CRITICAL_THRESHOLDS: {
+    FPS_CRITICAL: 30,
+    MEMORY_CRITICAL: 0.9,
+    LOAD_TIME_CRITICAL: 5000,
+  },
+} as const;
+
+// =============================================================================
+// 🎯 Animation Coordination Constants
 // =============================================================================
 
 /** Animation priority levels for queue management */

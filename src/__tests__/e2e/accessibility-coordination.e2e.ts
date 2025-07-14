@@ -320,7 +320,9 @@ test.describe('Animation Coordination Accessibility E2E', () => {
           role: el.getAttribute('role'),
           label: el.getAttribute('aria-label'),
           describedBy: el.getAttribute('aria-describedby'),
-          isVisible: (el as HTMLElement).offsetWidth > 0 && (el as HTMLElement).offsetHeight > 0,
+          isVisible:
+            (el as HTMLElement).offsetWidth > 0 &&
+            (el as HTMLElement).offsetHeight > 0,
         }));
       });
 
@@ -429,9 +431,11 @@ test.describe('Animation Coordination Accessibility E2E', () => {
         const managers = window.kineticSlider?.managers;
         return {
           animationsTriggered:
-            (managers?.performanceMonitor?.getMetrics?.()?.animations?.total || 0) > 0,
+            (managers?.performanceMonitor?.getMetrics?.()?.animations?.total ||
+              0) > 0,
           systemResponsive:
-            (managers?.performanceMonitor?.getMetrics?.()?.fps?.current || 0) > 0,
+            (managers?.performanceMonitor?.getMetrics?.()?.fps?.current || 0) >
+            0,
         };
       });
 
