@@ -209,14 +209,19 @@ describe('PerformanceMonitor Unit Tests', () => {
 
       // Spy on the triggerWarning method to verify it's called correctly
       const triggerWarningSpy = vi.spyOn(
-        performanceMonitor as unknown as { triggerWarning: (metric: string, value: number) => void },
+        performanceMonitor as unknown as {
+          triggerWarning: (metric: string, value: number) => void;
+        },
         'triggerWarning'
       );
 
       // Directly trigger warning with low FPS value (more reliable than complex timing simulation)
       const lowFpsValue = 30; // Below the warning threshold of 45
-      (performanceMonitor as unknown as { triggerWarning: (metric: string, value: number) => void })
-        .triggerWarning('fps', lowFpsValue);
+      (
+        performanceMonitor as unknown as {
+          triggerWarning: (metric: string, value: number) => void;
+        }
+      ).triggerWarning('fps', lowFpsValue);
 
       // Verify that the warning callback was triggered
       expect(triggerWarningSpy).toHaveBeenCalledWith('fps', lowFpsValue);
@@ -224,8 +229,11 @@ describe('PerformanceMonitor Unit Tests', () => {
 
       // Alternative approach: Test with memory warning as well
       const highMemoryValue = 85; // Above warning threshold of 80%
-      (performanceMonitor as unknown as { triggerWarning: (metric: string, value: number) => void })
-        .triggerWarning('memory', highMemoryValue);
+      (
+        performanceMonitor as unknown as {
+          triggerWarning: (metric: string, value: number) => void;
+        }
+      ).triggerWarning('memory', highMemoryValue);
 
       expect(triggerWarningSpy).toHaveBeenCalledWith('memory', highMemoryValue);
       expect(warningCallback).toHaveBeenCalledWith('memory', highMemoryValue);

@@ -187,15 +187,15 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🏗️ Build Storybook
-        run: pnpm build-storybook
+      - name: 🏗️ Build application
+        run: pnpm build
 
       - name: ♿ Run accessibility tests
         run: |
           # Install axe-core CLI
           npm install -g @axe-core/cli
-          # Test built Storybook for WCAG 2.2 AA compliance
-          pnpm test:a11y
+          # Test built application for WCAG 2.2 AA compliance
+          axe --dir ./dist --tags wcag2a,wcag2aa,wcag21aa,wcag22aa
 
   # 🚀 Build & Deploy (on main branch only)
   deploy:

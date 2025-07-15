@@ -132,7 +132,10 @@ jobs:
       - name: Run accessibility tests
         id: a11y
         run: |
-          if ! pnpm test:a11y; then
+          # Install axe-core CLI
+          npm install -g @axe-core/cli
+          # Test built application for WCAG 2.2 AA compliance
+          if ! axe --dir ./dist --tags wcag2a,wcag2aa,wcag21aa,wcag22aa; then
             echo "::error::Accessibility tests failed"
             exit 1
           fi

@@ -250,7 +250,9 @@ describe('GSAPPixiAdapter', () => {
       timeline.progress(1);
 
       expect((filter as unknown as { blur: number }).blur).toBe(15);
-      expect((filter as unknown as { brightness: number }).brightness).toBe(1.3);
+      expect((filter as unknown as { brightness: number }).brightness).toBe(
+        1.3
+      );
     });
   });
 
@@ -427,7 +429,10 @@ describe('GSAPPixiAdapter', () => {
     it('should estimate GPU memory usage', () => {
       // Create multiple animations to increase memory usage
       for (let i = 0; i < 5; i++) {
-        adapter.animateSprite(createMockSprite() as unknown as Sprite, { x: i * 10, duration: 1 });
+        adapter.animateSprite(createMockSprite() as unknown as Sprite, {
+          x: i * 10,
+          duration: 1,
+        });
       }
 
       const metrics = adapter.getPerformanceMetrics();

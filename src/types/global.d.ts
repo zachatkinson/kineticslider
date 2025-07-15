@@ -98,7 +98,7 @@ declare global {
   /**
    * NodeJS global object extensions for testing
    */
-  // eslint-disable-next-line no-var -- Required for global declaration in TypeScript
+   
   declare var global: typeof globalThis & {
     /** PIXI.js mock for testing */
     PIXI?: unknown;

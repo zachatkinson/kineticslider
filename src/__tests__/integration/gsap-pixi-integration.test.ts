@@ -24,11 +24,7 @@ import type {
   CameraAnimationConfig,
   ResponsiveConfig,
 } from '../../rendering';
-import {
-  EASING,
-  TEST_CONFIG,
-  TEST_TOLERANCE,
-} from '../../core/constants';
+import { EASING, TEST_CONFIG, TEST_TOLERANCE } from '../../core/constants';
 import {
   createMockPixiApp,
   createMockSprite,
@@ -205,7 +201,9 @@ describe('GSAP + PIXI Integration', () => {
       timeline.progress(1);
 
       expect((filter as unknown as { blur: number }).blur).toBe(10);
-      expect((filter as unknown as { brightness: number }).brightness).toBe(1.5);
+      expect((filter as unknown as { brightness: number }).brightness).toBe(
+        1.5
+      );
     });
 
     it('should create filter chains with coordination', async () => {
@@ -312,7 +310,11 @@ describe('GSAP + PIXI Integration', () => {
 
       // Spy on the setFromMatrix method to verify it's called correctly
       const setFromMatrixSpy = vi.spyOn(
-        (sprite as unknown as { transform: { setFromMatrix: (matrix: unknown) => void } }).transform,
+        (
+          sprite as unknown as {
+            transform: { setFromMatrix: (matrix: unknown) => void };
+          }
+        ).transform,
         'setFromMatrix'
       );
 
@@ -326,7 +328,8 @@ describe('GSAP + PIXI Integration', () => {
 
       // Verify that setFromMatrix was called with the target matrix values
       expect(setFromMatrixSpy).toHaveBeenCalled();
-      const lastCall = setFromMatrixSpy.mock.calls[setFromMatrixSpy.mock.calls.length - 1];
+      const lastCall =
+        setFromMatrixSpy.mock.calls[setFromMatrixSpy.mock.calls.length - 1];
       const appliedMatrix = lastCall[0] as { tx: number; ty: number };
       expect(appliedMatrix.tx).toBe(100);
       expect(appliedMatrix.ty).toBe(50);
@@ -341,7 +344,10 @@ describe('GSAP + PIXI Integration', () => {
       };
 
       // Spy on the animation creation to verify batching behavior
-      const animateTransformSpy = vi.spyOn(transformAnimator, 'animateTransform');
+      const animateTransformSpy = vi.spyOn(
+        transformAnimator,
+        'animateTransform'
+      );
 
       // Create multiple animations to trigger batching
       const timelines = [];
@@ -352,10 +358,10 @@ describe('GSAP + PIXI Integration', () => {
 
       // Verify that animateTransform was called 5 times
       expect(animateTransformSpy).toHaveBeenCalledTimes(5);
-      
+
       // Verify that timelines were created
       expect(timelines).toHaveLength(5);
-      timelines.forEach(timeline => {
+      timelines.forEach((timeline) => {
         expect(timeline).toBeDefined();
         expect(timeline.duration).toBeDefined();
       });
@@ -526,11 +532,14 @@ describe('GSAP + PIXI Integration', () => {
       );
 
       // Verify that all animation methods were called with correct parameters
-      expect(animateSpriteSpy).toHaveBeenCalledWith(sprite, expect.objectContaining({
-        x: 100,
-        y: 50,
-        duration: TEST_CONFIG.DURATION.MEDIUM,
-      }));
+      expect(animateSpriteSpy).toHaveBeenCalledWith(
+        sprite,
+        expect.objectContaining({
+          x: 100,
+          y: 50,
+          duration: TEST_CONFIG.DURATION.MEDIUM,
+        })
+      );
 
       expect(animateScaleSpy).toHaveBeenCalledWith(
         sprite,
@@ -538,10 +547,7 @@ describe('GSAP + PIXI Integration', () => {
         TEST_CONFIG.DURATION.MEDIUM
       );
 
-      expect(zoomToSpy).toHaveBeenCalledWith(
-        1.2,
-        TEST_CONFIG.DURATION.MEDIUM
-      );
+      expect(zoomToSpy).toHaveBeenCalledWith(1.2, TEST_CONFIG.DURATION.MEDIUM);
 
       // Verify that all animations return valid timelines
       expect(spriteAnimation).toBeDefined();
@@ -576,8 +582,14 @@ describe('GSAP + PIXI Integration', () => {
       const animateFilterSpy = vi.spyOn(filterAnimator, 'animateFilter');
       const animatePositionSpy = vi.spyOn(transformAnimator, 'animatePosition');
       const gsapMetricsSpy = vi.spyOn(gsapAdapter, 'getPerformanceMetrics');
-      const filterMetricsSpy = vi.spyOn(filterAnimator, 'getPerformanceMetrics');
-      const transformMetricsSpy = vi.spyOn(transformAnimator, 'getPerformanceMetrics');
+      const filterMetricsSpy = vi.spyOn(
+        filterAnimator,
+        'getPerformanceMetrics'
+      );
+      const transformMetricsSpy = vi.spyOn(
+        transformAnimator,
+        'getPerformanceMetrics'
+      );
 
       // Create animations in multiple systems
       const spriteTimeline = gsapAdapter.animateSprite(sprite, {
@@ -585,12 +597,19 @@ describe('GSAP + PIXI Integration', () => {
         duration: TEST_CONFIG.DURATION.SHORT,
       });
 
-      const filterTimeline = filterAnimator.animateFilter(sprite, createMockFilter() as unknown as Filter, {
-        properties: { blur: 5 },
-        duration: TEST_CONFIG.DURATION.SHORT,
-      });
+      const filterTimeline = filterAnimator.animateFilter(
+        sprite,
+        createMockFilter() as unknown as Filter,
+        {
+          properties: { blur: 5 },
+          duration: TEST_CONFIG.DURATION.SHORT,
+        }
+      );
 
-      const positionTimeline = transformAnimator.animatePosition(sprite, { x: 25, y: 25 });
+      const positionTimeline = transformAnimator.animatePosition(sprite, {
+        x: 25,
+        y: 25,
+      });
 
       // Verify animations were created
       expect(animateSpriteSpy).toHaveBeenCalledTimes(1);
@@ -630,10 +649,14 @@ describe('GSAP + PIXI Integration', () => {
     it('should cleanup resources properly', () => {
       // Create animations in all systems
       gsapAdapter.animateSprite(sprite, { x: 50, duration: 1 });
-      filterAnimator.animateFilter(sprite, createMockFilter() as unknown as Filter, {
-        properties: { blur: 5 },
-        duration: 1,
-      });
+      filterAnimator.animateFilter(
+        sprite,
+        createMockFilter() as unknown as Filter,
+        {
+          properties: { blur: 5 },
+          duration: 1,
+        }
+      );
       transformAnimator.animatePosition(sprite, { x: 25, y: 25 });
       cameraController.animateTo({ zoom: 1.5, duration: 1 });
 

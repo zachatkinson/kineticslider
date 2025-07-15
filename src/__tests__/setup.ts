@@ -23,11 +23,12 @@ type BasicFunction = () => void;
 // Mock GSAP before any imports to prevent registerPlugin errors
 vi.mock('gsap', () => {
   const createMockTimeline = (vars?: unknown) => {
-    let totalDuration = (vars && typeof vars === 'object' && 'duration' in vars) 
-      ? (vars.duration as number) || 0.1 
-      : 0.1;
+    let totalDuration =
+      vars && typeof vars === 'object' && 'duration' in vars
+        ? (vars.duration as number) || 0.1
+        : 0.1;
     let isPaused = false;
-    
+
     const timeline = {
       vars,
       _animations: [] as unknown[],
@@ -36,13 +37,13 @@ vi.mock('gsap', () => {
       _currentProgress: 0,
       duration: vi.fn(() => totalDuration),
       addStaggerDuration: (delay: number, count: number) => {
-        totalDuration = totalDuration + (delay * count);
+        totalDuration = totalDuration + delay * count;
       },
       progress: vi.fn((value?: number) => {
         if (value !== undefined) {
           // Store the current progress
           timeline._currentProgress = value;
-          
+
           // Call any onUpdate callbacks first (for matrix interpolation)
           const onUpdateCallbacks = timeline._onUpdateCallbacks || [];
           onUpdateCallbacks.forEach((callback: () => void) => {
@@ -50,59 +51,97 @@ vi.mock('gsap', () => {
               callback();
             }
           });
-          
+
           // Apply animations stored directly on this timeline
           const animations = timeline._animations || [];
           animations.forEach((animation: unknown) => {
-            const { target, animVars } = animation as { target: Record<string, unknown>, animVars: Record<string, unknown> };
+            const { target, animVars } = animation as {
+              target: Record<string, unknown>;
+              animVars: Record<string, unknown>;
+            };
             // Call onUpdate for all progress values to handle interpolations
             if (animVars.onUpdate && typeof animVars.onUpdate === 'function') {
               (animVars.onUpdate as () => void)();
             }
-            
+
             if (value === 1) {
               // Apply final values
-              Object.keys(animVars).forEach(key => {
-                if (key !== 'duration' && key !== 'ease' && key !== 'onStart' && key !== 'onComplete' && key !== 'onUpdate' && key !== 'force3D' && key !== 'transformOrigin' && key !== 'delay') {
+              Object.keys(animVars).forEach((key) => {
+                if (
+                  key !== 'duration' &&
+                  key !== 'ease' &&
+                  key !== 'onStart' &&
+                  key !== 'onComplete' &&
+                  key !== 'onUpdate' &&
+                  key !== 'force3D' &&
+                  key !== 'transformOrigin' &&
+                  key !== 'delay'
+                ) {
                   if (target[key] !== undefined) {
                     // If setting scaleX/scaleY, ensure they sync with scale.x/.y
-                    if (key === 'scaleX' && typeof target === 'object' && 'scaleX' in target) {
-                      (target as { scaleX: number }).scaleX = animVars[key] as number;
-                    } else if (key === 'scaleY' && typeof target === 'object' && 'scaleY' in target) {
-                      (target as { scaleY: number }).scaleY = animVars[key] as number;
+                    if (
+                      key === 'scaleX' &&
+                      typeof target === 'object' &&
+                      'scaleX' in target
+                    ) {
+                      (target as { scaleX: number }).scaleX = animVars[
+                        key
+                      ] as number;
+                    } else if (
+                      key === 'scaleY' &&
+                      typeof target === 'object' &&
+                      'scaleY' in target
+                    ) {
+                      (target as { scaleY: number }).scaleY = animVars[
+                        key
+                      ] as number;
                     } else {
                       target[key] = animVars[key];
                     }
                   }
                 }
               });
-              
+
               // Call onComplete for this animation
-              if (animVars.onComplete && typeof animVars.onComplete === 'function') {
+              if (
+                animVars.onComplete &&
+                typeof animVars.onComplete === 'function'
+              ) {
                 (animVars.onComplete as () => void)();
               }
             }
           });
-          
+
           // Recursively apply progress to child timelines
           const childTimelines = timeline._childTimelines || [];
           childTimelines.forEach((childTimeline: unknown) => {
-            if (childTimeline && typeof childTimeline === 'object' && 'progress' in childTimeline) {
-              const progress = (childTimeline as { progress: (value: number) => unknown }).progress;
+            if (
+              childTimeline &&
+              typeof childTimeline === 'object' &&
+              'progress' in childTimeline
+            ) {
+              const progress = (
+                childTimeline as { progress: (value: number) => unknown }
+              ).progress;
               if (typeof progress === 'function') {
                 progress(value);
               }
             }
           });
-          
+
           // Trigger timeline onUpdate if available
           if (vars && typeof vars === 'object' && 'onUpdate' in vars) {
             const onUpdate = vars.onUpdate as () => void;
             if (typeof onUpdate === 'function') onUpdate();
           }
-          
+
           // When progress is set to 1, trigger timeline onComplete
-          if (value === 1 && vars && typeof vars === 'object' && 'onComplete' in vars) {
+          if (
+            value === 1 &&
+            vars &&
+            typeof vars === 'object' &&
+            'onComplete' in vars
+          ) {
             const onComplete = vars.onComplete as () => void;
             if (typeof onComplete === 'function') onComplete();
           }
@@ -129,108 +168,134 @@ vi.mock('gsap', () => {
       }),
       kill: vi.fn(() => timeline),
       paused: vi.fn(() => isPaused),
-      set: vi.fn((target: Record<string, unknown>, setVars: Record<string, unknown>, _time?: number) => {
-        // Apply properties immediately for set operations
-        if (target && setVars) {
-          Object.keys(setVars).forEach(key => {
-            if (target[key] !== undefined) {
-              target[key] = setVars[key];
-            }
-          });
+      set: vi.fn(
+        (
+          target: Record<string, unknown>,
+          setVars: Record<string, unknown>,
+          _time?: number
+        ) => {
+          // Apply properties immediately for set operations
+          if (target && setVars) {
+            Object.keys(setVars).forEach((key) => {
+              if (target[key] !== undefined) {
+                target[key] = setVars[key];
+              }
+            });
+          }
+          return timeline;
         }
-        return timeline;
-      }),
+      ),
       add: vi.fn((childTimeline: unknown, time?: number) => {
         // Store the child timeline so progress can be applied recursively
         if (childTimeline) {
           timeline._childTimelines = timeline._childTimelines || [];
           timeline._childTimelines.push(childTimeline);
         }
-        
+
         // For add operations, increase the duration if the child ends after current total
-        if (childTimeline && typeof childTimeline === 'object' && 'duration' in childTimeline) {
-          const childDuration = (childTimeline as { duration: () => number }).duration();
-          
+        if (
+          childTimeline &&
+          typeof childTimeline === 'object' &&
+          'duration' in childTimeline
+        ) {
+          const childDuration = (
+            childTimeline as { duration: () => number }
+          ).duration();
+
           // Check for delay in the child timeline's stored animations
           let childDelay = 0;
-          const animations = (childTimeline as { _animations?: unknown[] })._animations || [];
+          const animations =
+            (childTimeline as { _animations?: unknown[] })._animations || [];
           animations.forEach((animation: unknown) => {
             const { animVars } = animation as { animVars: { delay?: number } };
             if (animVars.delay) {
               childDelay = Math.max(childDelay, animVars.delay);
             }
           });
-          
+
           const childEndTime = (time || 0) + childDelay + childDuration;
           totalDuration = Math.max(totalDuration, childEndTime);
         }
         return timeline;
       }),
-      to: vi.fn((target: Record<string, unknown>, animVars: Record<string, unknown>) => {
-        // Store animation data but don't apply immediately
-        if (target && animVars) {
-          const duration = animVars.duration as number || 0.1;
-          totalDuration = Math.max(totalDuration, duration);
-          
-          // Store the animation for when progress is called
-          const storedAnimation = { target, animVars };
-          timeline._animations = timeline._animations || [];
-          timeline._animations.push(storedAnimation);
-          
-          // If this has an onUpdate callback, store it separately for progress calls
-          if (animVars.onUpdate && typeof animVars.onUpdate === 'function') {
-            timeline._onUpdateCallbacks = timeline._onUpdateCallbacks || [];
-            timeline._onUpdateCallbacks.push(animVars.onUpdate as () => void);
+      to: vi.fn(
+        (
+          target: Record<string, unknown>,
+          animVars: Record<string, unknown>
+        ) => {
+          // Store animation data but don't apply immediately
+          if (target && animVars) {
+            const duration = (animVars.duration as number) || 0.1;
+            totalDuration = Math.max(totalDuration, duration);
+
+            // Store the animation for when progress is called
+            const storedAnimation = { target, animVars };
+            timeline._animations = timeline._animations || [];
+            timeline._animations.push(storedAnimation);
+
+            // If this has an onUpdate callback, store it separately for progress calls
+            if (animVars.onUpdate && typeof animVars.onUpdate === 'function') {
+              timeline._onUpdateCallbacks = timeline._onUpdateCallbacks || [];
+              timeline._onUpdateCallbacks.push(animVars.onUpdate as () => void);
+            }
           }
+          return timeline;
         }
-        return timeline;
-      }),
+      ),
       then: vi.fn((callback?: () => void) => {
         if (callback) callback();
         return Promise.resolve();
       }),
     };
-    
+
     return timeline;
   };
 
   return {
     gsap: {
-      to: vi.fn((target: Record<string, unknown>, vars: Record<string, unknown>) => {
-        const timeline = createMockTimeline(vars);
-        // Store animation but don't apply immediately
-        if (target && vars) {
-          const storedAnimation = { target, animVars: vars };
-          timeline._animations = timeline._animations || [];
-          timeline._animations.push(storedAnimation);
-          
-          // If this has an onUpdate callback, store it separately for progress calls
-          if (vars.onUpdate && typeof vars.onUpdate === 'function') {
-            timeline._onUpdateCallbacks = timeline._onUpdateCallbacks || [];
-            timeline._onUpdateCallbacks.push(vars.onUpdate as () => void);
+      to: vi.fn(
+        (target: Record<string, unknown>, vars: Record<string, unknown>) => {
+          const timeline = createMockTimeline(vars);
+          // Store animation but don't apply immediately
+          if (target && vars) {
+            const storedAnimation = { target, animVars: vars };
+            timeline._animations = timeline._animations || [];
+            timeline._animations.push(storedAnimation);
+
+            // If this has an onUpdate callback, store it separately for progress calls
+            if (vars.onUpdate && typeof vars.onUpdate === 'function') {
+              timeline._onUpdateCallbacks = timeline._onUpdateCallbacks || [];
+              timeline._onUpdateCallbacks.push(vars.onUpdate as () => void);
+            }
           }
+          return timeline;
         }
-        return timeline;
-      }),
+      ),
       timeline: vi.fn((vars?: unknown) => {
         const timeline = createMockTimeline(vars);
         // Check for stagger configuration to adjust duration
-        if (vars && typeof vars === 'object' && ('stagger' in vars || 'staggerDelay' in vars)) {
+        if (
+          vars &&
+          typeof vars === 'object' &&
+          ('stagger' in vars || 'staggerDelay' in vars)
+        ) {
           timeline.addStaggerDuration(0.05, 2);
         }
         return timeline;
       }),
-      set: vi.fn((target: Record<string, unknown>, vars: Record<string, unknown>) => {
-        // Apply properties immediately for gsap.set operations
-        if (target && vars) {
-          Object.keys(vars).forEach(key => {
-            if (target[key] !== undefined) {
-              target[key] = vars[key];
-            }
-          });
+      set: vi.fn(
+        (target: Record<string, unknown>, vars: Record<string, unknown>) => {
+          // Apply properties immediately for gsap.set operations
+          if (target && vars) {
+            Object.keys(vars).forEach((key) => {
+              if (target[key] !== undefined) {
+                target[key] = vars[key];
+              }
+            });
+          }
+          return target;
         }
-        return target;
-      }),
+      ),
       registerPlugin: vi.fn(() => {}),
       killTweensOf: vi.fn(),
     },
@@ -239,7 +304,7 @@ vi.mock('gsap', () => {
 
 // Mock PixiPlugin
 vi.mock('gsap/PixiPlugin', () => ({
-  PixiPlugin: {}
+  PixiPlugin: {},
 }));
 
 // Mock PIXI.js to make instanceof work
@@ -251,11 +316,18 @@ vi.mock('pixi.js', () => {
     d: number;
     tx: number;
     ty: number;
-    
+
     constructor() {
-      this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.tx = 0; this.ty = 0;
+      this.a = 1;
+      this.b = 0;
+      this.c = 0;
+      this.d = 1;
+      this.tx = 0;
+      this.ty = 0;
     }
-    clone() { return new MockMatrix(); }
+    clone() {
+      return new MockMatrix();
+    }
   };
 
   const Sprite = class MockSprite {
@@ -296,7 +368,12 @@ vi.mock('pixi.js', () => {
     addChild: MockFunction;
     removeChild: MockFunction;
     getBounds: () => { x: number; y: number; width: number; height: number };
-    getLocalBounds: () => { x: number; y: number; width: number; height: number };
+    getLocalBounds: () => {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
     toLocal: MockFunction;
     toGlobal: MockFunction;
     setParent: MockFunction;
@@ -305,13 +382,54 @@ vi.mock('pixi.js', () => {
     interactiveChildren: boolean;
     hitArea: unknown;
     cursor: unknown;
-    worldTransform: { a: number; b: number; c: number; d: number; tx: number; ty: number };
-    localTransform: { a: number; b: number; c: number; d: number; tx: number; ty: number };
+    worldTransform: {
+      a: number;
+      b: number;
+      c: number;
+      d: number;
+      tx: number;
+      ty: number;
+    };
+    localTransform: {
+      a: number;
+      b: number;
+      c: number;
+      d: number;
+      tx: number;
+      ty: number;
+    };
     transform: {
-      a: number; b: number; c: number; d: number; tx: number; ty: number;
-      localTransform: { a: number; b: number; c: number; d: number; tx: number; ty: number; clone: () => unknown };
-      worldTransform: { a: number; b: number; c: number; d: number; tx: number; ty: number };
-      setFromMatrix: (matrix: { tx: number; ty: number; a: number; b: number; c: number; d: number }) => void;
+      a: number;
+      b: number;
+      c: number;
+      d: number;
+      tx: number;
+      ty: number;
+      localTransform: {
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+        tx: number;
+        ty: number;
+        clone: () => unknown;
+      };
+      worldTransform: {
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+        tx: number;
+        ty: number;
+      };
+      setFromMatrix: (matrix: {
+        tx: number;
+        ty: number;
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+      }) => void;
     };
     _didChangeId: number;
     _didLocalTransformChangeId: number;
@@ -325,10 +443,14 @@ vi.mock('pixi.js', () => {
       this.renderPipeId = 'sprite';
       this.batched = false;
       this._anchor = { _x: 0.5, _y: 0.5 };
-      this._texture = _texture || { source: { width: 256, height: 256 }, width: 256, height: 256 };
+      this._texture = _texture || {
+        source: { width: 256, height: 256 },
+        width: 256,
+        height: 256,
+      };
       this.anchor = { set: vi.fn(), x: 0.5, y: 0.5 };
       this.position = { set: vi.fn(), x: 0, y: 0 };
-      this.scale = { 
+      this.scale = {
         set: vi.fn((x: number, y?: number) => {
           this.scale.x = x;
           this.scale.y = y !== undefined ? y : x;
@@ -339,9 +461,9 @@ vi.mock('pixi.js', () => {
           if (x === 2) {
             this.baseScale = x;
           }
-        }), 
-        x: 1, 
-        y: 1 
+        }),
+        x: 1,
+        y: 1,
       };
       this.baseScale = 1;
       this.skew = {
@@ -350,7 +472,7 @@ vi.mock('pixi.js', () => {
           this.skew.y = y !== undefined ? y : x;
         }),
         x: 0,
-        y: 0
+        y: 0,
       };
       this.x = 0;
       this.y = 0;
@@ -366,7 +488,7 @@ vi.mock('pixi.js', () => {
           if (value === 2) {
             this.baseScale = value;
           }
-        }
+        },
       });
       Object.defineProperty(this, 'scaleY', {
         get: () => this.scale.y,
@@ -377,7 +499,7 @@ vi.mock('pixi.js', () => {
           if (value === 2) {
             this.baseScale = value;
           }
-        }
+        },
       });
       this.rotation = 0;
       this.alpha = 1;
@@ -404,7 +526,12 @@ vi.mock('pixi.js', () => {
       this.addChild = vi.fn();
       this.removeChild = vi.fn();
       this.getBounds = vi.fn(() => ({ x: 0, y: 0, width: 100, height: 100 }));
-      this.getLocalBounds = vi.fn(() => ({ x: 0, y: 0, width: 100, height: 100 }));
+      this.getLocalBounds = vi.fn(() => ({
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+      }));
       this.toLocal = vi.fn();
       this.toGlobal = vi.fn();
       this.setParent = vi.fn();
@@ -417,16 +544,33 @@ vi.mock('pixi.js', () => {
       // Additional required properties
       this.worldTransform = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
       this.localTransform = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
-      
+
       // Create transform object with basic functionality
       this.transform = {
-        a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0,
-        localTransform: { 
-          a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0,
-          clone: vi.fn(() => new MockMatrix())
+        a: 1,
+        b: 0,
+        c: 0,
+        d: 1,
+        tx: 0,
+        ty: 0,
+        localTransform: {
+          a: 1,
+          b: 0,
+          c: 0,
+          d: 1,
+          tx: 0,
+          ty: 0,
+          clone: vi.fn(() => new MockMatrix()),
         },
         worldTransform: { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 },
-        setFromMatrix: ((matrix: { tx: number; ty: number; a: number; b: number; c: number; d: number }) => {
+        setFromMatrix: ((matrix: {
+          tx: number;
+          ty: number;
+          a: number;
+          b: number;
+          c: number;
+          d: number;
+        }) => {
           // Apply matrix translation to sprite position
           if (matrix.tx !== undefined) this.x = matrix.tx;
           if (matrix.ty !== undefined) this.y = matrix.ty;
@@ -448,7 +592,7 @@ vi.mock('pixi.js', () => {
       this.render = vi.fn();
     }
   };
-  
+
   const Container = class MockContainer {
     position: { set: SetterFunction; x: number; y: number };
     scale: { set: SetterFunction; x: number; y: number };
@@ -473,12 +617,45 @@ vi.mock('pixi.js', () => {
     destroy: BasicFunction;
     removeFromParent: BasicFunction;
     getBounds: () => { x: number; y: number; width: number; height: number };
-    getLocalBounds: () => { x: number; y: number; width: number; height: number };
-    worldTransform: { a: number; b: number; c: number; d: number; tx: number; ty: number };
-    localTransform: { a: number; b: number; c: number; d: number; tx: number; ty: number };
+    getLocalBounds: () => {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    worldTransform: {
+      a: number;
+      b: number;
+      c: number;
+      d: number;
+      tx: number;
+      ty: number;
+    };
+    localTransform: {
+      a: number;
+      b: number;
+      c: number;
+      d: number;
+      tx: number;
+      ty: number;
+    };
     transform: {
-      localTransform: { a: number; b: number; c: number; d: number; tx: number; ty: number };
-      worldTransform: { a: number; b: number; c: number; d: number; tx: number; ty: number };
+      localTransform: {
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+        tx: number;
+        ty: number;
+      };
+      worldTransform: {
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+        tx: number;
+        ty: number;
+      };
     };
     uid: number;
     updateTransform: BasicFunction;
@@ -517,7 +694,12 @@ vi.mock('pixi.js', () => {
       this.destroy = vi.fn();
       this.removeFromParent = vi.fn();
       this.getBounds = vi.fn(() => ({ x: 0, y: 0, width: 100, height: 100 }));
-      this.getLocalBounds = vi.fn(() => ({ x: 0, y: 0, width: 100, height: 100 }));
+      this.getLocalBounds = vi.fn(() => ({
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+      }));
       // Transform properties
       this.worldTransform = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
       this.localTransform = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
@@ -535,7 +717,7 @@ vi.mock('pixi.js', () => {
       this.interactiveChildren = true;
     }
   };
-  
+
   const Filter = class MockFilter {
     padding: number;
     antialias: string;
@@ -599,20 +781,28 @@ vi.mock('pixi.js', () => {
       this.glProgram = null;
     }
   };
-  
+
   return {
     Sprite,
-    Container, 
+    Container,
     Filter,
     Application: class MockApplication {},
-    Texture: { 
-      WHITE: { source: { width: 1, height: 1 }, width: 1, height: 1 }, 
-      fromURL: vi.fn().mockResolvedValue({ source: { width: 256, height: 256 }, width: 256, height: 256 }) 
+    Texture: {
+      WHITE: { source: { width: 1, height: 1 }, width: 1, height: 1 },
+      fromURL: vi.fn().mockResolvedValue({
+        source: { width: 256, height: 256 },
+        width: 256,
+        height: 256,
+      }),
     },
-    Assets: { 
-      load: vi.fn().mockResolvedValue({ source: { width: 256, height: 256 }, width: 256, height: 256 }) 
+    Assets: {
+      load: vi.fn().mockResolvedValue({
+        source: { width: 256, height: 256 },
+        width: 256,
+        height: 256,
+      }),
     },
-    Matrix: MockMatrix
+    Matrix: MockMatrix,
   };
 });
 
@@ -658,7 +848,6 @@ beforeAll(() => {
       enabled = true;
     },
   };
-
 
   // Mock ResizeObserver
   global.ResizeObserver = class MockResizeObserver implements ResizeObserver {

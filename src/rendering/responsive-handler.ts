@@ -258,7 +258,10 @@ export class ResponsiveHandler {
     this.state.orientation = orientation;
     this.performanceMetrics.orientationChanges++;
 
-    const orientationConfig = this.config.orientation?.[orientation as keyof typeof this.config.orientation];
+    const orientationConfig =
+      this.config.orientation?.[
+        orientation as keyof typeof this.config.orientation
+      ];
     if (!orientationConfig) return;
 
     const animationId = this.generateAnimationId();

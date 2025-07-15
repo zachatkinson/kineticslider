@@ -330,7 +330,9 @@ export class TransformAnimator {
     if (this.performanceConfig.useMatrixOperations) {
       // Use optimized matrix interpolation
       const startMatrix =
-        (target as unknown as { transform?: { localTransform?: Matrix } }).transform?.localTransform?.clone() || new Matrix();
+        (
+          target as unknown as { transform?: { localTransform?: Matrix } }
+        ).transform?.localTransform?.clone() || new Matrix();
 
       timeline.to(
         { progress: 0 },
@@ -345,7 +347,9 @@ export class TransformAnimator {
               targetMatrix,
               progress
             );
-            const transformTarget = target as unknown as { transform?: { setFromMatrix?: (matrix: Matrix) => void } };
+            const transformTarget = target as unknown as {
+              transform?: { setFromMatrix?: (matrix: Matrix) => void };
+            };
             if (transformTarget.transform?.setFromMatrix) {
               transformTarget.transform.setFromMatrix(interpolatedMatrix);
             }
