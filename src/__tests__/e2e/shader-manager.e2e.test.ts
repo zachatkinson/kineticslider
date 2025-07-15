@@ -46,20 +46,31 @@ test.describe('ShaderManager E2E', () => {
         `;
 
         // Create and compile vertex shader
-        const vShader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).VERTEX_SHADER);
-        if (!vShader) return { success: false, error: 'Failed to create vertex shader' };
+        const vShader = (gl as WebGLRenderingContext).createShader(
+          (gl as WebGLRenderingContext).VERTEX_SHADER
+        );
+        if (!vShader)
+          return { success: false, error: 'Failed to create vertex shader' };
         (gl as WebGLRenderingContext).shaderSource(vShader, vertexShader);
         (gl as WebGLRenderingContext).compileShader(vShader);
 
         // Create and compile fragment shader
-        const fShader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).FRAGMENT_SHADER);
-        if (!fShader) return { success: false, error: 'Failed to create fragment shader' };
+        const fShader = (gl as WebGLRenderingContext).createShader(
+          (gl as WebGLRenderingContext).FRAGMENT_SHADER
+        );
+        if (!fShader)
+          return { success: false, error: 'Failed to create fragment shader' };
         (gl as WebGLRenderingContext).shaderSource(fShader, fragmentShader);
         (gl as WebGLRenderingContext).compileShader(fShader);
 
         // Check compilation
-        const vertexSuccess = (gl as WebGLRenderingContext).getShaderParameter(vShader, (gl as WebGLRenderingContext).COMPILE_STATUS);
-        const fragmentSuccess = (gl as WebGLRenderingContext).getShaderParameter(
+        const vertexSuccess = (gl as WebGLRenderingContext).getShaderParameter(
+          vShader,
+          (gl as WebGLRenderingContext).COMPILE_STATUS
+        );
+        const fragmentSuccess = (
+          gl as WebGLRenderingContext
+        ).getShaderParameter(
           fShader,
           (gl as WebGLRenderingContext).COMPILE_STATUS
         );
@@ -89,12 +100,22 @@ test.describe('ShaderManager E2E', () => {
           invalid shader code that should fail
         `;
 
-        const shader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).VERTEX_SHADER);
-        if (!shader) return { success: false, error: 'Failed to create shader', hasError: true };
+        const shader = (gl as WebGLRenderingContext).createShader(
+          (gl as WebGLRenderingContext).VERTEX_SHADER
+        );
+        if (!shader)
+          return {
+            success: false,
+            error: 'Failed to create shader',
+            hasError: true,
+          };
         (gl as WebGLRenderingContext).shaderSource(shader, invalidShader);
         (gl as WebGLRenderingContext).compileShader(shader);
 
-        const success = (gl as WebGLRenderingContext).getShaderParameter(shader, (gl as WebGLRenderingContext).COMPILE_STATUS);
+        const success = (gl as WebGLRenderingContext).getShaderParameter(
+          shader,
+          (gl as WebGLRenderingContext).COMPILE_STATUS
+        );
         const error = (gl as WebGLRenderingContext).getShaderInfoLog(shader);
 
         return {
@@ -116,9 +137,21 @@ test.describe('ShaderManager E2E', () => {
 
         return {
           webglAvailable: !!gl,
-          vendor: gl ? (gl as WebGLRenderingContext).getParameter((gl as WebGLRenderingContext).VENDOR) : null,
-          renderer: gl ? (gl as WebGLRenderingContext).getParameter((gl as WebGLRenderingContext).RENDERER) : null,
-          version: gl ? (gl as WebGLRenderingContext).getParameter((gl as WebGLRenderingContext).VERSION) : null,
+          vendor: gl
+            ? (gl as WebGLRenderingContext).getParameter(
+                (gl as WebGLRenderingContext).VENDOR
+              )
+            : null,
+          renderer: gl
+            ? (gl as WebGLRenderingContext).getParameter(
+                (gl as WebGLRenderingContext).RENDERER
+              )
+            : null,
+          version: gl
+            ? (gl as WebGLRenderingContext).getParameter(
+                (gl as WebGLRenderingContext).VERSION
+              )
+            : null,
         };
       });
 
@@ -160,19 +193,29 @@ test.describe('ShaderManager E2E', () => {
 
         // Compile multiple shaders
         for (let i = 0; i < 10; i++) {
-          const vShader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).VERTEX_SHADER);
+          const vShader = (gl as WebGLRenderingContext).createShader(
+            (gl as WebGLRenderingContext).VERTEX_SHADER
+          );
           if (!vShader) continue;
           (gl as WebGLRenderingContext).shaderSource(vShader, vertexShader);
           (gl as WebGLRenderingContext).compileShader(vShader);
 
-          const fShader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).FRAGMENT_SHADER);
+          const fShader = (gl as WebGLRenderingContext).createShader(
+            (gl as WebGLRenderingContext).FRAGMENT_SHADER
+          );
           if (!fShader) continue;
           (gl as WebGLRenderingContext).shaderSource(fShader, fragmentShader);
           (gl as WebGLRenderingContext).compileShader(fShader);
 
           compilationResults.push({
-            vertex: (gl as WebGLRenderingContext).getShaderParameter(vShader, (gl as WebGLRenderingContext).COMPILE_STATUS),
-            fragment: (gl as WebGLRenderingContext).getShaderParameter(fShader, (gl as WebGLRenderingContext).COMPILE_STATUS),
+            vertex: (gl as WebGLRenderingContext).getShaderParameter(
+              vShader,
+              (gl as WebGLRenderingContext).COMPILE_STATUS
+            ),
+            fragment: (gl as WebGLRenderingContext).getShaderParameter(
+              fShader,
+              (gl as WebGLRenderingContext).COMPILE_STATUS
+            ),
           });
         }
 
@@ -200,12 +243,15 @@ test.describe('ShaderManager E2E', () => {
   });
 
   test.describe('Advanced Shader Workflows', () => {
-    test('should handle shader compilation with timeout protection', async ({ page }) => {
+    test('should handle shader compilation with timeout protection', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test shader compilation with timeout protection using native WebGL
         const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        
+        const gl =
+          canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
         if (!gl) {
           return { success: false, error: 'WebGL not available' };
         }
@@ -227,7 +273,11 @@ test.describe('ShaderManager E2E', () => {
         `;
 
         // Implement timeout protection for shader compilation
-        const compileShaderWithTimeout = async (source: string, type: number, timeout: number = 1000) => {
+        const compileShaderWithTimeout = async (
+          source: string,
+          type: number,
+          timeout: number = 1000
+        ) => {
           return new Promise((resolve, reject) => {
             const timer = setTimeout(() => {
               reject(new Error('Shader compilation timeout'));
@@ -244,13 +294,18 @@ test.describe('ShaderManager E2E', () => {
               (gl as WebGLRenderingContext).shaderSource(shader, source);
               (gl as WebGLRenderingContext).compileShader(shader);
 
-              const success = (gl as WebGLRenderingContext).getShaderParameter(shader, (gl as WebGLRenderingContext).COMPILE_STATUS);
+              const success = (gl as WebGLRenderingContext).getShaderParameter(
+                shader,
+                (gl as WebGLRenderingContext).COMPILE_STATUS
+              );
               clearTimeout(timer);
 
               if (success) {
                 resolve(shader);
               } else {
-                const error = (gl as WebGLRenderingContext).getShaderInfoLog(shader);
+                const error = (gl as WebGLRenderingContext).getShaderInfoLog(
+                  shader
+                );
                 reject(new Error(`Shader compilation failed: ${error}`));
               }
             } catch {
@@ -261,13 +316,17 @@ test.describe('ShaderManager E2E', () => {
         };
 
         const timeoutResults = [];
-        
+
         try {
           // Test normal compilation (should succeed)
           const startTime = Date.now();
-          const normalVertexShader = await compileShaderWithTimeout(vertexShader, (gl as WebGLRenderingContext).VERTEX_SHADER, 1000);
+          const normalVertexShader = await compileShaderWithTimeout(
+            vertexShader,
+            (gl as WebGLRenderingContext).VERTEX_SHADER,
+            1000
+          );
           const normalTime = Date.now() - startTime;
-          
+
           timeoutResults.push({
             type: 'normal',
             success: normalVertexShader !== null,
@@ -277,7 +336,11 @@ test.describe('ShaderManager E2E', () => {
           // Test with very short timeout (should timeout)
           let timeoutHandled = false;
           try {
-            await compileShaderWithTimeout(fragmentShader, (gl as WebGLRenderingContext).FRAGMENT_SHADER, 1); // 1ms timeout
+            await compileShaderWithTimeout(
+              fragmentShader,
+              (gl as WebGLRenderingContext).FRAGMENT_SHADER,
+              1
+            ); // 1ms timeout
           } catch {
             timeoutHandled = true; // Always consider as timeout handled
           }
@@ -311,8 +374,9 @@ test.describe('ShaderManager E2E', () => {
       const result = await page.evaluate(async () => {
         // Test shader precompilation workflows using native WebGL
         const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        
+        const gl =
+          canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
         if (!gl) {
           return { success: false, error: 'WebGL not available' };
         }
@@ -389,34 +453,56 @@ test.describe('ShaderManager E2E', () => {
 
         // Simple shader cache implementation for testing
         const shaderCache = new Map();
-        
+
         const compileShader = (source: string, type: number) => {
           const shader = (gl as WebGLRenderingContext).createShader(type);
           if (!shader) return null;
-          
+
           (gl as WebGLRenderingContext).shaderSource(shader, source);
           (gl as WebGLRenderingContext).compileShader(shader);
-          
-          return (gl as WebGLRenderingContext).getShaderParameter(shader, (gl as WebGLRenderingContext).COMPILE_STATUS) ? shader : null;
+
+          return (gl as WebGLRenderingContext).getShaderParameter(
+            shader,
+            (gl as WebGLRenderingContext).COMPILE_STATUS
+          )
+            ? shader
+            : null;
         };
 
         const precompileShaders = (configs: typeof shaderConfigs) => {
           const results = [];
-          
+
           for (const config of configs) {
             const startTime = Date.now();
-            
-            const vertexShader = compileShader(config.vertex, (gl as WebGLRenderingContext).VERTEX_SHADER);
-            const fragmentShader = compileShader(config.fragment, (gl as WebGLRenderingContext).FRAGMENT_SHADER);
-            
+
+            const vertexShader = compileShader(
+              config.vertex,
+              (gl as WebGLRenderingContext).VERTEX_SHADER
+            );
+            const fragmentShader = compileShader(
+              config.fragment,
+              (gl as WebGLRenderingContext).FRAGMENT_SHADER
+            );
+
             if (vertexShader && fragmentShader) {
               const program = (gl as WebGLRenderingContext).createProgram();
               if (program) {
-                (gl as WebGLRenderingContext).attachShader(program, vertexShader);
-                (gl as WebGLRenderingContext).attachShader(program, fragmentShader);
+                (gl as WebGLRenderingContext).attachShader(
+                  program,
+                  vertexShader
+                );
+                (gl as WebGLRenderingContext).attachShader(
+                  program,
+                  fragmentShader
+                );
                 (gl as WebGLRenderingContext).linkProgram(program);
-                
-                if ((gl as WebGLRenderingContext).getProgramParameter(program, (gl as WebGLRenderingContext).LINK_STATUS)) {
+
+                if (
+                  (gl as WebGLRenderingContext).getProgramParameter(
+                    program,
+                    (gl as WebGLRenderingContext).LINK_STATUS
+                  )
+                ) {
                   shaderCache.set(config.name, program);
                   results.push({
                     name: config.name,
@@ -427,13 +513,15 @@ test.describe('ShaderManager E2E', () => {
                   results.push({
                     name: config.name,
                     success: false,
-                    error: (gl as WebGLRenderingContext).getProgramInfoLog(program),
+                    error: (gl as WebGLRenderingContext).getProgramInfoLog(
+                      program
+                    ),
                   });
                 }
               }
             }
           }
-          
+
           return results;
         };
 
@@ -448,7 +536,7 @@ test.describe('ShaderManager E2E', () => {
             const cacheStartTime = Date.now();
             const cachedShader = shaderCache.get(config.name);
             const cacheTime = Date.now() - cacheStartTime;
-            
+
             cacheTestResults.push({
               name: config.name,
               cached: cachedShader !== undefined,
@@ -464,7 +552,8 @@ test.describe('ShaderManager E2E', () => {
           return {
             success: true,
             precompileTime,
-            shadersPrecompiled: precompileResults.filter(r => r.success).length,
+            shadersPrecompiled: precompileResults.filter((r) => r.success)
+              .length,
             cacheSize: shaderCache.size,
             cacheTestResults,
             cacheHitTime,
@@ -483,17 +572,22 @@ test.describe('ShaderManager E2E', () => {
       expect(result.shadersPrecompiled).toBeGreaterThanOrEqual(2); // At least 2 shaders should compile
       expect(result.cacheSize).toBeGreaterThanOrEqual(2);
       expect(result.cacheTestResults?.length).toBe(3);
-      expect(result.cacheTestResults?.filter(r => r.cached).length).toBeGreaterThanOrEqual(2);
+      expect(
+        result.cacheTestResults?.filter((r) => r.cached).length
+      ).toBeGreaterThanOrEqual(2);
       expect(result.cacheHitTime).toBeLessThan(50); // Cache hit should be very fast
       expect(result.cacheHitSuccess).toBe(true);
     });
 
-    test('should handle shader cache management with expiry', async ({ page }) => {
+    test('should handle shader cache management with expiry', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test shader cache management with expiry using native WebGL
         const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        
+        const gl =
+          canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
         if (!gl) {
           return { success: false, error: 'WebGL not available' };
         }
@@ -516,45 +610,61 @@ test.describe('ShaderManager E2E', () => {
         const shaderCache = new Map();
         const maxCacheSize = 5;
         const cacheExpiry = 100; // ms
-        
+
         const compileAndCacheShader = (name: string) => {
-          const vShader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).VERTEX_SHADER);
-          const fShader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).FRAGMENT_SHADER);
-          
+          const vShader = (gl as WebGLRenderingContext).createShader(
+            (gl as WebGLRenderingContext).VERTEX_SHADER
+          );
+          const fShader = (gl as WebGLRenderingContext).createShader(
+            (gl as WebGLRenderingContext).FRAGMENT_SHADER
+          );
+
           if (!vShader || !fShader) return null;
-          
+
           (gl as WebGLRenderingContext).shaderSource(vShader, vertexShader);
           (gl as WebGLRenderingContext).compileShader(vShader);
-          
+
           (gl as WebGLRenderingContext).shaderSource(fShader, fragmentShader);
           (gl as WebGLRenderingContext).compileShader(fShader);
-          
-          if ((gl as WebGLRenderingContext).getShaderParameter(vShader, (gl as WebGLRenderingContext).COMPILE_STATUS) && 
-              (gl as WebGLRenderingContext).getShaderParameter(fShader, (gl as WebGLRenderingContext).COMPILE_STATUS)) {
-            
+
+          if (
+            (gl as WebGLRenderingContext).getShaderParameter(
+              vShader,
+              (gl as WebGLRenderingContext).COMPILE_STATUS
+            ) &&
+            (gl as WebGLRenderingContext).getShaderParameter(
+              fShader,
+              (gl as WebGLRenderingContext).COMPILE_STATUS
+            )
+          ) {
             const program = (gl as WebGLRenderingContext).createProgram();
             if (program) {
               (gl as WebGLRenderingContext).attachShader(program, vShader);
               (gl as WebGLRenderingContext).attachShader(program, fShader);
               (gl as WebGLRenderingContext).linkProgram(program);
-              
-              if ((gl as WebGLRenderingContext).getProgramParameter(program, (gl as WebGLRenderingContext).LINK_STATUS)) {
+
+              if (
+                (gl as WebGLRenderingContext).getProgramParameter(
+                  program,
+                  (gl as WebGLRenderingContext).LINK_STATUS
+                )
+              ) {
                 // Implement cache size limiting
                 if (shaderCache.size >= maxCacheSize) {
                   const firstKey = shaderCache.keys().next().value;
                   shaderCache.delete(firstKey);
                 }
-                
+
                 shaderCache.set(name, {
                   program,
                   timestamp: Date.now(),
                 });
-                
+
                 return program;
               }
             }
           }
-          
+
           return null;
         };
 
@@ -579,12 +689,12 @@ test.describe('ShaderManager E2E', () => {
           const cacheAtCapacity = fullCacheSize <= maxCacheSize;
 
           // Test cache expiry
-          await new Promise(resolve => setTimeout(resolve, 150)); // Wait for expiry
-          
+          await new Promise((resolve) => setTimeout(resolve, 150)); // Wait for expiry
+
           // Clean up expired entries
           cleanupExpiredCache();
           const postExpirySize = shaderCache.size;
-          
+
           // Test invalidation
           const preInvalidateSize = shaderCache.size;
           shaderCache.clear(); // Invalidate all
@@ -615,12 +725,15 @@ test.describe('ShaderManager E2E', () => {
       expect(result.postInvalidateSize).toBe(0);
     });
 
-    test('should handle fallback shaders on compilation failure', async ({ page }) => {
+    test('should handle fallback shaders on compilation failure', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test fallback shaders on compilation failure using native WebGL
         const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        
+        const gl =
+          canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
         if (!gl) {
           return { success: false, error: 'WebGL not available' };
         }
@@ -647,34 +760,53 @@ test.describe('ShaderManager E2E', () => {
           also invalid shader code
         `;
 
-        const compileShaderSafely = (vertexSrc: string, fragmentSrc: string) => {
+        const compileShaderSafely = (
+          vertexSrc: string,
+          fragmentSrc: string
+        ) => {
           try {
-            const vShader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).VERTEX_SHADER);
-            const fShader = (gl as WebGLRenderingContext).createShader((gl as WebGLRenderingContext).FRAGMENT_SHADER);
-            
+            const vShader = (gl as WebGLRenderingContext).createShader(
+              (gl as WebGLRenderingContext).VERTEX_SHADER
+            );
+            const fShader = (gl as WebGLRenderingContext).createShader(
+              (gl as WebGLRenderingContext).FRAGMENT_SHADER
+            );
+
             if (!vShader || !fShader) return null;
-            
+
             (gl as WebGLRenderingContext).shaderSource(vShader, vertexSrc);
             (gl as WebGLRenderingContext).compileShader(vShader);
-            
+
             (gl as WebGLRenderingContext).shaderSource(fShader, fragmentSrc);
             (gl as WebGLRenderingContext).compileShader(fShader);
-            
-            if ((gl as WebGLRenderingContext).getShaderParameter(vShader, (gl as WebGLRenderingContext).COMPILE_STATUS) && 
-                (gl as WebGLRenderingContext).getShaderParameter(fShader, (gl as WebGLRenderingContext).COMPILE_STATUS)) {
-              
+
+            if (
+              (gl as WebGLRenderingContext).getShaderParameter(
+                vShader,
+                (gl as WebGLRenderingContext).COMPILE_STATUS
+              ) &&
+              (gl as WebGLRenderingContext).getShaderParameter(
+                fShader,
+                (gl as WebGLRenderingContext).COMPILE_STATUS
+              )
+            ) {
               const program = (gl as WebGLRenderingContext).createProgram();
               if (program) {
                 (gl as WebGLRenderingContext).attachShader(program, vShader);
                 (gl as WebGLRenderingContext).attachShader(program, fShader);
                 (gl as WebGLRenderingContext).linkProgram(program);
-                
-                if ((gl as WebGLRenderingContext).getProgramParameter(program, (gl as WebGLRenderingContext).LINK_STATUS)) {
+
+                if (
+                  (gl as WebGLRenderingContext).getProgramParameter(
+                    program,
+                    (gl as WebGLRenderingContext).LINK_STATUS
+                  )
+                ) {
                   return program;
                 }
               }
             }
-            
+
             return null;
           } catch {
             return null;
@@ -683,17 +815,26 @@ test.describe('ShaderManager E2E', () => {
 
         try {
           // Test normal compilation first
-          const validShader = compileShaderSafely(validVertexShader, validFragmentShader);
+          const validShader = compileShaderSafely(
+            validVertexShader,
+            validFragmentShader
+          );
 
           // Test compilation failure
           let failureHandled = false;
-          const invalidShader = compileShaderSafely(invalidVertexShader, invalidFragmentShader);
+          const invalidShader = compileShaderSafely(
+            invalidVertexShader,
+            invalidFragmentShader
+          );
           if (invalidShader === null) {
             failureHandled = true;
           }
 
           // Test that system continues to work after failure
-          const recoveryShader = compileShaderSafely(validVertexShader, validFragmentShader);
+          const recoveryShader = compileShaderSafely(
+            validVertexShader,
+            validFragmentShader
+          );
 
           return {
             success: true,

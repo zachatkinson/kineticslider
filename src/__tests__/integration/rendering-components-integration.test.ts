@@ -139,8 +139,14 @@ describe('Rendering Component Integration', () => {
     performanceMonitor = new PerformanceMonitor();
 
     mockContainer = createMockElement('div');
-    Object.defineProperty(mockContainer, 'clientWidth', { value: 800, writable: true });
-    Object.defineProperty(mockContainer, 'clientHeight', { value: 600, writable: true });
+    Object.defineProperty(mockContainer, 'clientWidth', {
+      value: 800,
+      writable: true,
+    });
+    Object.defineProperty(mockContainer, 'clientHeight', {
+      value: 600,
+      writable: true,
+    });
 
     // Don't use vi.clearAllMocks() as it breaks the pre-configured mocks
     // Instead, manually reset specific mocks if needed

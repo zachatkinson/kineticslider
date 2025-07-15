@@ -141,9 +141,7 @@ export class ShaderManager implements IShaderManager {
       }
 
       // If even default shader fails, throw error
-      const shaderError = new Error(
-        `Shader compilation failed: Unknown error`
-      );
+      const shaderError = new Error(`Shader compilation failed: Unknown error`);
       shaderError.name = ERROR_CODES.ANIMATION_FAILED; // Using closest available error code
       throw shaderError;
     }
@@ -226,7 +224,9 @@ export class ShaderManager implements IShaderManager {
   /**
    * Precompile shaders from configuration
    */
-  async precompileShaders(shaderConfigs: Array<{ name: string; vertex: string; fragment: string }>): Promise<void> {
+  async precompileShaders(
+    shaderConfigs: Array<{ name: string; vertex: string; fragment: string }>
+  ): Promise<void> {
     const compilationPromises = shaderConfigs.map(async (config) => {
       try {
         await this.compileShader(config.vertex, config.fragment, config.name);
@@ -523,7 +523,9 @@ export class ShaderManager implements IShaderManager {
     });
 
     if (oldestEntry) {
-      this.cache.delete((oldestEntry as { name: string; lastUsed: number }).name);
+      this.cache.delete(
+        (oldestEntry as { name: string; lastUsed: number }).name
+      );
     }
   }
 

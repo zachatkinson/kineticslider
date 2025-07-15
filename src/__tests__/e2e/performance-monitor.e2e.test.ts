@@ -17,28 +17,35 @@ test.describe('PerformanceMonitor E2E', () => {
   });
 
   test.describe('Real-World Performance Monitoring', () => {
-    test('should detect performance degradation during heavy operations', async ({ page }) => {
+    test('should detect performance degradation during heavy operations', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test performance degradation detection using native browser APIs
         const performanceData = [];
         const frameTimes = [];
         // const memoryUsage = [];
-        
+
         // const startTime = performance.now();
-        
+
         // Simulate initial good performance
         for (let i = 0; i < 30; i++) {
           const frameStart = performance.now();
-          await new Promise(resolve => setTimeout(resolve, 16)); // ~60fps
+          await new Promise((resolve) => setTimeout(resolve, 16)); // ~60fps
           const frameEnd = performance.now();
-          
+
           frameTimes.push(frameEnd - frameStart);
-          
+
           if (i % 10 === 0) {
             performanceData.push({
               frame: i,
               fps: 1000 / (frameEnd - frameStart),
-              memory: (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0,
+              memory: (performance as unknown as Record<string, unknown>).memory
+                ? (
+                    (performance as unknown as Record<string, unknown>)
+                      .memory as { usedJSHeapSize: number }
+                  ).usedJSHeapSize
+                : 0,
               timestamp: frameEnd,
             });
           }
@@ -48,23 +55,28 @@ test.describe('PerformanceMonitor E2E', () => {
         const heavyOperationStart = performance.now();
         for (let i = 0; i < 50; i++) {
           const frameStart = performance.now();
-          
+
           // Simulate CPU-intensive work
           // let sum = 0;
           for (let j = 0; j < 100000; j++) {
             void (Math.random() * Math.sin(j));
           }
-          
-          await new Promise(resolve => setTimeout(resolve, 50)); // Slower frames
+
+          await new Promise((resolve) => setTimeout(resolve, 50)); // Slower frames
           const frameEnd = performance.now();
-          
+
           frameTimes.push(frameEnd - frameStart);
-          
+
           if (i % 10 === 0) {
             performanceData.push({
               frame: i + 30,
               fps: 1000 / (frameEnd - frameStart),
-              memory: (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0,
+              memory: (performance as unknown as Record<string, unknown>).memory
+                ? (
+                    (performance as unknown as Record<string, unknown>)
+                      .memory as { usedJSHeapSize: number }
+                  ).usedJSHeapSize
+                : 0,
               timestamp: frameEnd,
             });
           }
@@ -73,12 +85,15 @@ test.describe('PerformanceMonitor E2E', () => {
         const heavyOperationTime = performance.now() - heavyOperationStart;
 
         // Analyze performance degradation
-        const initialFPS = performanceData.slice(0, 3).reduce((sum, d) => sum + d.fps, 0) / 3;
-        const degradedFPS = performanceData.slice(-3).reduce((sum, d) => sum + d.fps, 0) / 3;
+        const initialFPS =
+          performanceData.slice(0, 3).reduce((sum, d) => sum + d.fps, 0) / 3;
+        const degradedFPS =
+          performanceData.slice(-3).reduce((sum, d) => sum + d.fps, 0) / 3;
         const performanceDrop = initialFPS - degradedFPS;
-        
-        const avgFrameTime = frameTimes.reduce((sum, t) => sum + t, 0) / frameTimes.length;
-        const minFPS = Math.min(...performanceData.map(d => d.fps));
+
+        const avgFrameTime =
+          frameTimes.reduce((sum, t) => sum + t, 0) / frameTimes.length;
+        const minFPS = Math.min(...performanceData.map((d) => d.fps));
 
         return {
           success: true,
@@ -101,7 +116,9 @@ test.describe('PerformanceMonitor E2E', () => {
       expect(result.heavyOperationTime).toBeGreaterThan(1000);
     });
 
-    test('should detect memory leaks over extended periods', async ({ page }) => {
+    test('should detect memory leaks over extended periods', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test memory leak detection using native browser APIs
         const memorySnapshots: Array<{
@@ -120,14 +137,14 @@ test.describe('PerformanceMonitor E2E', () => {
         // Simulate operations that might cause memory leaks
         for (let cycle = 0; cycle < 10; cycle++) {
           const cycleStart = Date.now();
-          
+
           // Create and use resources (simulate memory allocations)
           const resources = [];
           for (let i = 0; i < 5; i++) {
             // Create large objects to simulate resource allocation
             const largeArray = new Array(10000).fill(Math.random());
             const textureData = new Uint8Array(1000); // Simulate texture data
-            
+
             resources.push({
               id: `resource-${cycle}-${i}`,
               data: largeArray,
@@ -144,7 +161,14 @@ test.describe('PerformanceMonitor E2E', () => {
           });
 
           // Check memory usage
-          const memoryUsed = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
+          const memoryUsed = (performance as unknown as Record<string, unknown>)
+            .memory
+            ? (
+                (performance as unknown as Record<string, unknown>).memory as {
+                  usedJSHeapSize: number;
+                }
+              ).usedJSHeapSize
+            : 0;
           memorySnapshots.push({
             cycle,
             memoryUsed,
@@ -159,21 +183,23 @@ test.describe('PerformanceMonitor E2E', () => {
             // Simulate memory leak by keeping references
             memoryLeaks.push(...resources);
           }
-          
+
           // Small delay between cycles
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
         // Analyze memory trend
         const initialMemory = memorySnapshots[0]?.memoryUsed || 0;
-        const finalMemory = memorySnapshots[memorySnapshots.length - 1]?.memoryUsed || 0;
+        const finalMemory =
+          memorySnapshots[memorySnapshots.length - 1]?.memoryUsed || 0;
         const memoryIncrease = finalMemory - initialMemory;
         const memoryGrowthRate = memoryIncrease / operations.length;
 
         // Check for consistent memory growth (potential leak)
         const memoryTrend = memorySnapshots.reduce((trend, snapshot, index) => {
           if (index === 0) return trend;
-          const growth = snapshot.memoryUsed - memorySnapshots[index - 1].memoryUsed;
+          const growth =
+            snapshot.memoryUsed - memorySnapshots[index - 1].memoryUsed;
           return trend + (growth > 0 ? 1 : -1);
         }, 0);
 
@@ -195,7 +221,7 @@ test.describe('PerformanceMonitor E2E', () => {
       expect(result.success).toBe(true);
       expect(result.memorySnapshots.length).toBe(10);
       expect(result.operations.length).toBe(10);
-      
+
       // Memory tracking may not be available in all browsers/contexts
       if (result.finalMemory > 0 && result.initialMemory > 0) {
         // Memory might be the same due to garbage collection, but we created leaked objects
@@ -204,12 +230,16 @@ test.describe('PerformanceMonitor E2E', () => {
         expect(result.leakedObjectsCount).toBeGreaterThan(0);
       } else {
         // If memory tracking is not available, just verify the test structure worked
-        expect(result.memorySnapshots.every(s => s.memoryUsed >= 0)).toBe(true);
+        expect(result.memorySnapshots.every((s) => s.memoryUsed >= 0)).toBe(
+          true
+        );
         expect(result.leakedObjectsCount).toBeGreaterThan(0);
       }
     });
 
-    test('should provide accurate performance trend analysis', async ({ page }) => {
+    test('should provide accurate performance trend analysis', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test performance trend analysis using native browser APIs
         const scenarios = [
@@ -227,22 +257,23 @@ test.describe('PerformanceMonitor E2E', () => {
         for (const scenario of scenarios) {
           const scenarioStart = Date.now();
           const frameTimes = [];
-          
+
           for (let i = 0; i < scenario.iterations; i++) {
             const frameStart = performance.now();
-            
-            const frameDelay = scenario.name === 'degrading' 
-              ? scenario.frameDelay + (i * 2) // Gradually slower
-              : scenario.name === 'improving'
-              ? Math.max(8, scenario.frameDelay - (i * 0.5)) // Gradually faster
-              : scenario.frameDelay; // Stable
 
-            await new Promise(resolve => setTimeout(resolve, frameDelay));
-            
+            const frameDelay =
+              scenario.name === 'degrading'
+                ? scenario.frameDelay + i * 2 // Gradually slower
+                : scenario.name === 'improving'
+                  ? Math.max(8, scenario.frameDelay - i * 0.5) // Gradually faster
+                  : scenario.frameDelay; // Stable
+
+            await new Promise((resolve) => setTimeout(resolve, frameDelay));
+
             const frameEnd = performance.now();
             const frameTime = frameEnd - frameStart;
             frameTimes.push(frameTime);
-            
+
             performanceTimeline.push({
               scenario: scenario.name,
               frame: i,
@@ -253,20 +284,31 @@ test.describe('PerformanceMonitor E2E', () => {
           }
 
           const scenarioEnd = Date.now();
-          const avgFrameTime = frameTimes.reduce((sum, t) => sum + t, 0) / frameTimes.length;
+          const avgFrameTime =
+            frameTimes.reduce((sum, t) => sum + t, 0) / frameTimes.length;
           const avgFPS = 1000 / avgFrameTime;
-          const minFPS = Math.min(...frameTimes.map(t => 1000 / t));
-          const maxFPS = Math.max(...frameTimes.map(t => 1000 / t));
-          
+          const minFPS = Math.min(...frameTimes.map((t) => 1000 / t));
+          const maxFPS = Math.max(...frameTimes.map((t) => 1000 / t));
+
           // Calculate trend
-          const firstHalfAvg = frameTimes.slice(0, Math.floor(frameTimes.length / 2))
-            .reduce((sum, t) => sum + t, 0) / Math.floor(frameTimes.length / 2);
-          const secondHalfAvg = frameTimes.slice(Math.floor(frameTimes.length / 2))
-            .reduce((sum, t) => sum + t, 0) / Math.ceil(frameTimes.length / 2);
-          
-          const trend = secondHalfAvg > firstHalfAvg ? 'degrading' : 
-                       secondHalfAvg < firstHalfAvg ? 'improving' : 'stable';
-          
+          const firstHalfAvg =
+            frameTimes
+              .slice(0, Math.floor(frameTimes.length / 2))
+              .reduce((sum, t) => sum + t, 0) /
+            Math.floor(frameTimes.length / 2);
+          const secondHalfAvg =
+            frameTimes
+              .slice(Math.floor(frameTimes.length / 2))
+              .reduce((sum, t) => sum + t, 0) /
+            Math.ceil(frameTimes.length / 2);
+
+          const trend =
+            secondHalfAvg > firstHalfAvg
+              ? 'degrading'
+              : secondHalfAvg < firstHalfAvg
+                ? 'improving'
+                : 'stable';
+
           scenarioResults.push({
             scenario: scenario.name,
             duration: scenarioEnd - scenarioStart,
@@ -289,24 +331,32 @@ test.describe('PerformanceMonitor E2E', () => {
       expect(result.success).toBe(true);
       expect(result.scenarioResults.length).toBe(3);
       expect(result.trendAnalysisWorking).toBe(true);
-      
+
       // Check that different scenarios produced different performance characteristics
-      const stable = result.scenarioResults.find(s => s.scenario === 'stable');
-      const degrading = result.scenarioResults.find(s => s.scenario === 'degrading');
-      const improving = result.scenarioResults.find(s => s.scenario === 'improving');
+      const stable = result.scenarioResults.find(
+        (s) => s.scenario === 'stable'
+      );
+      const degrading = result.scenarioResults.find(
+        (s) => s.scenario === 'degrading'
+      );
+      const improving = result.scenarioResults.find(
+        (s) => s.scenario === 'improving'
+      );
 
       expect(stable).toBeDefined();
       expect(degrading).toBeDefined();
       expect(improving).toBeDefined();
-      
+
       // Degrading scenario should have worse performance than stable
       expect(degrading!.averageFPS).toBeLessThan(stable!.averageFPS);
-      
+
       // Improving scenario should have better performance than stable
       expect(improving!.averageFPS).toBeGreaterThan(stable!.averageFPS);
     });
 
-    test('should trigger warnings and critical thresholds appropriately', async ({ page }) => {
+    test('should trigger warnings and critical thresholds appropriately', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test warning and critical thresholds using native browser APIs
         const warningCallbacks: Array<{
@@ -326,12 +376,12 @@ test.describe('PerformanceMonitor E2E', () => {
           memory: number;
           phase: string;
         }> = [];
-        
+
         // const targetFPS = 60;
         const warningThreshold = 30;
         const criticalThreshold = 15;
         const memoryWarningThreshold = 10 * 1024 * 1024; // 10MB
-        
+
         const checkThresholds = (fps: number, memory: number) => {
           if (fps < criticalThreshold) {
             criticalCallbacks.push({
@@ -348,7 +398,7 @@ test.describe('PerformanceMonitor E2E', () => {
               memory,
             });
           }
-          
+
           if (memory > memoryWarningThreshold) {
             warningCallbacks.push({
               type: 'memory',
@@ -362,13 +412,20 @@ test.describe('PerformanceMonitor E2E', () => {
         // Simulate normal performance first
         for (let i = 0; i < 10; i++) {
           const frameStart = performance.now();
-          await new Promise(resolve => setTimeout(resolve, 16)); // ~60fps
+          await new Promise((resolve) => setTimeout(resolve, 16)); // ~60fps
           const frameEnd = performance.now();
-          
+
           const frameTime = frameEnd - frameStart;
           const fps = 1000 / frameTime;
-          const memory = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
-          
+          const memory = (performance as unknown as Record<string, unknown>)
+            .memory
+            ? (
+                (performance as unknown as Record<string, unknown>).memory as {
+                  usedJSHeapSize: number;
+                }
+              ).usedJSHeapSize
+            : 0;
+
           performanceData.push({ fps, memory, phase: 'normal' });
           checkThresholds(fps, memory);
         }
@@ -376,13 +433,20 @@ test.describe('PerformanceMonitor E2E', () => {
         // Simulate warning-level performance
         for (let i = 0; i < 10; i++) {
           const frameStart = performance.now();
-          await new Promise(resolve => setTimeout(resolve, 40)); // ~25fps
+          await new Promise((resolve) => setTimeout(resolve, 40)); // ~25fps
           const frameEnd = performance.now();
-          
+
           const frameTime = frameEnd - frameStart;
           const fps = 1000 / frameTime;
-          const memory = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
-          
+          const memory = (performance as unknown as Record<string, unknown>)
+            .memory
+            ? (
+                (performance as unknown as Record<string, unknown>).memory as {
+                  usedJSHeapSize: number;
+                }
+              ).usedJSHeapSize
+            : 0;
+
           performanceData.push({ fps, memory, phase: 'warning' });
           checkThresholds(fps, memory);
         }
@@ -390,13 +454,20 @@ test.describe('PerformanceMonitor E2E', () => {
         // Simulate critical-level performance
         for (let i = 0; i < 10; i++) {
           const frameStart = performance.now();
-          await new Promise(resolve => setTimeout(resolve, 80)); // ~12fps
+          await new Promise((resolve) => setTimeout(resolve, 80)); // ~12fps
           const frameEnd = performance.now();
-          
+
           const frameTime = frameEnd - frameStart;
           const fps = 1000 / frameTime;
-          const memory = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
-          
+          const memory = (performance as unknown as Record<string, unknown>)
+            .memory
+            ? (
+                (performance as unknown as Record<string, unknown>).memory as {
+                  usedJSHeapSize: number;
+                }
+              ).usedJSHeapSize
+            : 0;
+
           performanceData.push({ fps, memory, phase: 'critical' });
           checkThresholds(fps, memory);
         }
@@ -405,21 +476,37 @@ test.describe('PerformanceMonitor E2E', () => {
         const memoryHogs = [];
         for (let i = 0; i < 100; i++) {
           memoryHogs.push(new Array(10000).fill(Math.random()));
-          
+
           const frameStart = performance.now();
-          await new Promise(resolve => setTimeout(resolve, 16));
+          await new Promise((resolve) => setTimeout(resolve, 16));
           const frameEnd = performance.now();
-          
+
           const frameTime = frameEnd - frameStart;
           const fps = 1000 / frameTime;
-          const memory = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
-          
+          const memory = (performance as unknown as Record<string, unknown>)
+            .memory
+            ? (
+                (performance as unknown as Record<string, unknown>).memory as {
+                  usedJSHeapSize: number;
+                }
+              ).usedJSHeapSize
+            : 0;
+
           performanceData.push({ fps, memory, phase: 'memory-pressure' });
           checkThresholds(fps, memory);
         }
 
-        const finalMemory = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
-        const avgFPS = performanceData.reduce((sum, d) => sum + d.fps, 0) / performanceData.length;
+        const finalMemory = (performance as unknown as Record<string, unknown>)
+          .memory
+          ? (
+              (performance as unknown as Record<string, unknown>).memory as {
+                usedJSHeapSize: number;
+              }
+            ).usedJSHeapSize
+          : 0;
+        const avgFPS =
+          performanceData.reduce((sum, d) => sum + d.fps, 0) /
+          performanceData.length;
 
         return {
           success: true,
@@ -437,24 +524,28 @@ test.describe('PerformanceMonitor E2E', () => {
       expect(result.success).toBe(true);
       expect(result.warningsTriggered).toBe(true);
       expect(result.warningCallbacks.length).toBeGreaterThan(0);
-      
+
       // Memory pressure detection may not work in all browsers
       if (result.finalMemory > 0) {
         expect(result.memoryPressureDetected).toBe(true);
       }
-      
+
       // Check that warnings were triggered for performance issues
-      const fpsWarnings = result.warningCallbacks.filter(w => w.type === 'fps' || w.fps < 30);
+      const fpsWarnings = result.warningCallbacks.filter(
+        (w) => w.type === 'fps' || w.fps < 30
+      );
       expect(fpsWarnings.length).toBeGreaterThan(0);
     });
   });
 
   test.describe('Performance Monitoring Integration', () => {
-    test('should integrate with rendering pipeline for real-time monitoring', async ({ page }) => {
+    test('should integrate with rendering pipeline for real-time monitoring', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test rendering pipeline integration using native browser APIs
         const performanceTimeline = [];
-        
+
         // Create container for canvas
         const container = document.createElement('div');
         container.style.width = '800px';
@@ -466,7 +557,7 @@ test.describe('PerformanceMonitor E2E', () => {
         canvas.width = 800;
         canvas.height = 600;
         container.appendChild(canvas);
-        
+
         const ctx = canvas.getContext('2d');
         if (!ctx) {
           return { success: false, error: 'Canvas context not available' };
@@ -475,7 +566,7 @@ test.describe('PerformanceMonitor E2E', () => {
         // Simulate realistic rendering workflow
         for (let i = 0; i < 20; i++) {
           const frameStart = performance.now();
-          
+
           try {
             // Simulate texture loading with data URL
             const img = new Image();
@@ -484,23 +575,31 @@ test.describe('PerformanceMonitor E2E', () => {
               img.onerror = reject;
               img.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==`;
             });
-            
+
             // Simulate rendering work
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, i * 40, i * 30, 100, 100);
-            
+
             // Add some rendering complexity
             ctx.fillStyle = `hsl(${i * 18}, 70%, 50%)`;
             ctx.fillRect(i * 35, i * 25, 50, 50);
-            
+
             // Simulate frame timing with small variance
-            await new Promise(resolve => setTimeout(resolve, 16 + Math.random() * 10));
-            
+            await new Promise((resolve) =>
+              setTimeout(resolve, 16 + Math.random() * 10)
+            );
+
             const frameEnd = performance.now();
             const frameTime = frameEnd - frameStart;
             const fps = 1000 / frameTime;
-            const memory = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
-            
+            const memory = (performance as unknown as Record<string, unknown>)
+              .memory
+              ? (
+                  (performance as unknown as Record<string, unknown>)
+                    .memory as { usedJSHeapSize: number }
+                ).usedJSHeapSize
+              : 0;
+
             performanceTimeline.push({
               frame: i,
               frameTime,
@@ -514,13 +613,19 @@ test.describe('PerformanceMonitor E2E', () => {
             });
           } catch (error) {
             console.warn('Rendering operation failed:', error);
-            
+
             // Still record performance data on error
             const frameEnd = performance.now();
             const frameTime = frameEnd - frameStart;
             const fps = 1000 / frameTime;
-            const memory = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
-            
+            const memory = (performance as unknown as Record<string, unknown>)
+              .memory
+              ? (
+                  (performance as unknown as Record<string, unknown>)
+                    .memory as { usedJSHeapSize: number }
+                ).usedJSHeapSize
+              : 0;
+
             performanceTimeline.push({
               frame: i,
               frameTime,
@@ -537,17 +642,30 @@ test.describe('PerformanceMonitor E2E', () => {
         }
 
         // Calculate final metrics
-        const totalFrameTime = performanceTimeline.reduce((sum, p) => sum + p.frameTime, 0);
+        const totalFrameTime = performanceTimeline.reduce(
+          (sum, p) => sum + p.frameTime,
+          0
+        );
         const avgFrameTime = totalFrameTime / performanceTimeline.length;
-        const avgFPS = performanceTimeline.reduce((sum, p) => sum + p.fps, 0) / performanceTimeline.length;
-        const finalMemory = (performance as unknown as Record<string, unknown>).memory ? ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize: number }).usedJSHeapSize : 0;
-        
+        const avgFPS =
+          performanceTimeline.reduce((sum, p) => sum + p.fps, 0) /
+          performanceTimeline.length;
+        const finalMemory = (performance as unknown as Record<string, unknown>)
+          .memory
+          ? (
+              (performance as unknown as Record<string, unknown>).memory as {
+                usedJSHeapSize: number;
+              }
+            ).usedJSHeapSize
+          : 0;
+
         const finalMetrics = {
           fps: {
-            current: performanceTimeline[performanceTimeline.length - 1]?.fps || 0,
+            current:
+              performanceTimeline[performanceTimeline.length - 1]?.fps || 0,
             average: avgFPS,
-            min: Math.min(...performanceTimeline.map(p => p.fps)),
-            max: Math.max(...performanceTimeline.map(p => p.fps)),
+            min: Math.min(...performanceTimeline.map((p) => p.fps)),
+            max: Math.max(...performanceTimeline.map((p) => p.fps)),
           },
           memory: {
             used: finalMemory,
@@ -555,11 +673,17 @@ test.describe('PerformanceMonitor E2E', () => {
           },
           frames: performanceTimeline.length,
         };
-        
+
         const rendererMetrics = {
           memory: finalMemory / 1024 / 1024,
-          totalDrawCalls: performanceTimeline.reduce((sum, p) => sum + (p.rendererMetrics?.drawCalls || 0), 0),
-          totalTexturesLoaded: performanceTimeline.reduce((sum, p) => sum + (p.rendererMetrics?.texturesLoaded || 0), 0),
+          totalDrawCalls: performanceTimeline.reduce(
+            (sum, p) => sum + (p.rendererMetrics?.drawCalls || 0),
+            0
+          ),
+          totalTexturesLoaded: performanceTimeline.reduce(
+            (sum, p) => sum + (p.rendererMetrics?.texturesLoaded || 0),
+            0
+          ),
         };
 
         // Cleanup
@@ -571,8 +695,12 @@ test.describe('PerformanceMonitor E2E', () => {
           finalMetrics,
           rendererMetrics,
           averageFrameTime: avgFrameTime,
-          consistentMonitoring: performanceTimeline.every(p => p.fps > 0 && (p.memory >= 0)), // Memory can be 0 in some browsers
-          renderingIntegration: performanceTimeline.every(p => p.rendererMetrics && p.rendererMetrics.memory !== undefined),
+          consistentMonitoring: performanceTimeline.every(
+            (p) => p.fps > 0 && p.memory >= 0
+          ), // Memory can be 0 in some browsers
+          renderingIntegration: performanceTimeline.every(
+            (p) => p.rendererMetrics && p.rendererMetrics.memory !== undefined
+          ),
         };
       });
 

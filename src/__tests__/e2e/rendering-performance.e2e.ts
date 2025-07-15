@@ -278,9 +278,7 @@ test.describe('Rendering Performance E2E Tests', () => {
 
   test('should compile and cache shaders efficiently', async ({ page }) => {
     const shaderData = await page.evaluate(async () => {
-      const { ShaderManager } = await import(
-        '../../rendering/shader-manager'
-      );
+      const { ShaderManager } = await import('../../rendering/shader-manager');
 
       const shaderManager = new ShaderManager();
 

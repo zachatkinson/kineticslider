@@ -32,10 +32,8 @@ export async function navigateAndWait(
   // Wait for the real implementation to load
   await page.waitForFunction(
     () => {
-       
-      return (
-        (window as { kineticSlider?: { engine?: unknown } }).kineticSlider?.engine
-      );
+      return (window as { kineticSlider?: { engine?: unknown } }).kineticSlider
+        ?.engine;
     },
     { timeout: 10000 }
   );

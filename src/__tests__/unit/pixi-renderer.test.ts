@@ -96,8 +96,14 @@ describe('PixiRenderer', () => {
   beforeEach(() => {
     renderer = new PixiRenderer();
     mockContainer = createMockElement('div');
-    Object.defineProperty(mockContainer, 'clientWidth', { value: 800, writable: true });
-    Object.defineProperty(mockContainer, 'clientHeight', { value: 600, writable: true });
+    Object.defineProperty(mockContainer, 'clientWidth', {
+      value: 800,
+      writable: true,
+    });
+    Object.defineProperty(mockContainer, 'clientHeight', {
+      value: 600,
+      writable: true,
+    });
     vi.clearAllMocks();
   });
 
@@ -130,14 +136,17 @@ describe('PixiRenderer', () => {
 
       // Mock a slow init by making Application.init take longer than timeout
       const { Application } = await import('pixi.js');
-      vi.mocked(Application).mockImplementationOnce(() => ({
-        ...(createMockApplication() as Record<string, unknown>),
-        init: vi
-          .fn()
-          .mockImplementation(
-            () => new Promise((resolve) => setTimeout(resolve, 100))
-          ),
-      } as unknown as Application<import('pixi.js').Renderer>));
+      vi.mocked(Application).mockImplementationOnce(
+        () =>
+          ({
+            ...(createMockApplication() as Record<string, unknown>),
+            init: vi
+              .fn()
+              .mockImplementation(
+                () => new Promise((resolve) => setTimeout(resolve, 100))
+              ),
+          }) as unknown as Application<import('pixi.js').Renderer>
+      );
 
       await expect(
         renderer.initialize(mockContainer, slowConfig)

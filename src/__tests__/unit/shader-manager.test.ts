@@ -46,7 +46,7 @@ describe('ShaderManager Unit Tests', () => {
         compileTimeout: 2000,
         enableDebugging: true,
       };
-      
+
       const manager = new ShaderManager(customConfig);
       expect(manager).toBeDefined();
       expect(manager).toBeInstanceOf(ShaderManager);
@@ -56,7 +56,7 @@ describe('ShaderManager Unit Tests', () => {
     it('should merge partial configuration with defaults', () => {
       const partialConfig = { maxCached: 5 };
       const manager = new ShaderManager(partialConfig);
-      
+
       expect(manager).toBeDefined();
       manager.dispose();
     });
@@ -106,7 +106,7 @@ describe('ShaderManager Unit Tests', () => {
         { maxCached: 1000 },
       ];
 
-      validConfigs.forEach(config => {
+      validConfigs.forEach((config) => {
         const manager = new ShaderManager(config);
         expect(manager).toBeDefined();
         manager.dispose();
@@ -120,7 +120,7 @@ describe('ShaderManager Unit Tests', () => {
         { compileTimeout: 10000 },
       ];
 
-      validConfigs.forEach(config => {
+      validConfigs.forEach((config) => {
         const manager = new ShaderManager(config);
         expect(manager).toBeDefined();
         manager.dispose();
@@ -130,10 +130,10 @@ describe('ShaderManager Unit Tests', () => {
     it('should accept boolean enableDebugging values', () => {
       const manager1 = new ShaderManager({ enableDebugging: true });
       const manager2 = new ShaderManager({ enableDebugging: false });
-      
+
       expect(manager1).toBeDefined();
       expect(manager2).toBeDefined();
-      
+
       manager1.dispose();
       manager2.dispose();
     });
@@ -147,7 +147,7 @@ describe('ShaderManager Unit Tests', () => {
         { compileTimeout: 0 },
       ];
 
-      invalidConfigs.forEach(config => {
+      invalidConfigs.forEach((config) => {
         expect(() => {
           const manager = new ShaderManager(config);
           manager.dispose();
@@ -159,7 +159,7 @@ describe('ShaderManager Unit Tests', () => {
   describe('Simple State Changes', () => {
     it('should initialize with empty stats', () => {
       const stats = shaderManager.getShaderStats();
-      
+
       expect(stats.compiled).toBe(0);
       expect(stats.cached).toBe(0);
       expect(stats.failed).toBe(0);
@@ -176,14 +176,14 @@ describe('ShaderManager Unit Tests', () => {
 
     it('should clear cache without errors', () => {
       expect(() => shaderManager.clearCache()).not.toThrow();
-      
+
       const stats = shaderManager.getShaderStats();
       expect(stats.cacheSize).toBe(0);
     });
 
     it('should invalidate cache without errors', () => {
       expect(() => shaderManager.invalidateCache()).not.toThrow();
-      
+
       const stats = shaderManager.getShaderStats();
       expect(stats.cacheSize).toBe(0);
     });
@@ -204,7 +204,7 @@ describe('ShaderManager Unit Tests', () => {
         'attribute vec2 aVertexPosition; uniform mat3 projectionMatrix; void main() { gl_Position = vec4(0.0); }',
         'void main() { gl_FragColor = vec4(1.0); }'
       );
-      
+
       expect(validation).toHaveProperty('isValid');
       expect(validation).toHaveProperty('errors');
       expect(typeof validation.isValid).toBe('boolean');
@@ -212,8 +212,11 @@ describe('ShaderManager Unit Tests', () => {
     });
 
     it('should detect invalid vertex shader', () => {
-      const validation = shaderManager.validateShaderSource('', 'void main() { gl_FragColor = vec4(1.0); }');
-      
+      const validation = shaderManager.validateShaderSource(
+        '',
+        'void main() { gl_FragColor = vec4(1.0); }'
+      );
+
       expect(validation.isValid).toBe(false);
       expect(validation.errors.length).toBeGreaterThan(0);
       expect(validation.errors[0]).toContain('empty');
@@ -224,7 +227,7 @@ describe('ShaderManager Unit Tests', () => {
         'attribute vec2 aVertexPosition; uniform mat3 projectionMatrix; void main() { gl_Position = vec4(0.0); }',
         ''
       );
-      
+
       expect(validation.isValid).toBe(false);
       expect(validation.errors.length).toBeGreaterThan(0);
       expect(validation.errors[0]).toContain('empty');
@@ -235,9 +238,11 @@ describe('ShaderManager Unit Tests', () => {
         'uniform mat3 projectionMatrix; void main() { gl_Position = vec4(0.0); }',
         'void main() { gl_FragColor = vec4(1.0); }'
       );
-      
+
       expect(validation.isValid).toBe(false);
-      expect(validation.errors.some(error => error.includes('aVertexPosition'))).toBe(true);
+      expect(
+        validation.errors.some((error) => error.includes('aVertexPosition'))
+      ).toBe(true);
     });
 
     it('should detect missing required uniforms', () => {
@@ -245,14 +250,16 @@ describe('ShaderManager Unit Tests', () => {
         'attribute vec2 aVertexPosition; void main() { gl_Position = vec4(0.0); }',
         'void main() { gl_FragColor = vec4(1.0); }'
       );
-      
+
       expect(validation.isValid).toBe(false);
-      expect(validation.errors.some(error => error.includes('projectionMatrix'))).toBe(true);
+      expect(
+        validation.errors.some((error) => error.includes('projectionMatrix'))
+      ).toBe(true);
     });
 
     it('should return consistent stats object structure', () => {
       const stats = shaderManager.getShaderStats();
-      
+
       expect(stats).toHaveProperty('compiled');
       expect(stats).toHaveProperty('cached');
       expect(stats).toHaveProperty('failed');
@@ -260,7 +267,7 @@ describe('ShaderManager Unit Tests', () => {
       expect(stats).toHaveProperty('totalCompilationTime');
       expect(stats).toHaveProperty('averageCompilationTime');
       expect(stats).toHaveProperty('cacheHitRate');
-      
+
       expect(typeof stats.compiled).toBe('number');
       expect(typeof stats.cached).toBe('number');
       expect(typeof stats.failed).toBe('number');
@@ -278,13 +285,16 @@ describe('ShaderManager Unit Tests', () => {
       const configs = [
         {
           name: 'test',
-          vertex: 'attribute vec2 aVertexPosition; uniform mat3 projectionMatrix; void main() { gl_Position = vec4(0.0); }',
-          fragment: 'void main() { gl_FragColor = vec4(1.0); }'
-        }
+          vertex:
+            'attribute vec2 aVertexPosition; uniform mat3 projectionMatrix; void main() { gl_Position = vec4(0.0); }',
+          fragment: 'void main() { gl_FragColor = vec4(1.0); }',
+        },
       ];
-      
+
       // Should not throw for valid structure (actual compilation may fail due to mocks)
-      await expect(shaderManager.precompileShaders(configs)).resolves.not.toThrow();
+      await expect(
+        shaderManager.precompileShaders(configs)
+      ).resolves.not.toThrow();
     });
   });
 
@@ -292,17 +302,17 @@ describe('ShaderManager Unit Tests', () => {
     it('should use test configuration properly', () => {
       const testConfig = createTestShaderConfig();
       const manager = new ShaderManager(testConfig);
-      
+
       expect(manager).toBeDefined();
       manager.dispose();
     });
 
     it('should maintain state consistency after operations', () => {
       // const initialStats = shaderManager.getShaderStats();
-      
+
       shaderManager.clearCache();
       const afterClearStats = shaderManager.getShaderStats();
-      
+
       expect(afterClearStats.cacheSize).toBe(0);
       expect(afterClearStats.compiled).toBe(0);
       expect(afterClearStats.cached).toBe(0);

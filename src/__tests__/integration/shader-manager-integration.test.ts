@@ -48,10 +48,10 @@ describe('ShaderManager Integration', () => {
     it('should integrate with configuration system', () => {
       const config = createTestShaderConfig();
       const manager = new ShaderManager(config);
-      
+
       expect(manager).toBeDefined();
       expect(manager.getShaderStats()).toBeDefined();
-      
+
       manager.dispose();
     });
 
@@ -141,7 +141,7 @@ describe('ShaderManager Integration', () => {
       shaderManager.invalidateCache();
       shaderManager.getCachedShader('test');
       shaderManager.dispose();
-      
+
       expect(() => shaderManager.getShaderStats()).not.toThrow();
     });
   });
@@ -156,7 +156,7 @@ describe('ShaderManager Integration', () => {
         { maxCached: 10, compileTimeout: 500 },
       ];
 
-      configs.forEach(config => {
+      configs.forEach((config) => {
         const manager = new ShaderManager(config);
         expect(manager).toBeDefined();
         expect(manager.getShaderStats()).toBeDefined();
@@ -167,7 +167,7 @@ describe('ShaderManager Integration', () => {
     it('should integrate with test factories', () => {
       const testConfig = createTestShaderConfig();
       const manager = new ShaderManager(testConfig);
-      
+
       expect(manager).toBeDefined();
       manager.dispose();
     });
@@ -186,5 +186,4 @@ describe('ShaderManager Integration', () => {
       expect(promise).toBeInstanceOf(Promise);
     });
   });
-
 });

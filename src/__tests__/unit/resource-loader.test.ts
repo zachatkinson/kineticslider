@@ -49,7 +49,7 @@ describe('ResourceLoader Unit Tests', () => {
         trackReferences: true,
         autoCleanup: true,
       };
-      
+
       const loader = new ResourceLoader(customConfig);
       expect(loader).toBeDefined();
       expect(loader).toBeInstanceOf(ResourceLoader);
@@ -59,7 +59,7 @@ describe('ResourceLoader Unit Tests', () => {
     it('should merge partial configuration with defaults', () => {
       const partialConfig = { cleanupInterval: 5000 };
       const loader = new ResourceLoader(partialConfig);
-      
+
       expect(loader).toBeDefined();
       loader.dispose();
     });
@@ -100,7 +100,7 @@ describe('ResourceLoader Unit Tests', () => {
     it('should return expected types for sync methods', () => {
       const stats = resourceLoader.getLoadingStats();
       expect(typeof stats).toBe('object');
-      
+
       expect(() => resourceLoader.cancelLoading()).not.toThrow();
       expect(() => resourceLoader.dispose()).not.toThrow();
     });
@@ -114,7 +114,7 @@ describe('ResourceLoader Unit Tests', () => {
         { cleanupInterval: 60000 },
       ];
 
-      validConfigs.forEach(config => {
+      validConfigs.forEach((config) => {
         const loader = new ResourceLoader(config);
         expect(loader).toBeDefined();
         loader.dispose();
@@ -129,7 +129,7 @@ describe('ResourceLoader Unit Tests', () => {
         { criticalMemoryThreshold: 0.95 },
       ];
 
-      validConfigs.forEach(config => {
+      validConfigs.forEach((config) => {
         const loader = new ResourceLoader(config);
         expect(loader).toBeDefined();
         loader.dispose();
@@ -139,10 +139,10 @@ describe('ResourceLoader Unit Tests', () => {
     it('should accept boolean configuration values', () => {
       const loader1 = new ResourceLoader({ trackReferences: true });
       const loader2 = new ResourceLoader({ autoCleanup: false });
-      
+
       expect(loader1).toBeDefined();
       expect(loader2).toBeDefined();
-      
+
       loader1.dispose();
       loader2.dispose();
     });
@@ -155,7 +155,7 @@ describe('ResourceLoader Unit Tests', () => {
         { memoryPressureThreshold: 1.5 },
       ];
 
-      invalidConfigs.forEach(config => {
+      invalidConfigs.forEach((config) => {
         expect(() => {
           const loader = new ResourceLoader(config);
           loader.dispose();
@@ -167,7 +167,7 @@ describe('ResourceLoader Unit Tests', () => {
   describe('Simple State Changes', () => {
     it('should initialize with empty stats', () => {
       const stats = resourceLoader.getLoadingStats();
-      
+
       expect(stats.pending).toBe(0);
       expect(stats.completed).toBe(0);
       expect(stats.failed).toBe(0);
@@ -175,11 +175,11 @@ describe('ResourceLoader Unit Tests', () => {
 
     it('should update stats structure consistently', () => {
       const stats = resourceLoader.getLoadingStats();
-      
+
       expect(stats).toHaveProperty('pending');
       expect(stats).toHaveProperty('completed');
       expect(stats).toHaveProperty('failed');
-      
+
       expect(typeof stats.pending).toBe('number');
       expect(typeof stats.completed).toBe('number');
       expect(typeof stats.failed).toBe('number');
@@ -187,7 +187,7 @@ describe('ResourceLoader Unit Tests', () => {
 
     it('should handle cancellation without errors', () => {
       expect(() => resourceLoader.cancelLoading()).not.toThrow();
-      
+
       const stats = resourceLoader.getLoadingStats();
       expect(stats.pending).toBe(0);
     });
@@ -203,7 +203,7 @@ describe('ResourceLoader Unit Tests', () => {
 
     it('should maintain consistent state after dispose', () => {
       resourceLoader.dispose();
-      
+
       const stats = resourceLoader.getLoadingStats();
       expect(stats.pending).toBe(0);
       expect(stats.completed).toBe(0);
@@ -221,7 +221,7 @@ describe('ResourceLoader Unit Tests', () => {
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
       ];
 
-      validUrls.forEach(url => {
+      validUrls.forEach((url) => {
         const promise = resourceLoader.loadResource(url, 'texture');
         expect(promise).toBeInstanceOf(Promise);
       });
@@ -229,8 +229,8 @@ describe('ResourceLoader Unit Tests', () => {
 
     it('should validate resource type parameter', () => {
       const supportedTypes = ['texture', 'image', 'audio', 'json', 'font'];
-      
-      supportedTypes.forEach(type => {
+
+      supportedTypes.forEach((type) => {
         const promise = resourceLoader.loadResource('test.file', type);
         expect(promise).toBeInstanceOf(Promise);
       });
@@ -262,15 +262,15 @@ describe('ResourceLoader Unit Tests', () => {
 
     it('should return consistent stats object structure', () => {
       const stats = resourceLoader.getLoadingStats();
-      
+
       expect(stats).toHaveProperty('pending');
       expect(stats).toHaveProperty('completed');
       expect(stats).toHaveProperty('failed');
-      
+
       expect(typeof stats.pending).toBe('number');
       expect(typeof stats.completed).toBe('number');
       expect(typeof stats.failed).toBe('number');
-      
+
       expect(stats.pending).toBeGreaterThanOrEqual(0);
       expect(stats.completed).toBeGreaterThanOrEqual(0);
       expect(stats.failed).toBeGreaterThanOrEqual(0);
@@ -289,7 +289,7 @@ describe('ResourceLoader Unit Tests', () => {
     it('should use test configuration properly', () => {
       const testConfig = createTestResourceConfig();
       const loader = new ResourceLoader(testConfig);
-      
+
       expect(loader).toBeDefined();
       loader.dispose();
     });
@@ -299,14 +299,14 @@ describe('ResourceLoader Unit Tests', () => {
         cleanupInterval: 5000,
         trackReferences: true,
       };
-      
+
       const loader = new ResourceLoader(config);
       expect(loader).toBeDefined();
-      
+
       // Configuration should not affect basic operations
       expect(() => loader.cancelLoading()).not.toThrow();
       expect(loader.getLoadingStats()).toBeDefined();
-      
+
       loader.dispose();
     });
 
@@ -319,7 +319,7 @@ describe('ResourceLoader Unit Tests', () => {
         { criticalMemoryThreshold: 1 },
       ];
 
-      edgeCases.forEach(config => {
+      edgeCases.forEach((config) => {
         expect(() => {
           const loader = new ResourceLoader(config);
           loader.dispose();
@@ -331,10 +331,10 @@ describe('ResourceLoader Unit Tests', () => {
   describe('Error Handling Contracts', () => {
     it('should handle invalid resource types gracefully', () => {
       const promise = resourceLoader.loadResource('test.file', 'invalid-type');
-      
+
       // Should return a promise that may reject
       expect(promise).toBeInstanceOf(Promise);
-      
+
       // For unit tests, just verify the promise structure
       expect(promise).toHaveProperty('then');
       expect(promise).toHaveProperty('catch');
@@ -342,9 +342,9 @@ describe('ResourceLoader Unit Tests', () => {
 
     it('should handle empty URL strings', () => {
       const promise = resourceLoader.loadResource('', 'texture');
-      
+
       expect(promise).toBeInstanceOf(Promise);
-      
+
       // For unit tests, just verify the promise structure
       expect(promise).toHaveProperty('then');
       expect(promise).toHaveProperty('catch');
@@ -358,7 +358,7 @@ describe('ResourceLoader Unit Tests', () => {
         { type: 'texture' }, // missing url
       ];
 
-      malformedResources.forEach(resource => {
+      malformedResources.forEach((resource) => {
         const promise = resourceLoader.loadResources([resource as never]);
         expect(promise).toBeInstanceOf(Promise);
       });

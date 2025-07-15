@@ -348,7 +348,8 @@ export class PerformanceMonitor implements IPerformanceMonitor {
       },
       memory: {
         warning: RENDERING_PERFORMANCE.WARNING_THRESHOLDS.MEMORY_HIGH * 100,
-        critical: RENDERING_PERFORMANCE.CRITICAL_THRESHOLDS.MEMORY_CRITICAL * 100,
+        critical:
+          RENDERING_PERFORMANCE.CRITICAL_THRESHOLDS.MEMORY_CRITICAL * 100,
       },
       renderTime: {
         warning: PERFORMANCE.FRAME_BUDGET_MS,

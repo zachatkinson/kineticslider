@@ -216,41 +216,49 @@ test.describe('ResourceLoader E2E', () => {
   });
 
   test.describe('Advanced Async Workflows', () => {
-    test('should handle retry logic with exponential backoff', async ({ page }) => {
+    test('should handle retry logic with exponential backoff', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test retry logic using native fetch with exponential backoff
         const retryAttempts: Array<{
           attempt: number;
           timestamp: number;
         }> = [];
-        
+
         // Mock a failing resource that succeeds after 2 retries
         let attemptCount = 0;
         const originalFetch = window.fetch;
-        window.fetch = async (url: string | Request | URL, options?: RequestInit) => {
+        window.fetch = async (
+          url: string | Request | URL,
+          options?: RequestInit
+        ) => {
           if (url.toString().includes('retry-test')) {
             attemptCount++;
             retryAttempts.push({
               attempt: attemptCount,
               timestamp: Date.now(),
             });
-            
+
             if (attemptCount < 3) {
               throw new Error(`Network error attempt ${attemptCount}`);
             }
-            
+
             // Success on third attempt
             return new Response('Success after retries', {
               status: 200,
               headers: { 'Content-Type': 'text/plain' },
             });
           }
-          
+
           return originalFetch(url, options);
         };
 
         // Implement retry logic with exponential backoff
-        const retryWithBackoff = async (url: string, maxRetries: number = 3) => {
+        const retryWithBackoff = async (
+          url: string,
+          maxRetries: number = 3
+        ) => {
           for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
               const response = await fetch(url);
@@ -259,10 +267,10 @@ test.describe('ResourceLoader E2E', () => {
               if (attempt === maxRetries) {
                 throw error;
               }
-              
+
               // Exponential backoff: 2^attempt * 1000ms
               const delay = Math.pow(2, attempt) * 1000;
-              await new Promise(resolve => setTimeout(resolve, delay));
+              await new Promise((resolve) => setTimeout(resolve, delay));
             }
           }
         };
@@ -271,19 +279,21 @@ test.describe('ResourceLoader E2E', () => {
           const startTime = Date.now();
           const result = await retryWithBackoff('retry-test-url');
           const endTime = Date.now();
-          
+
           // Check exponential backoff timing
-          const timingValid = retryAttempts.length >= 2 && 
+          const timingValid =
+            retryAttempts.length >= 2 &&
             retryAttempts.reduce((isValid, attempt, index) => {
               if (index === 0) return isValid;
-              const timeDiff = attempt.timestamp - retryAttempts[index - 1].timestamp;
+              const timeDiff =
+                attempt.timestamp - retryAttempts[index - 1].timestamp;
               const expectedMinDelay = Math.pow(2, index) * 1000; // 2^attempt * 1000ms
               return isValid && timeDiff >= expectedMinDelay * 0.8; // Allow 20% tolerance
             }, true);
 
           // Restore original fetch
           window.fetch = originalFetch;
-          
+
           return {
             success: true,
             retryAttempts: retryAttempts.length,
@@ -308,7 +318,9 @@ test.describe('ResourceLoader E2E', () => {
       expect(result.totalTime).toBeGreaterThan(3000); // Should take at least 3 seconds due to backoff
     });
 
-    test('should handle progressive loading with chunked batches', async ({ page }) => {
+    test('should handle progressive loading with chunked batches', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test progressive loading with chunked batches
         const progressUpdates: Array<{
@@ -317,7 +329,7 @@ test.describe('ResourceLoader E2E', () => {
           percentage: number;
           timestamp: number;
         }> = [];
-        
+
         const onProgress = (loaded: number, total: number) => {
           progressUpdates.push({
             loaded,
@@ -328,24 +340,32 @@ test.describe('ResourceLoader E2E', () => {
         };
 
         // Create 15 test resources to trigger chunked loading
-        const resources = Array.from({ length: 15 }, (_, i) => `data:text/plain,Resource ${i}`);
+        const resources = Array.from(
+          { length: 15 },
+          (_, i) => `data:text/plain,Resource ${i}`
+        );
 
         // Implement chunked loading
-        const loadResourcesInChunks = async (urls: string[], chunkSize: number = 5) => {
+        const loadResourcesInChunks = async (
+          urls: string[],
+          chunkSize: number = 5
+        ) => {
           const results = [];
-          
+
           for (let i = 0; i < urls.length; i += chunkSize) {
             const chunk = urls.slice(i, i + chunkSize);
-            
-            const chunkPromises = chunk.map(url => fetch(url).then(r => r.text()));
+
+            const chunkPromises = chunk.map((url) =>
+              fetch(url).then((r) => r.text())
+            );
             const chunkResults = await Promise.allSettled(chunkPromises);
-            
+
             results.push(...chunkResults);
-            
+
             // Update progress
             onProgress(Math.min(i + chunkSize, urls.length), urls.length);
           }
-          
+
           return results;
         };
 
@@ -358,12 +378,13 @@ test.describe('ResourceLoader E2E', () => {
           const hasProgressUpdates = progressUpdates.length > 0;
           const progressIncremental = progressUpdates.every(
             (update, index) =>
-              index === 0 || update.percentage >= progressUpdates[index - 1].percentage
+              index === 0 ||
+              update.percentage >= progressUpdates[index - 1].percentage
           );
-          
+
           // Check if loading was done in chunks (should have multiple progress updates)
           const hasMultipleChunks = progressUpdates.length >= 3;
-          
+
           return {
             success: true,
             resourcesLoaded: results.length,
@@ -372,7 +393,8 @@ test.describe('ResourceLoader E2E', () => {
             progressIncremental,
             hasMultipleChunks,
             totalTime: endTime - startTime,
-            finalPercentage: progressUpdates[progressUpdates.length - 1]?.percentage || 0,
+            finalPercentage:
+              progressUpdates[progressUpdates.length - 1]?.percentage || 0,
           };
         } catch (error) {
           return {
@@ -391,64 +413,82 @@ test.describe('ResourceLoader E2E', () => {
       expect(result.finalPercentage).toBe(100);
     });
 
-    test('should handle concurrent loading with throttling', async ({ page }) => {
+    test('should handle concurrent loading with throttling', async ({
+      page,
+    }) => {
       const result = await page.evaluate(async () => {
         // Test concurrent loading with throttling
         const loadingTimestamps: Array<{
           url: string;
           startTime: number;
         }> = [];
-        
+
         // Track when each resource starts loading
         const originalFetch = window.fetch;
-        window.fetch = async (url: string | Request | URL, options?: RequestInit) => {
+        window.fetch = async (
+          url: string | Request | URL,
+          options?: RequestInit
+        ) => {
           loadingTimestamps.push({
             url: url.toString(),
             startTime: Date.now(),
           });
-          
+
           // Add small delay to simulate network latency
-          await new Promise(resolve => setTimeout(resolve, 50));
-          
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
           return originalFetch(url, options);
         };
 
         // Implement throttled concurrent loading
-        const loadWithThrottling = async (urls: string[], maxConcurrent: number = 5) => {
+        const loadWithThrottling = async (
+          urls: string[],
+          maxConcurrent: number = 5
+        ) => {
           const results = [];
-          
+
           for (let i = 0; i < urls.length; i += maxConcurrent) {
             const batch = urls.slice(i, i + maxConcurrent);
-            const batchPromises = batch.map(url => fetch(url).then(r => r.text()));
+            const batchPromises = batch.map((url) =>
+              fetch(url).then((r) => r.text())
+            );
             const batchResults = await Promise.allSettled(batchPromises);
             results.push(...batchResults);
           }
-          
+
           return results;
         };
 
         try {
           const startTime = Date.now();
-          
+
           // Load many resources concurrently
-          const resources = Array.from({ length: 20 }, (_, i) => `data:text/plain,Concurrent resource ${i}`);
-          
+          const resources = Array.from(
+            { length: 20 },
+            (_, i) => `data:text/plain,Concurrent resource ${i}`
+          );
+
           const results = await loadWithThrottling(resources);
           const endTime = Date.now();
-          
+
           // Restore original fetch
           window.fetch = originalFetch;
-          
+
           // Analyze concurrency patterns
           const totalTime = endTime - startTime;
-          const avgTimeBetweenStarts = loadingTimestamps.reduce((sum, timestamp, index) => {
-            if (index === 0) return sum;
-            return sum + (timestamp.startTime - loadingTimestamps[index - 1].startTime);
-          }, 0) / (loadingTimestamps.length - 1);
-          
+          const avgTimeBetweenStarts =
+            loadingTimestamps.reduce((sum, timestamp, index) => {
+              if (index === 0) return sum;
+              return (
+                sum +
+                (timestamp.startTime - loadingTimestamps[index - 1].startTime)
+              );
+            }, 0) /
+            (loadingTimestamps.length - 1);
+
           // Check if resources were loaded in batches (throttling evidence)
           const hasThrottling = avgTimeBetweenStarts < 100; // Resources should start quickly due to chunking
-          
+
           return {
             success: true,
             resourcesLoaded: results.length,
@@ -477,52 +517,62 @@ test.describe('ResourceLoader E2E', () => {
       const result = await page.evaluate(async () => {
         // Test cancellation during loading
         let loadingCancelled = false;
-        
+
         // Mock slow loading resources
         const originalFetch = window.fetch;
-        window.fetch = async (url: string | Request | URL, options?: RequestInit) => {
+        window.fetch = async (
+          url: string | Request | URL,
+          options?: RequestInit
+        ) => {
           // Check if cancelled
           if (options?.signal?.aborted) {
             loadingCancelled = true;
             throw new Error('Request cancelled');
           }
-          
+
           // Add delay to simulate slow loading
-          await new Promise(resolve => setTimeout(resolve, 100));
-          
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
           // Check again after delay
           if (options?.signal?.aborted) {
             loadingCancelled = true;
             throw new Error('Request cancelled');
           }
-          
+
           return originalFetch(url, options);
         };
 
         try {
-          const resources = Array.from({ length: 10 }, (_, i) => `data:text/plain,Slow resource ${i}`);
-          
+          const resources = Array.from(
+            { length: 10 },
+            (_, i) => `data:text/plain,Slow resource ${i}`
+          );
+
           // Create AbortController
           const controller = new AbortController();
-          
+
           // Start loading
           const loadingPromise = Promise.allSettled(
-            resources.map(url => fetch(url, { signal: controller.signal }))
+            resources.map((url) => fetch(url, { signal: controller.signal }))
           );
-          
+
           // Cancel after 50ms
           setTimeout(() => {
             controller.abort();
           }, 50);
-          
+
           const results = await loadingPromise;
-          
+
           // Restore original fetch
           window.fetch = originalFetch;
-          
-          const completedCount = results.filter(r => r.status === 'fulfilled').length;
-          const failedCount = results.filter(r => r.status === 'rejected').length;
-          
+
+          const completedCount = results.filter(
+            (r) => r.status === 'fulfilled'
+          ).length;
+          const failedCount = results.filter(
+            (r) => r.status === 'rejected'
+          ).length;
+
           return {
             success: true,
             loadingCancelled,
@@ -543,7 +593,9 @@ test.describe('ResourceLoader E2E', () => {
       expect(result.success).toBe(true);
       expect(result.loadingCancelled).toBe(true);
       expect(result.pendingOperations).toBe(0);
-      expect((result.completedOperations || 0) + (result.failedOperations || 0)).toBeGreaterThan(0);
+      expect(
+        (result.completedOperations || 0) + (result.failedOperations || 0)
+      ).toBeGreaterThan(0);
     });
   });
 });

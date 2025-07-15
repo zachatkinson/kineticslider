@@ -65,10 +65,10 @@ describe('ResourceLoader Integration', () => {
     it('should integrate with configuration system', () => {
       const config = createTestResourceConfig();
       const loader = new ResourceLoader(config);
-      
+
       expect(loader).toBeDefined();
       expect(loader.getLoadingStats()).toBeDefined();
-      
+
       loader.dispose();
     });
 
@@ -132,7 +132,7 @@ describe('ResourceLoader Integration', () => {
       resourceLoader.cancelLoading();
       resourceLoader.cancelLoading();
       resourceLoader.dispose();
-      
+
       expect(() => resourceLoader.getLoadingStats()).not.toThrow();
     });
   });
@@ -146,7 +146,7 @@ describe('ResourceLoader Integration', () => {
         { autoCleanup: false },
       ];
 
-      configs.forEach(config => {
+      configs.forEach((config) => {
         const loader = new ResourceLoader(config);
         expect(loader).toBeDefined();
         expect(loader.getLoadingStats()).toBeDefined();
@@ -157,7 +157,7 @@ describe('ResourceLoader Integration', () => {
     it('should integrate with test factories', () => {
       const testConfig = createTestResourceConfig();
       const loader = new ResourceLoader(testConfig);
-      
+
       expect(loader).toBeDefined();
       loader.dispose();
     });

@@ -22,7 +22,10 @@ interface MockMonitor {
 
 interface MockMemoryManager {
   start?: () => void;
-  getMemoryStats?: () => { totalResources: number; estimatedMemoryUsage: number };
+  getMemoryStats?: () => {
+    totalResources: number;
+    estimatedMemoryUsage: number;
+  };
   forceCleanup?: () => number;
 }
 
@@ -1651,19 +1654,25 @@ export const testAnimationCoordination = async (
 
   try {
     // Start monitoring
-    (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).start?.();
-    (memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue).start?.();
-    (animationQueue as MockMonitor & MockMemoryManager & MockAnimationQueue).start?.();
+    (
+      performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue
+    ).start?.();
+    (
+      memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue
+    ).start?.();
+    (
+      animationQueue as MockMonitor & MockMemoryManager & MockAnimationQueue
+    ).start?.();
 
     // Queue animation
-    const animationPromise = (animationQueue as MockMonitor & MockMemoryManager & MockAnimationQueue).enqueue?.(
-      animationId,
-      createTestAnimationConfigs().simple,
-      priority
-    );
+    const animationPromise = (
+      animationQueue as MockMonitor & MockMemoryManager & MockAnimationQueue
+    ).enqueue?.(animationId, createTestAnimationConfigs().simple, priority);
 
     // Track performance
-    (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).recordAnimationStart?.();
+    (
+      performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue
+    ).recordAnimationStart?.();
 
     // Execute animation
     const result = await animationPromise;
@@ -1671,13 +1680,21 @@ export const testAnimationCoordination = async (
     // Verify results
     if (expectSuccess) {
       expect(result).toBeDefined();
-      (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).recordAnimationEnd?.();
+      (
+        performanceMonitor as MockMonitor &
+          MockMemoryManager &
+          MockAnimationQueue
+      ).recordAnimationEnd?.();
     }
 
     return { success: true, result };
   } catch (error) {
     if (!expectSuccess) {
-      (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).recordAnimationFailed?.();
+      (
+        performanceMonitor as MockMonitor &
+          MockMemoryManager &
+          MockAnimationQueue
+      ).recordAnimationFailed?.();
       return { success: false, error };
     }
     throw error;
@@ -1715,12 +1732,17 @@ export const testMemoryManagement = (
   });
 
   // Verify tracking
-  const stats = (memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue).getMemoryStats?.() || { totalResources: 0, estimatedMemoryUsage: 0 };
+  const stats = (
+    memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue
+  ).getMemoryStats?.() || { totalResources: 0, estimatedMemoryUsage: 0 };
   expect(stats.totalResources).toBe(resources.length);
   expect(stats.estimatedMemoryUsage).toBeGreaterThanOrEqual(0);
 
   // Test cleanup
-  const cleanedCount = (memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue).forceCleanup?.() || 0;
+  const cleanedCount =
+    (
+      memoryManager as MockMonitor & MockMemoryManager & MockAnimationQueue
+    ).forceCleanup?.() || 0;
   expect(cleanedCount).toBeGreaterThanOrEqual(0);
 
   return { stats, cleanedCount };
@@ -1748,10 +1770,15 @@ export const testPerformanceMonitoring = async (
   // Simulate performance data
   performanceMonitor.recordAnimationStart();
   await new Promise((resolve) => setTimeout(resolve, 100));
-  (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).recordAnimationEnd?.();
+  (
+    performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue
+  ).recordAnimationEnd?.();
 
   const metrics = performanceMonitor.getMetrics();
-  const grade = (performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue).getPerformanceGrade?.() || 'good';
+  const grade =
+    (
+      performanceMonitor as MockMonitor & MockMemoryManager & MockAnimationQueue
+    ).getPerformanceGrade?.() || 'good';
 
   performanceMonitor.stop();
 
@@ -2195,7 +2222,10 @@ export const createTestResourceDefinitions = () => [
 /**
  * Create mock resource definition
  */
-export const createMockResourceDefinition = (url = 'test-resource.jpg', type = 'texture') => ({
+export const createMockResourceDefinition = (
+  url = 'test-resource.jpg',
+  type = 'texture'
+) => ({
   url,
   type,
   priority: 100,
