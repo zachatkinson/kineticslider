@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+env:
+  PNPM_VERSION: '10.7.0'
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -12,41 +15,46 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
-          
+          cache: 'pnpm'
+
       - name: Install dependencies
         id: install
         run: |
-          npm ci || (
+          pnpm install --frozen-lockfile || (
             echo "::error::Failed to install dependencies. Retrying with clean install..."
-            rm -rf node_modules package-lock.json
-            npm install
+            rm -rf node_modules pnpm-lock.yaml
+            pnpm install
           )
-        
+
       - name: Type compatibility check
         id: type-check
         run: |
           # Check current version
-          if ! npm run type-check > current-types.txt; then
+          if ! pnpm typecheck > current-types.txt; then
             echo "::error::Type check failed for current version"
             exit 1
           fi
-          
+
           # Check compatibility with previous version
           git checkout HEAD^
-          npm ci
-          if ! npm run type-check > prev-types.txt; then
+          pnpm install --frozen-lockfile
+          if ! pnpm typecheck > prev-types.txt; then
             echo "::warning::Type check failed for previous version"
           fi
           git checkout -
-          npm ci
-          
+          pnpm install --frozen-lockfile
+
           # Compare and analyze type changes
           echo "## Type Compatibility Changes" > type-report.md
           if ! diff prev-types.txt current-types.txt > type-changes.txt; then
@@ -63,7 +71,7 @@ jobs:
         run: |
           # Get the previous tag
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          
+
           echo "## Changelog" > CHANGELOG.md
           if [ -z "$PREVIOUS_TAG" ]; then
             # If no previous tag exists, get all commits
@@ -72,36 +80,36 @@ jobs:
             # Get commits since previous tag
             git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD > commits.txt
           fi
-          
+
           # Categorize changes
           {
             echo "### 🚀 Features"
             grep -i "feat:" commits.txt || echo "No new features"
-            
+
             echo -e "\n### 🐛 Bug Fixes"
             grep -i "fix:" commits.txt || echo "No bug fixes"
-            
+
             echo -e "\n### 📝 Documentation"
             grep -i "docs:" commits.txt || echo "No documentation changes"
-            
+
             echo -e "\n### ⚡ Performance"
             grep -i "perf:" commits.txt || echo "No performance changes"
-            
+
             echo -e "\n### 🔨 Other Changes"
             grep -v -i "feat:\|fix:\|docs:\|perf:" commits.txt || echo "No other changes"
           } >> CHANGELOG.md
-          
+
           # Add type compatibility changes
           cat type-report.md >> CHANGELOG.md
 
       - name: Run tests
         id: test
         run: |
-          if ! npm test; then
+          if ! pnpm test; then
             echo "::error::Tests failed"
             exit 1
           fi
-        
+
       - name: Run performance tests
         id: perf-test
         run: |
@@ -115,60 +123,60 @@ jobs:
               "TBT": 200
             }
           }' > perf-thresholds.json
-          
-          if ! npm run test:perf; then
+
+          if ! pnpm test:e2e:performance; then
             echo "::error::Performance tests failed"
             exit 1
           fi
-        
+
       - name: Run accessibility tests
         id: a11y
         run: |
-          if ! npm run test:a11y; then
+          if ! pnpm test:a11y; then
             echo "::error::Accessibility tests failed"
             exit 1
           fi
-        
+
       - name: Build
         id: build
         run: |
-          if ! npm run build; then
+          if ! pnpm build; then
             echo "::error::Build failed"
             exit 1
           fi
-        
+
       - name: Check bundle size
         id: bundle
         run: |
           echo "## Bundle Size Analysis" > bundle-report.md
-          if ! npx bundlewatch --config .bundlewatch.config.json; then
+          if ! pnpm exec bundlewatch --config .bundlewatch.config.json; then
             echo "::warning::Bundle size exceeds threshold"
             echo "⚠️ Bundle size exceeds threshold" >> bundle-report.md
           else
             echo "✅ Bundle size within threshold" >> bundle-report.md
           fi
-        
+
       - name: Generate Documentation
         run: |
           echo "## Generating documentation"
-          npm run docs:generate
+          pnpm docs
           echo "Documentation generated successfully"
-        
+
       - name: Performance test
         id: performance
         run: |
-          npm install -g @lhci/cli@0.13.x
-          
+          pnpm add -g @lhci/cli@0.13.x
+
           # Run Lighthouse CI
           if ! lhci autorun \
             --collect.url=http://localhost:3000 \
-            --collect.startServerCommand="npm run start" \
+            --collect.startServerCommand="pnpm preview" \
             --collect.numberOfRuns=3 \
             --upload.target=temporary-public-storage \
             --jsonOutput=./lighthouse-results.json; then
             echo "::warning::Performance checks failed"
           fi
-          
+
           # Generate performance report
           echo "## Performance Metrics" > performance-report.md
           node .github/scripts/analyze-lighthouse.js ./lighthouse-results.json >> performance-report.md
@@ -181,13 +189,13 @@ jobs:
             echo "## Overview"
             echo "This release includes the following changes:"
             cat CHANGELOG.md
-            
+
             echo -e "\n## Performance Impact"
             cat performance-report.md
-            
+
             echo -e "\n## Bundle Size"
             cat bundle-report.md
-            
+
             echo -e "\n## Documentation Updates"
             if [ -f "docs/CHANGELOG.md" ]; then
               cat docs/CHANGELOG.md
@@ -205,32 +213,32 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Publish to NPM
         id: publish
         run: |
-          if ! npm publish; then
+          if ! pnpm publish; then
             echo "::error::Failed to publish to NPM"
             exit 1
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          
+
       - name: Update documentation site
         id: docs-deploy
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          if ! npm run deploy:docs; then
+
+          if ! pnpm deploy:docs; then
             echo "::warning::Failed to deploy documentation"
           fi
-          
+
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add docs/
           git commit -m "chore: update documentation for ${{ github.ref_name }}" || echo "No documentation changes"
-          
+
           if ! git push; then
             echo "::warning::Failed to push documentation changes"
           fi
@@ -255,4 +263,4 @@ jobs:
         if: failure()
         run: |
           echo "::error::Release workflow failed. Check the logs for details."
-          exit 1 
+          exit 1
