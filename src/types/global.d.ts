@@ -3,6 +3,7 @@
  *
  * This file contains global type declarations and ambient module definitions
  * for external libraries and browser APIs used throughout the KineticSlider project.
+ * These declarations ensure proper TypeScript integration with external dependencies.
  *
  * @version 1.0.0
  * @author KineticSlider Team
@@ -98,7 +99,7 @@ declare global {
   /**
    * NodeJS global object extensions for testing
    */
-   
+
   declare var global: typeof globalThis & {
     /** PIXI.js mock for testing */
     PIXI?: unknown;
