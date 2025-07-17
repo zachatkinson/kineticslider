@@ -8,6 +8,10 @@ import { ERROR_MESSAGES } from './constants';
 type ServiceFactory<T> = () => T;
 type ServiceInstance<T> = T;
 
+// Type-safe service registry using unknown as the base type
+type ServiceFactoryRegistry = Map<string, ServiceFactory<unknown>>;
+type ServiceInstanceRegistry = Map<string, ServiceInstance<unknown>>;
+
 export interface IServiceContainer {
   register<T>(key: string, factory: ServiceFactory<T>): void;
   registerInstance<T>(key: string, instance: ServiceInstance<T>): void;
@@ -27,10 +31,8 @@ export interface IServiceContainer {
  * ```
  */
 export class ServiceContainer implements IServiceContainer {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private factories = new Map<string, ServiceFactory<any>>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private instances = new Map<string, ServiceInstance<any>>();
+  private factories: ServiceFactoryRegistry = new Map();
+  private instances: ServiceInstanceRegistry = new Map();
   private singletons = new Set<string>();
 
   /**
@@ -66,7 +68,7 @@ export class ServiceContainer implements IServiceContainer {
       throw new Error(ERROR_MESSAGES.SERVICE_NOT_FOUND(key));
     }
 
-    const instance = factory();
+    const instance = factory() as T;
 
     // Store if singleton
     if (this.singletons.has(key)) {

@@ -124,6 +124,12 @@ export const createMockSprite = () => {
       updateTransform: vi.fn(),
       calculateBounds: vi.fn(),
       render: vi.fn(),
+      // EventEmitter methods
+      once: vi.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+      emit: vi.fn(),
+      destroyed: false,
     },
     Sprite.prototype
   );

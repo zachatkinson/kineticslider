@@ -29,6 +29,12 @@ export { TransformAnimator } from './transform-animator';
 export { CameraController } from './camera-controller';
 export { ResponsiveHandler } from './responsive-handler';
 
+// Phase 3.3: Advanced Visual Effects Components
+export { DisplacementEffects } from './displacement-effects';
+export { FilterChain } from './filter-chain';
+export { EffectPresets } from './effect-presets';
+export { PerformanceOptimizer } from './performance-optimizer';
+
 // Export types for Phase 3.2 components
 export type {
   SpriteAnimationConfig,
@@ -66,3 +72,38 @@ export type {
   ResponsiveState,
   ResponsivePerformanceMetrics,
 } from './responsive-handler';
+
+// Export types for Phase 3.3 components
+export type {
+  MouseFollowOptions,
+  TransitionOptions,
+  IdleEffectOptions,
+} from './displacement-effects';
+
+export type {
+  FilterConfig,
+  FilterChainOptions,
+  ChainExecutionResult,
+  FilterChainMetrics,
+} from './filter-chain';
+
+export type {
+  PresetIntensity,
+  EffectCategory,
+  PresetOptions,
+  EffectPreset,
+  EffectPresetResult,
+  PresetLibraryConfig,
+} from './effect-presets';
+
+export type {
+  DeviceCapability,
+  OptimizationStrategy,
+  QualityMode,
+  DeviceMetrics,
+  QualityLevel,
+  PerformanceConfig,
+  RealTimeMetrics,
+  OptimizationRecommendation,
+  PerformanceEvent,
+} from './performance-optimizer';

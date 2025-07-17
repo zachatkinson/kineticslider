@@ -803,6 +803,34 @@ vi.mock('pixi.js', () => {
       }),
     },
     Matrix: MockMatrix,
+    BlurFilter: vi.fn().mockImplementation((options = {}) => ({
+      strength: options.strength || 0,
+      quality: options.quality || 4,
+      enabled: true,
+      destroy: vi.fn(),
+    })),
+    ColorMatrixFilter: vi.fn().mockImplementation(() => ({
+      matrix: new Float32Array(20),
+      enabled: true,
+      brightness: vi.fn().mockReturnThis(),
+      contrast: vi.fn().mockReturnThis(),
+      sepia: vi.fn().mockReturnThis(),
+      hue: vi.fn().mockReturnThis(),
+      saturate: vi.fn().mockReturnThis(),
+      desaturate: vi.fn().mockReturnThis(),
+      destroy: vi.fn(),
+    })),
+    DisplacementFilter: vi.fn().mockImplementation((sprite, scale = 0) => ({
+      sprite,
+      scale: { x: scale, y: scale },
+      enabled: true,
+      destroy: vi.fn(),
+    })),
+    NoiseFilter: vi.fn().mockImplementation((noise = 0.5) => ({
+      noise,
+      enabled: true,
+      destroy: vi.fn(),
+    })),
   };
 });
 
@@ -820,6 +848,109 @@ if (typeof process !== 'undefined' && !process.env.PLAYWRIGHT_TEST) {
  * without requiring the full PIXI.js library
  */
 beforeAll(() => {
+  // Mock HTMLCanvasElement.prototype.getContext to prevent PIXI.js WebGL errors
+  Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+    value: vi.fn(() => {
+      // Return a minimal mock WebGL context
+      return {
+        canvas: null,
+        getExtension: vi.fn(() => null),
+        getParameter: vi.fn((param) => {
+          // Return some basic values for common WebGL parameters
+          if (param === 35724) return 'WebGL 1.0';
+          if (param === 37445) return 'WebGL GLSL ES 1.0';
+          if (param === 34047) return 16;
+          if (param === 3379) return 4096;
+          return null;
+        }),
+        createShader: vi.fn(() => ({})),
+        shaderSource: vi.fn(),
+        compileShader: vi.fn(),
+        getShaderParameter: vi.fn(() => true),
+        createProgram: vi.fn(() => ({})),
+        attachShader: vi.fn(),
+        linkProgram: vi.fn(),
+        getProgramParameter: vi.fn(() => true),
+        useProgram: vi.fn(),
+        getUniformLocation: vi.fn(() => ({})),
+        uniform1f: vi.fn(),
+        uniform2f: vi.fn(),
+        uniform3f: vi.fn(),
+        uniform4f: vi.fn(),
+        uniformMatrix3fv: vi.fn(),
+        uniformMatrix4fv: vi.fn(),
+        createBuffer: vi.fn(() => ({})),
+        bindBuffer: vi.fn(),
+        bufferData: vi.fn(),
+        getAttribLocation: vi.fn(() => 0),
+        enableVertexAttribArray: vi.fn(),
+        vertexAttribPointer: vi.fn(),
+        drawArrays: vi.fn(),
+        drawElements: vi.fn(),
+        enable: vi.fn(),
+        disable: vi.fn(),
+        blendFunc: vi.fn(),
+        clearColor: vi.fn(),
+        clear: vi.fn(),
+        viewport: vi.fn(),
+        createTexture: vi.fn(() => ({})),
+        bindTexture: vi.fn(),
+        texImage2D: vi.fn(),
+        texParameteri: vi.fn(),
+        activeTexture: vi.fn(),
+        createFramebuffer: vi.fn(() => ({})),
+        bindFramebuffer: vi.fn(),
+        framebufferTexture2D: vi.fn(),
+        checkFramebufferStatus: vi.fn(() => 36053), // FRAMEBUFFER_COMPLETE
+        deleteTexture: vi.fn(),
+        deleteFramebuffer: vi.fn(),
+        deleteBuffer: vi.fn(),
+        deleteProgram: vi.fn(),
+        deleteShader: vi.fn(),
+        // Mock constants
+        VERTEX_SHADER: 35633,
+        FRAGMENT_SHADER: 35632,
+        ARRAY_BUFFER: 34962,
+        ELEMENT_ARRAY_BUFFER: 34963,
+        STATIC_DRAW: 35044,
+        FLOAT: 5126,
+        TRIANGLES: 4,
+        TEXTURE_2D: 3553,
+        RGBA: 6408,
+        UNSIGNED_BYTE: 5121,
+        TEXTURE_MAG_FILTER: 10240,
+        TEXTURE_MIN_FILTER: 10241,
+        TEXTURE_WRAP_S: 10242,
+        TEXTURE_WRAP_T: 10243,
+        CLAMP_TO_EDGE: 33071,
+        LINEAR: 9729,
+        NEAREST: 9728,
+        COLOR_BUFFER_BIT: 16384,
+        DEPTH_BUFFER_BIT: 256,
+        FRAMEBUFFER: 36160,
+        COLOR_ATTACHMENT0: 36064,
+        FRAMEBUFFER_COMPLETE: 36053,
+        TEXTURE0: 33984,
+        BLEND: 3042,
+        SRC_ALPHA: 770,
+        ONE_MINUS_SRC_ALPHA: 771,
+        MAX_VERTEX_ATTRIBS: 34921,
+        MAX_TEXTURE_SIZE: 3379,
+        RENDERER: 7937,
+        VERSION: 35724,
+        SHADING_LANGUAGE_VERSION: 37445,
+        MAX_TEXTURE_IMAGE_UNITS: 34930,
+        MAX_COMBINED_TEXTURE_IMAGE_UNITS: 35661,
+        MAX_VERTEX_TEXTURE_IMAGE_UNITS: 35660,
+        MAX_FRAGMENT_UNIFORM_VECTORS: 36349,
+        MAX_VERTEX_UNIFORM_VECTORS: 36347,
+        MAX_VARYING_VECTORS: 36348,
+      };
+    }),
+    writable: true,
+    configurable: true,
+  });
+
   // Mock PIXI.js for testing
   const globalWithPIXI = global as typeof global & { PIXI: unknown };
   globalWithPIXI.PIXI = {
@@ -904,24 +1035,128 @@ beforeAll(() => {
     },
   });
 
-  // Mock document.createElement for test elements
-  vi.spyOn(document, 'createElement').mockImplementation(
-    (tagName: string) =>
-      ({
-        tagName: tagName.toUpperCase(),
-        textContent: '',
-        style: {},
-        setAttribute: vi.fn(),
-        getAttribute: vi.fn(),
-        hasAttribute: vi.fn(() => false),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        remove: vi.fn(),
-        focus: vi.fn(),
-        blur: vi.fn(),
-        parentNode: {
-          removeChild: vi.fn(),
-        },
-      }) as unknown as HTMLElement
-  );
+  // Mock document.createElement for test elements (only once)
+  try {
+    vi.spyOn(document, 'createElement').mockImplementation(
+      (tagName: string) => {
+        if (tagName === 'canvas') {
+          return {
+            tagName: 'CANVAS',
+            textContent: '',
+            style: {},
+            setAttribute: vi.fn(),
+            getAttribute: vi.fn(),
+            hasAttribute: vi.fn(() => false),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            remove: vi.fn(),
+            focus: vi.fn(),
+            blur: vi.fn(),
+            parentNode: {
+              removeChild: vi.fn(),
+            },
+            width: 300,
+            height: 150,
+            getContext: vi.fn(() => {
+              // Return a mock WebGL context for test environment
+              return {
+                canvas: null,
+                getExtension: vi.fn(() => null),
+                getParameter: vi.fn(() => null),
+                createShader: vi.fn(() => null),
+                shaderSource: vi.fn(),
+                compileShader: vi.fn(),
+                getShaderParameter: vi.fn(() => true),
+                createProgram: vi.fn(() => null),
+                attachShader: vi.fn(),
+                linkProgram: vi.fn(),
+                getProgramParameter: vi.fn(() => true),
+                useProgram: vi.fn(),
+                getUniformLocation: vi.fn(() => null),
+                uniform1f: vi.fn(),
+                uniform2f: vi.fn(),
+                uniform3f: vi.fn(),
+                uniform4f: vi.fn(),
+                uniformMatrix3fv: vi.fn(),
+                uniformMatrix4fv: vi.fn(),
+                createBuffer: vi.fn(() => null),
+                bindBuffer: vi.fn(),
+                bufferData: vi.fn(),
+                getAttribLocation: vi.fn(() => 0),
+                enableVertexAttribArray: vi.fn(),
+                vertexAttribPointer: vi.fn(),
+                drawArrays: vi.fn(),
+                drawElements: vi.fn(),
+                enable: vi.fn(),
+                disable: vi.fn(),
+                blendFunc: vi.fn(),
+                clearColor: vi.fn(),
+                clear: vi.fn(),
+                viewport: vi.fn(),
+                createTexture: vi.fn(() => null),
+                bindTexture: vi.fn(),
+                texImage2D: vi.fn(),
+                texParameteri: vi.fn(),
+                activeTexture: vi.fn(),
+                createFramebuffer: vi.fn(() => null),
+                bindFramebuffer: vi.fn(),
+                framebufferTexture2D: vi.fn(),
+                checkFramebufferStatus: vi.fn(() => 36053), // FRAMEBUFFER_COMPLETE
+                deleteTexture: vi.fn(),
+                deleteFramebuffer: vi.fn(),
+                deleteBuffer: vi.fn(),
+                deleteProgram: vi.fn(),
+                deleteShader: vi.fn(),
+                // Mock constants
+                VERTEX_SHADER: 35633,
+                FRAGMENT_SHADER: 35632,
+                ARRAY_BUFFER: 34962,
+                ELEMENT_ARRAY_BUFFER: 34963,
+                STATIC_DRAW: 35044,
+                FLOAT: 5126,
+                TRIANGLES: 4,
+                TEXTURE_2D: 3553,
+                RGBA: 6408,
+                UNSIGNED_BYTE: 5121,
+                TEXTURE_MAG_FILTER: 10240,
+                TEXTURE_MIN_FILTER: 10241,
+                TEXTURE_WRAP_S: 10242,
+                TEXTURE_WRAP_T: 10243,
+                CLAMP_TO_EDGE: 33071,
+                LINEAR: 9729,
+                NEAREST: 9728,
+                COLOR_BUFFER_BIT: 16384,
+                DEPTH_BUFFER_BIT: 256,
+                FRAMEBUFFER: 36160,
+                COLOR_ATTACHMENT0: 36064,
+                FRAMEBUFFER_COMPLETE: 36053,
+                TEXTURE0: 33984,
+                BLEND: 3042,
+                SRC_ALPHA: 770,
+                ONE_MINUS_SRC_ALPHA: 771,
+              };
+            }),
+          } as unknown as HTMLCanvasElement;
+        }
+        return {
+          tagName: tagName.toUpperCase(),
+          textContent: '',
+          style: {},
+          setAttribute: vi.fn(),
+          getAttribute: vi.fn(),
+          hasAttribute: vi.fn(() => false),
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          remove: vi.fn(),
+          focus: vi.fn(),
+          blur: vi.fn(),
+          parentNode: {
+            removeChild: vi.fn(),
+          },
+        } as unknown as HTMLElement;
+      }
+    );
+  } catch {
+    // Already mocked, skip
+  }
 });

@@ -13,8 +13,6 @@
  * @version 1.0.0
  */
 
-/* eslint-disable security/detect-object-injection */
-
 import { Application, Sprite, Texture, Filter, Assets } from 'pixi.js';
 import { gsap } from 'gsap';
 import type { ISliderRenderer, RenderConfig } from '../core/types';
@@ -24,6 +22,7 @@ import type {
   ScaleAnimation,
 } from '../physics/engine';
 import { GSAP_DEFAULTS } from '../core/constants';
+import { safeArrayAssign, safeArrayAccess, isValidArrayIndex } from '../utils/safe-array';
 
 /**
  * Unified PIXI.js Renderer with Complete Pipeline
@@ -142,9 +141,11 @@ export class SliderRenderer implements ISliderRenderer {
     // Add GSAP data attributes for targeting
     this.markSpriteForGSAP(sprite, index);
 
-    // Add to stage and track
+    // Add to stage and track with safe array assignment
     this.app.stage.addChild(sprite);
-    this.sprites[index] = sprite;
+    
+    // Use safe array assignment to prevent object injection
+    safeArrayAssign(this.sprites, index, sprite);
 
     return sprite;
   }
@@ -236,9 +237,9 @@ export class SliderRenderer implements ISliderRenderer {
 
     // Hide sprites that should be hidden
     sequence.hideSprites.forEach((index) => {
-      // Safe array access with bounds checking
-      if (typeof index === 'number' && index >= 0 && index < sprites.length) {
-        const sprite = sprites[index];
+      // Use safe array access with type checking
+      if (isValidArrayIndex(index, sprites.length)) {
+        const sprite = safeArrayAccess(sprites, index);
         if (sprite) {
           timeline.set(sprite, { alpha: 0, visible: false }, 0);
         }
@@ -247,12 +248,9 @@ export class SliderRenderer implements ISliderRenderer {
 
     // Get target sprite with safe array access
     const targetIndex = sequence.targetSprite.index;
-    const targetSprite =
-      typeof targetIndex === 'number' &&
-      targetIndex >= 0 &&
-      targetIndex < sprites.length
-        ? sprites[targetIndex]
-        : null;
+    const targetSprite = isValidArrayIndex(targetIndex, sprites.length)
+      ? safeArrayAccess(sprites, targetIndex)
+      : null;
     if (!targetSprite) return timeline;
 
     // Set initial state for target sprite
@@ -281,14 +279,11 @@ export class SliderRenderer implements ISliderRenderer {
 
     // Handle source sprite exit animation if specified
     if (sequence.sourceSprite) {
-      // Safe array access with bounds checking
+      // Use safe array access with type checking
       const sourceIndex = sequence.sourceSprite.index;
-      const sourceSprite =
-        typeof sourceIndex === 'number' &&
-        sourceIndex >= 0 &&
-        sourceIndex < sprites.length
-          ? sprites[sourceIndex]
-          : null;
+      const sourceSprite = isValidArrayIndex(sourceIndex, sprites.length)
+        ? safeArrayAccess(sprites, sourceIndex)
+        : null;
       if (sourceSprite) {
         timeline.to(
           sourceSprite,
@@ -364,13 +359,9 @@ export class SliderRenderer implements ISliderRenderer {
     const timeline = this.createManagedTimeline();
 
     animations.forEach(({ spriteIndex, props }) => {
-      // Safe array access with bounds checking to prevent object injection
-      if (
-        typeof spriteIndex === 'number' &&
-        spriteIndex >= 0 &&
-        spriteIndex < sprites.length
-      ) {
-        const sprite = sprites[spriteIndex];
+      // Use safe array access with type checking to prevent object injection
+      if (isValidArrayIndex(spriteIndex, sprites.length)) {
+        const sprite = safeArrayAccess(sprites, spriteIndex);
         if (sprite) {
           timeline.to(
             sprite,

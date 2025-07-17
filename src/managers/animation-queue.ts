@@ -19,6 +19,7 @@ import {
   ANIMATION_EVENTS,
   ANIMATION_ERROR_CODES,
 } from '../core/constants';
+import { safeArrayInsertSorted } from '../utils/safe-array';
 
 /**
  * Animation execution result interface
@@ -249,8 +250,10 @@ export class AnimationQueue extends SimpleEventEmitter {
     const index = this.queue.findIndex((item) => item.id === id);
     if (index === -1) return false;
 
-    // eslint-disable-next-line security/detect-object-injection
-    const item = this.queue[index];
+    // Use safe array access with bounds checking
+    const item = this.queue.at(index);
+    if (!item) return false;
+
     this.queue.splice(index, 1);
     this.updateStats();
 
@@ -461,18 +464,11 @@ export class AnimationQueue extends SimpleEventEmitter {
   }
 
   private insertByPriority(item: QueueItem): void {
-    // Find insertion point to maintain priority order
-    let insertIndex = 0;
-    for (let i = 0; i < this.queue.length; i++) {
-      // eslint-disable-next-line security/detect-object-injection
-      if (this.queue[i].priority < item.priority) {
-        insertIndex = i;
-        break;
-      }
-      insertIndex = i + 1;
-    }
-
-    this.queue.splice(insertIndex, 0, item);
+    // Use safe array insertion with priority comparison
+    safeArrayInsertSorted(this.queue, item, (a, b) => {
+      // Higher priority items come first (reverse order)
+      return b.priority - a.priority;
+    });
   }
 
   private findItemPosition(id: string): number {
