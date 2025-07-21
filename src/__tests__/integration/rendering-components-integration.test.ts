@@ -401,7 +401,7 @@ describe('Rendering Component Integration', () => {
 
       // Simulate texture loading failure
       const { Assets } = await import('pixi.js');
-      vi.mocked(Assets.load).mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(Assets.load).mockRejectedValueOnce(new Error('Network _error'));
 
       // System should continue to work with other components
       const sprite = spritePool.getSprite();

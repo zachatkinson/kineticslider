@@ -2,11 +2,10 @@
  * @fileoverview SliderPhysics Facade Integration Tests
  *
  * Integration tests for the SliderPhysics facade that coordinates between
- * real physics engine and PIXI renderer components. Tests actual component
- * integration and coordination rather than mocked behavior.
+ * physics engine and renderer components with proper mocking.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SliderPhysics } from '../../physics';
 import type { PhysicsConfig } from '../../core/types';
 import type { Sprite } from 'pixi.js';
@@ -19,6 +18,58 @@ import {
   TEST_DIRECTIONS,
 } from '../utils/test-factories';
 
+// Mock renderer to avoid PIXI initialization issues
+const createMockRenderer = () => ({
+  initialize: vi.fn().mockResolvedValue(true),
+  destroy: vi.fn(),
+  markSpritesForGSAP: vi.fn(),
+  applyScale: vi.fn(() => ({
+    play: vi.fn(),
+    kill: vi.fn(),
+    duration: vi.fn(() => 0.5),
+    isActive: vi.fn(() => false),
+  })),
+  applyBatchAnimations: vi.fn(() => ({
+    play: vi.fn(),
+    kill: vi.fn(),
+    duration: vi.fn(() => 0.5),
+    isActive: vi.fn(() => false),
+  })),
+  applyTransition: vi.fn(() => ({
+    play: vi.fn(),
+    kill: vi.fn(),
+    duration: vi.fn(() => 0.5),
+    isActive: vi.fn(() => false),
+  })),
+  applySwipe: vi.fn(() => ({
+    play: vi.fn(),
+    kill: vi.fn(),
+    duration: vi.fn(() => 0.5),
+    isActive: vi.fn(() => false),
+  })),
+  killAllAnimations: vi.fn(),
+  cleanup: vi.fn(),
+  getPerformanceStats: vi.fn(() => ({
+    activeTimelines: 0,
+    activeTweens: 0,
+    totalAnimations: 0,
+  })),
+  createAnimationSequence: vi.fn(() => ({
+    hideSprites: [],
+    targetSprite: { index: 0, initialState: {}, finalState: {} },
+  })),
+  createSwipeAnimation: vi.fn(() => ({
+    initialPhase: { duration: 0.1, movement: 100, scale: 1 },
+    springPhase: { duration: 0.2, movement: 0, scale: 1, ease: 'power2.out' },
+  })),
+  createScaleAnimation: vi.fn(() => ({
+    targetScale: 1.1,
+    duration: 0.3,
+    ease: 'power2.out',
+  })),
+  getSprites: vi.fn(() => []),
+});
+
 describe('SliderPhysics Facade Integration', () => {
   let facade: SliderPhysics;
   let mockSprites: Sprite[];
@@ -27,7 +78,7 @@ describe('SliderPhysics Facade Integration', () => {
     // Create test sprites
     mockSprites = createTestSprites(3);
 
-    // Create test configuration
+    // Create test configuration with mock renderer
     const testConfig = {
       slideCount: 3,
       slideWidth: 400,
@@ -36,8 +87,11 @@ describe('SliderPhysics Facade Integration', () => {
       enableGPU: false, // Disable for testing
     };
 
-    // Create physics facade with real components (integration test)
+    // Create physics facade with mocked renderer
     facade = new SliderPhysics(testConfig);
+    // Replace the renderer with our mock after construction
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (facade as any).renderer = createMockRenderer();
   });
 
   afterEach(() => {

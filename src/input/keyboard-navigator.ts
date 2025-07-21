@@ -158,8 +158,7 @@ export class KeyboardNavigator {
 
     // Set ARIA role for slider
     this.element.setAttribute('role', 'region');
-    this.element.setAttribute('aria-label', 'Interactive image slider');
-    this.element.setAttribute('aria-live', 'polite');
+    this.element.setAttribute('aria-label', 'Interactive image _slider');
 
     // Add keyboard instructions
     this.element.setAttribute(
@@ -180,7 +179,7 @@ export class KeyboardNavigator {
    * Create hidden instructions for screen readers
    */
   private createKeyboardInstructions(): string {
-    const instructionsId = 'slider-keyboard-instructions';
+    const instructionsId = '_slider-keyboard-instructions';
 
     // Remove existing instructions
     const existing = document.getElementById(instructionsId);
@@ -212,7 +211,7 @@ export class KeyboardNavigator {
   private createLiveRegion(): void {
     if (!this.config.enableAnnouncements) return;
 
-    const liveRegionId = 'slider-live-region';
+    const liveRegionId = 'keyboard-navigator-announcements';
 
     // Remove existing live region
     const existing = document.getElementById(liveRegionId);
@@ -461,10 +460,13 @@ export class KeyboardNavigator {
    */
   private navigatePrevious(): void {
     this.callbacks.onPrevious();
-    this.announce(
-      `Previous slide. ${this.getCurrentSlideAnnouncement()}`,
-      AnnouncementType.NAVIGATION
-    );
+    // Delay announcement to allow slide change to complete and state to update
+    setTimeout(() => {
+      this.announce(
+        `Previous slide. ${this.getCurrentSlideAnnouncement()}`,
+        AnnouncementType.NAVIGATION
+      );
+    }, 100);
   }
 
   /**
@@ -472,10 +474,13 @@ export class KeyboardNavigator {
    */
   private navigateNext(): void {
     this.callbacks.onNext();
-    this.announce(
-      `Next slide. ${this.getCurrentSlideAnnouncement()}`,
-      AnnouncementType.NAVIGATION
-    );
+    // Delay announcement to allow slide change to complete and state to update
+    setTimeout(() => {
+      this.announce(
+        `Next slide. ${this.getCurrentSlideAnnouncement()}`,
+        AnnouncementType.NAVIGATION
+      );
+    }, 100);
   }
 
   /**
@@ -483,10 +488,13 @@ export class KeyboardNavigator {
    */
   private navigateToFirst(): void {
     this.callbacks.onFirst();
-    this.announce(
-      `First slide. ${this.getCurrentSlideAnnouncement()}`,
-      AnnouncementType.NAVIGATION
-    );
+    // Delay announcement to allow slide change to complete and state to update
+    setTimeout(() => {
+      this.announce(
+        `First slide. ${this.getCurrentSlideAnnouncement()}`,
+        AnnouncementType.NAVIGATION
+      );
+    }, 100);
   }
 
   /**
@@ -494,10 +502,13 @@ export class KeyboardNavigator {
    */
   private navigateToLast(): void {
     this.callbacks.onLast();
-    this.announce(
-      `Last slide. ${this.getCurrentSlideAnnouncement()}`,
-      AnnouncementType.NAVIGATION
-    );
+    // Delay announcement to allow slide change to complete and state to update
+    setTimeout(() => {
+      this.announce(
+        `Last slide. ${this.getCurrentSlideAnnouncement()}`,
+        AnnouncementType.NAVIGATION
+      );
+    }, 100);
   }
 
   /**
@@ -653,7 +664,7 @@ export class KeyboardNavigator {
 
     // Clean up instructions
     const instructions = document.getElementById(
-      'slider-keyboard-instructions'
+      '_slider-keyboard-instructions'
     );
     if (instructions) {
       instructions.remove();

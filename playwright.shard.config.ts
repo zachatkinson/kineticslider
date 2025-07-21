@@ -7,16 +7,16 @@ import baseConfig from './playwright.config';
  */
 export default defineConfig({
   ...baseConfig,
-  
+
   // More aggressive worker optimization for sharded runs
   workers: process.env.CI ? 8 : '100%',
-  
+
   // Longer global timeout for sharded runs
   globalTimeout: 20 * 60 * 1000, // 20 minutes
-  
+
   // Reduce retries for faster feedback in sharded runs
   retries: process.env.CI ? 1 : 0,
-  
+
   // Optimize for speed - minimal artifacts
   use: {
     ...baseConfig.use,
@@ -24,7 +24,7 @@ export default defineConfig({
     screenshot: 'off',
     video: 'off',
   },
-  
+
   // Single fast browser for sharded runs
   projects: [
     {

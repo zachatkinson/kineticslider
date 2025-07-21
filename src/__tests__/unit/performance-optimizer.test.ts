@@ -581,7 +581,9 @@ describe('PerformanceOptimizer', () => {
       optimizer.registerTarget(mockFilterChain);
 
       // Clear previous calls but keep mock implementation
-      (mockFilterChain.getMetrics as unknown as ReturnType<typeof vi.fn>).mockClear();
+      (
+        mockFilterChain.getMetrics as unknown as ReturnType<typeof vi.fn>
+      ).mockClear();
 
       expect(() => {
         optimizer.applyOptimization();
@@ -594,7 +596,11 @@ describe('PerformanceOptimizer', () => {
       optimizer.registerTarget(mockDisplacementEffects);
 
       // Clear previous calls but keep mock implementation
-      (mockDisplacementEffects.getPerformanceMetrics as unknown as ReturnType<typeof vi.fn>).mockClear();
+      (
+        mockDisplacementEffects.getPerformanceMetrics as unknown as ReturnType<
+          typeof vi.fn
+        >
+      ).mockClear();
 
       const lowQuality: QualityLevel = {
         level: 0.2,

@@ -101,10 +101,10 @@ describe('Service Container', () => {
 
   describe('SERVICE_KEYS Constants', () => {
     it('should have all required service keys', () => {
-      expect(SERVICE_KEYS.ENGINE).toBe('slider-engine');
-      expect(SERVICE_KEYS.PHYSICS).toBe('slider-physics');
-      expect(SERVICE_KEYS.RENDERER).toBe('slider-renderer');
-      expect(SERVICE_KEYS.CONTROLLER).toBe('slider-controller');
+      expect(SERVICE_KEYS.ENGINE).toBe('_slider-engine');
+      expect(SERVICE_KEYS.PHYSICS).toBe('_slider-physics');
+      expect(SERVICE_KEYS.RENDERER).toBe('_slider-renderer');
+      expect(SERVICE_KEYS.CONTROLLER).toBe('_slider-controller');
       expect(SERVICE_KEYS.EVENT_EMITTER).toBe('event-emitter');
     });
 

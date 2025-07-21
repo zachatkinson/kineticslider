@@ -7,8 +7,8 @@ export default defineConfig({
   plugins: [
     react(),
     tsconfigPaths({
-      projects: ['./tsconfig.testing.json']
-    })
+      projects: ['./tsconfig.testing.json'],
+    }),
   ],
   test: {
     environment: 'happy-dom',
@@ -23,9 +23,9 @@ export default defineConfig({
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: true
-      }
-    }
+        singleFork: true,
+      },
+    },
   },
   resolve: {
     alias: {
@@ -33,7 +33,7 @@ export default defineConfig({
       '@components': resolve(__dirname, './src/components'),
       '@utils': resolve(__dirname, './src/utils'),
       '@lib': resolve(__dirname, './src/lib'),
-      '@types': resolve(__dirname, './src/types')
-    }
-  }
-}); 
+      '@types': resolve(__dirname, './src/types'),
+    },
+  },
+});

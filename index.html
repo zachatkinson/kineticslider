@@ -1,60 +1,65 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/kinetic-slider-icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="High-Performance Image Slider with Physics-Based Animation - Demo and E2E Testing Environment"
+    />
     <title>KineticSlider - Demo & E2E Testing</title>
     <style>
       body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
-                     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 
-                     'Helvetica Neue', sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
       }
-      
+
       .demo-container {
         padding: 2rem;
         max-width: 1200px;
         margin: 0 auto;
       }
-      
+
       .demo-header {
         text-align: center;
         color: white;
         margin-bottom: 3rem;
       }
-      
+
       .demo-header h1 {
         font-size: 3rem;
         margin: 0 0 1rem 0;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
-      
+
       .demo-header p {
         font-size: 1.2rem;
         margin: 0;
         opacity: 0.9;
       }
-      
+
       .slider-demo-section {
         background: white;
         border-radius: 12px;
         padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       }
-      
+
       .slider-demo-section h2 {
         margin-top: 0;
         color: #333;
         font-size: 1.5rem;
       }
-      
+
       .slider-container {
         width: 100%;
         height: 400px;
@@ -64,7 +69,7 @@
         overflow: hidden;
         background: #f5f5f5;
       }
-      
+
       .loading-state {
         display: flex;
         align-items: center;
@@ -73,14 +78,14 @@
         color: #666;
         font-size: 1.1rem;
       }
-      
+
       .demo-controls {
         margin-top: 1rem;
         display: flex;
         gap: 1rem;
         flex-wrap: wrap;
       }
-      
+
       .demo-button {
         padding: 0.5rem 1rem;
         border: none;
@@ -91,16 +96,16 @@
         font-size: 0.9rem;
         transition: background 0.2s;
       }
-      
+
       .demo-button:hover {
         background: #5a6fd8;
       }
-      
+
       .demo-button:disabled {
         background: #ccc;
         cursor: not-allowed;
       }
-      
+
       .status-bar {
         background: #f8f9fa;
         border: 1px solid #e9ecef;
@@ -110,44 +115,31 @@
         font-family: monospace;
         font-size: 0.85rem;
       }
-      
+
       .status-item {
         margin: 0.25rem 0;
       }
-      
+
       .status-item strong {
         color: #495057;
       }
     </style>
   </head>
   <body>
-    <div class="demo-container" data-testid="app">
-      <header class="demo-header">
-        <h1>🚀 KineticSlider</h1>
-        <p>High-Performance PIXI.js + GSAP Image Slider</p>
-      </header>
-      
-      <section class="slider-demo-section">
-        <h2>Basic Slider Demo</h2>
-        <div id="basic-slider" class="slider-container" data-testid="basic-slider">
-          <div class="loading-state">Loading KineticSlider...</div>
-        </div>
-        <div class="demo-controls">
-          <button id="prev-btn" class="demo-button" data-testid="prev-button">Previous</button>
-          <button id="next-btn" class="demo-button" data-testid="next-button">Next</button>
-          <button id="play-btn" class="demo-button" data-testid="play-button">Play</button>
-          <button id="pause-btn" class="demo-button" data-testid="pause-button">Pause</button>
-        </div>
-        <div class="status-bar" data-testid="status-bar">
-          <div class="status-item"><strong>Status:</strong> <span id="status">Initializing...</span></div>
-          <div class="status-item"><strong>Current Index:</strong> <span id="current-index">0</span></div>
-          <div class="status-item"><strong>Total Slides:</strong> <span id="total-slides">0</span></div>
-          <div class="status-item"><strong>Physics Engine:</strong> <span id="physics-status">Loading...</span></div>
-          <div class="status-item"><strong>Renderer:</strong> <span id="renderer-status">Loading...</span></div>
-        </div>
-      </section>
+    <div id="root">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          color: #666;
+        "
+      >
+        Loading KineticSlider...
+      </div>
     </div>
-    
+
     <script type="module" src="/demo.tsx"></script>
   </body>
-</html> 
+</html>

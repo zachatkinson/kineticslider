@@ -1,9 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="KineticSlider - Modern interactive image slider with physics-based animations" />
+    <meta
+      name="description"
+      content="KineticSlider - Modern interactive image slider with physics-based animations"
+    />
     <title>KineticSlider Demo</title>
     <style>
       * {
@@ -11,45 +14,47 @@
         padding: 0;
         box-sizing: border-box;
       }
-      
+
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
         line-height: 1.6;
         color: #333;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
       }
-      
+
       .container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 2rem;
       }
-      
+
       header {
         text-align: center;
         margin-bottom: 3rem;
         color: white;
       }
-      
+
       h1 {
         font-size: 3rem;
         margin-bottom: 1rem;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
-      
+
       .subtitle {
         font-size: 1.2rem;
         opacity: 0.9;
       }
-      
+
       main {
         background: rgba(255, 255, 255, 0.95);
         border-radius: 12px;
         padding: 2rem;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       }
-      
+
       .slider-placeholder {
         height: 400px;
         background: linear-gradient(45deg, #f0f2f5, #e1e8ed);
@@ -60,37 +65,37 @@
         border: 2px dashed #cbd5e1;
         margin: 2rem 0;
       }
-      
+
       .placeholder-text {
         color: #64748b;
         font-size: 1.1rem;
         text-align: center;
       }
-      
+
       .features {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 1.5rem;
         margin-top: 2rem;
       }
-      
+
       .feature {
         padding: 1.5rem;
         background: #f8fafc;
         border-radius: 8px;
         border-left: 4px solid #667eea;
       }
-      
+
       .feature h3 {
         color: #334155;
         margin-bottom: 0.5rem;
       }
-      
+
       .feature p {
         color: #64748b;
         font-size: 0.9rem;
       }
-      
+
       .skip-link {
         position: absolute;
         top: -40px;
@@ -102,26 +107,26 @@
         border-radius: 4px;
         z-index: 1000;
       }
-      
+
       .skip-link:focus {
         top: 6px;
       }
-      
+
       footer {
         text-align: center;
         margin-top: 3rem;
         color: rgba(255, 255, 255, 0.8);
       }
-      
+
       @media (max-width: 768px) {
         .container {
           padding: 1rem;
         }
-        
+
         h1 {
           font-size: 2rem;
         }
-        
+
         .features {
           grid-template-columns: 1fr;
         }
@@ -130,101 +135,129 @@
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to main content</a>
-    
+
     <div class="container">
       <header>
         <h1>KineticSlider</h1>
-        <p class="subtitle">Modern Interactive Image Slider with Physics-Based Animations</p>
+        <p class="subtitle">
+          Modern Interactive Image Slider with Physics-Based Animations
+        </p>
       </header>
-      
+
       <main id="main" role="main">
         <h2>Demo Application</h2>
-        <p>This is a demonstration page for the KineticSlider project. The slider component will be implemented in Phase 2 of development.</p>
-        
-                 <div class="slider-placeholder" data-testid="slider-container">
-           <div class="placeholder-text">
-             <strong>Slider Container</strong><br>
-             Ready for KineticSlider implementation
-           </div>
-           <div class="image-meta">
-             <title>Image 1 of 5</title>
-           </div>
-         </div>
-        
+        <p>
+          This is a demonstration page for the KineticSlider project. The slider
+          component will be implemented in Phase 2 of development.
+        </p>
+
+        <div class="slider-placeholder" data-testid="slider-container">
+          <div class="placeholder-text">
+            <strong>Slider Container</strong><br />
+            Ready for KineticSlider implementation
+          </div>
+          <div class="image-meta">
+            <title>Image 1 of 5</title>
+          </div>
+        </div>
+
         <div class="features">
           <div class="feature">
             <h3>🎨 PIXI.js Integration</h3>
-            <p>High-performance WebGL rendering for smooth animations and visual effects.</p>
+            <p>
+              High-performance WebGL rendering for smooth animations and visual
+              effects.
+            </p>
           </div>
-          
+
           <div class="feature">
             <h3>⚡ GSAP Animations</h3>
-            <p>Professional-grade animation engine for fluid transitions and interactions.</p>
+            <p>
+              Professional-grade animation engine for fluid transitions and
+              interactions.
+            </p>
           </div>
-          
+
           <div class="feature">
             <h3>📱 Touch & Gesture Support</h3>
-            <p>Native touch gestures, mouse interactions, and keyboard navigation.</p>
+            <p>
+              Native touch gestures, mouse interactions, and keyboard
+              navigation.
+            </p>
           </div>
-          
+
           <div class="feature">
             <h3>🧪 Fully Tested</h3>
-            <p>Comprehensive test coverage including unit, integration, and E2E tests.</p>
+            <p>
+              Comprehensive test coverage including unit, integration, and E2E
+              tests.
+            </p>
           </div>
-          
+
           <div class="feature">
             <h3>♿ Accessibility First</h3>
-            <p>WCAG 2.1 AA compliant with screen reader support and keyboard navigation.</p>
+            <p>
+              WCAG 2.1 AA compliant with screen reader support and keyboard
+              navigation.
+            </p>
           </div>
-          
+
           <div class="feature">
             <h3>🎯 TypeScript</h3>
-            <p>Full type safety with comprehensive interfaces and type definitions.</p>
+            <p>
+              Full type safety with comprehensive interfaces and type
+              definitions.
+            </p>
           </div>
         </div>
       </main>
-      
+
       <footer>
-        <p>&copy; 2024 KineticSlider Project. Built with TypeScript, PIXI.js, and GSAP.</p>
+        <p>
+          &copy; 2024 KineticSlider Project. Built with TypeScript, PIXI.js, and
+          GSAP.
+        </p>
       </footer>
     </div>
-    
+
     <script>
       // Basic functionality to demonstrate browser API support
       console.log('KineticSlider Demo Page Loaded');
-      
+
       // Test touch events
       if ('ontouchstart' in window) {
         console.log('Touch events supported');
       }
-      
+
       // Test modern APIs
       if ('IntersectionObserver' in window) {
         console.log('IntersectionObserver supported');
       }
-      
+
       if ('ResizeObserver' in window) {
         console.log('ResizeObserver supported');
       }
-      
+
       // Performance timing
       window.addEventListener('load', () => {
         if (performance.timing) {
-          const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+          const loadTime =
+            performance.timing.loadEventEnd -
+            performance.timing.navigationStart;
           console.log(`Page load time: ${loadTime}ms`);
         }
       });
-      
+
       // Keyboard navigation support
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
           document.body.classList.add('keyboard-navigation');
         }
       });
-      
+
       document.addEventListener('mousedown', () => {
         document.body.classList.remove('keyboard-navigation');
       });
     </script>
   </body>
-</html> 
+</html>

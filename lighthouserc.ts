@@ -9,7 +9,10 @@ interface LighthouseConfig {
       };
     };
     assert: {
-      assertions: Record<string, string | [string, { minScore?: number; maxNumericValue?: number }]>;
+      assertions: Record<
+        string,
+        string | [string, { minScore?: number; maxNumericValue?: number }]
+      >;
     };
     upload: {
       target: string;

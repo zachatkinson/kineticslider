@@ -12,12 +12,18 @@
 // 🎯 Core System Exports
 // =============================================================================
 
-export * from './types';
+// Export types explicitly
+export type * from './types';
 
-export * from './container';
+// Export container
 export { serviceContainer, SERVICE_KEYS } from './container';
-export * from './event-emitter';
-export * from './engine';
+
+// Export event emitter
+export { SimpleEventEmitter } from './event-emitter';
+export type { EventEmitter } from './types';
+
+// Export engine
+export { SliderCore as SliderEngine } from './slider-core';
 
 // =============================================================================
 // 🎨 Animation Constants Group
@@ -113,4 +119,11 @@ export {
 export { validateConstants } from './constants';
 
 // Export sprite helper utilities
-export * from './sprite-helpers';
+export {
+  getBaseScale,
+  setBaseScale,
+  calculateFinalScale,
+  applyUniformScale,
+  normalizeScale,
+  calculateDragScaleFactor,
+} from './sprite-helpers';

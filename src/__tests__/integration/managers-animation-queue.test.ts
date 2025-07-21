@@ -131,7 +131,7 @@ describe('AnimationQueue Integration Tests', () => {
         animations: [],
       };
 
-      const promise = animationQueue.enqueue('error-animation', config);
+      const promise = animationQueue.enqueue('_error-animation', config);
       expect(promise).toBeInstanceOf(Promise);
 
       // Error handling will be tested when queue is started and processed
@@ -317,13 +317,13 @@ describe('AnimationQueue Integration Tests', () => {
 
       const eventSpy = vi.spyOn(animationQueue, 'emit');
 
-      animationQueue.enqueue('event-animation', config);
+      animationQueue.enqueue('_event-animation', config);
 
       // Verify event was emitted
       expect(eventSpy).toHaveBeenCalledWith(
         ANIMATION_EVENTS.ANIMATION_QUEUED,
         expect.objectContaining({
-          id: 'event-animation',
+          id: '_event-animation',
           priority: ANIMATION_PRIORITIES.NORMAL,
         })
       );

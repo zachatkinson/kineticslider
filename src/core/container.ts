@@ -102,9 +102,9 @@ export const serviceContainer = new ServiceContainer();
  * Service Keys for Dependency Injection
  */
 export const SERVICE_KEYS = {
-  ENGINE: 'slider-engine',
-  PHYSICS: 'slider-physics',
-  RENDERER: 'slider-renderer',
-  CONTROLLER: 'slider-controller',
+  ENGINE: '_slider-engine',
+  PHYSICS: '_slider-physics',
+  RENDERER: '_slider-renderer',
+  CONTROLLER: '_slider-controller',
   EVENT_EMITTER: 'event-emitter',
 } as const;

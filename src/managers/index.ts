@@ -12,12 +12,42 @@ import { AnimationManager } from './animation-manager';
 import { PerformanceMonitor } from './performance-monitor';
 import { MemoryManager } from './memory-manager';
 import { AnimationQueue } from './animation-queue';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { AutoPlayManager } from './auto-play-manager';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { LoopManager } from './loop-manager';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { NavigationManager } from './navigation-manager';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { StateManager } from './state-manager';
 
 // Animation coordination managers
 export { AnimationManager } from './animation-manager';
 export { PerformanceMonitor } from './performance-monitor';
 export { MemoryManager } from './memory-manager';
 export { AnimationQueue } from './animation-queue';
+export { AutoPlayManager } from './auto-play-manager';
+export { LoopManager } from './loop-manager';
+export { NavigationManager } from './navigation-manager';
+export { StateManager } from './state-manager';
+export type { AutoPlayConfig, PauseReason } from './auto-play-manager';
+export type { LoopConfig, LoopMode, VirtualSlide, LoopTransition } from './loop-manager';
+export type { 
+  NavigationConfig, 
+  NavigationRequest, 
+  NavigationResult, 
+  SlideBounds,
+  NavigationInputType,
+  NavigationDirection
+} from './navigation-manager';
+export type {
+  SliderState,
+  StateHistoryEntry,
+  StateValidationResult,
+  StateBounds,
+  StatePersistenceConfig,
+  StateManagerConfig
+} from './state-manager';
 
 // Type exports for external use
 export type {
@@ -29,7 +59,7 @@ export type { ResourceInfo, MemoryStats, MemoryLeak } from './memory-manager';
 
 export type { QueueItem, QueueStats } from './animation-queue';
 
-// Manager coordination utilities
+// Manager coordination utilities - exported for external use
 export class ManagerCoordinator {
   private animationManager: AnimationManager;
   private performanceMonitor: PerformanceMonitor;

@@ -611,9 +611,7 @@ test.describe('PerformanceMonitor E2E', () => {
                 texturesLoaded: 1,
               },
             });
-          } catch (error) {
-            console.warn('Rendering operation failed:', error);
-
+          } catch {
             // Still record performance data on error
             const frameEnd = performance.now();
             const frameTime = frameEnd - frameStart;
@@ -635,7 +633,7 @@ test.describe('PerformanceMonitor E2E', () => {
                 memory: memory / 1024 / 1024,
                 drawCalls: 0,
                 texturesLoaded: 0,
-                error: true,
+                _error: true,
               },
             });
           }

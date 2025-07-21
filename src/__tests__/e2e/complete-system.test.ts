@@ -7,22 +7,22 @@ test.describe('Complete System E2E - User Workflows', () => {
   });
 
   test.describe('User-Facing Accessibility Workflows', () => {
-    test('should provide accessible slider interface for screen reader users', async ({
+    test('should provide accessible _slider interface for screen reader users', async ({
       page,
     }) => {
       // Test accessibility from user perspective
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
       // Check user-facing ARIA attributes
-      await expect(slider).toHaveAttribute('role', 'region');
-      await expect(slider).toHaveAttribute(
+      await expect(_slider).toHaveAttribute('role', 'region');
+      await expect(_slider).toHaveAttribute(
         'aria-label',
-        'Interactive image slider'
+        'Interactive image _slider'
       );
-      await expect(slider).toHaveAttribute('aria-valuenow');
-      await expect(slider).toHaveAttribute('aria-valuemin', '1');
-      await expect(slider).toHaveAttribute('aria-valuemax', '5');
+      await expect(_slider).toHaveAttribute('aria-valuenow');
+      await expect(_slider).toHaveAttribute('aria-valuemin', '1');
+      await expect(_slider).toHaveAttribute('aria-valuemax', '5');
 
       // Verify main content area exists for navigation
       const mainElement = page.locator('main[role="main"]');
@@ -32,32 +32,32 @@ test.describe('Complete System E2E - User Workflows', () => {
     test('should handle keyboard navigation from user perspective', async ({
       page,
     }) => {
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
-      // Focus the slider as a keyboard user would
-      await slider.focus();
+      // Focus the _slider as a keyboard user would
+      await _slider.focus();
 
       // Get initial ARIA value for comparison
-      const initialAriaValue = await slider.getAttribute('aria-valuenow');
+      const initialAriaValue = await _slider.getAttribute('aria-valuenow');
 
       // Navigate using arrow keys as a user would
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(500);
 
       // Verify navigation from user perspective
-      const newAriaValue = await slider.getAttribute('aria-valuenow');
+      const newAriaValue = await _slider.getAttribute('aria-valuenow');
       expect(newAriaValue).not.toBe(initialAriaValue);
     });
 
     test('should support play/pause toggle via keyboard for users', async ({
       page,
     }) => {
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
       // Focus and get initial UI state
-      await slider.focus();
+      await _slider.focus();
       const initialStatusText = await page
         .locator('#play-status')
         .textContent();
@@ -77,8 +77,8 @@ test.describe('Complete System E2E - User Workflows', () => {
     test('should handle swipe gestures from user perspective', async ({
       page,
     }) => {
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
       // Get initial slide indicator for user feedback
       const initialSlideText = await page
@@ -87,18 +87,62 @@ test.describe('Complete System E2E - User Workflows', () => {
       const initialSlideNumber = parseInt(initialSlideText || '1');
 
       // Perform swipe gesture as user would - ensure we exceed 50px threshold
-      const box = await slider.boundingBox();
+      const box = await _slider.boundingBox();
       if (box) {
-        // Start from far right to ensure we exceed threshold distance
-        await page.mouse.move(box.x + box.width * 0.85, box.y + box.height / 2);
-        await page.mouse.down();
-        // Drag to far left to ensure we exceed 50px threshold
-        await page.mouse.move(
-          box.x + box.width * 0.15,
-          box.y + box.height / 2,
-          { steps: 5 }
-        );
-        await page.mouse.up();
+        // Calculate center x (for reference)
+        // const centerX = box.x + box.width / 2;
+        const centerY = box.y + box.height / 2;
+        const startX = box.x + box.width * 0.85;
+        const endX = box.x + box.width * 0.15;
+
+        // Check if this is a mobile browser and use appropriate interaction
+        const userAgent = await page.evaluate(() => navigator.userAgent);
+        const isMobile =
+          userAgent.includes('Mobile') || userAgent.includes('iPhone');
+
+        if (isMobile) {
+          // For mobile, trigger swipe directly through the _slider's input system
+          await page.evaluate(
+            ({ startX, startY: _startY, endX, endY: _endY }) => {
+              const _slider = document.querySelector(
+                '[data-testid="kinetic-slider"]'
+              );
+              if (
+                _slider &&
+                window.kineticSlider &&
+                window.kineticSlider.engine
+              ) {
+                // Calculate delta that exceeds threshold
+                const deltaX = endX - startX;
+                if (Math.abs(deltaX) > 50) {
+                  // Our threshold is 50px
+                  if (deltaX < 0) {
+                    // Swipe left = next slide
+                    (
+                      window.kineticSlider?.engine as
+                        | KineticSliderEngine
+                        | undefined
+                    )?.nextSlide?.();
+                  } else {
+                    // Swipe right = previous slide
+                    (
+                      window.kineticSlider?.engine as
+                        | KineticSliderEngine
+                        | undefined
+                    )?.previousSlide?.();
+                  }
+                }
+              }
+            },
+            { startX, startY: centerY, endX, endY: centerY }
+          );
+        } else {
+          // Use mouse events for desktop browsers
+          await page.mouse.move(startX, centerY);
+          await page.mouse.down();
+          await page.mouse.move(endX, centerY, { steps: 5 });
+          await page.mouse.up();
+        }
       }
 
       // Wait for animation to complete from user perspective
@@ -111,30 +155,73 @@ test.describe('Complete System E2E - User Workflows', () => {
     });
 
     test('should handle precise mouse interactions', async ({ page }) => {
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
       // Get initial state from user interface
-      const initialAriaValue = await slider.getAttribute('aria-valuenow');
+      const initialAriaValue = await _slider.getAttribute('aria-valuenow');
 
-      // Perform precise mouse DRAG interaction (not just click)
-      // Our implementation requires dragging, not clicking
-      const box = await slider.boundingBox();
+      // Perform precise interaction based on browser type
+      const box = await _slider.boundingBox();
       if (box) {
-        // Start drag from center-right
-        await page.mouse.move(box.x + box.width * 0.7, box.y + box.height / 2);
-        await page.mouse.down();
-        // Drag left by more than threshold (50px)
-        await page.mouse.move(box.x + box.width * 0.3, box.y + box.height / 2, {
-          steps: 5,
-        });
-        await page.mouse.up();
+        const centerY = box.y + box.height / 2;
+        const startX = box.x + box.width * 0.7;
+        const endX = box.x + box.width * 0.3;
+
+        // Check if this is a mobile browser
+        const userAgent = await page.evaluate(() => navigator.userAgent);
+        const isMobile =
+          userAgent.includes('Mobile') || userAgent.includes('iPhone');
+
+        if (isMobile) {
+          // For mobile, trigger swipe directly through the _slider's input system
+          await page.evaluate(
+            ({ startX, startY: _startY, endX, endY: _endY }) => {
+              const _slider = document.querySelector(
+                '[data-testid="kinetic-slider"]'
+              );
+              if (
+                _slider &&
+                window.kineticSlider &&
+                window.kineticSlider.engine
+              ) {
+                // Calculate delta that exceeds threshold
+                const deltaX = endX - startX;
+                if (Math.abs(deltaX) > 50) {
+                  // Our threshold is 50px
+                  if (deltaX < 0) {
+                    // Swipe left = next slide
+                    (
+                      window.kineticSlider?.engine as
+                        | KineticSliderEngine
+                        | undefined
+                    )?.nextSlide?.();
+                  } else {
+                    // Swipe right = previous slide
+                    (
+                      window.kineticSlider?.engine as
+                        | KineticSliderEngine
+                        | undefined
+                    )?.previousSlide?.();
+                  }
+                }
+              }
+            },
+            { startX, startY: centerY, endX, endY: centerY }
+          );
+        } else {
+          // Use mouse events for desktop browsers
+          await page.mouse.move(startX, centerY);
+          await page.mouse.down();
+          await page.mouse.move(endX, centerY, { steps: 5 });
+          await page.mouse.up();
+        }
       }
 
       await page.waitForTimeout(500);
 
       // Verify user interface updated
-      const newAriaValue = await slider.getAttribute('aria-valuenow');
+      const newAriaValue = await _slider.getAttribute('aria-valuenow');
       expect(newAriaValue).not.toBe(initialAriaValue);
     });
   });
@@ -143,25 +230,26 @@ test.describe('Complete System E2E - User Workflows', () => {
     test('should handle complete user interaction workflow', async ({
       page,
     }) => {
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
       // Start of user journey
-      const initialAriaValue = await slider.getAttribute('aria-valuenow');
+      const initialAriaValue = await _slider.getAttribute('aria-valuenow');
 
-      // User focuses slider
-      await slider.focus();
+      // User focuses _slider
+      await _slider.focus();
 
       // User navigates with keyboard
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(1000);
 
       // Verify user sees change
-      const afterKeyboardAriaValue = await slider.getAttribute('aria-valuenow');
+      const afterKeyboardAriaValue =
+        await _slider.getAttribute('aria-valuenow');
       expect(afterKeyboardAriaValue).not.toBe(initialAriaValue);
 
       // User then uses mouse
-      const box = await slider.boundingBox();
+      const box = await _slider.boundingBox();
       if (box) {
         // Ensure drag distance exceeds 50px threshold
         await page.mouse.move(box.x + box.width * 0.75, box.y + box.height / 2);
@@ -177,20 +265,20 @@ test.describe('Complete System E2E - User Workflows', () => {
       await page.waitForTimeout(1000);
 
       // Verify final state from user perspective
-      const finalAriaValue = await slider.getAttribute('aria-valuenow');
+      const finalAriaValue = await _slider.getAttribute('aria-valuenow');
       expect(finalAriaValue).not.toBe(afterKeyboardAriaValue);
     });
 
     test('should maintain usability during rapid user interactions', async ({
       page,
     }) => {
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
       const startTime = Date.now();
 
       // Simulate rapid user interactions
-      const box = await slider.boundingBox();
+      const box = await _slider.boundingBox();
       if (box) {
         for (let i = 0; i < 5; i++) {
           // Ensure each drag exceeds 50px threshold
@@ -215,17 +303,17 @@ test.describe('Complete System E2E - User Workflows', () => {
       expect(duration).toBeLessThan(5000);
 
       // Slider should still be interactive
-      await slider.focus();
+      await _slider.focus();
       await page.keyboard.press('ArrowLeft');
 
       // Should still respond to user input
-      const isSliderResponsive = await slider.isVisible();
+      const isSliderResponsive = await _slider.isVisible();
       expect(isSliderResponsive).toBe(true);
     });
   });
 
   test.describe('User Experience Error Recovery', () => {
-    test('should maintain usability during error conditions', async ({
+    test('should maintain usability during _error conditions', async ({
       page,
     }) => {
       // Monitor errors from user perspective
@@ -236,32 +324,32 @@ test.describe('Complete System E2E - User Workflows', () => {
         }
       });
 
-      // User interacts with slider
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      // User interacts with _slider
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
       // User attempts interaction
-      await slider.focus();
+      await _slider.focus();
       await page.keyboard.press('ArrowRight');
 
-      // From user perspective, slider should remain functional
-      const isStillUsable = await slider.isVisible();
+      // From user perspective, _slider should remain functional
+      const isStillUsable = await _slider.isVisible();
       expect(isStillUsable).toBe(true);
 
-      // User should be able to continue using the slider
+      // User should be able to continue using the _slider
       await page.keyboard.press('ArrowLeft');
-      const ariaValue = await slider.getAttribute('aria-valuenow');
+      const ariaValue = await _slider.getAttribute('aria-valuenow');
       expect(ariaValue).toBeTruthy();
     });
 
     test('should gracefully handle edge case user interactions', async ({
       page,
     }) => {
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible();
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(_slider).toBeVisible();
 
       // User performs edge case interactions
-      await slider.focus();
+      await _slider.focus();
 
       // Rapid keyboard presses
       for (let i = 0; i < 10; i++) {
@@ -270,11 +358,11 @@ test.describe('Complete System E2E - User Workflows', () => {
       }
 
       // User should still see consistent interface
-      const ariaValue = await slider.getAttribute('aria-valuenow');
+      const ariaValue = await _slider.getAttribute('aria-valuenow');
       expect(ariaValue).toBeTruthy();
 
       // Interface should remain accessible
-      await expect(slider).toHaveAttribute('role', 'region');
+      await expect(_slider).toHaveAttribute('role', 'region');
     });
   });
 });

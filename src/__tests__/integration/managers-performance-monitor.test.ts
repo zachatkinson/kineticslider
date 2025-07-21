@@ -243,7 +243,7 @@ describe('PerformanceMonitor Unit Tests', () => {
   });
 
   describe('Event Integration', () => {
-    it('should handle animation event integration', () => {
+    it('should handle animation _event integration', () => {
       const recordStartSpy = vi.spyOn(
         performanceMonitor,
         'recordAnimationStart'
@@ -266,7 +266,7 @@ describe('PerformanceMonitor Unit Tests', () => {
       expect(recordCompleteSpy).toHaveBeenCalledWith(200);
     });
 
-    it('should handle animation error events', () => {
+    it('should handle animation _error events', () => {
       const recordFailedSpy = vi.spyOn(
         performanceMonitor,
         'recordAnimationFailed'

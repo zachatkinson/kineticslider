@@ -340,7 +340,8 @@ export class PerformanceOptimizer {
   getOptimizationRecommendation(): OptimizationRecommendation {
     const currentMetrics = this.getRealTimeMetrics();
     const deviceCapability = this.getDeviceCapability();
-    const recommendedQuality = this.qualityPresets[deviceCapability as keyof typeof this.qualityPresets];
+    const recommendedQuality =
+      this.qualityPresets[deviceCapability as keyof typeof this.qualityPresets];
 
     const reasons: string[] = [];
     const changes: Array<{
@@ -520,7 +521,7 @@ export class PerformanceOptimizer {
             try {
               gl = canvas.getContext('webgl');
             } catch {
-            // Ignore context errors
+              // Ignore context errors
               // JSDOM may throw "Not implemented" error for getContext
               gl = null;
             }
@@ -537,7 +538,9 @@ export class PerformanceOptimizer {
     const cpuCores = navigator.hardwareConcurrency || 4;
 
     // Memory estimation (approximate)
-    const memoryGB = (navigator as unknown as Record<string, unknown>).deviceMemory as number || 4;
+    const memoryGB =
+      ((navigator as unknown as Record<string, unknown>)
+        .deviceMemory as number) || 4;
 
     // GPU tier estimation
     let gpuTier = 3;
@@ -643,8 +646,16 @@ export class PerformanceOptimizer {
   private getInitialQualityLevel(): QualityLevel {
     const capability = this.getDeviceCapability();
     const validCapabilities = ['low', 'medium', 'high', 'ultra'] as const;
-    const safeCapability = validCapabilities.includes(capability as DeviceCapability) ? capability : 'medium';
-    return { ...this.qualityPresets[safeCapability as keyof typeof this.qualityPresets] };
+    const safeCapability = validCapabilities.includes(
+      capability as DeviceCapability
+    )
+      ? capability
+      : 'medium';
+    return {
+      ...this.qualityPresets[
+        safeCapability as keyof typeof this.qualityPresets
+      ],
+    };
   }
 
   /**
@@ -873,7 +884,13 @@ export class PerformanceOptimizer {
   }
 
   private getMemoryUsage(): number {
-    return ((performance as unknown as Record<string, unknown>).memory as { usedJSHeapSize?: number })?.usedJSHeapSize || 0 / 1024 / 1024;
+    return (
+      (
+        (performance as unknown as Record<string, unknown>).memory as {
+          usedJSHeapSize?: number;
+        }
+      )?.usedJSHeapSize || 0 / 1024 / 1024
+    );
   }
 
   private getGPUMemoryUsage(): number {
@@ -881,15 +898,18 @@ export class PerformanceOptimizer {
   }
 
   private getActiveEffectsCount(): number {
-    return Array.from(this.optimizationTargets).reduce((count: number, target: unknown) => {
-      if (target instanceof FilterChain) {
-        return count + target.getMetrics().activeAnimations;
-      }
-      if (target instanceof DisplacementEffects) {
-        return count + target.getPerformanceMetrics().activeEffects;
-      }
-      return count;
-    }, 0);
+    return Array.from(this.optimizationTargets).reduce(
+      (count: number, target: unknown) => {
+        if (target instanceof FilterChain) {
+          return count + target.getMetrics().activeAnimations;
+        }
+        if (target instanceof DisplacementEffects) {
+          return count + target.getPerformanceMetrics().activeEffects;
+        }
+        return count;
+      },
+      0
+    );
   }
 
   private getRenderCallsCount(): number {

@@ -1,10 +1,6 @@
 /**
  * @fileoverview Enhanced Input Handling System
  *
- * Comprehensive input controller integrating touch, mouse, and keyboard input
- * with world-class GSAP physics engine. Provides unified input management
- * with accessibility compliance and performance optimization.
- *
  * @version 1.0.0
  */
 
@@ -13,38 +9,10 @@ import type {
   InputConfig,
   InputCallbacks,
 } from '../core/types';
-import { EventThrottler } from './event-throttler';
-import {
-  GestureRecognizer,
-  GestureType,
-  GestureInfo,
-} from './gesture-recognizer';
 import { KeyboardNavigator, KeyboardCallbacks } from './keyboard-navigator';
-import { VelocityTracker } from '../physics/velocity-tracker';
-
-// Enhanced components
-export { EventThrottler } from './event-throttler';
-export { GestureRecognizer } from './gesture-recognizer';
-export { KeyboardNavigator } from './keyboard-navigator';
 
 /**
  * Enhanced SliderController integrating world-class GSAP physics engine
- *
- * Key enhancements:
- * - **Unified Input Handling**: Mouse, touch, and keyboard with gesture recognition
- * - **Physics Integration**: GSAP kinetic physics for natural interactions
- * - **Performance Optimization**: Event throttling and RAF-based updates
- * - **Accessibility Compliance**: Full keyboard navigation and screen reader support
- * - **Type Safety**: Full TypeScript integration with proper error handling
- *
- * @example
- * ```typescript
- * const controller = new SliderController();
- * controller.initialize(element, {
- *   onSwipeLeft: () => nextSlide(),
- *   onSwipeRight: () => previousSlide(),
- * });
- * ```
  */
 export class SliderController implements ISliderController {
   private element: HTMLElement | null = null;
@@ -59,14 +27,11 @@ export class SliderController implements ISliderController {
   private isEnabled = false;
 
   // Enhanced input components
-  private gestureRecognizer: GestureRecognizer | null = null;
   private keyboardNavigator: KeyboardNavigator | null = null;
-  private eventThrottler: EventThrottler | null = null;
-
-  // Physics integration components
-  private kineticPhysics: unknown = null;
-  private springPhysics: unknown = null;
-  private velocityTracker: VelocityTracker | null = null;
+  private isDragging = false;
+  private startX = 0;
+  private startY = 0;
+  private totalSlides = 0;
 
   /**
    * Initialize enhanced input handling on target element
@@ -76,36 +41,10 @@ export class SliderController implements ISliderController {
     this.callbacks = callbacks;
 
     // Initialize enhanced components
-    this.setupGestureRecognizer();
     this.setupKeyboardNavigator();
-    this.setupEventListeners();
-
-    // Initialize physics components
-    this.velocityTracker = new VelocityTracker({
-      bufferSize: 5,
-      throttleInterval: 16, // 60fps
-      smoothingFactor: 0.3,
-    });
+    this.setupMouseAndTouchEvents();
 
     this.enable();
-  }
-
-  /**
-   * Setup advanced gesture recognition
-   */
-  private setupGestureRecognizer(): void {
-    if (!this.element) return;
-
-    this.gestureRecognizer = new GestureRecognizer(this.element, {
-      enableMultiTouch: true,
-      swipeThreshold: this.config.swipeThreshold,
-      tapThreshold: this.config.dragThreshold,
-    });
-
-    // Handle gesture events
-    this.gestureRecognizer.onGesture = (gesture: GestureInfo): void => {
-      this.handleGesture(gesture);
-    };
   }
 
   /**
@@ -118,12 +57,16 @@ export class SliderController implements ISliderController {
       onNext: () => this.callbacks?.onSwipeLeft(), // Next slide
       onPrevious: () => this.callbacks?.onSwipeRight(), // Previous slide
       onFirst: () => {
-        // Could add onGoToSlide callback for first slide
-        this.callbacks?.onKeyLeft();
+        // Go to first slide (index 0)
+        if (this.callbacks?.onGoToSlide) {
+          this.callbacks.onGoToSlide(0);
+        }
       },
       onLast: () => {
-        // Could add onGoToSlide callback for last slide
-        this.callbacks?.onKeyRight();
+        // Go to last slide (totalSlides - 1)
+        if (this.callbacks?.onGoToSlide && this.totalSlides > 0) {
+          this.callbacks.onGoToSlide(this.totalSlides - 1);
+        }
       },
       onTogglePlayPause: () => {
         // Delegate to input callbacks which connect to SliderEngine
@@ -152,47 +95,9 @@ export class SliderController implements ISliderController {
         enableArrowKeys: this.config.enableKeyboard,
         enableWASD: this.config.enableKeyboard,
         respectMotionPreferences: true,
-        enableAnnouncements: true,
+        enableAnnouncements: true, // KeyboardNavigator handles its own accessibility
       }
     );
-  }
-
-  /**
-   * Handle advanced gesture events with GSAP physics integration
-   */
-  private handleGesture(gesture: GestureInfo): void {
-    if (!this.callbacks || !this.isEnabled) return;
-
-    // Map gesture types to physics-driven callback actions
-    switch (gesture.type) {
-      case GestureType.SWIPE_LEFT:
-        this.callbacks?.onSwipeLeft();
-        break;
-      case GestureType.SWIPE_RIGHT:
-        this.callbacks?.onSwipeRight();
-        break;
-      case GestureType.TAP:
-        // Handle tap gestures if needed
-        break;
-      case GestureType.DOUBLE_TAP:
-        // Handle double-tap gestures if needed
-        break;
-      case GestureType.LONG_PRESS:
-        // Handle long press gestures if needed
-        break;
-      case GestureType.PINCH:
-        // Handle pinch gestures if needed
-        break;
-      case GestureType.PAN:
-        // Handle pan gestures with drag callbacks
-        this.callbacks?.onDragMove(
-          gesture.currentPoint.x,
-          gesture.currentPoint.y,
-          gesture.currentPoint.x - gesture.startPoint.x,
-          gesture.currentPoint.y - gesture.startPoint.y
-        );
-        break;
-    }
   }
 
   /**
@@ -227,6 +132,7 @@ export class SliderController implements ISliderController {
    * Update slider state for accessibility
    */
   updateSlideState(currentIndex: number, totalSlides: number): void {
+    this.totalSlides = totalSlides;
     if (this.keyboardNavigator) {
       this.keyboardNavigator.setCurrentSlide(currentIndex);
       this.keyboardNavigator.setTotalSlides(totalSlides);
@@ -243,6 +149,121 @@ export class SliderController implements ISliderController {
   }
 
   /**
+   * Setup mouse and touch event handling for gestures
+   */
+  private setupMouseAndTouchEvents(): void {
+    if (!this.element || !this.callbacks) return;
+
+    // Mouse events
+    this.element.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    this.element.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    this.element.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    this.element.addEventListener('mouseleave', this.handleMouseUp.bind(this));
+
+    // Touch events - crucial for Mobile Safari
+    this.element.addEventListener(
+      'touchstart',
+      this.handleTouchStart.bind(this),
+      { passive: false }
+    );
+    this.element.addEventListener(
+      'touchmove',
+      this.handleTouchMove.bind(this),
+      { passive: false }
+    );
+    this.element.addEventListener('touchend', this.handleTouchEnd.bind(this));
+    this.element.addEventListener(
+      'touchcancel',
+      this.handleTouchEnd.bind(this)
+    );
+
+    // Prevent default behaviors that might interfere
+    this.element.addEventListener('contextmenu', (e) => e.preventDefault());
+    this.element.addEventListener('selectstart', (e) => e.preventDefault());
+    this.element.addEventListener('dragstart', (e) => e.preventDefault());
+  }
+
+  private handleMouseDown(event: MouseEvent): void {
+    if (!this.isEnabled || !this.config.enableMouse) return;
+
+    this.isDragging = true;
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+    event.preventDefault();
+  }
+
+  private handleMouseMove(event: MouseEvent): void {
+    if (!this.isDragging || !this.isEnabled || !this.config.enableMouse) return;
+
+    const deltaX = event.clientX - this.startX;
+
+    // Check if we've moved far enough to be considered a swipe
+    if (Math.abs(deltaX) > this.config.swipeThreshold) {
+      this.isDragging = false;
+
+      if (deltaX > 0) {
+        // Swipe right (previous slide)
+        this.callbacks?.onSwipeRight();
+      } else {
+        // Swipe left (next slide)
+        this.callbacks?.onSwipeLeft();
+      }
+
+      // Prevent default to avoid interference
+      event.preventDefault();
+    }
+  }
+
+  private handleMouseUp(event: MouseEvent): void {
+    this.isDragging = false;
+    event.preventDefault();
+  }
+
+  private handleTouchStart(event: TouchEvent): void {
+    if (!this.isEnabled || !this.config.enableTouch) return;
+
+    const touch = event.touches[0];
+    this.isDragging = true;
+    this.startX = touch.clientX;
+    this.startY = touch.clientY;
+    event.preventDefault();
+  }
+
+  private handleTouchMove(event: TouchEvent): void {
+    if (!this.isDragging || !this.isEnabled || !this.config.enableTouch) return;
+
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    const deltaX = touch.clientX - this.startX;
+
+    // Check if we've moved far enough to be considered a swipe
+    if (Math.abs(deltaX) > this.config.swipeThreshold) {
+      this.isDragging = false;
+
+      if (deltaX > 0) {
+        // Swipe right (previous slide)
+        this.callbacks?.onSwipeRight();
+      } else {
+        // Swipe left (next slide)
+        this.callbacks?.onSwipeLeft();
+      }
+
+      // Prevent default to stop any browser scrolling/navigation
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    // Always prevent default for touchmove to avoid scrolling issues
+    event.preventDefault();
+  }
+
+  private handleTouchEnd(event: TouchEvent): void {
+    this.isDragging = false;
+    event.preventDefault();
+  }
+
+  /**
    * Setup event listeners
    */
   private setupEventListeners(): void {
@@ -256,10 +277,40 @@ export class SliderController implements ISliderController {
   destroy(): void {
     this.disable();
 
-    // Properly cleanup enhanced components
-    if (this.gestureRecognizer) {
-      this.gestureRecognizer.destroy();
-      this.gestureRecognizer = null;
+    // Clean up event listeners
+    if (this.element) {
+      this.element.removeEventListener(
+        'mousedown',
+        this.handleMouseDown.bind(this)
+      );
+      this.element.removeEventListener(
+        'mousemove',
+        this.handleMouseMove.bind(this)
+      );
+      this.element.removeEventListener(
+        'mouseup',
+        this.handleMouseUp.bind(this)
+      );
+      this.element.removeEventListener(
+        'mouseleave',
+        this.handleMouseUp.bind(this)
+      );
+      this.element.removeEventListener(
+        'touchstart',
+        this.handleTouchStart.bind(this)
+      );
+      this.element.removeEventListener(
+        'touchmove',
+        this.handleTouchMove.bind(this)
+      );
+      this.element.removeEventListener(
+        'touchend',
+        this.handleTouchEnd.bind(this)
+      );
+      this.element.removeEventListener(
+        'touchcancel',
+        this.handleTouchEnd.bind(this)
+      );
     }
 
     if (this.keyboardNavigator) {
@@ -267,19 +318,10 @@ export class SliderController implements ISliderController {
       this.keyboardNavigator = null;
     }
 
-    if (this.eventThrottler) {
-      // EventThrottler might have cleanup too if needed
-      this.eventThrottler = null;
-    }
-
-    if (this.velocityTracker) {
-      // VelocityTracker cleanup if it has any
-      this.velocityTracker = null;
-    }
-
     // Reset state
     this.element = null;
     this.callbacks = null;
     this.isEnabled = false;
+    this.isDragging = false;
   }
 }

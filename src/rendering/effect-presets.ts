@@ -26,10 +26,7 @@ import {
   IdleEffectOptions,
 } from './displacement-effects';
 // import type { AnimationConfig } from '../core/types';
-import {
-  ANIMATION_DURATION,
-  EASING,
-} from '../core/constants';
+import { ANIMATION_DURATION, EASING } from '../core/constants';
 
 /**
  * Preset intensity levels

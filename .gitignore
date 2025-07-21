@@ -27,6 +27,9 @@ test-results.json
 test-results.xml
 playwright-report/
 .last-run.json
+
+# Storybook build output
+storybook-static/
 *.backup
 *.bak
 *.temp

@@ -53,6 +53,7 @@ export default defineConfig({
   // Development server configuration
   server: {
     port: 3000,
+    strictPort: true, // Fail if port is in use instead of auto-incrementing
     host: true, // Allow external connections
     open: true,
     // HTTPS for development (if certificates exist)
@@ -105,8 +106,8 @@ export default defineConfig({
 
   // Optimization configuration
   optimizeDeps: {
-    include: ['react', 'react-dom'],
-    exclude: ['pixi.js', 'pixi-filters', 'gsap'], // Large peer deps
+    include: ['react', 'react-dom', 'pixi.js', 'gsap'], // Include PIXI.js for proper resolution
+    exclude: ['pixi-filters'], // Only exclude pixi-filters
   },
 
   // Define global constants

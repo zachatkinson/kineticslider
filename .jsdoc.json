@@ -8,9 +8,7 @@
     "includePattern": "\\.(tsx?|jsx?)$",
     "excludePattern": "(^|\\/|\\\\)_"
   },
-  "plugins": [
-    "plugins/markdown"
-  ],
+  "plugins": ["plugins/markdown"],
   "opts": {
     "destination": "./docs/jsdoc",
     "recurse": true,
@@ -22,4 +20,4 @@
     "useLongnameInNav": false,
     "showInheritedInNav": true
   }
-} 
+}

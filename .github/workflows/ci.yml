@@ -88,10 +88,15 @@ jobs:
           # Enforce minimum 85% coverage
           pnpm test:coverage:check
 
-  # 🎭 E2E Testing
+  # 🎭 E2E Testing (with sharding for better performance)
   e2e:
-    name: 🎭 E2E Tests
+    name: 🎭 E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -116,14 +121,14 @@ jobs:
       - name: 🏗️ Build application
         run: pnpm build
 
-      - name: 🎭 Run Playwright tests
-        run: pnpm test:e2e
+      - name: 🎭 Run Playwright tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+        run: pnpm playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: 📤 Upload Playwright report
         uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-shard-${{ matrix.shardIndex }}
           path: playwright-report/
           retention-days: 30
 

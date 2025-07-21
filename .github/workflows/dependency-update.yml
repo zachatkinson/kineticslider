@@ -2,14 +2,14 @@ name: Dependency Update
 
 on:
   schedule:
-    - cron: '0 0 * * 1'  # Run weekly on Mondays
+    - cron: '0 0 * * 1' # Run weekly on Mondays
   workflow_dispatch:
 
 env:
   NODE_VERSION: '18.x'
   PNPM_VERSION: '10.7.0'
   MAX_RETRIES: 3
-  PERFORMANCE_THRESHOLD: 5  # 5% regression threshold
+  PERFORMANCE_THRESHOLD: 5 # 5% regression threshold
 
 jobs:
   update-dependencies:
@@ -17,140 +17,140 @@ jobs:
     timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: ${{ env.PNPM_VERSION }}
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'pnpm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
-    - name: Backup package files
-      run: |
-        cp package.json package.json.backup
-        cp pnpm-lock.yaml pnpm-lock.yaml.backup
+      - name: Backup package files
+        run: |
+          cp package.json package.json.backup
+          cp pnpm-lock.yaml pnpm-lock.yaml.backup
 
-    - name: Install dependencies
-      uses: nick-fields/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: ${{ env.MAX_RETRIES }}
-        command: pnpm install --frozen-lockfile
-        on_retry_command: |
-          pnpm store prune
-          rm -rf node_modules
+      - name: Install dependencies
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: ${{ env.MAX_RETRIES }}
+          command: pnpm install --frozen-lockfile
+          on_retry_command: |
+            pnpm store prune
+            rm -rf node_modules
 
-    - name: Collect initial metrics
-      id: initial-metrics
-      run: |
-        # Run type check and collect stats
-        pnpm typecheck 2> type-check-before.log
-        echo "TYPE_ERRORS_BEFORE=$(grep -c "error TS" type-check-before.log || echo "0")" >> $GITHUB_ENV
+      - name: Collect initial metrics
+        id: initial-metrics
+        run: |
+          # Run type check and collect stats
+          pnpm typecheck 2> type-check-before.log
+          echo "TYPE_ERRORS_BEFORE=$(grep -c "error TS" type-check-before.log || echo "0")" >> $GITHUB_ENV
 
-        # Run tests and collect coverage
-        pnpm test:coverage --json --outputFile=coverage-before.json
+          # Run tests and collect coverage
+          pnpm test:coverage --json --outputFile=coverage-before.json
 
-        # Collect bundle size
-        pnpm build
-        echo "BUNDLE_SIZE_BEFORE=$(du -sb dist | cut -f1)" >> $GITHUB_ENV
+          # Collect bundle size
+          pnpm build
+          echo "BUNDLE_SIZE_BEFORE=$(du -sb dist | cut -f1)" >> $GITHUB_ENV
 
-        # Run Lighthouse CI
-        pnpm exec @lhci/cli@0.13.x autorun --collect.url=http://localhost:3000 --collect.startServerCommand="pnpm preview" --jsonOutput=./lighthouse-before.json
+          # Run Lighthouse CI
+          pnpm exec @lhci/cli@0.13.x autorun --collect.url=http://localhost:3000 --collect.startServerCommand="pnpm preview" --jsonOutput=./lighthouse-before.json
 
-    - name: Update dependencies
-      id: update
-      run: |
-        # Get outdated packages
-        pnpm outdated --json > outdated.json
+      - name: Update dependencies
+        id: update
+        run: |
+          # Get outdated packages
+          pnpm outdated --json > outdated.json
 
-        # Update dependencies
-        pnpm exec npm-check-updates -u
-        pnpm install
+          # Update dependencies
+          pnpm exec npm-check-updates -u
+          pnpm install
 
-        # Generate update report
-        echo "# Dependency Updates" > update-report.md
-        echo "\`\`\`json" >> update-report.md
-        cat outdated.json >> update-report.md
-        echo "\`\`\`" >> update-report.md
-
-    - name: Type compatibility check
-      id: type-check
-      run: |
-        pnpm typecheck 2> type-check-after.log
-        echo "TYPE_ERRORS_AFTER=$(grep -c "error TS" type-check-after.log || echo "0")" >> $GITHUB_ENV
-
-        # Generate type compatibility report
-        echo "## Type Compatibility Changes" >> update-report.md
-        echo "- Before: ${TYPE_ERRORS_BEFORE} type errors" >> update-report.md
-        echo "- After: ${TYPE_ERRORS_AFTER} type errors" >> update-report.md
-
-        if [ "${TYPE_ERRORS_AFTER}" -gt "${TYPE_ERRORS_BEFORE }}" ]; then
-          echo "⚠️ New type errors introduced" >> update-report.md
-          echo "### New Type Errors" >> update-report.md
+          # Generate update report
+          echo "# Dependency Updates" > update-report.md
+          echo "\`\`\`json" >> update-report.md
+          cat outdated.json >> update-report.md
           echo "\`\`\`" >> update-report.md
-          diff type-check-before.log type-check-after.log | grep "^>" >> update-report.md
-          echo "\`\`\`" >> update-report.md
-        fi
 
-    - name: Run tests
-      id: test
-      run: |
-        pnpm test:coverage --json --outputFile=coverage-after.json
+      - name: Type compatibility check
+        id: type-check
+        run: |
+          pnpm typecheck 2> type-check-after.log
+          echo "TYPE_ERRORS_AFTER=$(grep -c "error TS" type-check-after.log || echo "0")" >> $GITHUB_ENV
 
-        # Compare test coverage
-        echo "## Test Coverage Impact" >> update-report.md
-        node .github/scripts/compare-coverage.js coverage-before.json coverage-after.json >> update-report.md
+          # Generate type compatibility report
+          echo "## Type Compatibility Changes" >> update-report.md
+          echo "- Before: ${TYPE_ERRORS_BEFORE} type errors" >> update-report.md
+          echo "- After: ${TYPE_ERRORS_AFTER} type errors" >> update-report.md
 
-    - name: Performance impact check
-      id: performance
-      run: |
-        # Build and measure bundle size
-        pnpm build
-        echo "BUNDLE_SIZE_AFTER=$(du -sb dist | cut -f1)" >> $GITHUB_ENV
+          if [ "${TYPE_ERRORS_AFTER}" -gt "${TYPE_ERRORS_BEFORE }}" ]; then
+            echo "⚠️ New type errors introduced" >> update-report.md
+            echo "### New Type Errors" >> update-report.md
+            echo "\`\`\`" >> update-report.md
+            diff type-check-before.log type-check-after.log | grep "^>" >> update-report.md
+            echo "\`\`\`" >> update-report.md
+          fi
 
-        # Run Lighthouse CI
-        pnpm exec @lhci/cli@0.13.x autorun --collect.url=http://localhost:3000 --collect.startServerCommand="pnpm preview" --jsonOutput=./lighthouse-after.json
+      - name: Run tests
+        id: test
+        run: |
+          pnpm test:coverage --json --outputFile=coverage-after.json
 
-        # Compare metrics
-        node .github/scripts/compare-metrics.js
+          # Compare test coverage
+          echo "## Test Coverage Impact" >> update-report.md
+          node .github/scripts/compare-coverage.js coverage-before.json coverage-after.json >> update-report.md
 
-    - name: Generate final report
-      run: |
-        # Add bundle size comparison
-        echo "## Bundle Size Impact" >> update-report.md
-        echo "- Before: $(numfmt --to=iec ${BUNDLE_SIZE_BEFORE })" >> update-report.md
-        echo "- After: $(numfmt --to=iec ${BUNDLE_SIZE_AFTER })" >> update-report.md
+      - name: Performance impact check
+        id: performance
+        run: |
+          # Build and measure bundle size
+          pnpm build
+          echo "BUNDLE_SIZE_AFTER=$(du -sb dist | cut -f1)" >> $GITHUB_ENV
 
-        # Add performance report
-        echo "## Performance Impact" >> update-report.md
-        cat performance-report.md >> update-report.md
+          # Run Lighthouse CI
+          pnpm exec @lhci/cli@0.13.x autorun --collect.url=http://localhost:3000 --collect.startServerCommand="pnpm preview" --jsonOutput=./lighthouse-after.json
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "chore(deps): update dependencies"
-        title: "chore(deps): update dependencies"
-        body-path: update-report.md
-        branch: "chore/dependency-updates"
-        labels: dependencies
+          # Compare metrics
+          node .github/scripts/compare-metrics.js
 
-    - name: Cleanup
-      if: always()
-      run: |
-        # Restore original package files if update failed
-        if [ ${{ job.status }} != 'success' ]; then
-          mv package.json.backup package.json
-          mv pnpm-lock.yaml.backup pnpm-lock.yaml
-        fi
+      - name: Generate final report
+        run: |
+          # Add bundle size comparison
+          echo "## Bundle Size Impact" >> update-report.md
+          echo "- Before: $(numfmt --to=iec ${BUNDLE_SIZE_BEFORE })" >> update-report.md
+          echo "- After: $(numfmt --to=iec ${BUNDLE_SIZE_AFTER })" >> update-report.md
 
-        # Cleanup temporary files
-        rm -f *.backup
-        rm -f *.log
-        rm -f coverage-*.json
-        rm -f lighthouse-*.json
+          # Add performance report
+          echo "## Performance Impact" >> update-report.md
+          cat performance-report.md >> update-report.md
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore(deps): update dependencies'
+          title: 'chore(deps): update dependencies'
+          body-path: update-report.md
+          branch: 'chore/dependency-updates'
+          labels: dependencies
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Restore original package files if update failed
+          if [ ${{ job.status }} != 'success' ]; then
+            mv package.json.backup package.json
+            mv pnpm-lock.yaml.backup pnpm-lock.yaml
+          fi
+
+          # Cleanup temporary files
+          rm -f *.backup
+          rm -f *.log
+          rm -f coverage-*.json
+          rm -f lighthouse-*.json

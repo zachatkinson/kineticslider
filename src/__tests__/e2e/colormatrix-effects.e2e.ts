@@ -18,9 +18,9 @@ test.describe('ColorMatrixFilter Effects E2E', () => {
   test('should create and apply glow effects with ColorMatrixFilter', async ({
     page,
   }) => {
-    // Wait for the slider to be initialized
-    const slider = page.locator('[data-testid="kinetic-slider"]');
-    await expect(slider).toBeVisible();
+    // Wait for the _slider to be initialized
+    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    await expect(_slider).toBeVisible();
 
     // Execute ColorMatrixFilter glow effect test in the browser
     const result = await page.evaluate(async () => {
@@ -79,8 +79,8 @@ test.describe('ColorMatrixFilter Effects E2E', () => {
   test('should create and apply color effects with ColorMatrixFilter', async ({
     page,
   }) => {
-    const slider = page.locator('[data-testid="kinetic-slider"]');
-    await expect(slider).toBeVisible();
+    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    await expect(_slider).toBeVisible();
 
     const result = await page.evaluate(async () => {
       try {
@@ -143,8 +143,8 @@ test.describe('ColorMatrixFilter Effects E2E', () => {
   });
 
   test('should validate ColorMatrixFilter methods exist', async ({ page }) => {
-    const slider = page.locator('[data-testid="kinetic-slider"]');
-    await expect(slider).toBeVisible();
+    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    await expect(_slider).toBeVisible();
 
     const result = await page.evaluate(async () => {
       try {
@@ -187,8 +187,8 @@ test.describe('ColorMatrixFilter Effects E2E', () => {
   test('should handle ColorMatrixFilter with different intensity levels', async ({
     page,
   }) => {
-    const slider = page.locator('[data-testid="kinetic-slider"]');
-    await expect(slider).toBeVisible();
+    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    await expect(_slider).toBeVisible();
 
     const result = await page.evaluate(async () => {
       try {
@@ -242,8 +242,8 @@ test.describe('ColorMatrixFilter Effects E2E', () => {
   test('should handle ColorMatrixFilter error cases gracefully', async ({
     page,
   }) => {
-    const slider = page.locator('[data-testid="kinetic-slider"]');
-    await expect(slider).toBeVisible();
+    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    await expect(_slider).toBeVisible();
 
     const result = await page.evaluate(async () => {
       try {

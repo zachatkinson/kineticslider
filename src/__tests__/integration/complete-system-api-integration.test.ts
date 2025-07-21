@@ -104,9 +104,9 @@ describe('Complete System API Integration', () => {
     it('should handle API access gracefully during initialization', () => {
       try {
         expect(mockKineticSlider).toBeDefined();
-      } catch (error) {
+      } catch (_error) {
         // Should not throw
-        expect(error).toBeUndefined();
+        expect(_error).toBeUndefined();
       }
     });
 
@@ -114,9 +114,9 @@ describe('Complete System API Integration', () => {
       try {
         // Test that API remains accessible
         expect(typeof mockKineticSlider.currentIndex).toBe('number');
-      } catch (error) {
+      } catch (_error) {
         // Should not throw
-        expect(error).toBeUndefined();
+        expect(_error).toBeUndefined();
       }
     });
   });

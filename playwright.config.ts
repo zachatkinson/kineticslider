@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { cpus } from 'os';
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -6,8 +7,8 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './src/__tests__/e2e',
 
-  /* Global timeout for the entire test suite (10 minutes) */
-  globalTimeout: 10 * 60 * 1000,
+  /* Global timeout for the entire test suite (40 minutes for full cross-browser suite) */
+  globalTimeout: 40 * 60 * 1000,
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -16,13 +17,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
 
   /* Retry on CI only */
-  retries: process.env.CI ? 3 : 1,
+  retries: process.env.CI ? 2 : 1,
 
-  /* Optimize workers for better performance */
-  workers: process.env.CI ? 4 : '75%',
+  /* Optimize workers for performance vs resource balance */
+  workers: process.env.CI ? 6 : Math.min(10, cpus().length),
 
-  /* Global timeout for each test */
-  timeout: 30 * 1000,
+  /* Global timeout for each test (reduced for faster failures) */
+  timeout: 25 * 1000,
 
   /* Expect timeout */
   expect: {
@@ -30,35 +31,44 @@ export default defineConfig({
   },
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI 
+  reporter: process.env.CI
     ? [
         ['html'],
         ['junit', { outputFile: 'test-results/e2e-results.xml' }],
         ['json', { outputFile: 'test-results/e2e-results.json' }],
-        ['github']
+        ['github'],
       ]
     : [
         ['html'],
         ['junit', { outputFile: 'test-results/e2e-results.xml' }],
-        ['json', { outputFile: 'test-results/e2e-results.json' }]
+        ['json', { outputFile: 'test-results/e2e-results.json' }],
       ],
+
+  /* Report slow tests for optimization */
+  reportSlowTests: { max: 10, threshold: 30000 },
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:3000',
-    
+
     /* Ignore HTTPS errors for local development */
     ignoreHTTPSErrors: true,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    /* Screenshots */
-    screenshot: 'only-on-failure',
+    /* Screenshots - reduced for performance */
+    screenshot: process.env.CI ? 'only-on-failure' : 'off',
 
-    /* Videos */
-    video: 'retain-on-failure',
+    /* Videos - only for critical failures */
+    video: process.env.CI ? 'retain-on-failure' : 'off',
+
+    /* Performance optimizations */
+    launchOptions: {
+      // Faster browser startup
+      args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-web-security']
+    }
   },
 
   /* Configure projects for major browsers */

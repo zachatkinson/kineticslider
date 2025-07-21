@@ -7,7 +7,9 @@
  * @version 1.0.0
  */
 
-import { Application, Sprite, Assets, Texture } from 'pixi.js';
+/* eslint-disable security/detect-object-injection */
+
+import { Application, Sprite, Assets } from 'pixi.js';
 import {
   DisplacementEffects,
   FilterChain,
@@ -58,7 +60,7 @@ export async function basicDisplacementEffectsExample(): Promise<void> {
     enabled: true,
   };
 
-  const mouseFollowTimeline = displacementEffects.createMouseFollowEffect(
+  displacementEffects.createMouseFollowEffect(
     sprite,
     mouseFollowOptions
   );
@@ -72,7 +74,10 @@ export async function basicDisplacementEffectsExample(): Promise<void> {
     enabled: true,
   };
 
-  const idleTimeline = displacementEffects.createIdleEffect(sprite, idleOptions);
+  displacementEffects.createIdleEffect(
+    sprite,
+    idleOptions
+  );
 
   // Example 1c: Transition Effect (requires two sprites)
   const secondSprite = new Sprite(slideTexture);
@@ -198,7 +203,7 @@ export async function advancedFilterChainsExample(): Promise<void> {
     filterChain.disableFilter('noise-effect');
     filterChain.updateFilter('blur-effect', {
       animationProperties: { blur: 12 },
-      duration: 0.5
+      duration: 0.5,
     });
   }, 3000);
 
@@ -235,7 +240,7 @@ export async function effectPresetsExample(): Promise<void> {
   const sprites = Array.from({ length: 4 }, (_, i) => {
     const sprite = new Sprite(slideTexture);
     sprite.anchor.set(0.5);
-    sprite.position.set(200 + (i * 150), 300);
+    sprite.position.set(200 + i * 150, 300);
     sprite.scale.set(0.5);
     app.stage.addChild(sprite);
     return sprite;
@@ -268,7 +273,7 @@ export async function effectPresetsExample(): Promise<void> {
     effect.applyTo(sprite);
 
     // Store for cleanup
-    (sprite as any).effectCleanup = effect.cleanup;
+    (sprite as { effectCleanup?: () => void }).effectCleanup = effect.cleanup;
   });
 
   // Example 3b: Color effects
@@ -287,7 +292,7 @@ export async function effectPresetsExample(): Promise<void> {
     const effect = effectPresets.createEffect(name, options);
     effect.applyTo(sprite);
 
-    (sprite as any).effectCleanup = effect.cleanup;
+    (sprite as { effectCleanup?: () => void }).effectCleanup = effect.cleanup;
   });
 
   // Example 3c: Interactive displacement effects
@@ -296,14 +301,17 @@ export async function effectPresetsExample(): Promise<void> {
   interactiveSprite.position.set(400, 150);
   app.stage.addChild(interactiveSprite);
 
-  const mouseFollowEffect = effectPresets.createEffect('mouseFollowDisplacement', {
-    intensity: 'moderate',
-    customParams: {
-      radius: 200,
-      smoothing: true,
-      smoothingFactor: 0.15,
-    },
-  });
+  const mouseFollowEffect = effectPresets.createEffect(
+    'mouseFollowDisplacement',
+    {
+      intensity: 'moderate',
+      customParams: {
+        radius: 200,
+        smoothing: true,
+        smoothingFactor: 0.15,
+      },
+    }
+  );
 
   mouseFollowEffect.applyTo(interactiveSprite);
 
@@ -323,7 +331,10 @@ export async function effectPresetsExample(): Promise<void> {
 
   // Example 3e: Performance recommendations
   const lowPerformancePresets = effectPresets.getRecommendedPresets(2);
-  console.log('Low performance presets:', lowPerformancePresets.map(p => p.name));
+  console.log(
+    'Low performance presets:',
+    lowPerformancePresets.map((p) => p.name)
+  );
 
   const allPresets = effectPresets.getPresetNames();
   console.log('All available presets:', allPresets);
@@ -331,7 +342,8 @@ export async function effectPresetsExample(): Promise<void> {
   // Example 3f: Category-based selection
   const blurPresets = effectPresets.getPresetsByCategory('blur');
   const colorPresets = effectPresets.getPresetsByCategory('color');
-  const displacementPresets = effectPresets.getPresetsByCategory('displacement');
+  const displacementPresets =
+    effectPresets.getPresetsByCategory('displacement');
 
   console.log('Effect Presets Example Ready!');
   console.log(`- Blur presets: ${blurPresets.length}`);
@@ -481,7 +493,9 @@ export async function performanceOptimizationExample(): Promise<void> {
   setInterval(() => {
     currentQualityIndex = (currentQualityIndex + 1) % qualityLevels.length;
     performanceOptimizer.setQualityLevel(qualityLevels[currentQualityIndex]);
-    console.log(`Quality level changed to: ${qualityLevels[currentQualityIndex].level}`);
+    console.log(
+      `Quality level changed to: ${qualityLevels[currentQualityIndex].level}`
+    );
   }, 10000);
 
   console.log('Performance Optimization Example Ready!');
@@ -502,19 +516,20 @@ export async function completeIntegrationExample(): Promise<void> {
   document.body.appendChild(app.canvas);
 
   // Load textures
-  const [slideTexture1, slideTexture2, slideTexture3, displacementTexture] = await Promise.all([
-    Assets.load('https://pixijs.com/assets/bunny.png'),
-    Assets.load('https://pixijs.com/assets/bunny.png'),
-    Assets.load('https://pixijs.com/assets/bunny.png'),
-    Assets.load('https://pixijs.com/assets/displacement_map.png'),
-  ]);
+  const [slideTexture1, slideTexture2, slideTexture3, displacementTexture] =
+    await Promise.all([
+      Assets.load('https://pixijs.com/assets/bunny.png'),
+      Assets.load('https://pixijs.com/assets/bunny.png'),
+      Assets.load('https://pixijs.com/assets/bunny.png'),
+      Assets.load('https://pixijs.com/assets/displacement_map.png'),
+    ]);
 
   // Create slide sprites
   const slides = [
     { texture: slideTexture1, x: 400, y: 300, active: true },
     { texture: slideTexture2, x: 1200, y: 300, active: false },
     { texture: slideTexture3, x: 1600, y: 300, active: false },
-  ].map(config => {
+  ].map((config) => {
     const sprite = new Sprite(config.texture);
     sprite.anchor.set(0.5);
     sprite.position.set(config.x, config.y);
@@ -553,7 +568,7 @@ export async function completeIntegrationExample(): Promise<void> {
   // Example 5a: Interactive slide system
   let currentSlide = 0;
 
-  const transitionToSlide = async (index: number) => {
+  const transitionToSlide = async (index: number): Promise<void> => {
     if (index === currentSlide) return;
 
     const fromSprite = slides[currentSlide];
@@ -586,19 +601,27 @@ export async function completeIntegrationExample(): Promise<void> {
 
     // Position and fade animation
     const masterTimeline = transitionTimeline;
-    masterTimeline.to(fromSprite, {
-      x: fromSprite.x - 400,
-      alpha: 0,
-      duration: 1.5,
-      ease: 'power2.inOut'
-    }, 0);
+    masterTimeline.to(
+      fromSprite,
+      {
+        x: fromSprite.x - 400,
+        alpha: 0,
+        duration: 1.5,
+        ease: 'power2.inOut',
+      },
+      0
+    );
 
-    masterTimeline.to(toSprite, {
-      x: 400,
-      alpha: 1,
-      duration: 1.5,
-      ease: 'power2.inOut'
-    }, 0);
+    masterTimeline.to(
+      toSprite,
+      {
+        x: 400,
+        alpha: 1,
+        duration: 1.5,
+        ease: 'power2.inOut',
+      },
+      0
+    );
 
     // Cleanup after transition
     masterTimeline.call(() => {
@@ -611,7 +634,8 @@ export async function completeIntegrationExample(): Promise<void> {
 
   // Example 5b: Add interactive effects to current slide
   const addInteractiveEffects = () => {
-    const activeSprite = slides[currentSlide];
+    const activeSprite = slides[currentSlide] as PIXI.Sprite | undefined;
+    if (!activeSprite) return;
 
     // Mouse follow effect
     displacementEffects.createMouseFollowEffect(activeSprite, {
@@ -629,7 +653,7 @@ export async function completeIntegrationExample(): Promise<void> {
     });
 
     // Dynamic filter chain
-    const { BlurFilter, ColorMatrixFilter } = window as any;
+    const { BlurFilter, ColorMatrixFilter } = window as { BlurFilter?: typeof BlurFilter; ColorMatrixFilter?: typeof ColorMatrixFilter };
     const blurFilter = new BlurFilter(0, 2);
     const colorFilter = new ColorMatrixFilter();
 
@@ -775,22 +799,27 @@ export async function customEffectsExample(): Promise<void> {
     compatibility: ['chrome', 'firefox', 'safari'],
     useCases: ['focus effects', 'dream sequences', 'time distortion'],
     create: (options = {}) => {
-      const intensity = options.intensity === 'subtle' ? 0.3 :
-                      options.intensity === 'moderate' ? 0.6 :
-                      options.intensity === 'strong' ? 0.8 : 1.0;
+      const intensity =
+        options.intensity === 'subtle'
+          ? 0.3
+          : options.intensity === 'moderate'
+            ? 0.6
+            : options.intensity === 'strong'
+              ? 0.8
+              : 1.0;
 
       const filterChain = new FilterChain({ name: 'custom-radial-blur' });
 
       // Create multiple blur filters for radial effect
       const blurFilters = Array.from({ length: 3 }, (_, i) => {
-        const { BlurFilter } = window as any;
+        const { BlurFilter } = window as { BlurFilter?: typeof BlurFilter };
         const filter = new BlurFilter(intensity * (i + 1) * 2, 2);
 
         filterChain.addFilter(filter, {
           id: `radial-blur-${i}`,
           animationProperties: {
             blur: intensity * (i + 1) * 2,
-            alpha: 0.3 + (i * 0.2),
+            alpha: 0.3 + i * 0.2,
           },
           duration: options.duration || 2.0,
           ease: 'sine.inOut',
@@ -824,11 +853,16 @@ export async function customEffectsExample(): Promise<void> {
     compatibility: ['chrome', 'firefox', 'safari'],
     useCases: ['party themes', 'celebration effects', 'psychedelic visuals'],
     create: (options = {}) => {
-      const intensity = options.intensity === 'subtle' ? 0.2 :
-                      options.intensity === 'moderate' ? 0.5 :
-                      options.intensity === 'strong' ? 0.8 : 1.0;
+      const intensity =
+        options.intensity === 'subtle'
+          ? 0.2
+          : options.intensity === 'moderate'
+            ? 0.5
+            : options.intensity === 'strong'
+              ? 0.8
+              : 1.0;
 
-      const { ColorMatrixFilter } = window as any;
+      const { ColorMatrixFilter } = window as { ColorMatrixFilter?: typeof ColorMatrixFilter };
       const colorFilter = new ColorMatrixFilter();
 
       const filterChain = new FilterChain({ name: 'custom-rainbow' });
@@ -840,11 +874,11 @@ export async function customEffectsExample(): Promise<void> {
         ease: 'sine.inOut',
         onUpdate: (filter, progress) => {
           const hue = (progress * 360 * 3) % 360; // 3 full cycles
-          const saturation = 1 + (intensity * 0.5);
+          const saturation = 1 + intensity * 0.5;
 
           colorFilter.hue(hue, false);
           colorFilter.saturate(saturation, false);
-          colorFilter.brightness(1 + (intensity * 0.2), false);
+          colorFilter.brightness(1 + intensity * 0.2, false);
         },
       });
 

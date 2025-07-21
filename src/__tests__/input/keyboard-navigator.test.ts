@@ -55,7 +55,7 @@ describe('KeyboardNavigator', () => {
       textContent: '',
       setAttribute: vi.fn(),
       style: {} as CSSStyleDeclaration,
-      id: 'slider-live-region',
+      id: '_slider-live-region',
       className: 'sr-only',
       remove: vi.fn(),
     } as unknown as HTMLElement;
@@ -133,12 +133,9 @@ describe('KeyboardNavigator', () => {
       expect(mockElement.setAttribute).toHaveBeenCalledWith('tabindex', '0');
       expect(mockElement.setAttribute).toHaveBeenCalledWith(
         'aria-label',
-        'Interactive image slider'
+        'Interactive image _slider'
       );
-      expect(mockElement.setAttribute).toHaveBeenCalledWith(
-        'aria-live',
-        'polite'
-      );
+      // aria-live is set on the separate live region element created by the navigator
     });
 
     it('should create screen reader announcer element', () => {
@@ -383,7 +380,7 @@ describe('KeyboardNavigator', () => {
       const liveRegionAppends = appendCalls.filter(
         (call) =>
           call[0] &&
-          (call[0] as unknown as HTMLElement).id === 'slider-live-region'
+          (call[0] as unknown as HTMLElement).id === '_slider-live-region'
       );
       expect(liveRegionAppends).toHaveLength(0);
 
@@ -392,7 +389,7 @@ describe('KeyboardNavigator', () => {
         (call) =>
           call[0] &&
           (call[0] as unknown as HTMLElement).id ===
-            'slider-keyboard-instructions'
+            '_slider-keyboard-instructions'
       );
       expect(instructionAppends).toHaveLength(1);
 
@@ -569,7 +566,7 @@ describe('KeyboardNavigator', () => {
     it('should provide proper ARIA labels', () => {
       expect(mockElement.setAttribute).toHaveBeenCalledWith(
         'aria-label',
-        'Interactive image slider'
+        'Interactive image _slider'
       );
     });
 

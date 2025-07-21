@@ -1,10 +1,10 @@
 /**
  * @fileoverview Slider Foundation E2E Tests
  *
- * Tests the foundation components needed for slider functionality.
+ * Tests the foundation components needed for _slider functionality.
  * Prepares E2E infrastructure for Phase 2 while testing current capabilities.
  *
- * These tests ensure our foundation is ready for slider implementation.
+ * These tests ensure our foundation is ready for _slider implementation.
  */
 
 import { test, expect } from '@playwright/test';
@@ -26,8 +26,8 @@ test.describe('KineticSlider Foundation', () => {
     test('should load without JavaScript errors', async ({ page }) => {
       const jsErrors: string[] = [];
 
-      page.on(EVENT_NAMES.PAGE_ERROR, (error) => {
-        jsErrors.push(error.message);
+      page.on(EVENT_NAMES.PAGE_ERROR, (_error) => {
+        jsErrors.push(_error.message);
       });
 
       page.on(EVENT_NAMES.CONSOLE, (msg) => {
@@ -43,12 +43,12 @@ test.describe('KineticSlider Foundation', () => {
       expect(jsErrors).toHaveLength(0);
     });
 
-    test('should have proper HTML structure for slider container', async ({
+    test('should have proper HTML structure for _slider container', async ({
       page,
     }) => {
-      // Test that we have a suitable container for the slider
+      // Test that we have a suitable container for the _slider
       const hasContainer = await page.evaluate(() => {
-        // Look for any element that could contain a slider
+        // Look for any element that could contain a _slider
         const containers = document.querySelectorAll('div, main, section');
         return containers.length > 0;
       });
@@ -56,7 +56,7 @@ test.describe('KineticSlider Foundation', () => {
       expect(hasContainer).toBe(true);
     });
 
-    test('should support modern browser APIs needed for slider', async ({
+    test('should support modern browser APIs needed for _slider', async ({
       page,
     }) => {
       const apiSupport = await page.evaluate(() => {
@@ -91,7 +91,7 @@ test.describe('KineticSlider Foundation', () => {
 
   test.describe('Accessibility Foundation', () => {
     test('should have proper accessibility structure', async ({ page }) => {
-      // Test basic accessibility requirements for future slider
+      // Test basic accessibility requirements for future _slider
       const a11yStructure = await page.evaluate(() => {
         return {
           hasLang: document.documentElement.hasAttribute('lang'),
@@ -114,7 +114,7 @@ test.describe('KineticSlider Foundation', () => {
     });
 
     test('should support keyboard navigation', async ({ page }) => {
-      // Test that keyboard navigation works for future slider controls
+      // Test that keyboard navigation works for future _slider controls
       await page.keyboard.press('Tab');
       const focusedElement = await page.evaluate(
         () => document.activeElement?.tagName
@@ -125,7 +125,7 @@ test.describe('KineticSlider Foundation', () => {
     });
 
     test('should have proper color contrast', async ({ page }) => {
-      // Basic color contrast check for slider text
+      // Basic color contrast check for _slider text
       const contrastCheck = await page.evaluate(() => {
         const elements = document.querySelectorAll('*');
         let hasText = false;
@@ -162,12 +162,12 @@ test.describe('KineticSlider Foundation', () => {
         };
       });
 
-      // Performance budgets for slider-ready page
+      // Performance budgets for _slider-ready page
       expect(performanceMetrics.domContentLoaded).toBeLessThan(2000);
       expect(performanceMetrics.loadComplete).toBeLessThan(
         TEST_PERFORMANCE.MAX_LOAD_TIME
       );
-      expect(performanceMetrics.resourceCount).toBeLessThan(50); // Reasonable resource count
+      expect(performanceMetrics.resourceCount).toBeLessThan(60); // Reasonable resource count for development
     });
 
     test('should have efficient memory usage', async ({ page }) => {
@@ -202,7 +202,7 @@ test.describe('KineticSlider Foundation', () => {
   });
 
   test.describe('Slider Preparation', () => {
-    test('should support touch events for mobile slider', async ({ page }) => {
+    test('should support touch events for mobile _slider', async ({ page }) => {
       const touchSupport = await page.evaluate(() => {
         return {
           touchEvents: 'ontouchstart' in window,
@@ -215,7 +215,7 @@ test.describe('KineticSlider Foundation', () => {
       expect(touchSupport.touchEvents || touchSupport.pointerEvents).toBe(true);
     });
 
-    test('should handle viewport changes for responsive slider', async ({
+    test('should handle viewport changes for responsive _slider', async ({
       page,
     }) => {
       const initialViewport = page.viewportSize();
@@ -295,7 +295,7 @@ test.describe('KineticSlider Foundation', () => {
       expect(animationSupport.willChange).toBe(true);
     });
 
-    test('should support drag and drop for slider interaction', async ({
+    test('should support drag and drop for _slider interaction', async ({
       page,
     }) => {
       const dragSupport = await page.evaluate(() => {

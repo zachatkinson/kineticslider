@@ -79,9 +79,8 @@ test.describe('Rendering Performance E2E Tests', () => {
           await textureManager.loadTexture(url);
           await renderer.createSlide(url);
           monitor.recordFrame();
-        } catch (error) {
+        } catch {
           // Handle loading errors gracefully
-          console.warn('Texture load failed:', error);
         }
       }
 
@@ -135,9 +134,8 @@ test.describe('Rendering Performance E2E Tests', () => {
 
           const sprite = spritePool.getSprite(texture);
           sprites.push(sprite);
-        } catch (error) {
+        } catch {
           // Handle loading errors
-          console.warn('Memory test texture failed:', error);
         }
       }
 
@@ -202,8 +200,8 @@ test.describe('Rendering Performance E2E Tests', () => {
 
       try {
         await textureManager.loadTextures(textureUrls, onProgress);
-      } catch (error) {
-        console.warn('Progressive loading test failed:', error);
+      } catch {
+        // Ignore texture loading errors
       }
 
       return {
@@ -385,8 +383,7 @@ test.describe('Rendering Performance E2E Tests', () => {
             spritePool.returnSprite(sprite);
 
             return true;
-          } catch (error) {
-            console.warn('Stress test operation failed:', error);
+          } catch {
             return false;
           }
         });
@@ -528,8 +525,8 @@ test.describe('Rendering Performance E2E Tests', () => {
           ],
           onProgress
         );
-      } catch (error) {
-        console.warn('Texture loading test failed:', error);
+      } catch {
+        // Ignore texture loading errors
       }
 
       // Criterion 3: Rendering maintains 60fps performance
@@ -565,10 +562,5 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(criteriaResults.memoryUnder150MB).toBe(true);
 
     // Log performance metrics for visibility
-    console.log(
-      `Initialization time: ${criteriaResults.initTime.toFixed(2)}ms`
-    );
-    console.log(`Average FPS: ${criteriaResults.averageFps.toFixed(2)}`);
-    console.log(`Memory usage: ${criteriaResults.totalMemoryMB.toFixed(2)}MB`);
   });
 });

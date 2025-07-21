@@ -17,11 +17,11 @@ export function safeArrayAccess<T>(array: T[], index: number): T | undefined {
   if (!Array.isArray(array) || typeof index !== 'number') {
     return undefined;
   }
-  
+
   if (index < 0 || index >= array.length) {
     return undefined;
   }
-  
+
   return array.at(index);
 }
 
@@ -32,20 +32,24 @@ export function safeArrayAccess<T>(array: T[], index: number): T | undefined {
  * @param value - The value to assign
  * @returns True if assignment was successful, false otherwise
  */
-export function safeArrayAssign<T>(array: T[], index: number, value: T): boolean {
+export function safeArrayAssign<T>(
+  array: T[],
+  index: number,
+  value: T
+): boolean {
   if (!Array.isArray(array) || typeof index !== 'number') {
     return false;
   }
-  
+
   if (index < 0) {
     return false;
   }
-  
+
   // Ensure array is large enough
   if (index >= array.length) {
     array.length = index + 1;
   }
-  
+
   // Use safe assignment through array methods
   array.splice(index, 1, value);
   return true;
@@ -63,7 +67,7 @@ export function safeArrayIterate<T>(
   if (!Array.isArray(array)) {
     return;
   }
-  
+
   for (const [index, element] of array.entries()) {
     callback(element, index);
   }
@@ -82,13 +86,13 @@ export function safeArrayFind<T>(
   if (!Array.isArray(array)) {
     return undefined;
   }
-  
+
   for (const [index, element] of array.entries()) {
     if (predicate(element, index)) {
       return element;
     }
   }
-  
+
   return undefined;
 }
 
@@ -107,9 +111,9 @@ export function safeArrayInsertSorted<T>(
   if (!Array.isArray(array)) {
     return -1;
   }
-  
+
   let insertIndex = 0;
-  
+
   for (const [index, element] of array.entries()) {
     if (compareFn(item, element) < 0) {
       insertIndex = index;
@@ -117,7 +121,7 @@ export function safeArrayInsertSorted<T>(
     }
     insertIndex = index + 1;
   }
-  
+
   array.splice(insertIndex, 0, item);
   return insertIndex;
 }
@@ -132,11 +136,11 @@ export function safeArrayRemove<T>(array: T[], index: number): T | undefined {
   if (!Array.isArray(array) || typeof index !== 'number') {
     return undefined;
   }
-  
+
   if (index < 0 || index >= array.length) {
     return undefined;
   }
-  
+
   const removed = array.splice(index, 1);
   return removed[0];
 }
@@ -147,7 +151,10 @@ export function safeArrayRemove<T>(array: T[], index: number): T | undefined {
  * @param arrayLength - The length of the array
  * @returns True if value is a valid index
  */
-export function isValidArrayIndex(value: unknown, arrayLength: number): value is number {
+export function isValidArrayIndex(
+  value: unknown,
+  arrayLength: number
+): value is number {
   return (
     typeof value === 'number' &&
     Number.isInteger(value) &&
@@ -171,9 +178,10 @@ export function safeArraySlice<T>(
   if (!Array.isArray(array)) {
     return [];
   }
-  
+
   const safeStart = Math.max(0, Math.min(start, array.length));
-  const safeEnd = end !== undefined ? Math.max(0, Math.min(end, array.length)) : array.length;
-  
+  const safeEnd =
+    end !== undefined ? Math.max(0, Math.min(end, array.length)) : array.length;
+
   return array.slice(safeStart, safeEnd);
 }

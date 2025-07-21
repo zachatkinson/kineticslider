@@ -12,11 +12,7 @@ import { gsap } from 'gsap';
 import type { DisplacementFilter, Texture } from 'pixi.js';
 import { Sprite, DisplacementFilter as PIXIDisplacementFilter } from 'pixi.js';
 // import type { AnimationConfig } from '../core/types';
-import {
-  GSAP_DEFAULTS,
-  ANIMATION_DURATION,
-  EASING,
-} from '../core/constants';
+import { GSAP_DEFAULTS, ANIMATION_DURATION, EASING } from '../core/constants';
 
 /**
  * Configuration options for mouse follow effect

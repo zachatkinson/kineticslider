@@ -129,7 +129,7 @@ test.describe('Physics E2E Tests', () => {
       await page.waitForFunction(
         () => {
           const noGestureError = !document.querySelector(
-            '[data-gesture-error="true"]'
+            '[data-gesture-_error="true"]'
           );
           const noProcessing = !document.querySelector(
             '[data-processing="true"]'
@@ -141,7 +141,7 @@ test.describe('Physics E2E Tests', () => {
 
       // Verify gesture was processed
       const gestureProcessed = await page.evaluate(() => {
-        return !document.querySelector('[data-gesture-error="true"]');
+        return !document.querySelector('[data-gesture-_error="true"]');
       });
       expect(gestureProcessed).toBe(true);
     });
@@ -168,7 +168,7 @@ test.describe('Physics E2E Tests', () => {
       await page.waitForFunction(
         () => {
           const noSpringError = !document.querySelector(
-            '[data-spring-error="true"]'
+            '[data-spring-_error="true"]'
           );
           const noSpringProcessing = !document.querySelector(
             '[data-spring-processing="true"]'
@@ -181,7 +181,7 @@ test.describe('Physics E2E Tests', () => {
 
       // Verify spring correction was applied
       const springCorrected = await page.evaluate(() => {
-        return !document.querySelector('[data-spring-error="true"]');
+        return !document.querySelector('[data-spring-_error="true"]');
       });
       expect(springCorrected).toBe(true);
     });
@@ -269,7 +269,7 @@ test.describe('Physics E2E Tests', () => {
         return (
           document.readyState === 'complete' &&
           !document.querySelector('[data-loading="true"]') &&
-          !document.querySelector('[data-error="true"]')
+          !document.querySelector('[data-_error="true"]')
         );
       });
       expect(isResponsive).toBe(true);
@@ -309,7 +309,7 @@ test.describe('Physics E2E Tests', () => {
         return (
           document.readyState === 'complete' &&
           !document.querySelector('[data-loading="true"]') &&
-          !document.querySelector('[data-error="true"]')
+          !document.querySelector('[data-_error="true"]')
         );
       });
       expect(isResponsive).toBe(true);
@@ -379,7 +379,7 @@ test.describe('Physics E2E Tests', () => {
         return (
           document.readyState === 'complete' &&
           !document.querySelector('[data-loading="true"]') &&
-          !document.querySelector('[data-error="true"]')
+          !document.querySelector('[data-_error="true"]')
         );
       });
       expect(isResponsive).toBe(true);
@@ -393,9 +393,6 @@ test.describe('Physics E2E Tests', () => {
         const maxReasonableIncrease = 50 * 1024 * 1024; // 50MB (increased from 20MB)
 
         if (memoryIncrease > maxReasonableIncrease) {
-          console.warn(
-            `Memory increase ${memoryIncrease / 1024 / 1024}MB exceeds threshold`
-          );
           // Don't fail the test, just warn - memory measurement is too variable
         }
 
@@ -403,9 +400,7 @@ test.describe('Physics E2E Tests', () => {
         expect(isResponsive).toBe(true);
       } else {
         // If memory measurement not available, just verify responsiveness
-        console.log(
-          'Memory measurement not available, testing responsiveness only'
-        );
+
         expect(isResponsive).toBe(true);
       }
     });
@@ -480,11 +475,15 @@ test.describe('Physics E2E Tests', () => {
 
       // Verify spring behavior is consistent
       const springData = await page.evaluate(() => {
-        const slider = document.querySelector('[data-testid="kinetic-slider"]');
-        const transform = slider ? getComputedStyle(slider).transform : 'none';
+        const _slider = document.querySelector(
+          '[data-testid="kinetic-slider"]'
+        );
+        const transform = _slider
+          ? getComputedStyle(_slider).transform
+          : 'none';
         return {
           hasTransform: transform !== 'none',
-          elementExists: !!slider,
+          elementExists: !!_slider,
           springCorrectionApplied: true, // Would be set by actual spring physics
         };
       });
@@ -557,8 +556,10 @@ test.describe('Physics E2E Tests', () => {
 
       // UI should remain responsive
       const isResponsive = await page.evaluate(() => {
-        const slider = document.querySelector('[data-testid="kinetic-slider"]');
-        return slider && !slider.hasAttribute('data-error');
+        const _slider = document.querySelector(
+          '[data-testid="kinetic-slider"]'
+        );
+        return _slider && !_slider.hasAttribute('data-_error');
       });
 
       expect(isResponsive).toBe(true);
@@ -592,7 +593,7 @@ test.describe('Physics E2E Tests', () => {
 
       // Verify physics handled complex scenario
       const isStable = await page.evaluate(() => {
-        return !document.querySelector('[data-physics-error="true"]');
+        return !document.querySelector('[data-physics-_error="true"]');
       });
 
       expect(isStable).toBe(true);
@@ -621,7 +622,7 @@ test.describe('Physics E2E Tests', () => {
 
       // Physics should handle direction changes smoothly
       const motionHandled = await page.evaluate(() => {
-        return !document.querySelector('[data-motion-error="true"]');
+        return !document.querySelector('[data-motion-_error="true"]');
       });
 
       expect(motionHandled).toBe(true);
@@ -666,10 +667,10 @@ test.describe('Physics E2E Tests', () => {
         // Verify physics adapts to viewport
         const adaptsToViewport = await page.evaluate(
           (vp: { width: number; height: number }) => {
-            const slider = document.querySelector(
+            const _slider = document.querySelector(
               '[data-testid="kinetic-slider"]'
             );
-            return slider && slider.clientWidth <= vp.width;
+            return _slider && _slider.clientWidth <= vp.width;
           },
           breakpoint
         );

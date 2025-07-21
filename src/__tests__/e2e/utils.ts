@@ -19,14 +19,14 @@ export const VIEWPORT_SIZES = {
  */
 export async function navigateAndWait(
   page: Page,
-  path: string = '/demo.html'
+  path: string = '/'
 ): Promise<void> {
   await page.goto(path, {
     waitUntil: WAIT_STRATEGIES.NETWORK_IDLE,
     timeout: TEST_TIMING.E2E_TIMEOUT,
   });
 
-  // Wait for the slider to initialize
+  // Wait for the _slider to initialize
   await page.waitForSelector('[data-testid="kinetic-slider"]');
 
   // Wait for the real implementation to load

@@ -26,6 +26,27 @@
  */
 declare global {
   /**
+   * KineticSlider Engine interface for testing
+   */
+  interface KineticSliderEngine {
+    getCurrentIndex?: () => number;
+    isPlaying?: () => boolean;
+    getState?: () => {
+      isInitialized: boolean;
+      isPlaying: boolean;
+      isTransitioning: boolean;
+      currentIndex: number;
+      totalSlides: number;
+    };
+    nextSlide?: () => Promise<void>;
+    previousSlide?: () => Promise<void>;
+    play?: () => void;
+    pause?: () => void;
+    goToSlide?: (index: number) => Promise<void>;
+    togglePlayPause?: () => void;
+    getTotalSlides?: () => number;
+  }
+  /**
    * Window interface extensions for slider-specific globals
    */
   interface Window {
@@ -46,6 +67,62 @@ declare global {
      * @type {unknown}
      */
     __KINETIC_SLIDER_PIXI__?: unknown;
+
+    /**
+     * Global KineticSlider instance for testing
+     * @type {object}
+     */
+    kineticSlider?: {
+      engine?: KineticSliderEngine;
+    };
+
+    /**
+     * Keyboard debug information for testing
+     * @type {object}
+     */
+    __keyboardDebug?: {
+      lastKey?: string;
+      keyCount?: number;
+      enabled?: boolean;
+      length?: number;
+    };
+
+    /**
+     * PIXI.js global instance for testing
+     * @type {object}
+     */
+    PIXI?: {
+      Application: unknown;
+      Container: unknown;
+      Sprite: unknown;
+      Texture: unknown;
+      Assets: { load: (url: string) => Promise<unknown> };
+      Filter: unknown;
+    };
+
+    /**
+     * Slider instance for testing
+     * @type {object}
+     */
+    sliderInstance?: {
+      getCurrentIndex: () => number;
+      isPlaying: () => boolean;
+      getState: () => unknown;
+      nextSlide: () => Promise<void>;
+      previousSlide: () => Promise<void>;
+      play: () => void;
+      pause: () => void;
+      goToSlide: (index: number) => Promise<void>;
+      togglePlayPause: () => void;
+    };
+
+    /**
+     * Test-specific error tracking
+     */
+    __sliderInitErrors?: unknown[];
+    __serviceInitErrors?: Array<{ service: string; error: unknown }>;
+    __lastInitError?: { message: string };
+    __filterInitError?: { name: string; error: unknown };
   }
 
   /**

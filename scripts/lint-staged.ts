@@ -1,8 +1,10 @@
 import lintStagedConfig from '../lint-staged.config.ts';
 import { execSync } from 'child_process';
 
-// Get staged files
-const stagedFiles = execSync('git diff --cached --name-only', { encoding: 'utf8' })
+// Get staged files (excluding deleted files)
+const stagedFiles = execSync('git diff --cached --name-only --diff-filter=d', {
+  encoding: 'utf8',
+})
   .split('\n')
   .filter(Boolean);
 
@@ -12,14 +14,14 @@ console.log('Staged files:', stagedFiles);
 // Process each pattern in the config
 for (const [pattern, commands] of Object.entries(lintStagedConfig)) {
   // Find matching files
-  const matchingFiles = stagedFiles.filter(file => {
+  const matchingFiles = stagedFiles.filter((file) => {
     // Simple pattern matching - convert glob pattern to regex
     const regexPattern = pattern
       .replace(/\./g, '\\.')
       .replace(/\*/g, '.*')
       .replace(/\{([^}]+)\}/g, '($1)')
       .replace(/,/g, '|');
-    
+
     // eslint-disable-next-line security/detect-non-literal-regexp
     return new RegExp(regexPattern).test(file);
   });

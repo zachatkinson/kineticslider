@@ -11,11 +11,7 @@
 import { gsap } from 'gsap';
 import type { Sprite, Container, Filter } from 'pixi.js';
 // import type { AnimationConfig } from '../core/types';
-import {
-  GSAP_DEFAULTS,
-  ANIMATION_DURATION,
-  EASING,
-} from '../core/constants';
+import { GSAP_DEFAULTS, ANIMATION_DURATION, EASING } from '../core/constants';
 
 /**
  * Filter configuration for chain
@@ -596,9 +592,14 @@ export class FilterChain {
     const props: Record<string, unknown> = {};
 
     // Common filter properties
-    if ('alpha' in filter) props.alpha = (filter as unknown as Record<string, unknown>).alpha;
-    if ('blendMode' in filter) props.blendMode = (filter as unknown as Record<string, unknown>).blendMode;
-    if ('enabled' in filter) props.enabled = (filter as unknown as Record<string, unknown>).enabled;
+    if ('alpha' in filter)
+      props.alpha = (filter as unknown as Record<string, unknown>).alpha;
+    if ('blendMode' in filter)
+      props.blendMode = (
+        filter as unknown as Record<string, unknown>
+      ).blendMode;
+    if ('enabled' in filter)
+      props.enabled = (filter as unknown as Record<string, unknown>).enabled;
 
     return props;
   }

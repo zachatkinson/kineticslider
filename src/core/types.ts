@@ -36,7 +36,7 @@ export interface SliderState {
  */
 export interface SliderConfig {
   /** Slides data */
-  images: string[];
+  images: SlideData[];
   /** Auto-play enabled */
   autoPlay?: boolean;
   /** Transition duration in seconds */
@@ -48,11 +48,11 @@ export interface SliderConfig {
   /** Enable mouse/touch interaction */
   interactive?: boolean;
   /** Physics configuration */
-  physics: PhysicsConfig;
+  physics?: Partial<PhysicsConfig>;
   /** Rendering configuration */
-  rendering: RenderConfig;
+  rendering?: Partial<RenderConfig>;
   /** Input configuration */
-  input: InputConfig;
+  input?: Partial<InputConfig>;
   /** Preload count */
   preloadCount?: number;
   /** Enable virtualization */

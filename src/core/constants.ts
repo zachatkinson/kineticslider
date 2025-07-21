@@ -201,6 +201,7 @@ export const KEYBOARD_KEYS = {
 /** Slider engine event names to eliminate DRY violations */
 export const SLIDER_EVENTS = {
   /** Core lifecycle events */
+  INITIALIZATION_START: 'initializationStart',
   INITIALIZED: 'initialized',
   DESTROYED: 'destroyed',
   /** Slide navigation events */
@@ -212,8 +213,54 @@ export const SLIDER_EVENTS = {
   DRAG_END: 'dragEnd',
   /** State events */
   STATE_CHANGED: 'stateChanged',
+  STATE_VALIDATION_ERROR: 'stateValidationError',
+  STATE_VALIDATION_WARNING: 'stateValidationWarning',
+  STATE_HISTORY_CLEARED: 'stateHistoryCleared',
+  STATE_REVERTED: 'stateReverted',
+  STATE_CONFIG_UPDATED: 'stateConfigUpdated',
+  STATE_PERSISTENCE_ERROR: 'statePersistenceError',
+  STATE_LOADED: 'stateLoaded',
+  STATE_MANAGER_DESTROYED: 'stateManagerDestroyed',
   /** Playback events */
   PLAY_STATE_CHANGED: 'playStateChanged',
+  PLAY_STARTED: 'playStarted',
+  PLAY_PAUSED: 'playPaused',
+  PLAY_STOPPED: 'playStopped',
+  PLAY_RESUMED: 'playResumed',
+  VISIBILITY_RESUMED: 'visibilityResumed',
+  WINDOW_FOCUS_RESUMED: 'windowFocusResumed',
+  /** Loop events */
+  LOOP_FORWARD: 'loopForward',
+  LOOP_BACKWARD: 'loopBackward',
+  LOOP_BOUNCE: 'loopBounce',
+  LOOP_END_REACHED: 'loopEndReached',
+  LOOP_START_REACHED: 'loopStartReached',
+  LOOP_CONFIG_UPDATED: 'loopConfigUpdated',
+  LOOP_RESET: 'loopReset',
+  LOOP_DESTROYED: 'loopDestroyed',
+  RAPID_DIRECTION_CHANGE: 'rapidDirectionChange',
+  /** Virtual slide events */
+  VIRTUAL_SLIDE_CREATED: 'virtualSlideCreated',
+  VIRTUAL_SLIDE_REMOVED: 'virtualSlideRemoved',
+  VIRTUAL_SLIDES_CLEANUP: 'virtualSlidesCleanup',
+  /** Navigation events */
+  NAVIGATION_REQUESTED: 'navigationRequested',
+  NAVIGATION_BOUNDS_UPDATED: 'navigationBoundsUpdated',
+  NAVIGATION_TRANSITION_STATE_CHANGED: 'navigationTransitionStateChanged',
+  NAVIGATION_DEFERRED: 'navigationDeferred',
+  NAVIGATION_DEFERRED_EXECUTED: 'navigationDeferredExecuted',
+  NAVIGATION_BLOCKED: 'navigationBlocked',
+  NAVIGATION_INVALID_TARGET: 'navigationInvalidTarget',
+  NAVIGATION_NO_CHANGE: 'navigationNoChange',
+  NAVIGATION_PLAY_PAUSE_REQUESTED: 'navigationPlayPauseRequested',
+  NAVIGATION_EMERGENCY_STOP_REQUESTED: 'navigationEmergencyStopRequested',
+  NAVIGATION_PINCH_GESTURE: 'navigationPinchGesture',
+  NAVIGATION_A11Y_ANNOUNCE: 'navigationA11yAnnounce',
+  NAVIGATION_CONFIG_UPDATED: 'navigationConfigUpdated',
+  NAVIGATION_RESET: 'navigationReset',
+  NAVIGATION_DESTROYED: 'navigationDestroyed',
+  /** Configuration events */
+  CONFIG_UPDATED: 'configUpdated',
   /** Accessibility events */
   ESCAPE_PRESSED: 'escapePressed',
   /** Error events */
@@ -363,6 +410,8 @@ export const PHYSICS = {
   FRICTION: 0.85,
   /** Spring constant for elastic animations */
   SPRING_CONSTANT: 0.1,
+  /** Scale intensity for physics-based scaling */
+  SCALE_INTENSITY: 0.1,
   /** Velocity threshold for motion detection (px/ms) */
   VELOCITY_THRESHOLD: 0.5,
   /** Maximum allowed velocity (px/ms) */
@@ -837,6 +886,22 @@ export const GSAP_DEFAULTS = {
 // =============================================================================
 
 /** Error codes */
+/** Slider specific error codes */
+export const SLIDER_ERROR_CODES = {
+  /** Slider not initialized */
+  NOT_INITIALIZED: 'SLIDER_NOT_INITIALIZED',
+  /** Invalid configuration */
+  INVALID_CONFIG: 'SLIDER_INVALID_CONFIG',
+  /** Invalid slide index */
+  INVALID_SLIDE_INDEX: 'SLIDER_INVALID_SLIDE_INDEX',
+  /** Transition already in progress */
+  TRANSITION_IN_PROGRESS: 'SLIDER_TRANSITION_IN_PROGRESS',
+  /** Required dependency missing */
+  DEPENDENCY_MISSING: 'SLIDER_DEPENDENCY_MISSING',
+  /** Invalid state */
+  INVALID_STATE: 'SLIDER_INVALID_STATE',
+} as const;
+
 export const ERROR_CODES = {
   /** Initialization failed */
   INIT_FAILED: 'INIT_FAILED',

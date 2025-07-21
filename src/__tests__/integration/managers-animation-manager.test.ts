@@ -242,7 +242,7 @@ describe('AnimationManager Integration Tests', () => {
       const config = createTestAnimationConfigs().simple;
       const eventSpy = vi.spyOn(animationManager, 'emit');
 
-      animationManager.queueAnimation('event-test', config);
+      animationManager.queueAnimation('_event-test', config);
 
       expect(eventSpy).toHaveBeenCalledWith(
         ANIMATION_EVENTS.ANIMATION_QUEUED,
@@ -250,7 +250,7 @@ describe('AnimationManager Integration Tests', () => {
       );
     });
 
-    it('should support event listeners for animation coordination', () => {
+    it('should support _event listeners for animation coordination', () => {
       const listener = vi.fn();
 
       animationManager.on(ANIMATION_EVENTS.ANIMATION_COMPLETED, listener);
@@ -261,12 +261,12 @@ describe('AnimationManager Integration Tests', () => {
       expect(listener).toHaveBeenCalledWith({ id: 'test' });
     });
 
-    it('should properly remove event listeners on disposal', () => {
+    it('should properly remove _event listeners on disposal', () => {
       const listener = vi.fn();
 
       animationManager.on('test-event', listener);
       animationManager.dispose();
-      animationManager.emit('test-event', {});
+      animationManager.emit('test-_event', {});
 
       expect(listener).not.toHaveBeenCalled();
     });
@@ -277,7 +277,7 @@ describe('AnimationManager Integration Tests', () => {
       // Test with invalid configuration - should not crash the system
       expect(() => {
         try {
-          animationManager.executeImmediate('error-test', {} as never);
+          animationManager.executeImmediate('_error-test', {} as never);
         } catch {
           // Expected - error handling is working
         }
@@ -289,7 +289,7 @@ describe('AnimationManager Integration Tests', () => {
 
       // Cause an error
       try {
-        animationManager.executeImmediate('error-test', {} as never);
+        animationManager.executeImmediate('_error-test', {} as never);
       } catch {
         // Expected to fail
       }

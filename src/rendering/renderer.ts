@@ -13,16 +13,51 @@
  * @version 1.0.0
  */
 
-import { Application, Sprite, Texture, Filter, Assets } from 'pixi.js';
+import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 import type { ISliderRenderer, RenderConfig } from '../core/types';
-import type {
-  AnimationSequence,
-  SwipeAnimation,
-  ScaleAnimation,
-} from '../physics/engine';
+
+// Import Sprite type specifically
+type Sprite = PIXI.Sprite;
+// Define animation types locally to avoid circular dependency
+interface AnimationSequence {
+  hideSprites: number[];
+  targetSprite: {
+    index: number;
+    initialState: { visible: boolean; alpha: number; scale: number };
+    finalState: { alpha: number; scale: number };
+    duration: number;
+    ease: string;
+  };
+  sourceSprite?: {
+    index: number;
+    finalState: { alpha: number; scale: number; visible: boolean };
+    duration: number;
+    ease: string;
+  };
+}
+
+interface SwipeAnimation {
+  initialPhase: { duration: number; movement: number; scale: number };
+  springPhase: {
+    duration: number;
+    movement: number;
+    scale: number;
+    ease: string;
+  };
+}
+
+interface ScaleAnimation {
+  targetScale: number;
+  duration: number;
+  ease: string;
+}
 import { GSAP_DEFAULTS } from '../core/constants';
-import { safeArrayAssign, safeArrayAccess, isValidArrayIndex } from '../utils/safe-array';
+import {
+  safeArrayAssign,
+  safeArrayAccess,
+  isValidArrayIndex,
+} from '../utils/safe-array';
 
 /**
  * Unified PIXI.js Renderer with Complete Pipeline
@@ -31,8 +66,8 @@ import { safeArrayAssign, safeArrayAccess, isValidArrayIndex } from '../utils/sa
  * Eliminates the need for separate "PixiSliderRenderer" animation applier.
  */
 export class SliderRenderer implements ISliderRenderer {
-  private app: Application | null = null;
-  private sprites: Sprite[] = [];
+  private app: PIXI.Application | null = null;
+  private sprites: PIXI.Sprite[] = [];
   private container: HTMLElement | null = null;
   private config: RenderConfig | null = null;
   private isInitialized = false;
@@ -69,20 +104,25 @@ export class SliderRenderer implements ISliderRenderer {
       this.config = config;
       this.container = container;
 
-      // Create PIXI application with configuration
-      this.app = new Application({
-        width: config.width,
-        height: config.height,
+      // Create PIXI application (v8 pattern)
+      this.app = new PIXI.Application();
+
+      // Initialize with config (v8 pattern - main branch)
+      await this.app.init({
+        width: container.clientWidth || config.width || 800,
+        height: container.clientHeight || config.height || 600,
+        backgroundAlpha: 0,
         backgroundColor: config.backgroundColor,
         antialias: config.antialias,
         resolution: config.resolution,
+        resizeTo: container,
       });
 
-      // Wait for app to initialize
-      await this.app.init();
-
-      // Add canvas to container
-      this.container.appendChild(this.app.canvas);
+      // Add canvas to container (main branch pattern)
+      if (this.app.canvas instanceof HTMLCanvasElement) {
+        this.container.appendChild(this.app.canvas);
+        this.app.canvas.classList.add('kinetic-slider-canvas');
+      }
 
       this.isInitialized = true;
     } catch (error) {
@@ -93,7 +133,7 @@ export class SliderRenderer implements ISliderRenderer {
   /**
    * Get PIXI application instance
    */
-  getApplication(): Application | null {
+  getApplication(): PIXI.Application | null {
     return this.app;
   }
 
@@ -116,34 +156,64 @@ export class SliderRenderer implements ISliderRenderer {
    * Create and load sprite from texture
    */
   async createSprite(
-    texture: string | Texture,
+    texture: string | PIXI.Texture,
     index: number
-  ): Promise<Sprite> {
+  ): Promise<PIXI.Sprite> {
     if (!this.app) {
       throw new Error('Renderer not initialized');
     }
 
-    let pixiTexture: Texture;
+    let pixiTexture: PIXI.Texture;
 
     if (typeof texture === 'string') {
-      // Load texture from URL using Assets API
-      pixiTexture = await Assets.load(texture);
+      try {
+        // Use PIXI.js v8 Assets API for loading images
+        pixiTexture = await PIXI.Assets.load(texture);
+      } catch {
+        // Create a fallback colored texture
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Create a gradient as fallback
+          const gradient = ctx.createLinearGradient(0, 0, 800, 600);
+          gradient.addColorStop(0, '#ff6b6b');
+          gradient.addColorStop(1, '#4ecdc4');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, 800, 600);
+
+          // Add some text
+          ctx.fillStyle = 'white';
+          ctx.font = '48px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Slide ${index + 1}`, 400, 300);
+        }
+        pixiTexture = PIXI.Texture.from(canvas);
+      }
     } else {
       pixiTexture = texture;
     }
 
-    const sprite = new Sprite(pixiTexture);
+    const sprite = new PIXI.Sprite(pixiTexture);
 
     // Configure sprite
     sprite.anchor.set(0.5);
     sprite.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
+
+    // Scale sprite to cover canvas while maintaining aspect ratio (like CSS object-fit: cover)
+    const scaleX = this.app.screen.width / sprite.width;
+    const scaleY = this.app.screen.height / sprite.height;
+    const scale = Math.max(scaleX, scaleY); // Use the larger scale to cover entirely
+
+    sprite.scale.set(scale);
 
     // Add GSAP data attributes for targeting
     this.markSpriteForGSAP(sprite, index);
 
     // Add to stage and track with safe array assignment
     this.app.stage.addChild(sprite);
-    
+
     // Use safe array assignment to prevent object injection
     safeArrayAssign(this.sprites, index, sprite);
 
@@ -153,7 +223,7 @@ export class SliderRenderer implements ISliderRenderer {
   /**
    * Remove sprite from stage and cleanup
    */
-  removeSprite(sprite: Sprite): void {
+  removeSprite(sprite: PIXI.Sprite): void {
     if (!this.app) return;
 
     this.app.stage.removeChild(sprite);
@@ -171,26 +241,26 @@ export class SliderRenderer implements ISliderRenderer {
   /**
    * Get all managed sprites
    */
-  getSprites(): Sprite[] {
+  getSprites(): PIXI.Sprite[] {
     return [...this.sprites];
   }
 
   /**
    * Control sprite visibility
    */
-  setVisible(sprite: Sprite, visible: boolean): void {
+  setVisible(sprite: PIXI.Sprite, visible: boolean): void {
     sprite.visible = visible;
     sprite.alpha = visible ? 1 : 0;
   }
 
   // =============================================================================
-  // 🎯 Filter Management (implements ISliderRenderer)
+  // 🎯 PIXI.Filter Management (implements ISliderRenderer)
   // =============================================================================
 
   /**
    * Apply filter to sprite
    */
-  applyFilter(sprite: Sprite, filter: Filter): void {
+  applyFilter(sprite: PIXI.Sprite, filter: PIXI.Filter): void {
     if (!sprite.filters) {
       sprite.filters = [];
     }
@@ -206,7 +276,7 @@ export class SliderRenderer implements ISliderRenderer {
   /**
    * Remove specific filter from sprite
    */
-  removeFilter(sprite: Sprite, filter: Filter): void {
+  removeFilter(sprite: PIXI.Sprite, filter: PIXI.Filter): void {
     if (!sprite.filters || !Array.isArray(sprite.filters)) return;
 
     const index = sprite.filters.indexOf(filter);
@@ -218,7 +288,7 @@ export class SliderRenderer implements ISliderRenderer {
   /**
    * Clear all filters from sprite
    */
-  clearFilters(sprite: Sprite): void {
+  clearFilters(sprite: PIXI.Sprite): void {
     sprite.filters = [];
   }
 

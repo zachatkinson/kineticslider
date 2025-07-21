@@ -24,10 +24,7 @@ import { PerformanceOptimizer } from '../../rendering/performance-optimizer';
 // import type { FilterConfig } from '../../rendering/filter-chain';
 // import type { PresetOptions } from '../../rendering/effect-presets';
 import type { QualityLevel } from '../../rendering/performance-optimizer';
-import {
-  createMockSprite,
-  createMockTexture,
-} from '../utils/pixi-mocks';
+import { createMockSprite, createMockTexture } from '../utils/pixi-mocks';
 
 // Mock PIXI filters
 vi.mock('pixi.js', async () => {
