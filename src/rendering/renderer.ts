@@ -104,24 +104,67 @@ export class SliderRenderer implements ISliderRenderer {
       this.config = config;
       this.container = container;
 
-      // Create PIXI application (v8 pattern)
+      // Create PIXI application with async initialization (v8 pattern)
+      console.log('📱 Creating PIXI Application...');
       this.app = new PIXI.Application();
+      console.log('📱 PIXI Application instance created:', !!this.app);
 
-      // Initialize with config (v8 pattern - main branch)
-      await this.app.init({
-        width: container.clientWidth || config.width || 800,
-        height: container.clientHeight || config.height || 600,
-        backgroundAlpha: 0,
-        backgroundColor: config.backgroundColor,
-        antialias: config.antialias,
-        resolution: config.resolution,
-        resizeTo: container,
+      try {
+        // Initialize with config - ensure this completes before accessing properties
+        console.log('🔧 Initializing PIXI with config...');
+        await this.app.init({
+          width: container.clientWidth || config.width || 800,
+          height: container.clientHeight || config.height || 600,
+          backgroundAlpha: 0,
+          backgroundColor: config.backgroundColor,
+          antialias: config.antialias,
+          resolution: config.resolution,
+          resizeTo: container,
+          // Force canvas renderer if WebGL context limit is hit
+          preference: 'webgl',
+          failIfMajorPerformanceCaveat: false,
+        });
+        console.log('✅ PIXI initialization completed');
+      } catch (initError) {
+        // If WebGL fails, try with canvas fallback
+        console.warn('⚠️ WebGL initialization failed, trying canvas fallback:', initError);
+        await this.app.init({
+          width: container.clientWidth || config.width || 800,
+          height: container.clientHeight || config.height || 600,
+          backgroundAlpha: 0,
+          backgroundColor: config.backgroundColor,
+          antialias: false,
+          resolution: 1,
+          resizeTo: container,
+          preference: 'webgl',
+          failIfMajorPerformanceCaveat: false,
+        });
+        console.log('✅ PIXI canvas fallback initialization completed');
+      }
+
+      // Verify application initialized properly
+      console.log('🔍 Checking PIXI app state:', {
+        app: !!this.app,
+        canvas: !!this.app?.canvas,
+        canvasType: typeof this.app?.canvas,
       });
 
-      // Add canvas to container (main branch pattern)
-      if (this.app.canvas instanceof HTMLCanvasElement) {
-        this.container.appendChild(this.app.canvas);
-        this.app.canvas.classList.add('kinetic-slider-canvas');
+      if (!this.app) {
+        throw new Error('PIXI application failed to initialize');
+      }
+
+      // Add canvas to container with proper error handling
+      if (this.app.canvas) {
+        if (this.app.canvas instanceof HTMLCanvasElement) {
+          this.container.appendChild(this.app.canvas);
+          this.app.canvas.classList.add('kinetic-slider-canvas');
+          console.log('✅ PIXI canvas added to container');
+        } else {
+          console.warn('⚠️ PIXI canvas is not an HTMLCanvasElement:', typeof this.app.canvas);
+        }
+      } else {
+        console.error('❌ PIXI application canvas is not available after initialization');
+        throw new Error('PIXI application canvas is not available after initialization');
       }
 
       this.isInitialized = true;

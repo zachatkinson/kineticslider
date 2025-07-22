@@ -1,9 +1,9 @@
 /**
  * @fileoverview NavigationManager for KineticSlider
- * 
+ *
  * Manages navigation coordination including keyboard, mouse, touch, gesture inputs,
  * slide transitions, validation, and accessibility features.
- * 
+ *
  * @version 1.0.0
  */
 
@@ -18,7 +18,7 @@ export enum NavigationInputType {
   MOUSE = 'mouse',
   TOUCH = 'touch',
   GESTURE = 'gesture',
-  API = 'api'
+  API = 'api',
 }
 
 /**
@@ -29,7 +29,7 @@ export enum NavigationDirection {
   PREVIOUS = 'previous',
   FIRST = 'first',
   LAST = 'last',
-  DIRECT = 'direct'
+  DIRECT = 'direct',
 }
 
 /**
@@ -123,7 +123,7 @@ export class NavigationManager extends SimpleEventEmitter {
 
   constructor(config: Partial<NavigationConfig> = {}) {
     super();
-    
+
     this.config = {
       enableKeyboard: true,
       enableMouse: true,
@@ -136,7 +136,7 @@ export class NavigationManager extends SimpleEventEmitter {
       preventDuringTransition: true,
       debounceDelay: 50,
       enableA11yAnnouncements: true,
-      ...config
+      ...config,
     };
   }
 
@@ -153,7 +153,7 @@ export class NavigationManager extends SimpleEventEmitter {
         currentIndex,
         totalSlides,
         previousIndex: prevIndex,
-        bounds: this.getSlideBounds()
+        bounds: this.getSlideBounds(),
       });
     }
   }
@@ -170,16 +170,16 @@ export class NavigationManager extends SimpleEventEmitter {
       if (this.pendingNavigation) {
         const pending = this.pendingNavigation;
         this.pendingNavigation = null;
-        
+
         this.emit(SLIDER_EVENTS.NAVIGATION_DEFERRED_EXECUTED, {
-          request: pending
+          request: pending,
         });
       }
     }
 
     this.emit(SLIDER_EVENTS.NAVIGATION_TRANSITION_STATE_CHANGED, {
       isTransitioning,
-      wasTransitioning
+      wasTransitioning,
     });
   }
 
@@ -197,7 +197,7 @@ export class NavigationManager extends SimpleEventEmitter {
       inputType,
       animated,
       context,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Check debouncing
@@ -212,9 +212,9 @@ export class NavigationManager extends SimpleEventEmitter {
         this.pendingNavigation = request;
         this.emit(SLIDER_EVENTS.NAVIGATION_DEFERRED, { request });
       } else {
-        this.emit(SLIDER_EVENTS.NAVIGATION_BLOCKED, { 
+        this.emit(SLIDER_EVENTS.NAVIGATION_BLOCKED, {
           request,
-          reason: 'Navigation not allowed'
+          reason: 'Navigation not allowed',
         });
       }
       return null;
@@ -227,15 +227,20 @@ export class NavigationManager extends SimpleEventEmitter {
     }
 
     this.lastNavigationTime = request.timestamp;
-    this.emit(SLIDER_EVENTS.NAVIGATION_REQUESTED, { request: validatedRequest });
-    
+    this.emit(SLIDER_EVENTS.NAVIGATION_REQUESTED, {
+      request: validatedRequest,
+    });
+
     return validatedRequest;
   }
 
   /**
    * Handle keyboard navigation input
    */
-  handleKeyboardInput(key: string, context?: Record<string, unknown>): NavigationRequest | null {
+  handleKeyboardInput(
+    key: string,
+    context?: Record<string, unknown>
+  ): NavigationRequest | null {
     if (!this.config.enableKeyboard) {
       return null;
     }
@@ -273,18 +278,18 @@ export class NavigationManager extends SimpleEventEmitter {
         break;
       case 'Space':
         if (this.config.enableSpacebarToggle) {
-          this.emit(SLIDER_EVENTS.NAVIGATION_PLAY_PAUSE_REQUESTED, { 
+          this.emit(SLIDER_EVENTS.NAVIGATION_PLAY_PAUSE_REQUESTED, {
             inputType: NavigationInputType.KEYBOARD,
-            context 
+            context,
           });
           return null;
         }
         break;
       case 'Escape':
         if (this.config.enableEscapeStop) {
-          this.emit(SLIDER_EVENTS.NAVIGATION_EMERGENCY_STOP_REQUESTED, { 
+          this.emit(SLIDER_EVENTS.NAVIGATION_EMERGENCY_STOP_REQUESTED, {
             inputType: NavigationInputType.KEYBOARD,
-            context 
+            context,
           });
           return null;
         }
@@ -292,7 +297,12 @@ export class NavigationManager extends SimpleEventEmitter {
     }
 
     if (target !== null) {
-      return this.requestNavigation(target, NavigationInputType.KEYBOARD, true, context);
+      return this.requestNavigation(
+        target,
+        NavigationInputType.KEYBOARD,
+        true,
+        context
+      );
     }
 
     return null;
@@ -301,7 +311,10 @@ export class NavigationManager extends SimpleEventEmitter {
   /**
    * Handle mouse navigation input
    */
-  handleMouseInput(action: 'click' | 'wheel', data: Record<string, unknown>): NavigationRequest | null {
+  handleMouseInput(
+    action: 'click' | 'wheel',
+    data: Record<string, unknown>
+  ): NavigationRequest | null {
     if (!this.config.enableMouse) {
       return null;
     }
@@ -320,13 +333,19 @@ export class NavigationManager extends SimpleEventEmitter {
         break;
       case 'wheel':
         if (typeof data.deltaY === 'number') {
-          target = data.deltaY > 0 ? NavigationDirection.NEXT : NavigationDirection.PREVIOUS;
+          target =
+            data.deltaY > 0
+              ? NavigationDirection.NEXT
+              : NavigationDirection.PREVIOUS;
         }
         break;
     }
 
     if (target !== null) {
-      return this.requestNavigation(target, NavigationInputType.MOUSE, true, { action, ...data });
+      return this.requestNavigation(target, NavigationInputType.MOUSE, true, {
+        action,
+        ...data,
+      });
     }
 
     return null;
@@ -335,11 +354,19 @@ export class NavigationManager extends SimpleEventEmitter {
   /**
    * Handle touch/gesture navigation input
    */
-  handleTouchInput(gesture: 'swipe' | 'tap' | 'pinch', data: Record<string, unknown>): NavigationRequest | null {
-    const inputType = gesture === 'swipe' ? NavigationInputType.GESTURE : NavigationInputType.TOUCH;
-    
-    if ((!this.config.enableTouch && inputType === NavigationInputType.TOUCH) ||
-        (!this.config.enableGesture && inputType === NavigationInputType.GESTURE)) {
+  handleTouchInput(
+    gesture: 'swipe' | 'tap' | 'pinch',
+    data: Record<string, unknown>
+  ): NavigationRequest | null {
+    const inputType =
+      gesture === 'swipe'
+        ? NavigationInputType.GESTURE
+        : NavigationInputType.TOUCH;
+
+    if (
+      (!this.config.enableTouch && inputType === NavigationInputType.TOUCH) ||
+      (!this.config.enableGesture && inputType === NavigationInputType.GESTURE)
+    ) {
       return null;
     }
 
@@ -360,15 +387,18 @@ export class NavigationManager extends SimpleEventEmitter {
         break;
       case 'pinch':
         // Pinch gestures might be used for zoom, but we'll emit a custom event
-        this.emit(SLIDER_EVENTS.NAVIGATION_PINCH_GESTURE, { 
+        this.emit(SLIDER_EVENTS.NAVIGATION_PINCH_GESTURE, {
           inputType,
-          data 
+          data,
         });
         return null;
     }
 
     if (target !== null) {
-      return this.requestNavigation(target, inputType, true, { gesture, ...data });
+      return this.requestNavigation(target, inputType, true, {
+        gesture,
+        ...data,
+      });
     }
 
     return null;
@@ -385,7 +415,7 @@ export class NavigationManager extends SimpleEventEmitter {
       if (!Number.isInteger(target) || target < 0) {
         return null;
       }
-      
+
       // Allow direct indices that are out of bounds for LoopManager handling
       return target;
     }
@@ -441,33 +471,38 @@ export class NavigationManager extends SimpleEventEmitter {
   /**
    * Validate and normalize navigation request
    */
-  private validateNavigationRequest(request: NavigationRequest): NavigationRequest | null {
+  private validateNavigationRequest(
+    request: NavigationRequest
+  ): NavigationRequest | null {
     const targetIndex = this.resolveNavigationTarget(request.target);
-    
+
     if (targetIndex === null) {
-      this.emit(SLIDER_EVENTS.NAVIGATION_INVALID_TARGET, { 
+      this.emit(SLIDER_EVENTS.NAVIGATION_INVALID_TARGET, {
         request,
-        reason: 'Invalid navigation target'
+        reason: 'Invalid navigation target',
       });
       return null;
     }
 
     // For direct index navigation, check if it's the same as current
-    if (typeof request.target === 'number' && targetIndex === this.currentIndex) {
-      this.emit(SLIDER_EVENTS.NAVIGATION_NO_CHANGE, { 
+    if (
+      typeof request.target === 'number' &&
+      targetIndex === this.currentIndex
+    ) {
+      this.emit(SLIDER_EVENTS.NAVIGATION_NO_CHANGE, {
         request,
-        currentIndex: this.currentIndex
+        currentIndex: this.currentIndex,
       });
       return null;
     }
 
     // For out-of-bounds navigation (like next from last slide), allow it
     // The LoopManager or actual navigation handler will determine what to do
-    
+
     // Return normalized request with resolved target
     return {
       ...request,
-      target: targetIndex
+      target: targetIndex,
     };
   }
 
@@ -479,7 +514,7 @@ export class NavigationManager extends SimpleEventEmitter {
       currentIndex: this.currentIndex,
       totalSlides: this.totalSlides,
       isAtFirst: this.currentIndex === 0,
-      isAtLast: this.currentIndex === this.totalSlides - 1
+      isAtLast: this.currentIndex === this.totalSlides - 1,
     };
   }
 
@@ -493,7 +528,7 @@ export class NavigationManager extends SimpleEventEmitter {
     this.emit(SLIDER_EVENTS.NAVIGATION_CONFIG_UPDATED, {
       config: { ...this.config },
       oldConfig,
-      changes: updates
+      changes: updates,
     });
   }
 
@@ -523,7 +558,7 @@ export class NavigationManager extends SimpleEventEmitter {
       actualIndex,
       inputType,
       duration: Date.now() - startTime,
-      error
+      error,
     };
 
     // Emit accessibility announcement if enabled
@@ -531,7 +566,7 @@ export class NavigationManager extends SimpleEventEmitter {
       this.emit(SLIDER_EVENTS.NAVIGATION_A11Y_ANNOUNCE, {
         announcement: `Navigated to slide ${actualIndex + 1} of ${this.totalSlides}`,
         slideIndex: actualIndex,
-        totalSlides: this.totalSlides
+        totalSlides: this.totalSlides,
       });
     }
 
@@ -557,7 +592,7 @@ export class NavigationManager extends SimpleEventEmitter {
       canNavigateNext: this.currentIndex < this.totalSlides - 1,
       canNavigatePrevious: this.currentIndex > 0,
       hasPendingNavigation: this.pendingNavigation !== null,
-      config: { ...this.config }
+      config: { ...this.config },
     };
   }
 
@@ -570,7 +605,7 @@ export class NavigationManager extends SimpleEventEmitter {
     this.isTransitioning = false;
     this.lastNavigationTime = 0;
     this.pendingNavigation = null;
-    
+
     this.emit(SLIDER_EVENTS.NAVIGATION_RESET);
   }
 
@@ -580,7 +615,7 @@ export class NavigationManager extends SimpleEventEmitter {
   destroy(): void {
     // Emit destroy event before cleanup
     this.emit(SLIDER_EVENTS.NAVIGATION_DESTROYED);
-    
+
     this.reset();
     this.removeAllListeners();
   }

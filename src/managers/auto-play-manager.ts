@@ -1,9 +1,9 @@
 /**
  * @fileoverview AutoPlay Manager for KineticSlider
- * 
+ *
  * Manages automatic slide progression with intelligent pause detection,
  * visibility handling, and performance optimization.
- * 
+ *
  * @version 1.0.0
  */
 
@@ -39,7 +39,7 @@ export enum PauseReason {
   FOCUS = 'focus',
   INTERACTION = 'interaction',
   VISIBILITY = 'visibility',
-  BLUR = 'blur'
+  BLUR = 'blur',
 }
 
 /**
@@ -55,7 +55,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
 
   constructor(config: Partial<AutoPlayConfig> = {}) {
     super();
-    
+
     this.config = {
       enabled: false,
       interval: ANIMATION_DURATION.STANDARD,
@@ -64,7 +64,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
       pauseOnInteraction: true,
       resumeAfterInteraction: true,
       resumeDelay: 3000,
-      ...config
+      ...config,
     };
 
     this.setupVisibilityHandling();
@@ -96,7 +96,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
     this.pauseReasons.add(reason);
     this.clearTimer();
     this.clearResumeTimer();
-    
+
     // Only emit pause event if this is the first pause reason
     if (this.pauseReasons.size === 1) {
       this.emit(SLIDER_EVENTS.PLAY_PAUSED, { reason });
@@ -194,7 +194,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
   updateConfig(updates: Partial<AutoPlayConfig>): void {
     const wasEnabled = this.config.enabled;
     const oldInterval = this.config.interval;
-    
+
     this.config = { ...this.config, ...updates };
 
     // Handle enabled state change
@@ -207,7 +207,11 @@ export class AutoPlayManager extends SimpleEventEmitter {
     }
 
     // Handle interval change
-    if (oldInterval !== this.config.interval && this.isPlaying && this.pauseReasons.size === 0) {
+    if (
+      oldInterval !== this.config.interval &&
+      this.isPlaying &&
+      this.pauseReasons.size === 0
+    ) {
       // Restart with new interval
       this.clearTimer();
       // Note: We need the onNext callback to restart, which should be provided by SliderCore
@@ -228,7 +232,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
       isPlaying: this.isPlaying,
       isPaused: this.pauseReasons.size > 0,
       pauseReasons: Array.from(this.pauseReasons),
-      config: { ...this.config }
+      config: { ...this.config },
     };
   }
 
@@ -254,12 +258,12 @@ export class AutoPlayManager extends SimpleEventEmitter {
    */
   private scheduleNext(onNext: () => Promise<void>): void {
     this.clearTimer();
-    
+
     this.timer = window.setTimeout(async () => {
       if (this.isPlaying && this.pauseReasons.size === 0) {
         try {
           await onNext();
-          
+
           // Continue scheduling if still playing and not paused
           if (this.isPlaying && this.pauseReasons.size === 0) {
             this.scheduleNext(onNext);
@@ -267,7 +271,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
         } catch (error) {
           this.emit(SLIDER_EVENTS.ERROR, {
             error,
-            context: 'AutoPlayManager.scheduleNext'
+            context: 'AutoPlayManager.scheduleNext',
           });
           // Stop auto-play on error
           this.stop();
@@ -308,7 +312,10 @@ export class AutoPlayManager extends SimpleEventEmitter {
    * Remove page visibility handling
    */
   private removeVisibilityHandling(): void {
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
   }
 
   /**
@@ -332,7 +339,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
   private setupBlurHandling(): void {
     this.handleWindowBlur = this.handleWindowBlur.bind(this);
     this.handleWindowFocus = this.handleWindowFocus.bind(this);
-    
+
     window.addEventListener('blur', this.handleWindowBlur);
     window.addEventListener('focus', this.handleWindowFocus);
   }

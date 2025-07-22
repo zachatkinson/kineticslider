@@ -128,7 +128,9 @@ export class HeadlessRenderer implements ISliderRenderer {
     const sequenceData = sequence as unknown as { animations?: unknown[] };
     if (sequenceData.animations) {
       for (const animation of sequenceData.animations) {
-        await this.executeAnimation(animation as SwipeAnimation | ScaleAnimation);
+        await this.executeAnimation(
+          animation as SwipeAnimation | ScaleAnimation
+        );
       }
     }
   }

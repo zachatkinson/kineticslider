@@ -109,8 +109,8 @@ describe('EventThrottler', () => {
 
     it('should fall back to timer when RAF unavailable', async () => {
       // Remove RAF to test fallback
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (global as any).requestAnimationFrame = undefined;
+      // Temporarily save and remove RAF to test fallback behavior
+      global.requestAnimationFrame = undefined as unknown as typeof requestAnimationFrame;
 
       const fallbackThrottler = new EventThrottler({
         useRAF: true,

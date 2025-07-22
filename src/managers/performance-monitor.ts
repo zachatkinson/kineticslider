@@ -296,7 +296,7 @@ export class PerformanceMonitor extends SimpleEventEmitter {
     }, 5000); // Update every 5 seconds
   }
 
-  private updateMemoryMetrics(): void {
+  protected updateMemoryMetrics(): void {
     if (typeof performance !== 'undefined' && 'memory' in performance) {
       const memoryInfo = performance.memory as {
         usedJSHeapSize: number;

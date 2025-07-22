@@ -25,7 +25,7 @@ vi.mock('../../physics/gsap-timeline-factory', () => ({
       progress: vi.fn(),
       isActive: vi.fn(() => false),
     }));
-    
+
     createSlideTransition = vi.fn().mockReturnValue({
       eventCallback: vi.fn(),
       play: vi.fn(),
@@ -45,7 +45,7 @@ const mockPhysics = {
   getPhysicsConfig: vi.fn(() => ({
     transitionDuration: 0.1,
     transitionEase: 'power2.out',
-    scaleIntensity: 10,
+    scaleIntensity: 0.1,
   })),
   killAllAnimations: vi.fn(),
   cleanup: vi.fn(),
@@ -58,10 +58,34 @@ const mockRenderer = {
   createSprite: vi.fn(),
   removeSprite: vi.fn(),
   getSprites: vi.fn(() => [
-    { visible: true, scale: { set: vi.fn(), x: 1, y: 1 }, x: 0, y: 0, alpha: 1 },
-    { visible: false, scale: { set: vi.fn(), x: 1, y: 1 }, x: 0, y: 0, alpha: 1 },
-    { visible: false, scale: { set: vi.fn(), x: 1, y: 1 }, x: 0, y: 0, alpha: 1 },
-    { visible: false, scale: { set: vi.fn(), x: 1, y: 1 }, x: 0, y: 0, alpha: 1 },
+    {
+      visible: true,
+      scale: { set: vi.fn(), x: 1, y: 1 },
+      x: 0,
+      y: 0,
+      alpha: 1,
+    },
+    {
+      visible: false,
+      scale: { set: vi.fn(), x: 1, y: 1 },
+      x: 0,
+      y: 0,
+      alpha: 1,
+    },
+    {
+      visible: false,
+      scale: { set: vi.fn(), x: 1, y: 1 },
+      x: 0,
+      y: 0,
+      alpha: 1,
+    },
+    {
+      visible: false,
+      scale: { set: vi.fn(), x: 1, y: 1 },
+      x: 0,
+      y: 0,
+      alpha: 1,
+    },
   ]),
   applyFilter: vi.fn(),
   removeFilter: vi.fn(),
@@ -100,7 +124,7 @@ describe('SliderCore - Managers Integration', () => {
 
     slider = new SliderCore();
     config = {
-      images: [
+      slides: [
         { id: '1', src: 'image1.jpg', alt: 'Image 1' },
         { id: '2', src: 'image2.jpg', alt: 'Image 2' },
         { id: '3', src: 'image3.jpg', alt: 'Image 3' },
@@ -113,12 +137,12 @@ describe('SliderCore - Managers Integration', () => {
 
     // Override NavigationManager config to disable debouncing in tests
     const originalConfigureManagers = slider['configureManagers'].bind(slider);
-    slider['configureManagers'] = function(config) {
+    slider['configureManagers'] = function (config) {
       originalConfigureManagers.call(this, config);
       // Set debounceDelay to 0 for tests to avoid debouncing issues
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this as any).navigationManager.updateConfig({
-        debounceDelay: 0
+        debounceDelay: 0,
       });
     };
   });
@@ -163,7 +187,7 @@ describe('SliderCore - Managers Integration', () => {
           newState: expect.objectContaining({
             currentIndex: 1,
             isTransitioning: false,
-          })
+          }),
         })
       );
     });
@@ -186,8 +210,12 @@ describe('SliderCore - Managers Integration', () => {
 
     it('should handle navigation validation', async () => {
       // Test invalid index navigation
-      await expect(slider.goToSlide(-1)).rejects.toThrow('Index -1 is out of range');
-      await expect(slider.goToSlide(10)).rejects.toThrow('Index 10 is out of range');
+      await expect(slider.goToSlide(-1)).rejects.toThrow(
+        'Index -1 is out of range'
+      );
+      await expect(slider.goToSlide(10)).rejects.toThrow(
+        'Index 10 is out of range'
+      );
 
       // Current index should remain unchanged
       expect(slider.getCurrentIndex()).toBe(0);
@@ -198,7 +226,9 @@ describe('SliderCore - Managers Integration', () => {
       const navigation1 = slider.goToSlide(1);
 
       // Try to navigate again immediately (should be blocked by NavigationManager)
-      await expect(slider.goToSlide(2)).rejects.toThrow('Cannot navigate while transitioning');
+      await expect(slider.goToSlide(2)).rejects.toThrow(
+        'Cannot navigate while transitioning'
+      );
 
       // Wait for first navigation to complete
       await navigation1;
@@ -234,7 +264,7 @@ describe('SliderCore - Managers Integration', () => {
       // Create slider without loop
       const noLoopSlider = new SliderCore();
       const noLoopConfig = { ...config, loop: false };
-      
+
       await noLoopSlider.initialize(noLoopConfig);
       noLoopSlider.play(); // Start auto-play
 
@@ -255,7 +285,7 @@ describe('SliderCore - Managers Integration', () => {
     it('should manage auto-play through AutoPlayManager', async () => {
       const playStartSpy = vi.fn();
       const playPauseSpy = vi.fn();
-      
+
       slider.on(SLIDER_EVENTS.PLAY_STARTED, playStartSpy);
       slider.on(SLIDER_EVENTS.PLAY_PAUSED, playPauseSpy);
 
@@ -327,10 +357,10 @@ describe('SliderCore - Managers Integration', () => {
       slider.on(SLIDER_EVENTS.CONFIG_UPDATED, configSpy);
 
       // Update configuration
-      slider.updateConfig({ 
+      slider.updateConfig({
         autoPlay: false,
         loop: false,
-        duration: 2000
+        duration: 2000,
       });
 
       expect(configSpy).toHaveBeenCalled();
@@ -379,12 +409,12 @@ describe('SliderCore - Managers Integration', () => {
   describe('Configuration-Driven Manager Behavior', () => {
     it('should configure managers based on slider configuration', async () => {
       const customConfig: SliderConfig = {
-        images: [
+        slides: [
           { id: '1', src: 'image1.jpg', alt: 'Image 1' },
           { id: '2', src: 'image2.jpg', alt: 'Image 2' },
         ],
         autoPlay: false, // Disable auto-play
-        loop: false,     // Disable loop
+        loop: false, // Disable loop
         duration: 500,
       };
 
@@ -395,7 +425,7 @@ describe('SliderCore - Managers Integration', () => {
 
       // LoopManager should prevent looping
       await slider.goToSlide(1); // Go to last slide
-      await slider.nextSlide();  // Try to go beyond
+      await slider.nextSlide(); // Try to go beyond
 
       expect(slider.getCurrentIndex()).toBe(1); // Should stay at last slide
     });

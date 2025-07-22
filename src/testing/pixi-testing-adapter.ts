@@ -218,9 +218,8 @@ export const PixiTestingAdapter: Adapter = {
   /**
    * Creates a canvas that can be used for WebGL or 2D contexts
    */
-  createCanvas: (width?: number, height?: number) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new TestingCanvas(width, height) as any;
+  createCanvas: (width?: number, height?: number): HTMLCanvasElement => {
+    return new TestingCanvas(width, height) as unknown as HTMLCanvasElement;
   },
 
   /**
@@ -229,7 +228,7 @@ export const PixiTestingAdapter: Adapter = {
   getCanvasRenderingContext2D: () => {
     return {
       prototype: NodeCanvasRenderingContext2D.prototype,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   },
 
@@ -238,16 +237,14 @@ export const PixiTestingAdapter: Adapter = {
    */
   getWebGLRenderingContext: () => {
     // Return a constructor-like object that gl() can work with
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return WebGLRenderingContext as any;
+    return WebGLRenderingContext as typeof WebGLRenderingContext;
   },
 
   /**
    * Returns navigator information for headless environment
    */
   getNavigator: () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new MockNavigator() as any;
+    return new MockNavigator() as unknown as Navigator;
   },
 
   /**
@@ -263,8 +260,7 @@ export const PixiTestingAdapter: Adapter = {
    * Returns font face set for font management
    */
   getFontFaceSet: () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new MockFontFaceSet() as any;
+    return new MockFontFaceSet() as unknown as FontFaceSet;
   },
 
   /**
@@ -304,11 +300,15 @@ export const PixiTestingAdapter: Adapter = {
 /**
  * Configure PIXI.js to use the testing adapter
  */
-export function configurePixiForTesting(): void {
+export async function configurePixiForTesting(): Promise<void> {
   try {
     // Check if PIXI is available globally
     if (typeof window !== 'undefined' && (window as { PIXI?: unknown }).PIXI) {
-      const PIXI = (window as { PIXI?: { DOMAdapter?: { set: (adapter: unknown) => void } } }).PIXI;
+      const PIXI = (
+        window as {
+          PIXI?: { DOMAdapter?: { set: (adapter: unknown) => void } };
+        }
+      ).PIXI;
       if (PIXI?.DOMAdapter) {
         PIXI.DOMAdapter.set(PixiTestingAdapter);
       }
@@ -317,10 +317,17 @@ export function configurePixiForTesting(): void {
     }
 
     // Try dynamic import
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { DOMAdapter } = require('pixi.js');
+    // Use dynamic import for PIXI.js
+    try {
+      const pixiModule = await import('pixi.js');
+      if ('DOMAdapter' in pixiModule) {
+        (pixiModule.DOMAdapter as { set: (adapter: unknown) => void }).set(PixiTestingAdapter);
+      }
+    } catch {
+      // Ignore PIXI configuration errors in testing environment
+    }
 
-    DOMAdapter.set(PixiTestingAdapter);
+    // Note: DOMAdapter will be imported dynamically if needed
   } catch {
     // Ignore PIXI configuration errors in testing
   }
@@ -344,6 +351,8 @@ export function isHeadlessEnvironment(): boolean {
  */
 export function autoConfigurePixiAdapter(): void {
   if (isHeadlessEnvironment()) {
-    configurePixiForTesting();
+    configurePixiForTesting().catch(() => {
+      // Ignore configuration errors in headless environment
+    });
   }
 }

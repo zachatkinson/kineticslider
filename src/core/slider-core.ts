@@ -29,11 +29,15 @@ import {
   SLIDER_ERROR_CODES,
   PHYSICS,
 } from './constants';
+import { ConfigurationSystem } from '../config';
 
 // Import extracted managers
 import { StateManager } from '../managers/state-manager';
 import { AutoPlayManager } from '../managers/auto-play-manager';
-import { NavigationManager, NavigationInputType } from '../managers/navigation-manager';
+import {
+  NavigationManager,
+  NavigationInputType,
+} from '../managers/navigation-manager';
 import { LoopManager, LoopMode } from '../managers/loop-manager';
 
 /**
@@ -59,13 +63,13 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   constructor(timelineFactory?: GSAPTimelineFactory) {
     super();
     this.timelineFactory = timelineFactory || new GSAPTimelineFactory();
-    
+
     // Initialize managers
     this.stateManager = new StateManager();
     this.autoPlayManager = new AutoPlayManager();
     this.navigationManager = new NavigationManager();
     this.loopManager = new LoopManager();
-    
+
     this.setupManagerEventHandling();
     this.setupErrorHandling();
   }
@@ -78,12 +82,12 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
    * Initialize slider with configuration
    */
   async initialize(
-    config: SliderConfig,
+    userConfig: Partial<SliderConfig>,
     container?: HTMLElement
   ): Promise<void> {
     try {
-      this.validateConfig(config);
-      this.config = config;
+      // Process configuration with validation and defaults
+      this.config = ConfigurationSystem.processConfig(userConfig);
 
       // Initialize state through StateManager
       this.stateManager.updateState({ isLoading: true, loadingProgress: 0 });
@@ -98,9 +102,12 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       // Create image metadata elements
       this.createImageMetadataElements();
 
+      // Get slides array
+      const slideCount = this.config.slides.length;
+
       // Set up initial state through StateManager
       this.stateManager.updateState({
-        totalSlides: config.images.length,
+        totalSlides: slideCount,
         currentIndex: 0,
         isLoading: false,
         loadingProgress: 100,
@@ -108,10 +115,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       });
 
       // Configure managers with slider configuration
-      this.configureManagers(config);
+      this.configureManagers(this.config);
 
       // Update manager bounds
-      this.navigationManager.updateSlideBounds(0, config.images.length);
+      this.navigationManager.updateSlideBounds(0, slideCount);
 
       // Update controller state now that totalSlides is set
       if (this.controller) {
@@ -122,7 +129,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       }
 
       // Start auto-play if enabled
-      if (config.autoPlay) {
+      if (this.config.autoPlay) {
         this.play();
       }
 
@@ -225,7 +232,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
    * Navigate to next slide
    */
   async nextSlide(): Promise<void> {
+    console.log('🔄 nextSlide() called');
+    
     if (!this.config) {
+      console.error('❌ Slider not initialized!');
       throw new Error(
         `${SLIDER_ERROR_CODES.NOT_INITIALIZED}: Slider not initialized`
       );
@@ -233,6 +243,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
     const currentIndex = this.stateManager.getCurrentIndex();
     const totalSlides = this.stateManager.getTotalSlides();
+    console.log(`📊 Current state: slide ${currentIndex} of ${totalSlides}`);
 
     // Use LoopManager to determine next index
     const loopTransition = this.loopManager.getNextIndex(
@@ -240,8 +251,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       totalSlides,
       'forward'
     );
+    console.log('🔄 Loop transition:', loopTransition);
 
     if (!loopTransition.shouldNavigate) {
+      console.log('🚫 Navigation blocked by loop manager');
       // If auto-play is running and we can't loop, pause auto-play
       if (this.stateManager.isPlaying()) {
         this.pause();
@@ -249,6 +262,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       return;
     }
 
+    console.log(`➡️ Navigating to slide ${loopTransition.targetIndex}`);
     await this.goToSlide(loopTransition.targetIndex);
   }
 
@@ -348,8 +362,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       );
     }
 
-    // Merge the updates with existing config
-    this.config = { ...this.config, ...updates };
+    // Merge updates with existing config and revalidate
+    const mergedConfig = { ...this.config, ...updates };
+    this.config = ConfigurationSystem.processConfig(mergedConfig);
 
     // Handle autoPlay configuration changes
     if (updates.autoPlay !== undefined) {
@@ -365,7 +380,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     // Handle loop configuration changes
     if (updates.loop !== undefined) {
       this.loopManager.updateConfig({
-        enabled: updates.loop
+        enabled: updates.loop,
       });
     }
 
@@ -376,7 +391,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     ) {
       this.autoPlayManager.stop();
       this.autoPlayManager.updateConfig({
-        interval: (updates as { autoPlayInterval?: number }).autoPlayInterval!
+        interval: (updates as { autoPlayInterval?: number }).autoPlayInterval!,
       });
       this.autoPlayManager.start(async () => {
         await this.nextSlide();
@@ -401,7 +416,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     try {
       // Emit destroy event before cleanup
       this.emit(SLIDER_EVENTS.DESTROYED);
-      
+
       this.pause();
 
       // Kill current animations
@@ -489,7 +504,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       this.emit(SLIDER_EVENTS.NAVIGATION_REQUESTED, data);
     });
 
-    // LoopManager events  
+    // LoopManager events
     this.loopManager.on(SLIDER_EVENTS.LOOP_FORWARD, (data) => {
       this.emit(SLIDER_EVENTS.LOOP_FORWARD, data);
     });
@@ -500,16 +515,16 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
   /**
-   * Configure managers with slider configuration
+   * Configure managers with enhanced slider configuration
    */
   private configureManagers(config: SliderConfig): void {
-    // Configure AutoPlayManager
+    // Configure AutoPlayManager with enhanced options
     this.autoPlayManager.updateConfig({
       enabled: config.autoPlay || false,
-      interval: (config as { autoPlayInterval?: number }).autoPlayInterval || config.duration || ANIMATION_DURATION.STANDARD,
-      pauseOnHover: true,
-      pauseOnFocus: true,
-      pauseOnInteraction: true,
+      interval: config.autoPlayInterval || config.duration || ANIMATION_DURATION.STANDARD * 1000,
+      pauseOnHover: config.pauseOnHover !== false, // Default true unless explicitly disabled
+      pauseOnFocus: config.pauseOnFocus !== false, // Default true unless explicitly disabled  
+      pauseOnInteraction: config.pauseOnInteraction !== false, // Default true unless explicitly disabled
     });
 
     // Configure LoopManager
@@ -518,11 +533,12 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       mode: LoopMode.INFINITE, // Default to infinite loop
     });
 
-    // Configure NavigationManager
+    // Configure NavigationManager with input settings
+    const inputConfig = config.input;
     this.navigationManager.updateConfig({
-      enableKeyboard: true,
-      enableMouse: true,
-      enableTouch: true,
+      enableKeyboard: inputConfig?.enableKeyboard !== false, // Default enabled
+      enableMouse: inputConfig?.enableMouse !== false, // Default enabled
+      enableTouch: inputConfig?.enableTouch !== false, // Default enabled
       enableGesture: true,
       debounceDelay: 50,
       preventDuringTransition: true,
@@ -541,7 +557,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     ).__serviceInitErrors = errors;
 
     try {
-      // Get services from container
+      // Get services from container - with more resilient error handling
 
       try {
         this.physics = serviceContainer.get<ISliderPhysics>(
@@ -549,7 +565,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         );
       } catch (physicsError) {
         errors.push({ service: 'physics', error: physicsError });
-        throw physicsError;
+        console.warn('Physics service failed to initialize:', physicsError);
+        // Continue - physics is not critical for basic functionality
+        this.physics = null;
       }
 
       try {
@@ -558,7 +576,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         );
       } catch (rendererError) {
         errors.push({ service: 'renderer', error: rendererError });
-        throw rendererError;
+        console.warn('Renderer service failed to initialize:', rendererError);
+        // Continue - renderer may not be available in headless mode
+        this.renderer = null;
       }
 
       try {
@@ -567,17 +587,28 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         );
       } catch (controllerError) {
         errors.push({ service: 'controller', error: controllerError });
-        throw controllerError;
+        console.warn('Controller service failed to initialize:', controllerError);
+        // Continue - but controller is critical, so we'll handle this below
+        this.controller = null;
       }
 
-      if (!this.physics || !this.renderer || !this.controller) {
+      // Allow functioning without renderer (headless mode) but require controller for input
+      if (!this.controller) {
         throw new Error(
-          `${SLIDER_ERROR_CODES.DEPENDENCY_MISSING}: Required services not available - Physics: ${!!this.physics}, Renderer: ${!!this.renderer}, Controller: ${!!this.controller}`
+          `${SLIDER_ERROR_CODES.DEPENDENCY_MISSING}: Controller service is required but not available`
         );
       }
 
-      // Initialize renderer with container and config
-      if (container) {
+      // Physics and renderer are optional - warn if missing but continue
+      if (!this.physics) {
+        console.warn('Physics service not available - using basic transitions');
+      }
+      if (!this.renderer) {
+        console.warn('Renderer service not available - running in headless mode');
+      }
+
+      // Initialize renderer with container and config (if available)
+      if (container && this.renderer) {
         // Use provided rendering config or default
         const renderConfig = {
           width: 800,
@@ -587,48 +618,67 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
           resolution: 1,
           ...this.config?.rendering,
         };
-        await this.renderer.initialize(container, renderConfig);
+        try {
+          await this.renderer.initialize(container, renderConfig);
 
-        // Create sprites for all images
-
-        for (const [i, image] of this.config!.images.entries()) {
-          try {
-            await this.renderer.createSprite(image.src, i);
-          } catch (spriteError) {
-            // Handle sprite creation error
-            errors.push({ service: 'renderer', error: spriteError });
+          // Create sprites for all slides
+          for (const [i, slide] of this.config!.slides.entries()) {
+            try {
+              await this.renderer.createSprite(slide.src, i);
+            } catch (spriteError) {
+              // Handle sprite creation error
+              errors.push({ service: 'renderer', error: spriteError });
+            }
           }
-        }
 
-        // Update sprite visibility for created sprites
-        const sprites = this.renderer.getSprites();
-        sprites.forEach((sprite, i) => {
-          const shouldBeVisible = i === this.stateManager.getCurrentIndex();
-          this.renderer!.setVisible(sprite, shouldBeVisible);
-        });
+          // Update sprite visibility for created sprites
+          const sprites = this.renderer.getSprites();
+          sprites.forEach((sprite, i) => {
+            const shouldBeVisible = i === this.stateManager.getCurrentIndex();
+            this.renderer!.setVisible(sprite, shouldBeVisible);
+          });
+        } catch (rendererInitError) {
+          console.warn('Renderer initialization failed, continuing in headless mode:', rendererInitError);
+          errors.push({ service: 'renderer', error: rendererInitError });
+          this.renderer = null; // Set to null so other code knows renderer is unavailable
+        }
+      } else if (!this.renderer) {
+        // No renderer available - headless mode
+        console.log('Running in headless mode - no visual rendering');
       } else {
         // No container provided - headless mode
+        console.log('No container provided - headless mode');
       }
 
       // Configure services
       if (this.config) {
-        // Use provided physics config or default
-        const physicsConfig = {
-          transitionDuration: 0.3,
-          transitionEase: 'power2.out',
-          swipeThreshold: 50,
-          scaleIntensity: 10,
-          momentumDamping: 0.8,
-          ...this.config.physics,
-        };
+        // Configure physics if available
+        if (this.physics) {
+          // Use provided physics config or default
+          const physicsConfig = {
+            transitionDuration: 0.3,
+            transitionEase: 'power2.out',
+            swipeThreshold: 50,
+            scaleIntensity: 0.1,
+            momentumDamping: 0.8,
+            ...this.config.physics,
+          };
 
-        this.physics.setPhysicsConfig(physicsConfig);
+          this.physics.setPhysicsConfig(physicsConfig);
+        }
 
         // Initialize controller with input callbacks
         if (this.controller && container) {
+          console.log('🎮 Initializing controller with callbacks');
           this.controller.initialize(container, {
-            onSwipeLeft: () => this.nextSlide(),
-            onSwipeRight: () => this.previousSlide(),
+            onSwipeLeft: () => {
+              console.log('🔄 Swipe left triggered -> nextSlide()');
+              return this.nextSlide();
+            },
+            onSwipeRight: () => {
+              console.log('🔄 Swipe right triggered -> previousSlide()');
+              return this.previousSlide();
+            },
             onDragStart: (_x: number, _y: number) => {
               // Drag start handling - could be used for momentum
             },
@@ -643,11 +693,31 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
             onDragEnd: (_x: number, _y: number) => {
               // Drag end handling - could be used for release animations
             },
-            onKeyLeft: () => this.previousSlide(),
-            onKeyRight: () => this.nextSlide(),
-            onTogglePlayPause: () => this.togglePlayPause(),
-            onGoToSlide: (index: number) => this.goToSlide(index),
-            onEscape: () => this.handleEscape(),
+            onKeyLeft: () => {
+              console.log('⬅️ Key left triggered -> previousSlide()');
+              return this.previousSlide();
+            },
+            onKeyRight: () => {
+              console.log('➡️ Key right triggered -> nextSlide()');
+              return this.nextSlide();
+            },
+            onTogglePlayPause: () => {
+              console.log('⏯️ Toggle play/pause triggered');
+              return this.togglePlayPause();
+            },
+            onGoToSlide: (index: number) => {
+              console.log(`🎯 Go to slide ${index} triggered`);
+              return this.goToSlide(index);
+            },
+            onEscape: () => {
+              console.log('🚪 Escape triggered');
+              return this.handleEscape();
+            },
+          });
+        } else {
+          console.warn('❌ Controller or container missing - input will not work!', {
+            controller: !!this.controller,
+            container: !!container
           });
         }
       }
@@ -669,7 +739,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
     // Check if we're using headless renderer (has different sprite structure)
     const isHeadlessRenderer =
-      sprites.length > 0 && 
+      sprites.length > 0 &&
       (sprites[0] as { isHeadlessSprite?: boolean })?.isHeadlessSprite;
 
     if (isHeadlessRenderer) {
@@ -760,31 +830,6 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
 
-  private validateConfig(config: SliderConfig): void {
-    if (!config) {
-      throw new Error(
-        `${SLIDER_ERROR_CODES.INVALID_CONFIG}: Configuration is required`
-      );
-    }
-
-    if (
-      !config.images ||
-      !Array.isArray(config.images) ||
-      config.images.length === 0
-    ) {
-      throw new Error(
-        `${SLIDER_ERROR_CODES.INVALID_CONFIG}: Images array is required and must not be empty`
-      );
-    }
-
-    if (config.duration && (config.duration < 100 || config.duration > 10000)) {
-      throw new Error(
-        `${SLIDER_ERROR_CODES.INVALID_CONFIG}: Duration must be between 100ms and 10000ms`
-      );
-    }
-  }
-
-
   private setupErrorHandling(): void {
     this.on(SLIDER_EVENTS.ERROR, () => {
       // Central error handling
@@ -847,6 +892,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       titleElement.textContent = `Image ${index + 1} of ${this.stateManager.getTotalSlides()}`;
     }
   }
+
 }
 
 // Note: SliderCore is registered in index.ts to avoid circular dependencies

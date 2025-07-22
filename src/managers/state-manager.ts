@@ -1,9 +1,9 @@
 /**
  * @fileoverview StateManager for KineticSlider
- * 
+ *
  * Manages slider state including current slide index, bounds management,
  * navigation history, state persistence, validation, and transition tracking.
- * 
+ *
  * @version 1.0.0
  */
 
@@ -125,14 +125,14 @@ export class StateManager extends SimpleEventEmitter {
 
   constructor(config: Partial<StateManagerConfig> = {}) {
     super();
-    
+
     // Default configuration
     this.config = {
       strictValidation: true,
       enableBoundsChecking: true,
       allowTransientStates: false,
       enableNotifications: true,
-      ...config
+      ...config,
     };
 
     // Default persistence configuration
@@ -143,7 +143,7 @@ export class StateManager extends SimpleEventEmitter {
       enableHistory: true,
       maxHistoryEntries: 50,
       autoSaveInterval: 0,
-      ...config.persistence
+      ...config.persistence,
     };
 
     // Initialize state
@@ -155,7 +155,7 @@ export class StateManager extends SimpleEventEmitter {
       isInitialized: false,
       isLoading: false,
       loadingProgress: 0,
-      ...config.initialState
+      ...config.initialState,
     };
 
     // Load persisted state if enabled
@@ -179,7 +179,11 @@ export class StateManager extends SimpleEventEmitter {
   /**
    * Update state with validation and persistence
    */
-  updateState(updates: Partial<SliderState>, context?: string, metadata?: Record<string, unknown>): void {
+  updateState(
+    updates: Partial<SliderState>,
+    context?: string,
+    metadata?: Record<string, unknown>
+  ): void {
     const previousState = { ...this.state };
     const newState = { ...this.state, ...updates };
 
@@ -194,16 +198,16 @@ export class StateManager extends SimpleEventEmitter {
           errors: validation.errors,
           warnings: validation.warnings,
           attemptedState: newState,
-          currentState: this.state
+          currentState: this.state,
         });
         throw error;
       }
-      
+
       // Emit warnings if any
       if (validation.warnings.length > 0) {
         this.emit(SLIDER_EVENTS.STATE_VALIDATION_WARNING, {
           warnings: validation.warnings,
-          state: newState
+          state: newState,
         });
       }
     }
@@ -223,7 +227,7 @@ export class StateManager extends SimpleEventEmitter {
         newState: this.state,
         changes: this.getStateChanges(previousState, newState),
         context,
-        metadata
+        metadata,
       });
     }
 
@@ -250,10 +254,14 @@ export class StateManager extends SimpleEventEmitter {
     } else {
       // Still validate basic requirements (integer, non-negative)
       if (!Number.isInteger(index)) {
-        throw new Error(`${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index must be an integer`);
+        throw new Error(
+          `${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index must be an integer`
+        );
       }
       if (index < 0) {
-        throw new Error(`${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index cannot be negative`);
+        throw new Error(
+          `${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index cannot be negative`
+        );
       }
     }
     this.updateState({ currentIndex: index }, context || 'setCurrentIndex');
@@ -271,11 +279,13 @@ export class StateManager extends SimpleEventEmitter {
    */
   setTotalSlides(totalSlides: number, context?: string): void {
     if (totalSlides < 0) {
-      throw new Error(`${SLIDER_ERROR_CODES.INVALID_CONFIG}: Total slides cannot be negative`);
+      throw new Error(
+        `${SLIDER_ERROR_CODES.INVALID_CONFIG}: Total slides cannot be negative`
+      );
     }
 
     const updates: Partial<SliderState> = { totalSlides };
-    
+
     // Adjust current index if it's now out of bounds
     if (this.state.currentIndex >= totalSlides && totalSlides > 0) {
       updates.currentIndex = totalSlides - 1;
@@ -358,7 +368,10 @@ export class StateManager extends SimpleEventEmitter {
    */
   setLoadingProgress(progress: number, context?: string): void {
     const clampedProgress = Math.max(0, Math.min(100, progress));
-    this.updateState({ loadingProgress: clampedProgress }, context || 'setLoadingProgress');
+    this.updateState(
+      { loadingProgress: clampedProgress },
+      context || 'setLoadingProgress'
+    );
   }
 
   /**
@@ -366,14 +379,22 @@ export class StateManager extends SimpleEventEmitter {
    */
   validateSlideIndex(index: number): void {
     if (!Number.isInteger(index)) {
-      throw new Error(`${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index must be an integer`);
+      throw new Error(
+        `${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index must be an integer`
+      );
     }
-    
+
     if (index < 0) {
-      throw new Error(`${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index cannot be negative`);
+      throw new Error(
+        `${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index cannot be negative`
+      );
     }
-    
-    if (this.config.enableBoundsChecking && this.state.totalSlides > 0 && index >= this.state.totalSlides) {
+
+    if (
+      this.config.enableBoundsChecking &&
+      this.state.totalSlides > 0 &&
+      index >= this.state.totalSlides
+    ) {
       throw new Error(
         `${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Index ${index} is out of range (0-${this.state.totalSlides - 1})`
       );
@@ -386,14 +407,14 @@ export class StateManager extends SimpleEventEmitter {
   getStateBounds(): StateBounds {
     const { currentIndex, totalSlides } = this.state;
     const maxIndex = Math.max(0, totalSlides - 1);
-    
+
     return {
       minIndex: 0,
       maxIndex,
       isAtFirst: currentIndex === 0,
       isAtLast: currentIndex === maxIndex,
       canNavigateNext: currentIndex < maxIndex,
-      canNavigatePrevious: currentIndex > 0
+      canNavigatePrevious: currentIndex > 0,
     };
   }
 
@@ -423,11 +444,18 @@ export class StateManager extends SimpleEventEmitter {
       errors.push('currentIndex must be an integer');
     } else if (state.currentIndex < 0) {
       errors.push('currentIndex cannot be negative');
-    } else if (state.totalSlides > 0 && state.currentIndex >= state.totalSlides) {
+    } else if (
+      state.totalSlides > 0 &&
+      state.currentIndex >= state.totalSlides
+    ) {
       if (this.config.allowTransientStates && state.isTransitioning) {
-        warnings.push(`currentIndex ${state.currentIndex} is out of bounds but allowed during transition`);
+        warnings.push(
+          `currentIndex ${state.currentIndex} is out of bounds but allowed during transition`
+        );
       } else {
-        errors.push(`currentIndex ${state.currentIndex} is out of bounds (max: ${state.totalSlides - 1})`);
+        errors.push(
+          `currentIndex ${state.currentIndex} is out of bounds (max: ${state.totalSlides - 1})`
+        );
       }
     }
 
@@ -448,14 +476,18 @@ export class StateManager extends SimpleEventEmitter {
       warnings.push('slider is both playing and transitioning');
     }
 
-    if (state.isLoading && state.isInitialized && state.loadingProgress === 100) {
+    if (
+      state.isLoading &&
+      state.isInitialized &&
+      state.loadingProgress === 100
+    ) {
       warnings.push('slider is loading but appears to be complete');
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -484,17 +516,17 @@ export class StateManager extends SimpleEventEmitter {
 
     const lastEntry = this.history[this.history.length - 1];
     this.isValidating = true; // Prevent validation during revert
-    
+
     try {
       this.state = { ...lastEntry.previousState };
       this.history.pop(); // Remove the reverted entry
-      
+
       this.emit(SLIDER_EVENTS.STATE_REVERTED, {
         revertedState: lastEntry.newState,
         currentState: this.state,
-        context: 'revert'
+        context: 'revert',
       });
-      
+
       return true;
     } finally {
       this.isValidating = false;
@@ -513,7 +545,7 @@ export class StateManager extends SimpleEventEmitter {
       isInitialized: false,
       isLoading: false,
       loadingProgress: 0,
-      ...this.config.initialState
+      ...this.config.initialState,
     };
 
     this.updateState(initialState, 'reset');
@@ -529,8 +561,11 @@ export class StateManager extends SimpleEventEmitter {
 
     // Update persistence config if provided
     if (updates.persistence) {
-      this.persistenceConfig = { ...this.persistenceConfig, ...updates.persistence };
-      
+      this.persistenceConfig = {
+        ...this.persistenceConfig,
+        ...updates.persistence,
+      };
+
       // Setup or clear auto-save based on new config
       if (this.persistenceConfig.autoSaveInterval > 0) {
         this.setupAutoSave();
@@ -542,7 +577,7 @@ export class StateManager extends SimpleEventEmitter {
     this.emit(SLIDER_EVENTS.STATE_CONFIG_UPDATED, {
       oldConfig,
       newConfig: this.config,
-      changes: updates
+      changes: updates,
     });
   }
 
@@ -550,9 +585,9 @@ export class StateManager extends SimpleEventEmitter {
    * Get current configuration
    */
   getConfig(): StateManagerConfig {
-    return { 
+    return {
       ...this.config,
-      persistence: { ...this.persistenceConfig }
+      persistence: { ...this.persistenceConfig },
     };
   }
 
@@ -570,7 +605,7 @@ export class StateManager extends SimpleEventEmitter {
       previousState,
       newState,
       context,
-      metadata
+      metadata,
     };
 
     this.history.push(entry);
@@ -584,16 +619,25 @@ export class StateManager extends SimpleEventEmitter {
   /**
    * Get changes between two states
    */
-  private getStateChanges(prev: SliderState, current: SliderState): Partial<SliderState> {
+  private getStateChanges(
+    prev: SliderState,
+    current: SliderState
+  ): Partial<SliderState> {
     const changes: Partial<SliderState> = {};
-    
-    (Object.keys(current) as (keyof SliderState)[]).forEach(key => {
+
+    const stateKeys = Object.keys(current) as (keyof SliderState)[];
+    for (const key of stateKeys) {
+      if (!(key in current) || !(key in prev)) continue;
+      
       // eslint-disable-next-line security/detect-object-injection
-      if (prev[key] !== current[key]) {
+      const prevValue = prev[key];
+      // eslint-disable-next-line security/detect-object-injection
+      const currentValue = current[key];
+      if (prevValue !== currentValue) {
         // eslint-disable-next-line security/detect-object-injection
-        (changes as Record<string, unknown>)[key] = current[key];
+        (changes as Record<keyof SliderState, unknown>)[key] = currentValue;
       }
-    });
+    }
 
     return changes;
   }
@@ -608,8 +652,8 @@ export class StateManager extends SimpleEventEmitter {
 
     try {
       const stateToPersist: Partial<SliderState> = {};
-      
-      this.persistenceConfig.persistedProperties.forEach(prop => {
+
+      this.persistenceConfig.persistedProperties.forEach((prop) => {
         if (prop in this.state) {
           // eslint-disable-next-line security/detect-object-injection
           (stateToPersist as Record<string, unknown>)[prop] = this.state[prop];
@@ -620,13 +664,13 @@ export class StateManager extends SimpleEventEmitter {
         this.persistenceConfig.storageKey,
         JSON.stringify({
           state: stateToPersist,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       );
     } catch (error) {
       this.emit(SLIDER_EVENTS.STATE_PERSISTENCE_ERROR, {
         error,
-        context: 'persistState'
+        context: 'persistState',
       });
     }
   }
@@ -646,18 +690,18 @@ export class StateManager extends SimpleEventEmitter {
       }
 
       const { state: persistedState } = JSON.parse(stored);
-      
+
       // Merge persisted state with current state
       this.state = { ...this.state, ...persistedState };
-      
+
       this.emit(SLIDER_EVENTS.STATE_LOADED, {
         persistedState,
-        currentState: this.state
+        currentState: this.state,
       });
     } catch (error) {
       this.emit(SLIDER_EVENTS.STATE_PERSISTENCE_ERROR, {
         error,
-        context: 'loadPersistedState'
+        context: 'loadPersistedState',
       });
     }
   }
@@ -667,7 +711,7 @@ export class StateManager extends SimpleEventEmitter {
    */
   private setupAutoSave(): void {
     this.clearAutoSave();
-    
+
     this.autoSaveTimer = window.setInterval(() => {
       this.persistState();
     }, this.persistenceConfig.autoSaveInterval);
@@ -688,18 +732,18 @@ export class StateManager extends SimpleEventEmitter {
    */
   destroy(): void {
     this.emit(SLIDER_EVENTS.STATE_MANAGER_DESTROYED);
-    
+
     // Clear timers
     this.clearAutoSave();
-    
+
     // Final persist if enabled
     if (this.persistenceConfig.enabled) {
       this.persistState();
     }
-    
+
     // Clear history and state
     this.clearHistory();
-    
+
     // Reset state to initial values
     this.state = {
       currentIndex: 0,
@@ -710,7 +754,7 @@ export class StateManager extends SimpleEventEmitter {
       isPlaying: false,
       loadingProgress: 0,
     };
-    
+
     // Remove all listeners
     this.removeAllListeners();
   }

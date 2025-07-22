@@ -50,7 +50,7 @@ export const mockIntersectionObserver = (): void => {
     observe(): void {}
     unobserve(): void {}
     disconnect(): void {}
-  } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  } as unknown as typeof IntersectionObserver;
 };
 
 export const mockResizeObserver = (): void => {
@@ -58,5 +58,5 @@ export const mockResizeObserver = (): void => {
     observe(): void {}
     unobserve(): void {}
     disconnect(): void {}
-  } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  } as typeof ResizeObserver;
 };

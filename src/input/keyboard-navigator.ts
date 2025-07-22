@@ -158,7 +158,7 @@ export class KeyboardNavigator {
 
     // Set ARIA role for slider
     this.element.setAttribute('role', 'region');
-    this.element.setAttribute('aria-label', 'Interactive image _slider');
+    this.element.setAttribute('aria-label', 'Interactive image slider');
 
     // Add keyboard instructions
     this.element.setAttribute(
@@ -286,17 +286,22 @@ export class KeyboardNavigator {
    * Handle keyboard events
    */
   private handleKeyDown(event: KeyboardEvent): void {
+    console.log('🎹 KeyboardNavigator received keydown:', event.key);
+    
     // Don't handle if modifier keys are pressed (allow browser shortcuts)
     if (event.ctrlKey || event.metaKey || event.altKey) {
+      console.log('🚫 Ignoring key due to modifier keys');
       return;
     }
 
     // Don't handle if focus is on an input element
     if (this.isInputElement(event.target as HTMLElement)) {
+      console.log('🚫 Ignoring key - focus on input element');
       return;
     }
 
     let handled = false;
+    console.log('🎯 Processing key:', event.key);
 
     // Check custom bindings first
     const customHandler = this.config.customBindings.get(event.key);
@@ -376,9 +381,13 @@ export class KeyboardNavigator {
 
         // Space bar for play/pause
         case ' ':
+          console.log('🟡 Space bar pressed');
           if (this.config.enableSpaceBar) {
+            console.log('✅ Space bar enabled - calling togglePlayPause()');
             this.togglePlayPause();
             handled = true;
+          } else {
+            console.log('🚫 Space bar disabled');
           }
           break;
 
@@ -515,10 +524,12 @@ export class KeyboardNavigator {
    * Toggle play/pause state
    */
   private togglePlayPause(): void {
+    console.log('⏯️ KeyboardNavigator togglePlayPause() called');
     this.callbacks.onTogglePlayPause();
     this.isPlaying = !this.isPlaying;
 
     const action = this.isPlaying ? 'Playing' : 'Paused';
+    console.log(`📢 Announcing: ${action}`);
     this.announce(`${action}`, AnnouncementType.STATUS);
   }
 
@@ -591,14 +602,21 @@ export class KeyboardNavigator {
    */
   setCurrentSlide(index: number): void {
     this.currentSlide = Math.max(0, Math.min(index, this.totalSlides - 1));
-    this.element.setAttribute(
-      'aria-valuenow',
-      (this.currentSlide + 1).toString()
-    );
-    this.element.setAttribute(
-      'aria-valuetext',
-      this.getCurrentSlideAnnouncement()
-    );
+    
+    // Only update attributes if React hasn't set them or they're out of sync
+    const currentAriaValueNow = this.element.getAttribute('aria-valuenow');
+    const expectedAriaValueNow = (this.currentSlide + 1).toString();
+    
+    if (currentAriaValueNow !== expectedAriaValueNow) {
+      this.element.setAttribute('aria-valuenow', expectedAriaValueNow);
+    }
+    
+    const currentAriaValueText = this.element.getAttribute('aria-valuetext');
+    const expectedAriaValueText = this.getCurrentSlideAnnouncement();
+    
+    if (currentAriaValueText !== expectedAriaValueText) {
+      this.element.setAttribute('aria-valuetext', expectedAriaValueText);
+    }
   }
 
   /**

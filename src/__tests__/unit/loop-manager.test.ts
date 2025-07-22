@@ -16,7 +16,7 @@ describe('LoopManager', () => {
       mode: LoopMode.INFINITE,
       useVirtualSlides: false,
       maxVirtualSlides: 4,
-      bounceEffects: true
+      bounceEffects: true,
     });
   });
 
@@ -30,13 +30,13 @@ describe('LoopManager', () => {
     it('should create with default configuration', () => {
       const defaultManager = new LoopManager();
       const config = defaultManager.getConfig();
-      
+
       expect(config.enabled).toBe(true);
       expect(config.mode).toBe(LoopMode.INFINITE);
       expect(config.useVirtualSlides).toBe(false);
       expect(config.maxVirtualSlides).toBe(4);
       expect(config.bounceEffects).toBe(true);
-      
+
       defaultManager.destroy();
     });
 
@@ -46,16 +46,16 @@ describe('LoopManager', () => {
         mode: LoopMode.FINITE,
         useVirtualSlides: true,
         maxVirtualSlides: 10,
-        bounceEffects: false
+        bounceEffects: false,
       });
-      
+
       const config = customManager.getConfig();
       expect(config.enabled).toBe(false);
       expect(config.mode).toBe(LoopMode.FINITE);
       expect(config.useVirtualSlides).toBe(true);
       expect(config.maxVirtualSlides).toBe(10);
       expect(config.bounceEffects).toBe(false);
-      
+
       customManager.destroy();
     });
   });
@@ -155,10 +155,10 @@ describe('LoopManager', () => {
       expect(result.isLoop).toBe(true);
       expect(result.loopDirection).toBe('bounce');
       expect(manager.getBounceDirection()).toBe('backward');
-      expect(eventSpy).toHaveBeenCalledWith({ 
+      expect(eventSpy).toHaveBeenCalledWith({
         direction: 'backward',
         from: 4,
-        to: 3
+        to: 3,
       });
     });
 
@@ -176,7 +176,7 @@ describe('LoopManager', () => {
       expect(eventSpy).toHaveBeenCalledWith({
         direction: 'forward',
         from: 0,
-        to: 1
+        to: 1,
       });
     });
 
@@ -231,12 +231,12 @@ describe('LoopManager', () => {
     it('should extend rapid changing period with multiple calls', () => {
       manager.handleRapidDirectionChange();
       vi.advanceTimersByTime(300);
-      
+
       manager.handleRapidDirectionChange();
       vi.advanceTimersByTime(400);
-      
+
       expect(manager.isRapidlyChanging()).toBe(true);
-      
+
       vi.advanceTimersByTime(100);
       expect(manager.isRapidlyChanging()).toBe(false);
     });
@@ -321,7 +321,7 @@ describe('LoopManager', () => {
 
       const updates = {
         mode: LoopMode.BOUNCE,
-        maxVirtualSlides: 10
+        maxVirtualSlides: 10,
       };
 
       manager.updateConfig(updates);
@@ -329,17 +329,17 @@ describe('LoopManager', () => {
       const config = manager.getConfig();
       expect(config.mode).toBe(LoopMode.BOUNCE);
       expect(config.maxVirtualSlides).toBe(10);
-      
+
       expect(eventSpy).toHaveBeenCalledWith({
         config: expect.objectContaining(updates),
         oldMode: LoopMode.INFINITE,
-        newMode: LoopMode.BOUNCE
+        newMode: LoopMode.BOUNCE,
       });
     });
 
     it('should reset bounce direction when mode changes', () => {
       manager.updateConfig({ mode: LoopMode.BOUNCE });
-      
+
       // Set bounce direction to backward
       manager.getNextIndex(4, 5, 'forward');
       expect(manager.getBounceDirection()).toBe('backward');
@@ -362,7 +362,7 @@ describe('LoopManager', () => {
   describe('state checks', () => {
     it('should check if loop is enabled', () => {
       expect(manager.isEnabled()).toBe(true);
-      
+
       manager.updateConfig({ enabled: false });
       expect(manager.isEnabled()).toBe(false);
     });
@@ -386,7 +386,7 @@ describe('LoopManager', () => {
 
     it('should return false for mode checks when disabled', () => {
       manager.updateConfig({ enabled: false, mode: LoopMode.INFINITE });
-      
+
       expect(manager.isInfinite()).toBe(false);
       expect(manager.isFinite()).toBe(false);
       expect(manager.isBounce()).toBe(false);
@@ -435,7 +435,7 @@ describe('LoopManager', () => {
   describe('edge cases', () => {
     it('should handle empty slide set', () => {
       const result = manager.getNextIndex(0, 0, 'forward');
-      
+
       expect(result.shouldNavigate).toBe(false);
       expect(result.targetIndex).toBe(0);
       expect(result.isLoop).toBe(false);
@@ -443,7 +443,7 @@ describe('LoopManager', () => {
 
     it('should handle single slide gracefully', () => {
       const result = manager.getNextIndex(0, 1, 'forward');
-      
+
       expect(result.shouldNavigate).toBe(false);
       expect(result.targetIndex).toBe(0);
       expect(result.isLoop).toBe(false);
@@ -460,11 +460,11 @@ describe('LoopManager', () => {
 
     it('should handle bounce with bounds checking', () => {
       manager.updateConfig({ mode: LoopMode.BOUNCE });
-      
+
       // Test bounce at zero should not go negative
       const result = manager.getNextIndex(0, 5, 'backward');
       expect(result.targetIndex).toBeGreaterThanOrEqual(0);
-      
+
       // Test bounce at max should not exceed bounds
       const result2 = manager.getNextIndex(4, 5, 'forward');
       expect(result2.targetIndex).toBeLessThan(5);

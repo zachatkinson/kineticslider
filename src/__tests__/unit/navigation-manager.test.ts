@@ -3,7 +3,11 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { NavigationManager, NavigationInputType, NavigationDirection } from '../../managers/navigation-manager';
+import {
+  NavigationManager,
+  NavigationInputType,
+  NavigationDirection,
+} from '../../managers/navigation-manager';
 import { SLIDER_EVENTS } from '../../core/constants';
 
 describe('NavigationManager', () => {
@@ -22,7 +26,7 @@ describe('NavigationManager', () => {
       enableEscapeStop: true,
       preventDuringTransition: true,
       debounceDelay: 0, // Disable debouncing for testing
-      enableA11yAnnouncements: true
+      enableA11yAnnouncements: true,
     });
   });
 
@@ -36,13 +40,13 @@ describe('NavigationManager', () => {
     it('should create with default configuration', () => {
       const defaultManager = new NavigationManager();
       const config = defaultManager.getConfig();
-      
+
       expect(config.enableKeyboard).toBe(true);
       expect(config.enableMouse).toBe(true);
       expect(config.enableTouch).toBe(true);
       expect(config.enableGesture).toBe(true);
       expect(config.debounceDelay).toBe(50);
-      
+
       defaultManager.destroy();
     });
 
@@ -51,15 +55,15 @@ describe('NavigationManager', () => {
         enableKeyboard: false,
         enableMouse: false,
         debounceDelay: 100,
-        enableA11yAnnouncements: false
+        enableA11yAnnouncements: false,
       });
-      
+
       const config = customManager.getConfig();
       expect(config.enableKeyboard).toBe(false);
       expect(config.enableMouse).toBe(false);
       expect(config.debounceDelay).toBe(100);
       expect(config.enableA11yAnnouncements).toBe(false);
-      
+
       customManager.destroy();
     });
   });
@@ -83,8 +87,8 @@ describe('NavigationManager', () => {
           currentIndex: 2,
           totalSlides: 5,
           isAtFirst: false,
-          isAtLast: false
-        }
+          isAtLast: false,
+        },
       });
     });
 
@@ -118,7 +122,7 @@ describe('NavigationManager', () => {
 
       expect(eventSpy).toHaveBeenCalledWith({
         isTransitioning: true,
-        wasTransitioning: false
+        wasTransitioning: false,
       });
     });
 
@@ -132,7 +136,10 @@ describe('NavigationManager', () => {
       manager.updateTransitionState(true);
 
       // Request navigation during transition (should be deferred)
-      const request = manager.requestNavigation(1, NavigationInputType.KEYBOARD);
+      const request = manager.requestNavigation(
+        1,
+        NavigationInputType.KEYBOARD
+      );
       expect(request).toBeNull();
       expect(deferredSpy).toHaveBeenCalled();
 
@@ -168,7 +175,7 @@ describe('NavigationManager', () => {
       expect(request).toBeNull();
       expect(eventSpy).toHaveBeenCalledWith({
         request: expect.objectContaining({ target: 2 }),
-        currentIndex: 2
+        currentIndex: 2,
       });
     });
 
@@ -193,26 +200,44 @@ describe('NavigationManager', () => {
     });
 
     it('should handle navigation directions', () => {
-      const request = manager.requestNavigation(NavigationDirection.NEXT, NavigationInputType.API);
+      const request = manager.requestNavigation(
+        NavigationDirection.NEXT,
+        NavigationInputType.API
+      );
       expect(request?.target).toBe(3);
 
-      const request2 = manager.requestNavigation(NavigationDirection.PREVIOUS, NavigationInputType.API);
+      const request2 = manager.requestNavigation(
+        NavigationDirection.PREVIOUS,
+        NavigationInputType.API
+      );
       expect(request2?.target).toBe(1);
 
-      const request3 = manager.requestNavigation(NavigationDirection.FIRST, NavigationInputType.API);
+      const request3 = manager.requestNavigation(
+        NavigationDirection.FIRST,
+        NavigationInputType.API
+      );
       expect(request3?.target).toBe(0);
 
-      const request4 = manager.requestNavigation(NavigationDirection.LAST, NavigationInputType.API);
+      const request4 = manager.requestNavigation(
+        NavigationDirection.LAST,
+        NavigationInputType.API
+      );
       expect(request4?.target).toBe(4);
     });
 
     it('should handle edge cases for navigation directions', () => {
       manager.updateSlideBounds(4, 5); // At last slide
-      const request = manager.requestNavigation(NavigationDirection.NEXT, NavigationInputType.API);
+      const request = manager.requestNavigation(
+        NavigationDirection.NEXT,
+        NavigationInputType.API
+      );
       expect(request?.target).toBe(5); // Allow out-of-bounds for LoopManager handling
 
       manager.updateSlideBounds(0, 5); // At first slide
-      const request2 = manager.requestNavigation(NavigationDirection.PREVIOUS, NavigationInputType.API);
+      const request2 = manager.requestNavigation(
+        NavigationDirection.PREVIOUS,
+        NavigationInputType.API
+      );
       expect(request2?.target).toBe(-1); // Allow out-of-bounds for LoopManager handling
     });
   });
@@ -257,11 +282,11 @@ describe('NavigationManager', () => {
       manager.on(SLIDER_EVENTS.NAVIGATION_PLAY_PAUSE_REQUESTED, eventSpy);
 
       const request = manager.handleKeyboardInput('Space');
-      
+
       expect(request).toBeNull();
       expect(eventSpy).toHaveBeenCalledWith({
         inputType: NavigationInputType.KEYBOARD,
-        context: undefined
+        context: undefined,
       });
     });
 
@@ -270,7 +295,7 @@ describe('NavigationManager', () => {
       manager.on(SLIDER_EVENTS.NAVIGATION_EMERGENCY_STOP_REQUESTED, eventSpy);
 
       const request = manager.handleKeyboardInput('Escape');
-      
+
       expect(request).toBeNull();
       expect(eventSpy).toHaveBeenCalled();
     });
@@ -365,11 +390,11 @@ describe('NavigationManager', () => {
       manager.on(SLIDER_EVENTS.NAVIGATION_PINCH_GESTURE, eventSpy);
 
       const request = manager.handleTouchInput('pinch', { scale: 1.5 });
-      
+
       expect(request).toBeNull();
       expect(eventSpy).toHaveBeenCalledWith({
         inputType: NavigationInputType.TOUCH,
-        data: { scale: 1.5 }
+        data: { scale: 1.5 },
       });
     });
 
@@ -397,19 +422,28 @@ describe('NavigationManager', () => {
       // Create a manager with debouncing enabled for this specific test
       const debouncingManager = new NavigationManager({ debounceDelay: 50 });
       debouncingManager.updateSlideBounds(2, 5);
-      
-      const request1 = debouncingManager.requestNavigation(3, NavigationInputType.API);
+
+      const request1 = debouncingManager.requestNavigation(
+        3,
+        NavigationInputType.API
+      );
       expect(request1).toBeTruthy();
 
       // Second request within debounce delay should be ignored
-      const request2 = debouncingManager.requestNavigation(4, NavigationInputType.API);
+      const request2 = debouncingManager.requestNavigation(
+        4,
+        NavigationInputType.API
+      );
       expect(request2).toBeNull();
 
       // After debounce delay, should allow navigation
       vi.advanceTimersByTime(60);
-      const request3 = debouncingManager.requestNavigation(4, NavigationInputType.API);
+      const request3 = debouncingManager.requestNavigation(
+        4,
+        NavigationInputType.API
+      );
       expect(request3).toBeTruthy();
-      
+
       debouncingManager.destroy();
     });
 
@@ -466,15 +500,21 @@ describe('NavigationManager', () => {
 
     it('should block navigation with single slide', () => {
       manager.updateSlideBounds(0, 1);
-      
-      const request = manager.requestNavigation(NavigationDirection.NEXT, NavigationInputType.API);
+
+      const request = manager.requestNavigation(
+        NavigationDirection.NEXT,
+        NavigationInputType.API
+      );
       expect(request).toBeNull();
     });
 
     it('should block navigation with no slides', () => {
       manager.updateSlideBounds(0, 0);
-      
-      const request = manager.requestNavigation(NavigationDirection.NEXT, NavigationInputType.API);
+
+      const request = manager.requestNavigation(
+        NavigationDirection.NEXT,
+        NavigationInputType.API
+      );
       expect(request).toBeNull();
     });
   });
@@ -486,7 +526,7 @@ describe('NavigationManager', () => {
 
       const updates = {
         enableKeyboard: false,
-        debounceDelay: 100
+        debounceDelay: 100,
       };
 
       manager.updateConfig(updates);
@@ -494,11 +534,11 @@ describe('NavigationManager', () => {
       const config = manager.getConfig();
       expect(config.enableKeyboard).toBe(false);
       expect(config.debounceDelay).toBe(100);
-      
+
       expect(eventSpy).toHaveBeenCalledWith({
         config: expect.objectContaining(updates),
         oldConfig: expect.objectContaining({ enableKeyboard: true }),
-        changes: updates
+        changes: updates,
       });
     });
   });
@@ -554,11 +594,11 @@ describe('NavigationManager', () => {
       expect(result.fromIndex).toBe(2);
       expect(result.toIndex).toBe(3);
       expect(result.actualIndex).toBe(3);
-      
+
       expect(eventSpy).toHaveBeenCalledWith({
         announcement: 'Navigated to slide 4 of 5',
         slideIndex: 3,
-        totalSlides: 5
+        totalSlides: 5,
       });
     });
 
@@ -616,8 +656,12 @@ describe('NavigationManager', () => {
       expect(manager.resolveNavigationTarget(-1)).toBeNull(); // Reject negative
       expect(manager.resolveNavigationTarget(2.5)).toBeNull(); // Reject non-integer
       expect(manager.resolveNavigationTarget(NavigationDirection.NEXT)).toBe(3);
-      expect(manager.resolveNavigationTarget(NavigationDirection.PREVIOUS)).toBe(1);
-      expect(manager.resolveNavigationTarget(NavigationDirection.FIRST)).toBe(0);
+      expect(
+        manager.resolveNavigationTarget(NavigationDirection.PREVIOUS)
+      ).toBe(1);
+      expect(manager.resolveNavigationTarget(NavigationDirection.FIRST)).toBe(
+        0
+      );
       expect(manager.resolveNavigationTarget(NavigationDirection.LAST)).toBe(4);
     });
   });
@@ -655,7 +699,7 @@ describe('NavigationManager', () => {
   describe('edge cases', () => {
     it('should handle navigation with empty slide set', () => {
       manager.updateSlideBounds(0, 0);
-      
+
       const request = manager.requestNavigation(0, NavigationInputType.API);
       expect(request).toBeNull();
     });

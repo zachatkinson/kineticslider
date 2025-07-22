@@ -13,9 +13,7 @@ test('debug console logs', async ({ page }) => {
     if (msg.type() === 'error') {
       try {
         await Promise.all(
-          msg
-            .args()
-            .map((arg) => arg.jsonValue().catch(() => 'UNSERIALIZABLE'))
+          msg.args().map((arg) => arg.jsonValue().catch(() => 'UNSERIALIZABLE'))
         );
       } catch {
         // Ignore

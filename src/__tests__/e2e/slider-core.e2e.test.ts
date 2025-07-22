@@ -215,7 +215,9 @@ test.describe('Core Slider Functionality', () => {
       page,
     }) => {
       // Wait for slider to be ready
-      await page.waitForSelector('[data-testid="kinetic-slider"]', { timeout: 10000 });
+      await page.waitForSelector('[data-testid="kinetic-slider"]', {
+        timeout: 10000,
+      });
       await page.waitForTimeout(1000);
 
       // Look for auto-play controls
@@ -223,10 +225,11 @@ test.describe('Core Slider Functionality', () => {
 
       if ((await playButton.count()) > 0) {
         // Test that auto-play state is managed through SliderCore
-        const initialPlayState = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.isPlaying?.() || false
+        const initialPlayState = await page.evaluate(
+          () =>
+            (
+              window.kineticSlider?.engine as KineticSliderEngine | undefined
+            )?.isPlaying?.() || false
         );
 
         expect(initialPlayState).toBe(false);
@@ -236,10 +239,11 @@ test.describe('Core Slider Functionality', () => {
         await page.waitForTimeout(500);
 
         // Verify auto-play started through SliderCore
-        const playingState = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.isPlaying?.() || false
+        const playingState = await page.evaluate(
+          () =>
+            (
+              window.kineticSlider?.engine as KineticSliderEngine | undefined
+            )?.isPlaying?.() || false
         );
 
         expect(playingState).toBe(true);
@@ -249,10 +253,11 @@ test.describe('Core Slider Functionality', () => {
         await page.waitForTimeout(300);
 
         // Verify auto-play stopped through SliderCore
-        const stoppedState = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.isPlaying?.() || false
+        const stoppedState = await page.evaluate(
+          () =>
+            (
+              window.kineticSlider?.engine as KineticSliderEngine | undefined
+            )?.isPlaying?.() || false
         );
 
         expect(stoppedState).toBe(false);
@@ -737,7 +742,7 @@ test.describe('Core Slider Functionality', () => {
           currentIndex: engine?.getCurrentIndex?.(),
           totalSlides: engine?.getTotalSlides?.(),
           isTransitioning: state?.isTransitioning,
-          isPlaying: engine?.isPlaying?.()
+          isPlaying: engine?.isPlaying?.(),
         };
       });
 
@@ -755,19 +760,24 @@ test.describe('Core Slider Functionality', () => {
         const state = engine?.getState?.();
         return {
           currentIndex: engine?.getCurrentIndex?.(),
-          isTransitioning: state?.isTransitioning
+          isTransitioning: state?.isTransitioning,
         };
       });
 
-      if (initialState.currentIndex !== undefined && newState.currentIndex !== undefined) {
-        expect(newState.currentIndex).toBeGreaterThan(initialState.currentIndex);
+      if (
+        initialState.currentIndex !== undefined &&
+        newState.currentIndex !== undefined
+      ) {
+        expect(newState.currentIndex).toBeGreaterThan(
+          initialState.currentIndex
+        );
       }
       expect(newState.isTransitioning).toBe(false); // Should complete transition
     });
 
     test('should properly integrate AutoPlayManager', async ({ page }) => {
       const playButton = page.locator('[data-testid="play-button"]');
-      
+
       if ((await playButton.count()) > 0) {
         // Test auto-play start/stop through SliderCore
         await playButton.click();
@@ -818,7 +828,7 @@ test.describe('Core Slider Functionality', () => {
 
       // Test that rapid navigation is properly debounced
       await page.keyboard.press('ArrowRight');
-      await page.keyboard.press('ArrowRight');  
+      await page.keyboard.press('ArrowRight');
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(100); // Short wait to test debouncing
 
@@ -875,7 +885,7 @@ test.describe('Core Slider Functionality', () => {
 
       // Start auto-play to test manager coordination
       const playButton = page.locator('[data-testid="play-button"]');
-      
+
       if ((await playButton.count()) > 0) {
         await playButton.click();
         await page.waitForTimeout(500);
@@ -886,7 +896,7 @@ test.describe('Core Slider Functionality', () => {
           return {
             currentIndex: engine?.getCurrentIndex?.(),
             isPlaying: engine?.isPlaying?.(),
-            isTransitioning: state?.isTransitioning
+            isTransitioning: state?.isTransitioning,
           };
         });
 
@@ -906,7 +916,7 @@ test.describe('Core Slider Functionality', () => {
           return {
             currentIndex: engine?.getCurrentIndex?.(),
             isTransitioning: state?.isTransitioning,
-            totalSlides: engine?.getTotalSlides?.()
+            totalSlides: engine?.getTotalSlides?.(),
           };
         });
 

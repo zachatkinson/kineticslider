@@ -44,7 +44,7 @@ const mockPhysics = {
   getPhysicsConfig: vi.fn(() => ({
     transitionDuration: 0.1, // Shorter for tests
     transitionEase: 'power2.out',
-    scaleIntensity: 10,
+    scaleIntensity: 0.1,
   })),
   killAllAnimations: vi.fn(),
   cleanup: vi.fn(),
@@ -127,7 +127,7 @@ describe('SliderCore Integration Tests', () => {
       createMomentumAnimation: vi.fn(),
       createScaleAnimation: vi.fn(),
       destroy: vi.fn(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
     // Register mock services
@@ -136,7 +136,7 @@ describe('SliderCore Integration Tests', () => {
     serviceContainer.register('_slider-controller', () => mockController);
 
     mockConfig = {
-      images: [
+      slides: [
         { id: '1', src: 'image1.jpg' },
         { id: '2', src: 'image2.jpg' },
         { id: '3', src: 'image3.jpg' },
@@ -146,7 +146,7 @@ describe('SliderCore Integration Tests', () => {
       easing: 'power2.out',
       loop: true,
       physics: {
-        scaleIntensity: 10,
+        scaleIntensity: 0.1,
         transitionDuration: 0.1,
         transitionEase: 'power2.out',
         swipeThreshold: 50,
@@ -171,13 +171,14 @@ describe('SliderCore Integration Tests', () => {
     sliderCore = new SliderCore(timelineFactory);
 
     // Override NavigationManager config to disable debouncing in tests
-    const originalConfigureManagers = sliderCore['configureManagers'].bind(sliderCore);
-    sliderCore['configureManagers'] = function(config) {
+    const originalConfigureManagers =
+      sliderCore['configureManagers'].bind(sliderCore);
+    sliderCore['configureManagers'] = function (config) {
       originalConfigureManagers.call(this, config);
       // Set debounceDelay to 0 for tests to avoid debouncing issues
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this as any).navigationManager.updateConfig({
-        debounceDelay: 0
+        debounceDelay: 0,
       });
     };
   });

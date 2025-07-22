@@ -25,8 +25,7 @@ export interface KineticSliderProps
   /** Callback when play state changes */
   onPlayStateChange?: (data: { isPlaying: boolean }) => void;
   /** Additional props passed to the container */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -63,7 +62,7 @@ export function KineticSlider({
   physics = {
     transitionDuration: 0.3,
     transitionEase: 'power2.out',
-    scaleIntensity: 10,
+    scaleIntensity: 0.1,
     swipeThreshold: 50,
     momentumDamping: 0.8,
   },
@@ -79,8 +78,7 @@ export function KineticSlider({
 
   // Handle slider events
   const handleSlideChanged = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (data: any) => {
+    (data: { currentIndex: number; previousIndex: number }) => {
       if (onSlideChange) {
         const currentIndex = sliderEngine.current?.getCurrentIndex() || 0;
         const previousIndex = data.previousIndex || 0;
@@ -112,7 +110,7 @@ export function KineticSlider({
 
         // Configuration
         const config: SliderConfig = {
-          images: images.map((img, index) => ({
+          slides: images.map((img, index) => ({
             id: img.id || `slide-${index}`,
             src: img.src,
             alt: img.alt || `Slide ${index + 1}`,
@@ -126,8 +124,11 @@ export function KineticSlider({
         };
 
         // Set up event listeners
-        slider.on('slideChanged', handleSlideChanged);
-        slider.on('playStateChanged', handlePlayStateChanged);
+        slider.on('slideChanged', ((...args: unknown[]) => {
+          const data = args[0] as { currentIndex: number; previousIndex: number };
+          handleSlideChanged(data);
+        }));
+        slider.on('playStateChanged', (...args: unknown[]) => handlePlayStateChanged(...args));
 
         // Initialize slider
         await slider.initialize(config, sliderRef.current);

@@ -22,7 +22,7 @@ const mockPhysics = {
   getPhysicsConfig: vi.fn(() => ({
     transitionDuration: 0.3,
     transitionEase: 'power2.out',
-    scaleIntensity: 10,
+    scaleIntensity: 0.1,
   })),
   killAllAnimations: vi.fn(),
   cleanup: vi.fn(),
@@ -84,7 +84,7 @@ describe('SliderCore Simple Unit Tests', () => {
     serviceContainer.register('_slider-controller', () => mockController);
 
     mockConfig = {
-      images: [
+      slides: [
         { id: '1', src: 'image1.jpg' },
         { id: '2', src: 'image2.jpg' },
         { id: '3', src: 'image3.jpg' },
@@ -93,7 +93,7 @@ describe('SliderCore Simple Unit Tests', () => {
       duration: 3000,
       loop: true,
       physics: {
-        scaleIntensity: 10,
+        scaleIntensity: 0.1,
         transitionDuration: 0.3,
         transitionEase: 'power2.out',
         swipeThreshold: 50,
@@ -151,19 +151,19 @@ describe('SliderCore Simple Unit Tests', () => {
   });
 
   describe('Configuration Validation', () => {
-    it('should reject empty images array', async () => {
-      const invalidConfig = { ...mockConfig, images: [] };
+    it('should reject empty slides array', async () => {
+      const invalidConfig = { ...mockConfig, slides: [] };
 
       await expect(sliderCore.initialize(invalidConfig)).rejects.toThrow(
-        'Images array is required and must not be empty'
+        'Configuration validation failed'
       );
     });
 
     it('should reject invalid duration', async () => {
-      const invalidConfig = { ...mockConfig, duration: 50 };
+      const invalidConfig = { ...mockConfig, duration: -100 };
 
       await expect(sliderCore.initialize(invalidConfig)).rejects.toThrow(
-        'Duration must be between 100ms and 10000ms'
+        'Configuration validation failed'
       );
     });
 

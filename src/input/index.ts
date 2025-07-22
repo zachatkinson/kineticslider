@@ -54,8 +54,8 @@ export class SliderController implements ISliderController {
     if (!this.element || !this.callbacks) return;
 
     const keyboardCallbacks: KeyboardCallbacks = {
-      onNext: () => this.callbacks?.onSwipeLeft(), // Next slide
-      onPrevious: () => this.callbacks?.onSwipeRight(), // Previous slide
+      onNext: () => this.callbacks?.onKeyRight(), // Next slide (right arrow)
+      onPrevious: () => this.callbacks?.onKeyLeft(), // Previous slide (left arrow)
       onFirst: () => {
         // Go to first slide (index 0)
         if (this.callbacks?.onGoToSlide) {

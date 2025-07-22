@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Sprite, DisplacementFilter, Texture } from 'pixi.js';
+import { Sprite, DisplacementFilter, Texture, Filter } from 'pixi.js';
 import { gsap } from 'gsap';
 import { DisplacementEffects } from '../../rendering/displacement-effects';
 import type {
@@ -36,7 +36,36 @@ describe('DisplacementEffects', () => {
   let displacementEffects: DisplacementEffects;
   let sprite: Sprite;
   let texture: Texture;
-  let mockFilter: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  let mockFilter: {
+    scale: { x: number; y: number };
+    enabled: boolean;
+    destroy: ReturnType<typeof vi.fn>;
+    padding: number;
+    antialias: string;
+    _state: { data: number };
+    blendMode: string;
+    resolution: number;
+    multisample: string;
+    blur: number;
+    brightness: number;
+    contrast: number;
+    saturation: number;
+    hue: number;
+    displacement: number;
+    outerStrength: number;
+    innerStrength: number;
+    color: number;
+    scaleX: number;
+    scaleY: number;
+    amplitude: number;
+    wavelength: number;
+    apply: ReturnType<typeof vi.fn>;
+    uid: number;
+    uniforms: Record<string, unknown>;
+    program: null;
+    gpuProgram: null;
+    glProgram: null;
+  };
 
   beforeEach(() => {
     texture = createMockTexture() as unknown as Texture;
@@ -76,7 +105,7 @@ describe('DisplacementEffects', () => {
     };
 
     // Mock DisplacementFilter constructor
-    vi.mocked(DisplacementFilter).mockImplementation(() => mockFilter);
+    vi.mocked(DisplacementFilter).mockImplementation(() => mockFilter as unknown as DisplacementFilter);
   });
 
   afterEach(() => {
@@ -485,11 +514,11 @@ describe('DisplacementEffects', () => {
     });
 
     it('should not duplicate filters', () => {
-      sprite.filters = [mockFilter];
+      sprite.filters = [mockFilter as unknown as Filter];
 
       displacementEffects.createMouseFollowEffect(sprite);
 
-      expect(sprite.filters.filter((f) => f === mockFilter)).toHaveLength(1);
+      expect(sprite.filters.filter((f) => f === (mockFilter as unknown as Filter))).toHaveLength(1);
     });
 
     it('should handle existing filters array', () => {
@@ -522,8 +551,8 @@ describe('DisplacementEffects', () => {
         program: null,
         gpuProgram: null,
         glProgram: null,
-      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-      sprite.filters = [existingFilter];
+      } as typeof mockFilter;
+      sprite.filters = [existingFilter as unknown as Filter];
 
       displacementEffects.createMouseFollowEffect(sprite);
 

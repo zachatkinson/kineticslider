@@ -41,13 +41,27 @@ export { SimpleEventEmitter } from './core/event-emitter';
 export { serviceContainer, SERVICE_KEYS } from './core/container';
 
 // Managers
-export { 
+export {
   ManagerCoordinator,
   AnimationManager,
   PerformanceMonitor,
   MemoryManager,
-  AnimationQueue
+  AnimationQueue,
 } from './managers';
+
+// Configuration system (Phase 4.2)
+export {
+  ConfigValidator,
+  DefaultsManager,
+  defaultsManager,
+  ConfigurationSystem,
+  VALIDATION_ERROR_CODES,
+  VALIDATION_WARNING_CODES,
+  DEFAULT_CONFIGS,
+  type ValidationResult,
+  type ValidationError,
+  type ValidationWarning,
+} from './config';
 
 // React components
 export { KineticSlider } from './components';

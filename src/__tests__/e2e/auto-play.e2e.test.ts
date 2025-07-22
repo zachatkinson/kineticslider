@@ -253,9 +253,7 @@ test.describe('Auto-Play Controls', () => {
       await expect(playButton).toBeVisible();
 
       // Check initial state
-      await page
-        .locator('#play-status')
-        .textContent();
+      await page.locator('#play-status').textContent();
 
       // Check engine state before clicking
       await page.evaluate(() => {

@@ -240,7 +240,12 @@ function KineticSliderDemo(): JSX.Element {
 
         // Configuration matching the HTML demo
         const config = {
-          images: sampleImages,
+          slides: sampleImages.map((img, index) => ({
+            id: `slide-${index}`,
+            src: img.src,
+            alt: `Slide ${index + 1}`,
+            title: `Image ${index + 1}`,
+          })),
           autoPlay: false,
           loop: true,
           autoPlayInterval: 3000,
@@ -255,6 +260,13 @@ function KineticSliderDemo(): JSX.Element {
             backgroundColor: 0x000000,
             antialias: true,
             resolution: window.devicePixelRatio || 1,
+          },
+          input: {
+            enableMouse: true,
+            enableTouch: true,
+            enableKeyboard: true,
+            swipeThreshold: 50,
+            dragThreshold: 10,
           },
         };
 
@@ -374,7 +386,28 @@ function KineticSliderDemo(): JSX.Element {
         <div
           id="slider-announcements"
           role="status"
+          aria-live="polite"
+          aria-atomic="true"
           className="sr-only"
+          style={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            padding: 0,
+            margin: '-1px',
+            overflow: 'hidden',
+            clip: 'rect(0, 0, 0, 0)',
+            whiteSpace: 'nowrap',
+            border: 0,
+          }}
+        >
+          {state.announcements || 'Slider ready'}
+        </div>
+
+        {/* Additional aria-live region for Safari compatibility */}
+        <div
+          aria-live="polite"
+          aria-atomic="false"
           style={{
             position: 'absolute',
             width: '1px',

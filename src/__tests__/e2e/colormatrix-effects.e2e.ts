@@ -206,7 +206,7 @@ test.describe('ColorMatrixFilter Effects E2E', () => {
 
         for (const intensity of intensityLevels) {
           const effect = effectPresets.createEffect('vintage', {
-            intensity: intensity as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+            intensity: intensity as 'subtle' | 'moderate' | 'strong' | 'intense',
             duration: 0.5,
           });
 

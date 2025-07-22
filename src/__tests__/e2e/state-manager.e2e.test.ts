@@ -555,7 +555,8 @@ test.describe('StateManager E2E Tests', () => {
     test('should work with Redux DevTools if available', async ({ page }) => {
       // Check if Redux DevTools extension is available
       const hasReduxDevTools = await page.evaluate(() => {
-        return !!((window as unknown) as Record<string, unknown>).__REDUX_DEVTOOLS_EXTENSION__;
+        return !!(window as unknown as Record<string, unknown>)
+          .__REDUX_DEVTOOLS_EXTENSION__;
       });
 
       if (hasReduxDevTools) {
@@ -679,24 +680,26 @@ test.describe('StateManager E2E Tests', () => {
       }
     });
 
-    test('should maintain system stability during intensive operations', async ({ page }) => {
+    test('should maintain system stability during intensive operations', async ({
+      page,
+    }) => {
       // Reframe the test to focus on what we actually care about: system stability
       test.slow(); // Mark as slow test to get 3x timeout
-      
+
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
       await page.waitForTimeout(500);
 
       // Verify initial system state
       await expect(_slider).toBeVisible();
-      
+
       // Test system stability with mixed operations instead of trying to cause failures
       const operations = [
         () => page.keyboard.press('ArrowRight'),
-        () => page.keyboard.press('ArrowLeft'), 
+        () => page.keyboard.press('ArrowLeft'),
         () => page.keyboard.press('Space'),
         () => page.keyboard.press('Home'),
-        () => page.keyboard.press('End')
+        () => page.keyboard.press('End'),
       ];
 
       // Perform operations in a controlled manner
@@ -705,7 +708,7 @@ test.describe('StateManager E2E Tests', () => {
           await operation();
           await page.waitForTimeout(150); // Safe interval between operations
         }
-        
+
         // Verify system remains stable after each cycle
         await expect(_slider).toBeVisible();
       }
@@ -715,13 +718,20 @@ test.describe('StateManager E2E Tests', () => {
       await page.waitForTimeout(500);
 
       // Wait for system to be fully stable
-      await page.waitForFunction(() => {
-        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-        return engine && 
-               typeof engine.getCurrentIndex === 'function' && 
-               typeof engine.getTotalSlides === 'function' &&
-               engine.getState?.()?.isInitialized === true;
-      }, { timeout: 10000 });
+      await page.waitForFunction(
+        () => {
+          const engine = window.kineticSlider?.engine as
+            | KineticSliderEngine
+            | undefined;
+          return (
+            engine &&
+            typeof engine.getCurrentIndex === 'function' &&
+            typeof engine.getTotalSlides === 'function' &&
+            engine.getState?.()?.isInitialized === true
+          );
+        },
+        { timeout: 10000 }
+      );
 
       // Verify system integrity
       const systemState = await page.evaluate(() => {
@@ -732,7 +742,7 @@ test.describe('StateManager E2E Tests', () => {
           isInitialized: state?.isInitialized || false,
           hasValidIndex: typeof engine?.getCurrentIndex?.() === 'number',
           hasValidTotal: typeof engine?.getTotalSlides?.() === 'number',
-          isStable: !state?.isTransitioning
+          isStable: !state?.isTransitioning,
         };
       });
 
@@ -843,24 +853,26 @@ test.describe('StateManager E2E Tests', () => {
       await page.waitForTimeout(500);
 
       // Get initial state
-      await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.() || 0
+      await page.evaluate(
+        () =>
+          (
+            window.kineticSlider?.engine as KineticSliderEngine | undefined
+          )?.getCurrentIndex?.() || 0
       );
 
       // Perform sequential state updates instead of concurrent to avoid race conditions
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(200);
-      
+
       await page.keyboard.press('Space'); // Toggle play/pause
       await page.waitForTimeout(200);
-      
+
       // Check that system is still stable after multiple updates
-      const finalIndex = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.() || 0
+      const finalIndex = await page.evaluate(
+        () =>
+          (
+            window.kineticSlider?.engine as KineticSliderEngine | undefined
+          )?.getCurrentIndex?.() || 0
       );
 
       // System should still be functional

@@ -1,9 +1,9 @@
 /**
  * @fileoverview LoopManager for KineticSlider
- * 
+ *
  * Manages loop behavior including infinite loops, finite loops, bounce loops,
  * and virtual slide management for seamless transitions.
- * 
+ *
  * @version 1.0.0
  */
 
@@ -15,8 +15,8 @@ import { SLIDER_EVENTS } from '../core/constants';
  */
 export enum LoopMode {
   INFINITE = 'infinite',
-  FINITE = 'finite', 
-  BOUNCE = 'bounce'
+  FINITE = 'finite',
+  BOUNCE = 'bounce',
 }
 
 /**
@@ -71,27 +71,31 @@ export class LoopManager extends SimpleEventEmitter {
 
   constructor(config: Partial<LoopConfig> = {}) {
     super();
-    
+
     this.config = {
       enabled: true,
       mode: LoopMode.INFINITE,
       useVirtualSlides: false,
       maxVirtualSlides: 4,
       bounceEffects: true,
-      ...config
+      ...config,
     };
   }
 
   /**
    * Calculate next index based on loop configuration
    */
-  getNextIndex(currentIndex: number, totalSlides: number, direction: 'forward' | 'backward'): LoopTransition {
+  getNextIndex(
+    currentIndex: number,
+    totalSlides: number,
+    direction: 'forward' | 'backward'
+  ): LoopTransition {
     if (!this.config.enabled) {
       return {
         shouldNavigate: false,
         targetIndex: currentIndex,
         isLoop: false,
-        loopDirection: direction
+        loopDirection: direction,
       };
     }
 
@@ -102,21 +106,21 @@ export class LoopManager extends SimpleEventEmitter {
           shouldNavigate: true,
           targetIndex: currentIndex,
           isLoop: true,
-          loopDirection: 'bounce'
+          loopDirection: 'bounce',
         };
       } else {
         return {
           shouldNavigate: false,
           targetIndex: currentIndex,
           isLoop: false,
-          loopDirection: direction
+          loopDirection: direction,
         };
       }
     }
 
     const isAtStart = currentIndex === 0;
     const isAtEnd = currentIndex === totalSlides - 1;
-    
+
     if (direction === 'forward') {
       if (isAtEnd) {
         return this.handleEndBoundary(currentIndex, totalSlides);
@@ -125,7 +129,7 @@ export class LoopManager extends SimpleEventEmitter {
         shouldNavigate: true,
         targetIndex: currentIndex + 1,
         isLoop: false,
-        loopDirection: direction
+        loopDirection: direction,
       };
     } else {
       if (isAtStart) {
@@ -135,7 +139,7 @@ export class LoopManager extends SimpleEventEmitter {
         shouldNavigate: true,
         targetIndex: currentIndex - 1,
         isLoop: false,
-        loopDirection: direction
+        loopDirection: direction,
       };
     }
   }
@@ -143,44 +147,47 @@ export class LoopManager extends SimpleEventEmitter {
   /**
    * Handle navigation when at the end boundary
    */
-  private handleEndBoundary(currentIndex: number, _totalSlides: number): LoopTransition {
+  private handleEndBoundary(
+    currentIndex: number,
+    _totalSlides: number
+  ): LoopTransition {
     switch (this.config.mode) {
       case LoopMode.INFINITE:
-        this.emit(SLIDER_EVENTS.LOOP_FORWARD, { 
-          from: currentIndex, 
-          to: 0 
+        this.emit(SLIDER_EVENTS.LOOP_FORWARD, {
+          from: currentIndex,
+          to: 0,
         });
         return {
           shouldNavigate: true,
           targetIndex: 0,
           isLoop: true,
-          loopDirection: 'forward'
+          loopDirection: 'forward',
         };
-        
+
       case LoopMode.BOUNCE:
         this.bounceDirection = 'backward';
-        this.emit(SLIDER_EVENTS.LOOP_BOUNCE, { 
+        this.emit(SLIDER_EVENTS.LOOP_BOUNCE, {
           direction: 'backward',
           from: currentIndex,
-          to: currentIndex - 1
+          to: currentIndex - 1,
         });
         return {
           shouldNavigate: true,
           targetIndex: Math.max(0, currentIndex - 1),
           isLoop: true,
-          loopDirection: 'bounce'
+          loopDirection: 'bounce',
         };
-        
+
       case LoopMode.FINITE:
       default:
-        this.emit(SLIDER_EVENTS.LOOP_END_REACHED, { 
-          index: currentIndex 
+        this.emit(SLIDER_EVENTS.LOOP_END_REACHED, {
+          index: currentIndex,
         });
         return {
           shouldNavigate: false,
           targetIndex: currentIndex,
           isLoop: false,
-          loopDirection: 'forward'
+          loopDirection: 'forward',
         };
     }
   }
@@ -188,44 +195,47 @@ export class LoopManager extends SimpleEventEmitter {
   /**
    * Handle navigation when at the start boundary
    */
-  private handleStartBoundary(currentIndex: number, totalSlides: number): LoopTransition {
+  private handleStartBoundary(
+    currentIndex: number,
+    totalSlides: number
+  ): LoopTransition {
     switch (this.config.mode) {
       case LoopMode.INFINITE:
-        this.emit(SLIDER_EVENTS.LOOP_BACKWARD, { 
-          from: currentIndex, 
-          to: totalSlides - 1 
+        this.emit(SLIDER_EVENTS.LOOP_BACKWARD, {
+          from: currentIndex,
+          to: totalSlides - 1,
         });
         return {
           shouldNavigate: true,
           targetIndex: totalSlides - 1,
           isLoop: true,
-          loopDirection: 'backward'
+          loopDirection: 'backward',
         };
-        
+
       case LoopMode.BOUNCE:
         this.bounceDirection = 'forward';
-        this.emit(SLIDER_EVENTS.LOOP_BOUNCE, { 
+        this.emit(SLIDER_EVENTS.LOOP_BOUNCE, {
           direction: 'forward',
           from: currentIndex,
-          to: currentIndex + 1
+          to: currentIndex + 1,
         });
         return {
           shouldNavigate: true,
           targetIndex: Math.min(totalSlides - 1, currentIndex + 1),
           isLoop: true,
-          loopDirection: 'bounce'
+          loopDirection: 'bounce',
         };
-        
+
       case LoopMode.FINITE:
       default:
-        this.emit(SLIDER_EVENTS.LOOP_START_REACHED, { 
-          index: currentIndex 
+        this.emit(SLIDER_EVENTS.LOOP_START_REACHED, {
+          index: currentIndex,
         });
         return {
           shouldNavigate: false,
           targetIndex: currentIndex,
           isLoop: false,
-          loopDirection: 'backward'
+          loopDirection: 'backward',
         };
     }
   }
@@ -235,18 +245,18 @@ export class LoopManager extends SimpleEventEmitter {
    */
   handleRapidDirectionChange(): void {
     this.isRapidChanging = true;
-    
+
     // Clear previous timeout
     if (this.rapidChangeTimeout !== null) {
       clearTimeout(this.rapidChangeTimeout);
     }
-    
+
     // Reset rapid changing flag after delay
     this.rapidChangeTimeout = window.setTimeout(() => {
       this.isRapidChanging = false;
       this.rapidChangeTimeout = null;
     }, 500);
-    
+
     this.emit(SLIDER_EVENTS.RAPID_DIRECTION_CHANGE);
   }
 
@@ -260,7 +270,10 @@ export class LoopManager extends SimpleEventEmitter {
   /**
    * Create virtual slide for smooth loop transitions
    */
-  createVirtualSlide(originalIndex: number, position: 'before' | 'after'): VirtualSlide | null {
+  createVirtualSlide(
+    originalIndex: number,
+    position: 'before' | 'after'
+  ): VirtualSlide | null {
     if (!this.config.useVirtualSlides) {
       return null;
     }
@@ -273,13 +286,13 @@ export class LoopManager extends SimpleEventEmitter {
     const virtualSlide: VirtualSlide = {
       id: `virtual-${originalIndex}-${position}-${Date.now()}`,
       originalIndex,
-      position
+      position,
     };
 
     this.virtualSlides.set(virtualSlide.id, virtualSlide);
-    
+
     this.emit(SLIDER_EVENTS.VIRTUAL_SLIDE_CREATED, {
-      virtualSlide
+      virtualSlide,
     });
 
     return virtualSlide;
@@ -292,9 +305,9 @@ export class LoopManager extends SimpleEventEmitter {
     const virtualSlide = this.virtualSlides.get(slideId);
     if (virtualSlide) {
       this.virtualSlides.delete(slideId);
-      
+
       this.emit(SLIDER_EVENTS.VIRTUAL_SLIDE_REMOVED, {
-        virtualSlide
+        virtualSlide,
       });
     }
   }
@@ -322,8 +335,8 @@ export class LoopManager extends SimpleEventEmitter {
    */
   cleanupAllVirtualSlides(): void {
     const slideIds = Array.from(this.virtualSlides.keys());
-    slideIds.forEach(id => this.removeVirtualSlide(id));
-    
+    slideIds.forEach((id) => this.removeVirtualSlide(id));
+
     this.emit(SLIDER_EVENTS.VIRTUAL_SLIDES_CLEANUP);
   }
 
@@ -339,7 +352,7 @@ export class LoopManager extends SimpleEventEmitter {
     if (oldMode !== this.config.mode) {
       this.bounceDirection = 'forward';
     }
-    
+
     // Clean up virtual slides if disabled
     if (oldUseVirtualSlides && !this.config.useVirtualSlides) {
       this.cleanupAllVirtualSlides();
@@ -348,7 +361,7 @@ export class LoopManager extends SimpleEventEmitter {
     this.emit(SLIDER_EVENTS.LOOP_CONFIG_UPDATED, {
       config: { ...this.config },
       oldMode,
-      newMode: this.config.mode
+      newMode: this.config.mode,
     });
   }
 
@@ -400,14 +413,14 @@ export class LoopManager extends SimpleEventEmitter {
   reset(): void {
     this.bounceDirection = 'forward';
     this.isRapidChanging = false;
-    
+
     if (this.rapidChangeTimeout !== null) {
       clearTimeout(this.rapidChangeTimeout);
       this.rapidChangeTimeout = null;
     }
-    
+
     this.cleanupAllVirtualSlides();
-    
+
     this.emit(SLIDER_EVENTS.LOOP_RESET);
   }
 
@@ -417,7 +430,7 @@ export class LoopManager extends SimpleEventEmitter {
   destroy(): void {
     // Emit destroy event before cleanup
     this.emit(SLIDER_EVENTS.LOOP_DESTROYED);
-    
+
     this.reset();
     this.removeAllListeners();
   }

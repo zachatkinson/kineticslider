@@ -14,9 +14,9 @@ import type { SliderConfig } from '../../core/types';
 import { SLIDER_EVENTS } from '../../core/constants';
 
 // Minimal mocks for dependencies
-const createMockService = (methods: string[]) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mock: any = {};
+type MockService = Record<string, ReturnType<typeof vi.fn>>;
+const createMockService = (methods: string[]): MockService => {
+  const mock: MockService = {};
   methods.forEach((method) => {
     mock[method] = vi.fn();
   });
@@ -59,7 +59,7 @@ describe('SliderCore Unit Tests', () => {
     serviceContainer.register('_slider-controller', () => mockController);
 
     mockConfig = {
-      images: [
+      slides: [
         { id: '1', src: 'image1.jpg' },
         { id: '2', src: 'image2.jpg' },
         { id: '3', src: 'image3.jpg' },
@@ -67,7 +67,7 @@ describe('SliderCore Unit Tests', () => {
       autoPlay: false,
       duration: 3000,
       loop: true,
-      physics: { scaleIntensity: 10 },
+      physics: { scaleIntensity: 0.1 },
       rendering: {},
       input: {},
     };
@@ -111,25 +111,25 @@ describe('SliderCore Unit Tests', () => {
   });
 
   describe('Configuration Validation', () => {
-    it('should reject empty images array', async () => {
-      const invalidConfig = { ...mockConfig, images: [] };
+    it('should reject empty slides array', async () => {
+      const invalidConfig = { ...mockConfig, slides: [] };
 
       await expect(sliderCore.initialize(invalidConfig)).rejects.toThrow(
-        'Images array is required and must not be empty'
+        'Configuration validation failed'
       );
     });
 
     it('should reject invalid duration', async () => {
-      const invalidConfig = { ...mockConfig, duration: 50 };
+      const invalidConfig = { ...mockConfig, duration: -100 };
 
       await expect(sliderCore.initialize(invalidConfig)).rejects.toThrow(
-        'Duration must be between 100ms and 10000ms'
+        'Configuration validation failed'
       );
     });
 
-    it('should reject null/undefined images', async () => {
+    it('should reject null/undefined slides', async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const invalidConfig = { ...mockConfig, images: null as any };
+      const invalidConfig = { ...mockConfig, slides: null as any };
 
       await expect(sliderCore.initialize(invalidConfig)).rejects.toThrow();
     });

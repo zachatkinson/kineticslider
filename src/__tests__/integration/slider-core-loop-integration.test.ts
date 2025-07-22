@@ -62,7 +62,7 @@ const mockPhysics = {
   getPhysicsConfig: vi.fn(() => ({
     transitionDuration: 0.3,
     transitionEase: 'power2.out',
-    scaleIntensity: 10,
+    scaleIntensity: 0.1,
   })),
   killAllAnimations: vi.fn(),
   cleanup: vi.fn(),
@@ -103,15 +103,15 @@ describe('SliderCore - LoopManager Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Register mocked services as factories
     serviceContainer.register('_slider-physics', () => mockPhysics);
     serviceContainer.register('_slider-renderer', () => mockRenderer);
     serviceContainer.register('_slider-controller', () => mockController);
-    
+
     // Create test configuration
     mockConfig = {
-      images: [
+      slides: [
         { id: '1', src: '/test1.jpg', alt: 'Test 1' },
         { id: '2', src: '/test2.jpg', alt: 'Test 2' },
         { id: '3', src: '/test3.jpg', alt: 'Test 3' },
@@ -124,28 +124,29 @@ describe('SliderCore - LoopManager Integration', () => {
     };
 
     sliderCore = new SliderCore();
-    
+
     // Override NavigationManager config to disable debouncing in tests
-    const originalConfigureManagers = sliderCore['configureManagers'].bind(sliderCore);
-    sliderCore['configureManagers'] = function(config) {
+    const originalConfigureManagers =
+      sliderCore['configureManagers'].bind(sliderCore);
+    sliderCore['configureManagers'] = function (config) {
       originalConfigureManagers.call(this, config);
       // Set debounceDelay to 0 for tests to avoid debouncing issues
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this as any).navigationManager.updateConfig({
-        debounceDelay: 0
+        debounceDelay: 0,
       });
     };
-    
+
     loopManager = new LoopManager({
       enabled: true,
-      mode: LoopMode.INFINITE
+      mode: LoopMode.INFINITE,
     });
   });
 
   afterEach(() => {
     sliderCore?.destroy();
     loopManager?.destroy();
-    
+
     // Clean up service container
     serviceContainer.clear();
   });
@@ -160,9 +161,9 @@ describe('SliderCore - LoopManager Integration', () => {
     it('should integrate loop manager with slider core', async () => {
       // This test defines the expected integration behavior
       // The LoopManager should be used by SliderCore for navigation decisions
-      
+
       await sliderCore.initialize(mockConfig);
-      
+
       // SliderCore should be able to query LoopManager for next index
       const transition = loopManager.getNextIndex(4, 5, 'forward');
       expect(transition.shouldNavigate).toBe(true);
@@ -187,7 +188,7 @@ describe('SliderCore - LoopManager Integration', () => {
 
       // Get next navigation from loop manager
       const transition = loopManager.getNextIndex(4, 5, 'forward');
-      
+
       expect(transition.shouldNavigate).toBe(true);
       expect(transition.targetIndex).toBe(0);
       expect(transition.isLoop).toBe(true);
@@ -210,7 +211,7 @@ describe('SliderCore - LoopManager Integration', () => {
 
       // Get previous navigation from loop manager
       const transition = loopManager.getNextIndex(0, 5, 'backward');
-      
+
       expect(transition.shouldNavigate).toBe(true);
       expect(transition.targetIndex).toBe(4);
       expect(transition.isLoop).toBe(true);
@@ -240,7 +241,7 @@ describe('SliderCore - LoopManager Integration', () => {
 
       // Get next navigation from loop manager
       const transition = loopManager.getNextIndex(4, 5, 'forward');
-      
+
       expect(transition.shouldNavigate).toBe(false);
       expect(transition.targetIndex).toBe(4);
       expect(transition.isLoop).toBe(false);
@@ -260,7 +261,7 @@ describe('SliderCore - LoopManager Integration', () => {
 
       // Get previous navigation from loop manager
       const transition = loopManager.getNextIndex(0, 5, 'backward');
-      
+
       expect(transition.shouldNavigate).toBe(false);
       expect(transition.targetIndex).toBe(0);
       expect(transition.isLoop).toBe(false);
@@ -287,15 +288,15 @@ describe('SliderCore - LoopManager Integration', () => {
 
       // Get next navigation from loop manager
       const transition = loopManager.getNextIndex(4, 5, 'forward');
-      
+
       expect(transition.shouldNavigate).toBe(true);
       expect(transition.targetIndex).toBe(3);
       expect(transition.isLoop).toBe(true);
       expect(transition.loopDirection).toBe('bounce');
-      expect(eventSpy).toHaveBeenCalledWith({ 
+      expect(eventSpy).toHaveBeenCalledWith({
         direction: 'backward',
         from: 4,
-        to: 3
+        to: 3,
       });
 
       // SliderCore should navigate to bounce target
@@ -315,7 +316,7 @@ describe('SliderCore - LoopManager Integration', () => {
 
       // Get previous navigation from loop manager
       const transition = loopManager.getNextIndex(0, 5, 'backward');
-      
+
       expect(transition.shouldNavigate).toBe(true);
       expect(transition.targetIndex).toBe(1);
       expect(transition.isLoop).toBe(true);
@@ -323,7 +324,7 @@ describe('SliderCore - LoopManager Integration', () => {
       expect(eventSpy).toHaveBeenCalledWith({
         direction: 'forward',
         from: 0,
-        to: 1
+        to: 1,
       });
 
       // SliderCore should navigate to bounce target
@@ -342,7 +343,7 @@ describe('SliderCore - LoopManager Integration', () => {
     it('should handle loop mode changes during runtime', async () => {
       // Start in infinite mode
       loopManager.updateConfig({ mode: LoopMode.INFINITE });
-      
+
       let transition = loopManager.getNextIndex(4, 5, 'forward');
       expect(transition.shouldNavigate).toBe(true);
       expect(transition.targetIndex).toBe(0);
@@ -350,7 +351,7 @@ describe('SliderCore - LoopManager Integration', () => {
 
       // Change to finite mode
       loopManager.updateConfig({ mode: LoopMode.FINITE });
-      
+
       transition = loopManager.getNextIndex(4, 5, 'forward');
       expect(transition.shouldNavigate).toBe(false);
       expect(transition.targetIndex).toBe(4);
@@ -360,14 +361,14 @@ describe('SliderCore - LoopManager Integration', () => {
     it('should handle loop enable/disable changes', async () => {
       // Enable loop
       loopManager.updateConfig({ enabled: true, mode: LoopMode.INFINITE });
-      
+
       let transition = loopManager.getNextIndex(4, 5, 'forward');
       expect(transition.shouldNavigate).toBe(true);
       expect(transition.targetIndex).toBe(0);
 
       // Disable loop
       loopManager.updateConfig({ enabled: false });
-      
+
       transition = loopManager.getNextIndex(4, 5, 'forward');
       expect(transition.shouldNavigate).toBe(false);
       expect(transition.targetIndex).toBe(4);
@@ -388,14 +389,14 @@ describe('SliderCore - LoopManager Integration', () => {
 
       // Navigate to last slide
       await sliderCore.goToSlide(4);
-      
+
       // Check loop transition
       const transition = loopManager.getNextIndex(4, 5, 'forward');
-      
+
       if (transition.shouldNavigate && transition.isLoop) {
         // Both events should fire when loop navigation occurs
         await sliderCore.goToSlide(transition.targetIndex);
-        
+
         expect(coreEventSpy).toHaveBeenCalled();
         expect(loopEventSpy).toHaveBeenCalled();
       }
@@ -410,27 +411,27 @@ describe('SliderCore - LoopManager Integration', () => {
 
     it('should work with auto-play when loop is enabled', async () => {
       loopManager.updateConfig({ enabled: true, mode: LoopMode.INFINITE });
-      
+
       // Auto-play should be able to query loop manager for navigation
       // when it reaches the end of slides
       const transition = loopManager.getNextIndex(4, 5, 'forward');
-      
+
       expect(transition.shouldNavigate).toBe(true);
       expect(transition.targetIndex).toBe(0);
       expect(transition.isLoop).toBe(true);
-      
+
       // Auto-play should continue with the loop target
     });
 
     it('should stop auto-play when loop is disabled and at end', async () => {
       loopManager.updateConfig({ enabled: false, mode: LoopMode.FINITE });
-      
+
       // Auto-play should be able to query loop manager
       const transition = loopManager.getNextIndex(4, 5, 'forward');
-      
+
       expect(transition.shouldNavigate).toBe(false);
       expect(transition.targetIndex).toBe(4);
-      
+
       // Auto-play should stop since no navigation is possible
     });
   });
