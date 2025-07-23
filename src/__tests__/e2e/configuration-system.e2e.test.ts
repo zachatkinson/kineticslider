@@ -124,7 +124,14 @@ test.describe('Configuration System E2E', () => {
       });
 
       const result = await page.evaluate(async () => {
-        const { ConfigurationSystem } = window.kineticSliderConfig!;
+        const kineticSliderConfig = window.kineticSliderConfig! as unknown as {
+          ConfigurationSystem: { processConfig: (config: unknown) => { slides: unknown[] } };
+          debugLogger: { initialize: (enabled: boolean) => void };
+        };
+        const { ConfigurationSystem, debugLogger } = kineticSliderConfig;
+
+        // Enable debug logging to capture warnings
+        debugLogger.initialize(true);
 
         const configWithWarnings = {
           images: [{ id: 'slide1', src: 'image1.jpg' }], // Deprecated property

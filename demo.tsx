@@ -10,6 +10,10 @@ import {
   ConfigValidator,
   DefaultsManager,
 } from './src/config';
+import { debugLogger } from './src/utils/debug-logger';
+
+// Note: This is a demo file combining multiple components for convenience.
+// In a production app, these would be in separate files.
 
 // Global types for E2E test data
 declare global {
@@ -19,9 +23,10 @@ declare global {
       version: string;
     };
     kineticSliderConfig: {
-      ConfigurationSystem: any;
-      ConfigValidator: any;
-      DefaultsManager: any;
+      ConfigurationSystem: unknown;
+      ConfigValidator: unknown;
+      DefaultsManager: unknown;
+      debugLogger: unknown;
     };
     physicsTestData: {
       velocitySamples: Array<{ velocity: number; timestamp: number }>;
@@ -180,7 +185,10 @@ function KineticSliderDemo(): JSX.Element {
       try {
         await sliderEngine.current.previousSlide();
       } catch (error) {
-        // Handle navigation error silently
+        // Navigation errors are expected when slider is not ready
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Navigation failed:', error);
+        }
       }
     }
   }, []);
@@ -190,7 +198,10 @@ function KineticSliderDemo(): JSX.Element {
       try {
         await sliderEngine.current.nextSlide();
       } catch (error) {
-        // Handle navigation error silently
+        // Navigation errors are expected when slider is not ready
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Navigation failed:', error);
+        }
       }
     }
   }, []);
@@ -206,7 +217,10 @@ function KineticSliderDemo(): JSX.Element {
       try {
         await sliderEngine.current.goToSlide(0);
       } catch (error) {
-        // Handle navigation error silently
+        // Navigation errors are expected when slider is not ready
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Navigation failed:', error);
+        }
       }
     }
   }, []);
@@ -216,7 +230,53 @@ function KineticSliderDemo(): JSX.Element {
       try {
         await sliderEngine.current.goToSlide(4);
       } catch (error) {
-        // Handle navigation error silently
+        // Navigation errors are expected when slider is not ready
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Navigation failed:', error);
+        }
+      }
+    }
+  }, []);
+
+  // Filter handlers
+  const handleApplyFilter = useCallback(async (filterName: string) => {
+    if (sliderEngine.current) {
+      try {
+        // Apply filter through the slider API
+        await sliderEngine.current.applyFilter(filterName);
+        setState((prev) => ({
+          ...prev,
+          announcements: `Applied ${filterName} filter`,
+        }));
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Filter application failed:', filterName, error);
+        }
+        setState((prev) => ({
+          ...prev,
+          announcements: `Filter ${filterName} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        }));
+      }
+    } else {
+      setState((prev) => ({
+        ...prev,
+        announcements: `Slider engine not available for ${filterName} filter`,
+      }));
+    }
+  }, []);
+
+  const handleClearFilters = useCallback(async () => {
+    if (sliderEngine.current) {
+      try {
+        await sliderEngine.current.clearFilters();
+        setState((prev) => ({
+          ...prev,
+          announcements: 'Cleared all filters',
+        }));
+      } catch {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Clear filters not available yet');
+        }
       }
     }
   }, []);
@@ -254,6 +314,7 @@ function KineticSliderDemo(): JSX.Element {
           ConfigurationSystem,
           ConfigValidator,
           DefaultsManager,
+          debugLogger,
         };
 
         // Configuration matching the HTML demo
@@ -324,7 +385,9 @@ function KineticSliderDemo(): JSX.Element {
         sliderEngine.current = null;
       }
     };
-  }, []); // Remove dependencies to prevent re-initialization
+    // sampleImages is a constant array defined outside the component, so it doesn't need to be in dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handlePlayStateChanged, handleSlideChanged, initializeTestData]);
 
   return (
     <div
@@ -593,6 +656,115 @@ function KineticSliderDemo(): JSX.Element {
           >
             ⏭ Last
           </button>
+        </div>
+
+        {/* Filter Controls */}
+        <div
+          data-testid="filter-controls"
+          style={{
+            marginTop: '2rem',
+            padding: '1rem',
+            background: '#f8fafc',
+            borderRadius: '8px',
+            borderLeft: '4px solid #8b5cf6',
+          }}
+        >
+          <h3>Filter Effects</h3>
+          <p>Apply visual filters to the slider images:</p>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.5rem',
+              marginTop: '1rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <button
+              onClick={() => handleApplyFilter('softBlur')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Soft Blur
+            </button>
+            <button
+              onClick={() => handleApplyFilter('softGlow')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Soft Glow
+            </button>
+            <button
+              onClick={() => handleApplyFilter('blackAndWhite')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              B&W
+            </button>
+            <button
+              onClick={() => handleApplyFilter('vintage')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Vintage
+            </button>
+            <button
+              onClick={() => handleApplyFilter('ripple')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Ripple
+            </button>
+            <button
+              onClick={handleClearFilters}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
 
         {/* Instructions */}

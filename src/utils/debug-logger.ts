@@ -1,10 +1,10 @@
 /**
  * @fileoverview Debug Logger Utility
- * 
+ *
  * Provides a centralized logging solution that only logs when debug mode is enabled.
  * Replaces console.log, console.warn, and console.error statements throughout the codebase
  * with a production-safe logging mechanism.
- * 
+ *
  * @version 1.0.0
  */
 
@@ -16,9 +16,9 @@ import type { SimpleEventEmitter } from '../core/event-emitter';
  */
 export enum LogLevel {
   DEBUG = 'debug',
-  INFO = 'info', 
+  INFO = 'info',
   WARN = 'warn',
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 /**
@@ -92,14 +92,14 @@ export class DebugLogger {
    */
   warn(message: string, context?: string, data?: unknown): void {
     this.log(LogLevel.WARN, message, context, data);
-    
+
     // Always emit warnings as events for production handling
     if (this.eventEmitter) {
       this.eventEmitter.emit(SLIDER_EVENTS.STATE_VALIDATION_WARNING, {
         message,
         context,
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
   }
@@ -112,14 +112,14 @@ export class DebugLogger {
    */
   error(message: string, context?: string, data?: unknown): void {
     this.log(LogLevel.ERROR, message, context, data);
-    
+
     // Always emit errors as events for production handling
     if (this.eventEmitter) {
       this.eventEmitter.emit(SLIDER_EVENTS.ERROR, {
         message,
         context,
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
   }
@@ -127,13 +127,18 @@ export class DebugLogger {
   /**
    * Internal logging method
    */
-  private log(level: LogLevel, message: string, context?: string, data?: unknown): void {
+  private log(
+    level: LogLevel,
+    message: string,
+    context?: string,
+    data?: unknown
+  ): void {
     const entry: DebugLogEntry = {
       level,
       message,
       context,
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Add to history for debugging
@@ -170,7 +175,7 @@ export class DebugLogger {
    */
   private addToHistory(entry: DebugLogEntry): void {
     this.logHistory.push(entry);
-    
+
     // Maintain history size limit
     if (this.logHistory.length > this.maxHistorySize) {
       this.logHistory.shift();
@@ -214,18 +219,34 @@ export const debugLogger = DebugLogger.getInstance();
 /**
  * Convenience functions for logging
  */
-export const debug = (message: string, context?: string, data?: unknown): void => {
+export const debug = (
+  message: string,
+  context?: string,
+  data?: unknown
+): void => {
   debugLogger.debug(message, context, data);
 };
 
-export const info = (message: string, context?: string, data?: unknown): void => {
+export const info = (
+  message: string,
+  context?: string,
+  data?: unknown
+): void => {
   debugLogger.info(message, context, data);
 };
 
-export const warn = (message: string, context?: string, data?: unknown): void => {
+export const warn = (
+  message: string,
+  context?: string,
+  data?: unknown
+): void => {
   debugLogger.warn(message, context, data);
 };
 
-export const error = (message: string, context?: string, data?: unknown): void => {
+export const error = (
+  message: string,
+  context?: string,
+  data?: unknown
+): void => {
   debugLogger.error(message, context, data);
 };

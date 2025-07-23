@@ -31,6 +31,7 @@ import {
 } from './constants';
 import { ConfigurationSystem } from '../config';
 import { debugLogger } from '../utils/debug-logger';
+import { EffectPresets } from '../rendering/effect-presets';
 
 // Import extracted managers
 import { StateManager } from '../managers/state-manager';
@@ -61,6 +62,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private renderer: ISliderRenderer | null = null;
   private controller: ISliderController | null = null;
 
+  // Filter system
+  private effectPresets: EffectPresets;
+  private currentFilterEffect: { cleanup?: () => void } | null = null;
+
   constructor(timelineFactory?: GSAPTimelineFactory) {
     super();
     this.timelineFactory = timelineFactory || new GSAPTimelineFactory();
@@ -70,6 +75,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     this.autoPlayManager = new AutoPlayManager();
     this.navigationManager = new NavigationManager();
     this.loopManager = new LoopManager();
+
+    // Initialize filter system
+    this.effectPresets = new EffectPresets();
 
     this.setupManagerEventHandling();
     this.setupErrorHandling();
@@ -422,6 +430,93 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
   /**
+   * Apply a filter effect to current slide
+   */
+  async applyFilter(filterName: string): Promise<void> {
+    if (!this.renderer) {
+      throw new Error('Renderer not available for filter effects');
+    }
+
+    try {
+      // Clear any existing filter first
+      await this.clearFilters();
+
+      // Get current sprite
+      const sprites = this.renderer.getSprites();
+      const currentIndex = this.stateManager.getCurrentIndex();
+      // Safe: currentIndex is validated by stateManager bounds checking
+      /* eslint-disable-next-line security/detect-object-injection */
+      const currentSprite = sprites[currentIndex];
+
+      if (!currentSprite) {
+        throw new Error(`No sprite available for slide ${currentIndex}`);
+      }
+
+      // Create filter effect using presets
+      const filterEffect = this.effectPresets.createEffect(filterName, {
+        intensity: 'moderate',
+        duration: 0.5,
+      });
+
+      if (filterEffect && filterEffect.filters.length > 0) {
+        // Apply each filter to the sprite
+        filterEffect.filters.forEach((filter) => {
+          if (typeof this.renderer!.applyFilter === 'function') {
+            this.renderer!.applyFilter(currentSprite, filter);
+          }
+        });
+
+        // Apply effect to sprite (this handles timeline animations)
+        filterEffect.applyTo(currentSprite);
+
+        // Store reference for cleanup
+        this.currentFilterEffect = filterEffect;
+      }
+    } catch (error) {
+      this.handleError(error, 'applyFilter');
+      throw error;
+    }
+  }
+
+  /**
+   * Clear all filters from current slide
+   */
+  async clearFilters(): Promise<void> {
+    if (!this.renderer) {
+      throw new Error('Renderer not available for filter effects');
+    }
+
+    try {
+      // Clean up current filter effect if it exists
+      if (this.currentFilterEffect) {
+        if (typeof this.currentFilterEffect.cleanup === 'function') {
+          this.currentFilterEffect.cleanup();
+        }
+        this.currentFilterEffect = null;
+      }
+
+      // Get current sprite
+      const sprites = this.renderer.getSprites();
+      const currentIndex = this.stateManager.getCurrentIndex();
+      // Safe: currentIndex is validated by stateManager bounds checking
+      /* eslint-disable-next-line security/detect-object-injection */
+      const currentSprite = sprites[currentIndex];
+
+      if (!currentSprite) {
+        throw new Error(`No sprite available for slide ${currentIndex}`);
+      }
+
+      // Clear filters through renderer
+      if (typeof this.renderer.clearFilters === 'function') {
+        this.renderer.clearFilters(currentSprite);
+      }
+    } catch (error) {
+      this.handleError(error, 'clearFilters');
+      throw error;
+    }
+  }
+
+  /**
    * Cleanup and destroy slider
    */
   destroy(): void {
@@ -435,6 +530,14 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       if (this.currentTimeline) {
         this.currentTimeline.kill();
         this.currentTimeline = null;
+      }
+
+      // Clean up filter effects
+      if (this.currentFilterEffect) {
+        if (typeof this.currentFilterEffect.cleanup === 'function') {
+          this.currentFilterEffect.cleanup();
+        }
+        this.currentFilterEffect = null;
       }
 
       // Destroy managers
@@ -808,7 +911,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       this.renderer!.setVisible(sprite, shouldBeVisible);
     });
 
-    debugLogger.debug(`Instant transition to slide ${index} complete`, 'TRANSITION');
+    debugLogger.debug(
+      `Instant transition to slide ${index} complete`,
+      'TRANSITION'
+    );
   }
 
   /**
@@ -904,7 +1010,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       titleElement.textContent = newText;
       debugLogger.debug(`Updated counter to: ${newText}`, 'VISUAL_UPDATE');
     } else {
-      debugLogger.warn('Could not find title element to update', 'VISUAL_UPDATE');
+      debugLogger.warn(
+        'Could not find title element to update',
+        'VISUAL_UPDATE'
+      );
     }
   }
 }

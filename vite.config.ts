@@ -106,8 +106,7 @@ export default defineConfig({
 
   // Optimization configuration
   optimizeDeps: {
-    include: ['react', 'react-dom', 'pixi.js', 'gsap'], // Include PIXI.js for proper resolution
-    exclude: ['pixi-filters'], // Only exclude pixi-filters
+    include: ['react', 'react-dom', 'pixi.js', 'pixi-filters', 'gsap'], // Include all dependencies for proper resolution
   },
 
   // Define global constants

@@ -1,737 +1,917 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KineticSlider Interactive Configuration Guide</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f8fafc;
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f8fafc;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      }
+
+      .section h2 {
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+      }
+
+      .config-builder {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .config-options {
+        background: #f7fafc;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+      }
+
+      .config-preview {
+        background: #1a202c;
+        color: #e2e8f0;
+        padding: 1.5rem;
+        border-radius: 8px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.9rem;
+        overflow-x: auto;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2d3748;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 1rem;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .checkbox-group input[type='checkbox'] {
+        width: auto;
+      }
+
+      .range-group {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .range-value {
+        background: #e2e8f0;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        min-width: 60px;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .example-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .example-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .example-card h4 {
+        color: #2d3748;
+        margin-bottom: 1rem;
+      }
+
+      .example-card .description {
+        color: #718096;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+      }
+
+      .code-block {
+        background: #1a202c;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 6px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+      }
+
+      .code-block .keyword {
+        color: #f56565;
+      }
+
+      .code-block .string {
+        color: #68d391;
+      }
+
+      .code-block .number {
+        color: #63b3ed;
+      }
+
+      .code-block .comment {
+        color: #718096;
+      }
+
+      .button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .button:hover {
+        background: #5a67d8;
+      }
+
+      .button.secondary {
+        background: #718096;
+      }
+
+      .button.secondary:hover {
+        background: #4a5568;
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 1.5rem;
+      }
+
+      .tab {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+      }
+
+      .tab.active {
+        border-bottom-color: #667eea;
+        color: #667eea;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .warning {
+        background: #fef5e7;
+        border: 1px solid #f6e05e;
+        border-radius: 6px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      .warning-title {
+        color: #744210;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .warning-text {
+        color: #744210;
+      }
+
+      .success {
+        background: #f0fff4;
+        border: 1px solid #68d391;
+        border-radius: 6px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      .success-title {
+        color: #22543d;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .success-text {
+        color: #22543d;
+      }
+
+      .validation-result {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 6px;
+      }
+
+      .validation-result.valid {
+        background: #f0fff4;
+        color: #22543d;
+        border: 1px solid #68d391;
+      }
+
+      .validation-result.invalid {
+        background: #fed7d7;
+        color: #c53030;
+        border: 1px solid #fc8181;
+      }
+
+      .slide-preview {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 1rem 0;
+      }
+
+      @media (max-width: 768px) {
+        .config-builder {
+          grid-template-columns: 1fr;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-            padding: 2rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
+          padding: 1rem;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+          font-size: 2rem;
         }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .section {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-        }
-
-        .section h2 {
-            color: #2d3748;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .config-builder {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .config-options {
-            background: #f7fafc;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .config-preview {
-            background: #1a202c;
-            color: #e2e8f0;
-            padding: 1.5rem;
-            border-radius: 8px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-        }
-
-        .range-group {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .range-value {
-            background: #e2e8f0;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            min-width: 60px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .example-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .example-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .example-card h4 {
-            color: #2d3748;
-            margin-bottom: 1rem;
-        }
-
-        .example-card .description {
-            color: #718096;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .code-block {
-            background: #1a202c;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 6px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.85rem;
-            overflow-x: auto;
-            white-space: pre-wrap;
-        }
-
-        .code-block .keyword {
-            color: #f56565;
-        }
-
-        .code-block .string {
-            color: #68d391;
-        }
-
-        .code-block .number {
-            color: #63b3ed;
-        }
-
-        .code-block .comment {
-            color: #718096;
-        }
-
-        .button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .button:hover {
-            background: #5a67d8;
-        }
-
-        .button.secondary {
-            background: #718096;
-        }
-
-        .button.secondary:hover {
-            background: #4a5568;
-        }
-
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 1.5rem;
-        }
-
-        .tab {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            background: none;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .tab.active {
-            border-bottom-color: #667eea;
-            color: #667eea;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .warning {
-            background: #fef5e7;
-            border: 1px solid #f6e05e;
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-
-        .warning-title {
-            color: #744210;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .warning-text {
-            color: #744210;
-        }
-
-        .success {
-            background: #f0fff4;
-            border: 1px solid #68d391;
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-
-        .success-title {
-            color: #22543d;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .success-text {
-            color: #22543d;
-        }
-
-        .validation-result {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 6px;
-        }
-
-        .validation-result.valid {
-            background: #f0fff4;
-            color: #22543d;
-            border: 1px solid #68d391;
-        }
-
-        .validation-result.invalid {
-            background: #fed7d7;
-            color: #c53030;
-            border: 1px solid #fc8181;
-        }
-
-        .slide-preview {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 1rem 0;
-        }
-
-        @media (max-width: 768px) {
-            .config-builder {
-                grid-template-columns: 1fr;
-            }
-            
-            .container {
-                padding: 1rem;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>🚀 KineticSlider Configuration Guide</h1>
-            <p>Interactive guide to configuring your KineticSlider component</p>
+      <div class="header">
+        <h1>🚀 KineticSlider Configuration Guide</h1>
+        <p>Interactive guide to configuring your KineticSlider component</p>
+      </div>
+
+      <!-- Quick Start Section -->
+      <div class="section">
+        <h2>🎯 Quick Start</h2>
+        <p>Get started with KineticSlider using these simple configurations:</p>
+
+        <div class="example-grid">
+          <div class="example-card">
+            <h4>Basic Image Gallery</h4>
+            <p class="description">
+              Simple image gallery with manual navigation
+            </p>
+            <div class="code-block">
+              const config = { <span class="keyword">slides</span>: [ {
+              <span class="keyword">id</span>:
+              <span class="string">'slide1'</span>,
+              <span class="keyword">src</span>:
+              <span class="string">'/images/1.jpg'</span> }, {
+              <span class="keyword">id</span>:
+              <span class="string">'slide2'</span>,
+              <span class="keyword">src</span>:
+              <span class="string">'/images/2.jpg'</span> }, {
+              <span class="keyword">id</span>:
+              <span class="string">'slide3'</span>,
+              <span class="keyword">src</span>:
+              <span class="string">'/images/3.jpg'</span> } ] };
+            </div>
+          </div>
+
+          <div class="example-card">
+            <h4>Auto-Playing Slideshow</h4>
+            <p class="description">
+              Automatic slideshow with smooth transitions
+            </p>
+            <div class="code-block">
+              const config = { <span class="keyword">slides</span>: [...],
+              <span class="keyword">autoPlay</span>:
+              <span class="number">true</span>,
+              <span class="keyword">autoPlayInterval</span>:
+              <span class="number">4000</span>,
+              <span class="keyword">loop</span>:
+              <span class="number">true</span>,
+              <span class="keyword">duration</span>:
+              <span class="number">600</span> };
+            </div>
+          </div>
+
+          <div class="example-card">
+            <h4>High-Performance Gallery</h4>
+            <p class="description">Optimized for large image collections</p>
+            <div class="code-block">
+              const config = { <span class="keyword">slides</span>: [...],
+              <span class="keyword">enableVirtualization</span>:
+              <span class="number">true</span>,
+              <span class="keyword">preloadCount</span>:
+              <span class="number">2</span>,
+              <span class="keyword">memoryManagement</span>: {
+              <span class="keyword">maxMemoryUsage</span>:
+              <span class="number">256</span> } };
+            </div>
+          </div>
+
+          <div class="example-card">
+            <h4>Accessible Slider</h4>
+            <p class="description">WCAG 2.1 AA compliant configuration</p>
+            <div class="code-block">
+              const config = { <span class="keyword">slides</span>: [...],
+              <span class="keyword">accessibility</span>: {
+              <span class="keyword">screenReader</span>:
+              <span class="number">true</span>,
+              <span class="keyword">keyboardNavigation</span>:
+              <span class="number">true</span> } };
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Configuration Builder -->
+      <div class="section">
+        <h2>🛠️ Interactive Configuration Builder</h2>
+        <p>
+          Build your configuration step by step and see the results in
+          real-time:
+        </p>
+
+        <div class="config-builder">
+          <div class="config-options">
+            <h3>Configuration Options</h3>
+
+            <div class="tabs">
+              <button class="tab active" onclick="showTab('basic')">
+                Basic
+              </button>
+              <button class="tab" onclick="showTab('animation')">
+                Animation
+              </button>
+              <button class="tab" onclick="showTab('performance')">
+                Performance
+              </button>
+              <button class="tab" onclick="showTab('accessibility')">
+                Accessibility
+              </button>
+            </div>
+
+            <!-- Basic Tab -->
+            <div id="basic-tab" class="tab-content active">
+              <div class="form-group">
+                <label for="slideCount">Number of Slides:</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="slideCount"
+                    min="2"
+                    max="20"
+                    value="3"
+                    onchange="updateConfig()"
+                  />
+                  <div class="range-value" id="slideCountValue">3</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="autoPlay"
+                    onchange="updateConfig()"
+                  />
+                  <label for="autoPlay">Enable Auto-Play</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="autoPlayInterval">Auto-Play Interval (ms):</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="autoPlayInterval"
+                    min="1000"
+                    max="10000"
+                    value="3000"
+                    step="500"
+                    onchange="updateConfig()"
+                  />
+                  <div class="range-value" id="autoPlayIntervalValue">3000</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="loop" onchange="updateConfig()" />
+                  <label for="loop">Enable Loop</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="pauseOnHover"
+                    checked
+                    onchange="updateConfig()"
+                  />
+                  <label for="pauseOnHover">Pause on Hover</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Animation Tab -->
+            <div id="animation-tab" class="tab-content">
+              <div class="form-group">
+                <label for="duration">Transition Duration (ms):</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="duration"
+                    min="100"
+                    max="2000"
+                    value="300"
+                    step="50"
+                    onchange="updateConfig()"
+                  />
+                  <div class="range-value" id="durationValue">300</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="easing">Easing Function:</label>
+                <select id="easing" onchange="updateConfig()">
+                  <option value="power2.out" selected>power2.out</option>
+                  <option value="power2.inOut">power2.inOut</option>
+                  <option value="back.out(1.7)">back.out(1.7)</option>
+                  <option value="elastic.out(1, 0.3)">
+                    elastic.out(1, 0.3)
+                  </option>
+                  <option value="bounce.out">bounce.out</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="swipeThreshold">Swipe Threshold (px):</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="swipeThreshold"
+                    min="10"
+                    max="200"
+                    value="50"
+                    step="10"
+                    onchange="updateConfig()"
+                  />
+                  <div class="range-value" id="swipeThresholdValue">50</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="scaleIntensity">Scale Intensity:</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="scaleIntensity"
+                    min="0"
+                    max="0.5"
+                    value="0.1"
+                    step="0.05"
+                    onchange="updateConfig()"
+                  />
+                  <div class="range-value" id="scaleIntensityValue">0.1</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Performance Tab -->
+            <div id="performance-tab" class="tab-content">
+              <div class="form-group">
+                <label for="preloadCount">Preload Count:</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="preloadCount"
+                    min="0"
+                    max="10"
+                    value="2"
+                    onchange="updateConfig()"
+                  />
+                  <div class="range-value" id="preloadCountValue">2</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="enableVirtualization"
+                    onchange="updateConfig()"
+                  />
+                  <label for="enableVirtualization"
+                    >Enable Virtualization</label
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="maxMemoryUsage">Max Memory Usage (MB):</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="maxMemoryUsage"
+                    min="64"
+                    max="1024"
+                    value="256"
+                    step="64"
+                    onchange="updateConfig()"
+                  />
+                  <div class="range-value" id="maxMemoryUsageValue">256</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="autoGarbageCollection"
+                    checked
+                    onchange="updateConfig()"
+                  />
+                  <label for="autoGarbageCollection"
+                    >Auto Garbage Collection</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Accessibility Tab -->
+            <div id="accessibility-tab" class="tab-content">
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="screenReader"
+                    checked
+                    onchange="updateConfig()"
+                  />
+                  <label for="screenReader">Screen Reader Support</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="keyboardNavigation"
+                    checked
+                    onchange="updateConfig()"
+                  />
+                  <label for="keyboardNavigation">Keyboard Navigation</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="highContrast"
+                    onchange="updateConfig()"
+                  />
+                  <label for="highContrast">High Contrast Mode</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="sliderLabel">Slider ARIA Label:</label>
+                <input
+                  type="text"
+                  id="sliderLabel"
+                  value="Image gallery"
+                  onchange="updateConfig()"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="slideLabel">Slide Label Template:</label>
+                <input
+                  type="text"
+                  id="slideLabel"
+                  value="Image {index} of {total}"
+                  onchange="updateConfig()"
+                />
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem">
+              <button class="button" onclick="validateConfig()">
+                Validate Configuration
+              </button>
+              <button class="button secondary" onclick="resetConfig()">
+                Reset to Defaults
+              </button>
+            </div>
+
+            <div
+              id="validationResult"
+              class="validation-result"
+              style="display: none"
+            ></div>
+          </div>
+
+          <div class="config-preview">
+            <h3 style="color: #68d391; margin-bottom: 1rem">
+              Generated Configuration
+            </h3>
+            <pre id="configOutput">// Configuration will appear here...</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Responsive Configuration -->
+      <div class="section">
+        <h2>📱 Responsive Configuration</h2>
+        <p>Configure your slider to work perfectly on all devices:</p>
+
+        <div class="example-grid">
+          <div class="example-card">
+            <h4>Mobile-First Strategy</h4>
+            <p class="description">
+              Start with mobile configuration and enhance for larger screens
+            </p>
+            <div class="code-block">
+              const config = { <span class="keyword">slides</span>: [...],
+
+              <span class="comment">// Base configuration (mobile)</span>
+              <span class="keyword">duration</span>:
+              <span class="number">400</span>,
+              <span class="keyword">physics</span>: {
+              <span class="keyword">swipeThreshold</span>:
+              <span class="number">40</span>
+              },
+
+              <span class="keyword">responsive</span>: {
+              <span class="keyword">enabled</span>:
+              <span class="number">true</span>,
+              <span class="keyword">strategy</span>:
+              <span class="string">'mobile-first'</span>,
+              <span class="keyword">breakpoints</span>: [ {
+              <span class="keyword">name</span>:
+              <span class="string">'tablet'</span>,
+              <span class="keyword">minWidth</span>:
+              <span class="number">768</span>,
+              <span class="keyword">config</span>: {
+              <span class="keyword">preloadCount</span>:
+              <span class="number">2</span>
+              } }, {
+              <span class="keyword">name</span>:
+              <span class="string">'desktop'</span>,
+              <span class="keyword">minWidth</span>:
+              <span class="number">1024</span>,
+              <span class="keyword">config</span>: {
+              <span class="keyword">preloadCount</span>:
+              <span class="number">3</span>,
+              <span class="keyword">physics</span>: {
+              <span class="keyword">swipeThreshold</span>:
+              <span class="number">60</span> } } } ] } };
+            </div>
+          </div>
+
+          <div class="example-card">
+            <h4>Desktop-First Strategy</h4>
+            <p class="description">
+              Start with desktop configuration and adapt down
+            </p>
+            <div class="code-block">
+              const config = { <span class="keyword">slides</span>: [...],
+
+              <span class="comment">// Base configuration (desktop)</span>
+              <span class="keyword">autoPlay</span>:
+              <span class="number">true</span>,
+              <span class="keyword">preloadCount</span>:
+              <span class="number">5</span>,
+
+              <span class="keyword">responsive</span>: {
+              <span class="keyword">enabled</span>:
+              <span class="number">true</span>,
+              <span class="keyword">strategy</span>:
+              <span class="string">'desktop-first'</span>,
+              <span class="keyword">breakpoints</span>: [ {
+              <span class="keyword">name</span>:
+              <span class="string">'tablet'</span>,
+              <span class="keyword">maxWidth</span>:
+              <span class="number">1023</span>,
+              <span class="keyword">config</span>: {
+              <span class="keyword">preloadCount</span>:
+              <span class="number">3</span>
+              } }, {
+              <span class="keyword">name</span>:
+              <span class="string">'mobile'</span>,
+              <span class="keyword">maxWidth</span>:
+              <span class="number">767</span>,
+              <span class="keyword">config</span>: {
+              <span class="keyword">autoPlay</span>:
+              <span class="number">false</span>,
+              <span class="keyword">preloadCount</span>:
+              <span class="number">1</span> } } ] } };
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Examples -->
+      <div class="section">
+        <h2>⚡ Performance Optimization</h2>
+        <p>Optimize your slider for different use cases:</p>
+
+        <div class="example-grid">
+          <div class="example-card">
+            <h4>Large Gallery (100+ images)</h4>
+            <p class="description">Optimized for memory and performance</p>
+            <div class="code-block">
+              const config = { <span class="keyword">slides</span>:
+              largeSlideArray,
+
+              <span class="comment">// Enable virtualization</span>
+              <span class="keyword">enableVirtualization</span>:
+              <span class="number">true</span>,
+
+              <span class="comment">// Minimal preloading</span>
+              <span class="keyword">preloadCount</span>:
+              <span class="number">2</span>,
+
+              <span class="comment">// Memory management</span>
+              <span class="keyword">memoryManagement</span>: {
+              <span class="keyword">maxMemoryUsage</span>:
+              <span class="number">256</span>,
+              <span class="keyword">autoGarbageCollection</span>:
+              <span class="number">true</span>,
+              <span class="keyword">cleanupThreshold</span>:
+              <span class="number">0.6</span>
+              },
+
+              <span class="comment">// Optimize rendering</span>
+              <span class="keyword">rendering</span>: {
+              <span class="keyword">antialias</span>:
+              <span class="number">false</span>,
+              <span class="keyword">resolution</span>:
+              <span class="number">1</span> } };
+            </div>
+          </div>
+
+          <div class="example-card">
+            <h4>High-Quality Display</h4>
+            <p class="description">Optimized for visual quality</p>
+            <div class="code-block">
+              const config = { <span class="keyword">slides</span>:
+              highResSlides,
+
+              <span class="comment">// High memory limits</span>
+              <span class="keyword">memoryManagement</span>: {
+              <span class="keyword">maxMemoryUsage</span>:
+              <span class="number">1024</span>,
+              <span class="keyword">textureCacheSize</span>:
+              <span class="number">100</span>
+              },
+
+              <span class="comment">// High-quality rendering</span>
+              <span class="keyword">rendering</span>: {
+              <span class="keyword">antialias</span>:
+              <span class="number">true</span>,
+              <span class="keyword">resolution</span>:
+              <span class="number">2</span>
+              },
+
+              <span class="comment">// Smooth animations</span>
+              <span class="keyword">physics</span>: {
+              <span class="keyword">transitionDuration</span>:
+              <span class="number">0.8</span>,
+              <span class="keyword">transitionEase</span>:
+              <span class="string">'power2.inOut'</span> } };
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Troubleshooting -->
+      <div class="section">
+        <h2>🔧 Troubleshooting</h2>
+        <p>Common issues and their solutions:</p>
+
+        <div class="warning">
+          <div class="warning-title">⚠️ Common Configuration Errors</div>
+          <div class="warning-text">
+            <strong>Missing slides array:</strong> Every configuration must
+            include a slides array with at least one slide.<br />
+            <strong>Invalid duration:</strong> Duration must be between
+            100-10000 milliseconds.<br />
+            <strong>Invalid easing:</strong> Only GSAP easing functions are
+            supported.
+          </div>
         </div>
 
-        <!-- Quick Start Section -->
-        <div class="section">
-            <h2>🎯 Quick Start</h2>
-            <p>Get started with KineticSlider using these simple configurations:</p>
-            
-            <div class="example-grid">
-                <div class="example-card">
-                    <h4>Basic Image Gallery</h4>
-                    <p class="description">Simple image gallery with manual navigation</p>
-                    <div class="code-block">const config = {
-  <span class="keyword">slides</span>: [
-    { <span class="keyword">id</span>: <span class="string">'slide1'</span>, <span class="keyword">src</span>: <span class="string">'/images/1.jpg'</span> },
-    { <span class="keyword">id</span>: <span class="string">'slide2'</span>, <span class="keyword">src</span>: <span class="string">'/images/2.jpg'</span> },
-    { <span class="keyword">id</span>: <span class="string">'slide3'</span>, <span class="keyword">src</span>: <span class="string">'/images/3.jpg'</span> }
-  ]
-};</div>
-                </div>
-
-                <div class="example-card">
-                    <h4>Auto-Playing Slideshow</h4>
-                    <p class="description">Automatic slideshow with smooth transitions</p>
-                    <div class="code-block">const config = {
-  <span class="keyword">slides</span>: [...],
-  <span class="keyword">autoPlay</span>: <span class="number">true</span>,
-  <span class="keyword">autoPlayInterval</span>: <span class="number">4000</span>,
-  <span class="keyword">loop</span>: <span class="number">true</span>,
-  <span class="keyword">duration</span>: <span class="number">600</span>
-};</div>
-                </div>
-
-                <div class="example-card">
-                    <h4>High-Performance Gallery</h4>
-                    <p class="description">Optimized for large image collections</p>
-                    <div class="code-block">const config = {
-  <span class="keyword">slides</span>: [...],
-  <span class="keyword">enableVirtualization</span>: <span class="number">true</span>,
-  <span class="keyword">preloadCount</span>: <span class="number">2</span>,
-  <span class="keyword">memoryManagement</span>: {
-    <span class="keyword">maxMemoryUsage</span>: <span class="number">256</span>
-  }
-};</div>
-                </div>
-
-                <div class="example-card">
-                    <h4>Accessible Slider</h4>
-                    <p class="description">WCAG 2.1 AA compliant configuration</p>
-                    <div class="code-block">const config = {
-  <span class="keyword">slides</span>: [...],
-  <span class="keyword">accessibility</span>: {
-    <span class="keyword">screenReader</span>: <span class="number">true</span>,
-    <span class="keyword">keyboardNavigation</span>: <span class="number">true</span>
-  }
-};</div>
-                </div>
-            </div>
+        <div class="success">
+          <div class="success-title">✅ Best Practices</div>
+          <div class="success-text">
+            <strong>Start simple:</strong> Begin with minimal configuration and
+            add features as needed.<br />
+            <strong>Use TypeScript:</strong> Enable strict type checking for
+            error-free configurations.<br />
+            <strong>Enable validation:</strong> Always validate your
+            configuration before deployment.
+          </div>
         </div>
 
-        <!-- Interactive Configuration Builder -->
-        <div class="section">
-            <h2>🛠️ Interactive Configuration Builder</h2>
-            <p>Build your configuration step by step and see the results in real-time:</p>
-
-            <div class="config-builder">
-                <div class="config-options">
-                    <h3>Configuration Options</h3>
-                    
-                    <div class="tabs">
-                        <button class="tab active" onclick="showTab('basic')">Basic</button>
-                        <button class="tab" onclick="showTab('animation')">Animation</button>
-                        <button class="tab" onclick="showTab('performance')">Performance</button>
-                        <button class="tab" onclick="showTab('accessibility')">Accessibility</button>
-                    </div>
-
-                    <!-- Basic Tab -->
-                    <div id="basic-tab" class="tab-content active">
-                        <div class="form-group">
-                            <label for="slideCount">Number of Slides:</label>
-                            <div class="range-group">
-                                <input type="range" id="slideCount" min="2" max="20" value="3" onchange="updateConfig()">
-                                <div class="range-value" id="slideCountValue">3</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="autoPlay" onchange="updateConfig()">
-                                <label for="autoPlay">Enable Auto-Play</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="autoPlayInterval">Auto-Play Interval (ms):</label>
-                            <div class="range-group">
-                                <input type="range" id="autoPlayInterval" min="1000" max="10000" value="3000" step="500" onchange="updateConfig()">
-                                <div class="range-value" id="autoPlayIntervalValue">3000</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="loop" onchange="updateConfig()">
-                                <label for="loop">Enable Loop</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="pauseOnHover" checked onchange="updateConfig()">
-                                <label for="pauseOnHover">Pause on Hover</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Animation Tab -->
-                    <div id="animation-tab" class="tab-content">
-                        <div class="form-group">
-                            <label for="duration">Transition Duration (ms):</label>
-                            <div class="range-group">
-                                <input type="range" id="duration" min="100" max="2000" value="300" step="50" onchange="updateConfig()">
-                                <div class="range-value" id="durationValue">300</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="easing">Easing Function:</label>
-                            <select id="easing" onchange="updateConfig()">
-                                <option value="power2.out" selected>power2.out</option>
-                                <option value="power2.inOut">power2.inOut</option>
-                                <option value="back.out(1.7)">back.out(1.7)</option>
-                                <option value="elastic.out(1, 0.3)">elastic.out(1, 0.3)</option>
-                                <option value="bounce.out">bounce.out</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="swipeThreshold">Swipe Threshold (px):</label>
-                            <div class="range-group">
-                                <input type="range" id="swipeThreshold" min="10" max="200" value="50" step="10" onchange="updateConfig()">
-                                <div class="range-value" id="swipeThresholdValue">50</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="scaleIntensity">Scale Intensity:</label>
-                            <div class="range-group">
-                                <input type="range" id="scaleIntensity" min="0" max="0.5" value="0.1" step="0.05" onchange="updateConfig()">
-                                <div class="range-value" id="scaleIntensityValue">0.1</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Performance Tab -->
-                    <div id="performance-tab" class="tab-content">
-                        <div class="form-group">
-                            <label for="preloadCount">Preload Count:</label>
-                            <div class="range-group">
-                                <input type="range" id="preloadCount" min="0" max="10" value="2" onchange="updateConfig()">
-                                <div class="range-value" id="preloadCountValue">2</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="enableVirtualization" onchange="updateConfig()">
-                                <label for="enableVirtualization">Enable Virtualization</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="maxMemoryUsage">Max Memory Usage (MB):</label>
-                            <div class="range-group">
-                                <input type="range" id="maxMemoryUsage" min="64" max="1024" value="256" step="64" onchange="updateConfig()">
-                                <div class="range-value" id="maxMemoryUsageValue">256</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="autoGarbageCollection" checked onchange="updateConfig()">
-                                <label for="autoGarbageCollection">Auto Garbage Collection</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Accessibility Tab -->
-                    <div id="accessibility-tab" class="tab-content">
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="screenReader" checked onchange="updateConfig()">
-                                <label for="screenReader">Screen Reader Support</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="keyboardNavigation" checked onchange="updateConfig()">
-                                <label for="keyboardNavigation">Keyboard Navigation</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="highContrast" onchange="updateConfig()">
-                                <label for="highContrast">High Contrast Mode</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="sliderLabel">Slider ARIA Label:</label>
-                            <input type="text" id="sliderLabel" value="Image gallery" onchange="updateConfig()">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="slideLabel">Slide Label Template:</label>
-                            <input type="text" id="slideLabel" value="Image {index} of {total}" onchange="updateConfig()">
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 2rem;">
-                        <button class="button" onclick="validateConfig()">Validate Configuration</button>
-                        <button class="button secondary" onclick="resetConfig()">Reset to Defaults</button>
-                    </div>
-
-                    <div id="validationResult" class="validation-result" style="display: none;"></div>
-                </div>
-
-                <div class="config-preview">
-                    <h3 style="color: #68d391; margin-bottom: 1rem;">Generated Configuration</h3>
-                    <pre id="configOutput">// Configuration will appear here...</pre>
-                </div>
-            </div>
-        </div>
-
-        <!-- Responsive Configuration -->
-        <div class="section">
-            <h2>📱 Responsive Configuration</h2>
-            <p>Configure your slider to work perfectly on all devices:</p>
-
-            <div class="example-grid">
-                <div class="example-card">
-                    <h4>Mobile-First Strategy</h4>
-                    <p class="description">Start with mobile configuration and enhance for larger screens</p>
-                    <div class="code-block">const config = {
-  <span class="keyword">slides</span>: [...],
-  
-  <span class="comment">// Base configuration (mobile)</span>
-  <span class="keyword">duration</span>: <span class="number">400</span>,
-  <span class="keyword">physics</span>: {
-    <span class="keyword">swipeThreshold</span>: <span class="number">40</span>
-  },
-  
-  <span class="keyword">responsive</span>: {
-    <span class="keyword">enabled</span>: <span class="number">true</span>,
-    <span class="keyword">strategy</span>: <span class="string">'mobile-first'</span>,
-    <span class="keyword">breakpoints</span>: [
-      {
-        <span class="keyword">name</span>: <span class="string">'tablet'</span>,
-        <span class="keyword">minWidth</span>: <span class="number">768</span>,
-        <span class="keyword">config</span>: {
-          <span class="keyword">preloadCount</span>: <span class="number">2</span>
-        }
-      },
-      {
-        <span class="keyword">name</span>: <span class="string">'desktop'</span>,
-        <span class="keyword">minWidth</span>: <span class="number">1024</span>,
-        <span class="keyword">config</span>: {
-          <span class="keyword">preloadCount</span>: <span class="number">3</span>,
-          <span class="keyword">physics</span>: {
-            <span class="keyword">swipeThreshold</span>: <span class="number">60</span>
-          }
-        }
-      }
-    ]
-  }
-};</div>
-                </div>
-
-                <div class="example-card">
-                    <h4>Desktop-First Strategy</h4>
-                    <p class="description">Start with desktop configuration and adapt down</p>
-                    <div class="code-block">const config = {
-  <span class="keyword">slides</span>: [...],
-  
-  <span class="comment">// Base configuration (desktop)</span>
-  <span class="keyword">autoPlay</span>: <span class="number">true</span>,
-  <span class="keyword">preloadCount</span>: <span class="number">5</span>,
-  
-  <span class="keyword">responsive</span>: {
-    <span class="keyword">enabled</span>: <span class="number">true</span>,
-    <span class="keyword">strategy</span>: <span class="string">'desktop-first'</span>,
-    <span class="keyword">breakpoints</span>: [
-      {
-        <span class="keyword">name</span>: <span class="string">'tablet'</span>,
-        <span class="keyword">maxWidth</span>: <span class="number">1023</span>,
-        <span class="keyword">config</span>: {
-          <span class="keyword">preloadCount</span>: <span class="number">3</span>
-        }
-      },
-      {
-        <span class="keyword">name</span>: <span class="string">'mobile'</span>,
-        <span class="keyword">maxWidth</span>: <span class="number">767</span>,
-        <span class="keyword">config</span>: {
-          <span class="keyword">autoPlay</span>: <span class="number">false</span>,
-          <span class="keyword">preloadCount</span>: <span class="number">1</span>
-        }
-      }
-    ]
-  }
-};</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Examples -->
-        <div class="section">
-            <h2>⚡ Performance Optimization</h2>
-            <p>Optimize your slider for different use cases:</p>
-
-            <div class="example-grid">
-                <div class="example-card">
-                    <h4>Large Gallery (100+ images)</h4>
-                    <p class="description">Optimized for memory and performance</p>
-                    <div class="code-block">const config = {
-  <span class="keyword">slides</span>: largeSlideArray,
-  
-  <span class="comment">// Enable virtualization</span>
-  <span class="keyword">enableVirtualization</span>: <span class="number">true</span>,
-  
-  <span class="comment">// Minimal preloading</span>
-  <span class="keyword">preloadCount</span>: <span class="number">2</span>,
-  
-  <span class="comment">// Memory management</span>
-  <span class="keyword">memoryManagement</span>: {
-    <span class="keyword">maxMemoryUsage</span>: <span class="number">256</span>,
-    <span class="keyword">autoGarbageCollection</span>: <span class="number">true</span>,
-    <span class="keyword">cleanupThreshold</span>: <span class="number">0.6</span>
-  },
-  
-  <span class="comment">// Optimize rendering</span>
-  <span class="keyword">rendering</span>: {
-    <span class="keyword">antialias</span>: <span class="number">false</span>,
-    <span class="keyword">resolution</span>: <span class="number">1</span>
-  }
-};</div>
-                </div>
-
-                <div class="example-card">
-                    <h4>High-Quality Display</h4>
-                    <p class="description">Optimized for visual quality</p>
-                    <div class="code-block">const config = {
-  <span class="keyword">slides</span>: highResSlides,
-  
-  <span class="comment">// High memory limits</span>
-  <span class="keyword">memoryManagement</span>: {
-    <span class="keyword">maxMemoryUsage</span>: <span class="number">1024</span>,
-    <span class="keyword">textureCacheSize</span>: <span class="number">100</span>
-  },
-  
-  <span class="comment">// High-quality rendering</span>
-  <span class="keyword">rendering</span>: {
-    <span class="keyword">antialias</span>: <span class="number">true</span>,
-    <span class="keyword">resolution</span>: <span class="number">2</span>
-  },
-  
-  <span class="comment">// Smooth animations</span>
-  <span class="keyword">physics</span>: {
-    <span class="keyword">transitionDuration</span>: <span class="number">0.8</span>,
-    <span class="keyword">transitionEase</span>: <span class="string">'power2.inOut'</span>
-  }
-};</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Troubleshooting -->
-        <div class="section">
-            <h2>🔧 Troubleshooting</h2>
-            <p>Common issues and their solutions:</p>
-
-            <div class="warning">
-                <div class="warning-title">⚠️ Common Configuration Errors</div>
-                <div class="warning-text">
-                    <strong>Missing slides array:</strong> Every configuration must include a slides array with at least one slide.<br>
-                    <strong>Invalid duration:</strong> Duration must be between 100-10000 milliseconds.<br>
-                    <strong>Invalid easing:</strong> Only GSAP easing functions are supported.
-                </div>
-            </div>
-
-            <div class="success">
-                <div class="success-title">✅ Best Practices</div>
-                <div class="success-text">
-                    <strong>Start simple:</strong> Begin with minimal configuration and add features as needed.<br>
-                    <strong>Use TypeScript:</strong> Enable strict type checking for error-free configurations.<br>
-                    <strong>Enable validation:</strong> Always validate your configuration before deployment.
-                </div>
-            </div>
-
-            <div class="example-card">
-                <h4>Configuration Validator</h4>
-                <p class="description">Test your configuration for potential issues</p>
-                <textarea id="userConfig" rows="10" style="width: 100%; font-family: monospace;" placeholder="Paste your configuration here...">
+        <div class="example-card">
+          <h4>Configuration Validator</h4>
+          <p class="description">
+            Test your configuration for potential issues
+          </p>
+          <textarea
+            id="userConfig"
+            rows="10"
+            style="width: 100%; font-family: monospace"
+            placeholder="Paste your configuration here..."
+          >
 {
   "slides": [
     { "id": "slide1", "src": "/images/slide1.jpg" },
@@ -739,312 +919,388 @@
   ],
   "autoPlay": true,
   "duration": 600
-}</textarea>
-                <button class="button" onclick="validateUserConfig()" style="margin-top: 1rem;">Validate Configuration</button>
-                <div id="userConfigResult" style="margin-top: 1rem;"></div>
-            </div>
+}</textarea
+          >
+          <button
+            class="button"
+            onclick="validateUserConfig()"
+            style="margin-top: 1rem"
+          >
+            Validate Configuration
+          </button>
+          <div id="userConfigResult" style="margin-top: 1rem"></div>
         </div>
+      </div>
     </div>
 
     <script>
-        // Configuration state
-        let currentConfig = {
-            slides: []
-        };
+      // Configuration state
+      let currentConfig = {
+        slides: [],
+      };
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            updateConfig();
+      // Initialize
+      document.addEventListener('DOMContentLoaded', function () {
+        updateConfig();
+      });
+
+      // Tab switching
+      function showTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach((tab) => {
+          tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab').forEach((tab) => {
+          tab.classList.remove('active');
         });
 
-        // Tab switching
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
+        // Show selected tab
+        document.getElementById(tabName + '-tab').classList.add('active');
+        event.target.classList.add('active');
+      }
 
-            // Show selected tab
-            document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
+      // Update configuration
+      function updateConfig() {
+        const slideCount = parseInt(
+          document.getElementById('slideCount').value
+        );
+        const autoPlay = document.getElementById('autoPlay').checked;
+        const autoPlayInterval = parseInt(
+          document.getElementById('autoPlayInterval').value
+        );
+        const loop = document.getElementById('loop').checked;
+        const pauseOnHover = document.getElementById('pauseOnHover').checked;
+        const duration = parseInt(document.getElementById('duration').value);
+        const easing = document.getElementById('easing').value;
+        const swipeThreshold = parseInt(
+          document.getElementById('swipeThreshold').value
+        );
+        const scaleIntensity = parseFloat(
+          document.getElementById('scaleIntensity').value
+        );
+        const preloadCount = parseInt(
+          document.getElementById('preloadCount').value
+        );
+        const enableVirtualization = document.getElementById(
+          'enableVirtualization'
+        ).checked;
+        const maxMemoryUsage = parseInt(
+          document.getElementById('maxMemoryUsage').value
+        );
+        const autoGarbageCollection = document.getElementById(
+          'autoGarbageCollection'
+        ).checked;
+        const screenReader = document.getElementById('screenReader').checked;
+        const keyboardNavigation =
+          document.getElementById('keyboardNavigation').checked;
+        const highContrast = document.getElementById('highContrast').checked;
+        const sliderLabel = document.getElementById('sliderLabel').value;
+        const slideLabel = document.getElementById('slideLabel').value;
+
+        // Update range value displays
+        document.getElementById('slideCountValue').textContent = slideCount;
+        document.getElementById('autoPlayIntervalValue').textContent =
+          autoPlayInterval;
+        document.getElementById('durationValue').textContent = duration;
+        document.getElementById('swipeThresholdValue').textContent =
+          swipeThreshold;
+        document.getElementById('scaleIntensityValue').textContent =
+          scaleIntensity;
+        document.getElementById('preloadCountValue').textContent = preloadCount;
+        document.getElementById('maxMemoryUsageValue').textContent =
+          maxMemoryUsage;
+
+        // Generate slides array
+        const slides = [];
+        for (let i = 1; i <= slideCount; i++) {
+          slides.push({
+            id: `slide${i}`,
+            src: `/images/slide${i}.jpg`,
+            alt: `Slide ${i} description`,
+            title: `Slide ${i}`,
+          });
         }
 
-        // Update configuration
-        function updateConfig() {
-            const slideCount = parseInt(document.getElementById('slideCount').value);
-            const autoPlay = document.getElementById('autoPlay').checked;
-            const autoPlayInterval = parseInt(document.getElementById('autoPlayInterval').value);
-            const loop = document.getElementById('loop').checked;
-            const pauseOnHover = document.getElementById('pauseOnHover').checked;
-            const duration = parseInt(document.getElementById('duration').value);
-            const easing = document.getElementById('easing').value;
-            const swipeThreshold = parseInt(document.getElementById('swipeThreshold').value);
-            const scaleIntensity = parseFloat(document.getElementById('scaleIntensity').value);
-            const preloadCount = parseInt(document.getElementById('preloadCount').value);
-            const enableVirtualization = document.getElementById('enableVirtualization').checked;
-            const maxMemoryUsage = parseInt(document.getElementById('maxMemoryUsage').value);
-            const autoGarbageCollection = document.getElementById('autoGarbageCollection').checked;
-            const screenReader = document.getElementById('screenReader').checked;
-            const keyboardNavigation = document.getElementById('keyboardNavigation').checked;
-            const highContrast = document.getElementById('highContrast').checked;
-            const sliderLabel = document.getElementById('sliderLabel').value;
-            const slideLabel = document.getElementById('slideLabel').value;
+        // Build configuration object
+        currentConfig = {
+          slides: slides,
+        };
 
-            // Update range value displays
-            document.getElementById('slideCountValue').textContent = slideCount;
-            document.getElementById('autoPlayIntervalValue').textContent = autoPlayInterval;
-            document.getElementById('durationValue').textContent = duration;
-            document.getElementById('swipeThresholdValue').textContent = swipeThreshold;
-            document.getElementById('scaleIntensityValue').textContent = scaleIntensity;
-            document.getElementById('preloadCountValue').textContent = preloadCount;
-            document.getElementById('maxMemoryUsageValue').textContent = maxMemoryUsage;
-
-            // Generate slides array
-            const slides = [];
-            for (let i = 1; i <= slideCount; i++) {
-                slides.push({
-                    id: `slide${i}`,
-                    src: `/images/slide${i}.jpg`,
-                    alt: `Slide ${i} description`,
-                    title: `Slide ${i}`
-                });
-            }
-
-            // Build configuration object
-            currentConfig = {
-                slides: slides
-            };
-
-            if (autoPlay) {
-                currentConfig.autoPlay = true;
-                currentConfig.autoPlayInterval = autoPlayInterval;
-            }
-
-            if (loop) {
-                currentConfig.loop = true;
-            }
-
-            if (!pauseOnHover) {
-                currentConfig.pauseOnHover = false;
-            }
-
-            if (duration !== 300) {
-                currentConfig.duration = duration;
-            }
-
-            if (easing !== 'power2.out') {
-                currentConfig.easing = easing;
-            }
-
-            if (swipeThreshold !== 50 || scaleIntensity !== 0.1) {
-                currentConfig.physics = {};
-                if (swipeThreshold !== 50) {
-                    currentConfig.physics.swipeThreshold = swipeThreshold;
-                }
-                if (scaleIntensity !== 0.1) {
-                    currentConfig.physics.scaleIntensity = scaleIntensity;
-                }
-            }
-
-            if (preloadCount !== 2) {
-                currentConfig.preloadCount = preloadCount;
-            }
-
-            if (enableVirtualization) {
-                currentConfig.enableVirtualization = true;
-            }
-
-            if (maxMemoryUsage !== 256 || !autoGarbageCollection) {
-                currentConfig.memoryManagement = {};
-                if (maxMemoryUsage !== 256) {
-                    currentConfig.memoryManagement.maxMemoryUsage = maxMemoryUsage;
-                }
-                if (!autoGarbageCollection) {
-                    currentConfig.memoryManagement.autoGarbageCollection = false;
-                }
-            }
-
-            if (screenReader || keyboardNavigation || highContrast || sliderLabel !== 'Image gallery' || slideLabel !== 'Image {index} of {total}') {
-                currentConfig.accessibility = {};
-                if (screenReader) {
-                    currentConfig.accessibility.screenReader = true;
-                }
-                if (keyboardNavigation) {
-                    currentConfig.accessibility.keyboardNavigation = true;
-                }
-                if (highContrast) {
-                    currentConfig.accessibility.highContrast = true;
-                }
-                if (sliderLabel !== 'Image gallery' || slideLabel !== 'Image {index} of {total}') {
-                    currentConfig.accessibility.ariaLabels = {};
-                    if (sliderLabel !== 'Image gallery') {
-                        currentConfig.accessibility.ariaLabels.sliderLabel = sliderLabel;
-                    }
-                    if (slideLabel !== 'Image {index} of {total}') {
-                        currentConfig.accessibility.ariaLabels.slideLabel = slideLabel;
-                    }
-                }
-            }
-
-            // Update preview
-            updateConfigPreview();
+        if (autoPlay) {
+          currentConfig.autoPlay = true;
+          currentConfig.autoPlayInterval = autoPlayInterval;
         }
 
-        // Update configuration preview
-        function updateConfigPreview() {
-            const output = document.getElementById('configOutput');
-            const formatted = JSON.stringify(currentConfig, null, 2)
-                .replace(/"([^"]+)":/g, '<span class="keyword">$1</span>:')
-                .replace(/: "([^"]+)"/g, ': <span class="string">"$1"</span>')
-                .replace(/: (\d+\.?\d*)/g, ': <span class="number">$1</span>')
-                .replace(/: (true|false)/g, ': <span class="number">$1</span>');
-            
-            output.innerHTML = `const config = ${formatted};
+        if (loop) {
+          currentConfig.loop = true;
+        }
+
+        if (!pauseOnHover) {
+          currentConfig.pauseOnHover = false;
+        }
+
+        if (duration !== 300) {
+          currentConfig.duration = duration;
+        }
+
+        if (easing !== 'power2.out') {
+          currentConfig.easing = easing;
+        }
+
+        if (swipeThreshold !== 50 || scaleIntensity !== 0.1) {
+          currentConfig.physics = {};
+          if (swipeThreshold !== 50) {
+            currentConfig.physics.swipeThreshold = swipeThreshold;
+          }
+          if (scaleIntensity !== 0.1) {
+            currentConfig.physics.scaleIntensity = scaleIntensity;
+          }
+        }
+
+        if (preloadCount !== 2) {
+          currentConfig.preloadCount = preloadCount;
+        }
+
+        if (enableVirtualization) {
+          currentConfig.enableVirtualization = true;
+        }
+
+        if (maxMemoryUsage !== 256 || !autoGarbageCollection) {
+          currentConfig.memoryManagement = {};
+          if (maxMemoryUsage !== 256) {
+            currentConfig.memoryManagement.maxMemoryUsage = maxMemoryUsage;
+          }
+          if (!autoGarbageCollection) {
+            currentConfig.memoryManagement.autoGarbageCollection = false;
+          }
+        }
+
+        if (
+          screenReader ||
+          keyboardNavigation ||
+          highContrast ||
+          sliderLabel !== 'Image gallery' ||
+          slideLabel !== 'Image {index} of {total}'
+        ) {
+          currentConfig.accessibility = {};
+          if (screenReader) {
+            currentConfig.accessibility.screenReader = true;
+          }
+          if (keyboardNavigation) {
+            currentConfig.accessibility.keyboardNavigation = true;
+          }
+          if (highContrast) {
+            currentConfig.accessibility.highContrast = true;
+          }
+          if (
+            sliderLabel !== 'Image gallery' ||
+            slideLabel !== 'Image {index} of {total}'
+          ) {
+            currentConfig.accessibility.ariaLabels = {};
+            if (sliderLabel !== 'Image gallery') {
+              currentConfig.accessibility.ariaLabels.sliderLabel = sliderLabel;
+            }
+            if (slideLabel !== 'Image {index} of {total}') {
+              currentConfig.accessibility.ariaLabels.slideLabel = slideLabel;
+            }
+          }
+        }
+
+        // Update preview
+        updateConfigPreview();
+      }
+
+      // Update configuration preview
+      function updateConfigPreview() {
+        const output = document.getElementById('configOutput');
+        const formatted = JSON.stringify(currentConfig, null, 2)
+          .replace(/"([^"]+)":/g, '<span class="keyword">$1</span>:')
+          .replace(/: "([^"]+)"/g, ': <span class="string">"$1"</span>')
+          .replace(/: (\d+\.?\d*)/g, ': <span class="number">$1</span>')
+          .replace(/: (true|false)/g, ': <span class="number">$1</span>');
+
+        output.innerHTML = `const config = ${formatted};
 
 // Initialize slider
 const slider = new KineticSlider();
 await slider.initialize(config, container);`;
+      }
+
+      // Validate configuration
+      function validateConfig() {
+        const result = document.getElementById('validationResult');
+        result.style.display = 'block';
+
+        // Basic validation
+        const errors = [];
+        const warnings = [];
+
+        if (!currentConfig.slides || currentConfig.slides.length === 0) {
+          errors.push(
+            'Slides array is required and must contain at least one slide'
+          );
         }
 
-        // Validate configuration
-        function validateConfig() {
-            const result = document.getElementById('validationResult');
-            result.style.display = 'block';
-            
-            // Basic validation
-            const errors = [];
-            const warnings = [];
+        if (
+          currentConfig.duration &&
+          (currentConfig.duration < 100 || currentConfig.duration > 10000)
+        ) {
+          errors.push('Duration must be between 100 and 10000 milliseconds');
+        }
 
-            if (!currentConfig.slides || currentConfig.slides.length === 0) {
-                errors.push('Slides array is required and must contain at least one slide');
-            }
+        if (
+          currentConfig.autoPlayInterval &&
+          currentConfig.autoPlayInterval < 1000
+        ) {
+          warnings.push(
+            'Auto-play interval should be at least 1000ms for accessibility'
+          );
+        }
 
-            if (currentConfig.duration && (currentConfig.duration < 100 || currentConfig.duration > 10000)) {
-                errors.push('Duration must be between 100 and 10000 milliseconds');
-            }
+        if (
+          currentConfig.slides &&
+          currentConfig.slides.length > 50 &&
+          !currentConfig.enableVirtualization
+        ) {
+          warnings.push(
+            'Consider enabling virtualization for large galleries (50+ slides)'
+          );
+        }
 
-            if (currentConfig.autoPlayInterval && currentConfig.autoPlayInterval < 1000) {
-                warnings.push('Auto-play interval should be at least 1000ms for accessibility');
-            }
+        if (
+          currentConfig.preloadCount &&
+          currentConfig.slides &&
+          currentConfig.preloadCount > currentConfig.slides.length / 2
+        ) {
+          warnings.push(
+            'Preload count should not exceed half the total slides'
+          );
+        }
 
-            if (currentConfig.slides && currentConfig.slides.length > 50 && !currentConfig.enableVirtualization) {
-                warnings.push('Consider enabling virtualization for large galleries (50+ slides)');
-            }
-
-            if (currentConfig.preloadCount && currentConfig.slides && currentConfig.preloadCount > currentConfig.slides.length / 2) {
-                warnings.push('Preload count should not exceed half the total slides');
-            }
-
-            // Display results
-            if (errors.length === 0) {
-                result.className = 'validation-result valid';
-                result.innerHTML = `
+        // Display results
+        if (errors.length === 0) {
+          result.className = 'validation-result valid';
+          result.innerHTML = `
                     <strong>✅ Configuration Valid!</strong><br>
-                    ${warnings.length > 0 ? `<br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : 'No warnings found.'}
+                    ${warnings.length > 0 ? `<br><strong>Warnings:</strong><br>${warnings.map((w) => `• ${w}`).join('<br>')}` : 'No warnings found.'}
                 `;
-            } else {
-                result.className = 'validation-result invalid';
-                result.innerHTML = `
+        } else {
+          result.className = 'validation-result invalid';
+          result.innerHTML = `
                     <strong>❌ Configuration Errors:</strong><br>
-                    ${errors.map(e => `• ${e}`).join('<br>')}
-                    ${warnings.length > 0 ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : ''}
+                    ${errors.map((e) => `• ${e}`).join('<br>')}
+                    ${warnings.length > 0 ? `<br><br><strong>Warnings:</strong><br>${warnings.map((w) => `• ${w}`).join('<br>')}` : ''}
                 `;
+        }
+      }
+
+      // Reset configuration
+      function resetConfig() {
+        // Reset form elements
+        document.getElementById('slideCount').value = 3;
+        document.getElementById('autoPlay').checked = false;
+        document.getElementById('autoPlayInterval').value = 3000;
+        document.getElementById('loop').checked = false;
+        document.getElementById('pauseOnHover').checked = true;
+        document.getElementById('duration').value = 300;
+        document.getElementById('easing').value = 'power2.out';
+        document.getElementById('swipeThreshold').value = 50;
+        document.getElementById('scaleIntensity').value = 0.1;
+        document.getElementById('preloadCount').value = 2;
+        document.getElementById('enableVirtualization').checked = false;
+        document.getElementById('maxMemoryUsage').value = 256;
+        document.getElementById('autoGarbageCollection').checked = true;
+        document.getElementById('screenReader').checked = true;
+        document.getElementById('keyboardNavigation').checked = true;
+        document.getElementById('highContrast').checked = false;
+        document.getElementById('sliderLabel').value = 'Image gallery';
+        document.getElementById('slideLabel').value =
+          'Image {index} of {total}';
+
+        // Hide validation result
+        document.getElementById('validationResult').style.display = 'none';
+
+        // Update configuration
+        updateConfig();
+      }
+
+      // Validate user configuration
+      function validateUserConfig() {
+        const userConfigText = document.getElementById('userConfig').value;
+        const resultDiv = document.getElementById('userConfigResult');
+
+        try {
+          const userConfig = JSON.parse(userConfigText);
+
+          // Basic validation
+          const errors = [];
+          const warnings = [];
+
+          if (
+            !userConfig.slides ||
+            !Array.isArray(userConfig.slides) ||
+            userConfig.slides.length === 0
+          ) {
+            errors.push(
+              'slides array is required and must contain at least one slide'
+            );
+          }
+
+          if (userConfig.slides) {
+            userConfig.slides.forEach((slide, index) => {
+              if (!slide.id) {
+                errors.push(`slides[${index}]: id is required`);
+              }
+              if (!slide.src) {
+                errors.push(`slides[${index}]: src is required`);
+              }
+            });
+          }
+
+          if (
+            userConfig.duration &&
+            (typeof userConfig.duration !== 'number' ||
+              userConfig.duration < 100 ||
+              userConfig.duration > 10000)
+          ) {
+            errors.push('duration must be a number between 100 and 10000');
+          }
+
+          if (
+            userConfig.autoPlayInterval &&
+            (typeof userConfig.autoPlayInterval !== 'number' ||
+              userConfig.autoPlayInterval < 1000)
+          ) {
+            if (userConfig.autoPlayInterval < 1000) {
+              warnings.push(
+                'autoPlayInterval should be at least 1000ms for accessibility'
+              );
+            } else {
+              errors.push('autoPlayInterval must be a number');
             }
-        }
+          }
 
-        // Reset configuration
-        function resetConfig() {
-            // Reset form elements
-            document.getElementById('slideCount').value = 3;
-            document.getElementById('autoPlay').checked = false;
-            document.getElementById('autoPlayInterval').value = 3000;
-            document.getElementById('loop').checked = false;
-            document.getElementById('pauseOnHover').checked = true;
-            document.getElementById('duration').value = 300;
-            document.getElementById('easing').value = 'power2.out';
-            document.getElementById('swipeThreshold').value = 50;
-            document.getElementById('scaleIntensity').value = 0.1;
-            document.getElementById('preloadCount').value = 2;
-            document.getElementById('enableVirtualization').checked = false;
-            document.getElementById('maxMemoryUsage').value = 256;
-            document.getElementById('autoGarbageCollection').checked = true;
-            document.getElementById('screenReader').checked = true;
-            document.getElementById('keyboardNavigation').checked = true;
-            document.getElementById('highContrast').checked = false;
-            document.getElementById('sliderLabel').value = 'Image gallery';
-            document.getElementById('slideLabel').value = 'Image {index} of {total}';
-
-            // Hide validation result
-            document.getElementById('validationResult').style.display = 'none';
-
-            // Update configuration
-            updateConfig();
-        }
-
-        // Validate user configuration
-        function validateUserConfig() {
-            const userConfigText = document.getElementById('userConfig').value;
-            const resultDiv = document.getElementById('userConfigResult');
-            
-            try {
-                const userConfig = JSON.parse(userConfigText);
-                
-                // Basic validation
-                const errors = [];
-                const warnings = [];
-
-                if (!userConfig.slides || !Array.isArray(userConfig.slides) || userConfig.slides.length === 0) {
-                    errors.push('slides array is required and must contain at least one slide');
-                }
-
-                if (userConfig.slides) {
-                    userConfig.slides.forEach((slide, index) => {
-                        if (!slide.id) {
-                            errors.push(`slides[${index}]: id is required`);
-                        }
-                        if (!slide.src) {
-                            errors.push(`slides[${index}]: src is required`);
-                        }
-                    });
-                }
-
-                if (userConfig.duration && (typeof userConfig.duration !== 'number' || userConfig.duration < 100 || userConfig.duration > 10000)) {
-                    errors.push('duration must be a number between 100 and 10000');
-                }
-
-                if (userConfig.autoPlayInterval && (typeof userConfig.autoPlayInterval !== 'number' || userConfig.autoPlayInterval < 1000)) {
-                    if (userConfig.autoPlayInterval < 1000) {
-                        warnings.push('autoPlayInterval should be at least 1000ms for accessibility');
-                    } else {
-                        errors.push('autoPlayInterval must be a number');
-                    }
-                }
-
-                // Display results
-                if (errors.length === 0) {
-                    resultDiv.className = 'validation-result valid';
-                    resultDiv.innerHTML = `
+          // Display results
+          if (errors.length === 0) {
+            resultDiv.className = 'validation-result valid';
+            resultDiv.innerHTML = `
                         <strong>✅ Configuration is valid!</strong><br>
                         Found ${userConfig.slides ? userConfig.slides.length : 0} slides.<br>
-                        ${warnings.length > 0 ? `<br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : 'No warnings found.'}
+                        ${warnings.length > 0 ? `<br><strong>Warnings:</strong><br>${warnings.map((w) => `• ${w}`).join('<br>')}` : 'No warnings found.'}
                     `;
-                } else {
-                    resultDiv.className = 'validation-result invalid';
-                    resultDiv.innerHTML = `
+          } else {
+            resultDiv.className = 'validation-result invalid';
+            resultDiv.innerHTML = `
                         <strong>❌ Configuration errors found:</strong><br>
-                        ${errors.map(e => `• ${e}`).join('<br>')}
-                        ${warnings.length > 0 ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : ''}
+                        ${errors.map((e) => `• ${e}`).join('<br>')}
+                        ${warnings.length > 0 ? `<br><br><strong>Warnings:</strong><br>${warnings.map((w) => `• ${w}`).join('<br>')}` : ''}
                     `;
-                }
-
-            } catch (e) {
-                resultDiv.className = 'validation-result invalid';
-                resultDiv.innerHTML = `<strong>❌ Invalid JSON:</strong><br>${e.message}`;
-            }
+          }
+        } catch (e) {
+          resultDiv.className = 'validation-result invalid';
+          resultDiv.innerHTML = `<strong>❌ Invalid JSON:</strong><br>${e.message}`;
         }
+      }
     </script>
-</body>
+  </body>
 </html>

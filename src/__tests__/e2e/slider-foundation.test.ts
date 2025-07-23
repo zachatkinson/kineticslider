@@ -181,7 +181,7 @@ test.describe('KineticSlider Foundation', () => {
       expect(performanceMetrics.loadComplete).toBeLessThan(
         TEST_PERFORMANCE.MAX_LOAD_TIME
       );
-      expect(performanceMetrics.resourceCount).toBeLessThan(60); // Reasonable resource count for development
+      expect(performanceMetrics.resourceCount).toBeLessThan(70); // Reasonable resource count for development with filter system
     });
 
     test('should have efficient memory usage', async ({ page }) => {

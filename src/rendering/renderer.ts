@@ -237,7 +237,10 @@ export class SliderRenderer implements ISliderRenderer {
       debugLogger.debug(`Added sprite ${index} to pixiContainer`, 'RENDERER');
     } else {
       this.app.stage.addChild(sprite);
-      debugLogger.debug(`Added sprite ${index} directly to stage (no container)`, 'RENDERER');
+      debugLogger.debug(
+        `Added sprite ${index} directly to stage (no container)`,
+        'RENDERER'
+      );
     }
 
     // Use safe array assignment to prevent object injection
@@ -272,7 +275,10 @@ export class SliderRenderer implements ISliderRenderer {
     // Remove from proper container
     if (this.pixiContainer && sprite.parent === this.pixiContainer) {
       this.pixiContainer.removeChild(sprite);
-      debugLogger.debug(`Removed sprite ${index} from pixiContainer`, 'RENDERER');
+      debugLogger.debug(
+        `Removed sprite ${index} from pixiContainer`,
+        'RENDERER'
+      );
     } else if (sprite.parent === this.app.stage) {
       this.app.stage.removeChild(sprite);
       debugLogger.debug(`Removed sprite ${index} from stage`, 'RENDERER');
@@ -355,16 +361,9 @@ export class SliderRenderer implements ISliderRenderer {
    * Apply filter to sprite
    */
   applyFilter(sprite: PIXI.Sprite, filter: PIXI.Filter): void {
-    if (!sprite.filters) {
-      sprite.filters = [];
-    }
-
-    // Ensure filters is an array before pushing
-    if (Array.isArray(sprite.filters)) {
-      sprite.filters.push(filter);
-    } else {
-      sprite.filters = [filter];
-    }
+    // Create a new filters array instead of modifying the existing one
+    const currentFilters = sprite.filters ? [...sprite.filters] : [];
+    sprite.filters = [...currentFilters, filter];
   }
 
   /**
