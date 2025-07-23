@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Auto-Play Debug Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .status {
+        font-size: 18px;
+        margin: 10px 0;
+      }
+      button {
+        padding: 10px;
+        margin: 5px;
+        font-size: 16px;
+      }
+      .console {
+        background: #f0f0f0;
+        padding: 10px;
+        margin: 10px 0;
+        max-height: 300px;
+        overflow-y: scroll;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Auto-Play Debug Test</h1>
+
+    <div class="status">
+      <strong>Play Status: <span id="play-status">Paused</span></strong>
+    </div>
+
+    <div class="status">
+      <strong>Engine isPlaying: <span id="engine-status">Unknown</span></strong>
+    </div>
+
+    <button onclick="testPlayPause()">Toggle Play/Pause</button>
+    <button onclick="testDirectPlay()">Direct Engine Play</button>
+    <button onclick="clearConsole()">Clear Console</button>
+
+    <div class="console" id="console"></div>
+
+    <script>
+      // Mock a minimal slider setup
+      let isPlaying = false;
+      let eventListeners = {};
+
+      // Mock event system
+      function emit(eventName, data) {
+        log(`📡 Emitting event: ${eventName}`, data);
+        if (eventListeners[eventName]) {
+          eventListeners[eventName](data);
+        }
+      }
+
+      function on(eventName, handler) {
+        log(`👂 Registering listener for: ${eventName}`);
+        eventListeners[eventName] = handler;
+      }
+
+      // Mock slider engine
+      const mockEngine = {
+        isPlaying: () => isPlaying,
+        play() {
+          log('🎯 Engine play() called');
+          if (isPlaying) {
+            log('⏸️ Already playing, returning early');
+            return;
+          }
+
+          isPlaying = true;
+          log('✅ Engine state updated to playing');
+
+          // Emit the event
+          emit('playStateChanged', { isPlaying: true });
+          log('✨ Engine play() completed');
+        },
+        togglePlayPause() {
+          log('🔄 Engine togglePlayPause() called');
+          if (isPlaying) {
+            isPlaying = false;
+            emit('playStateChanged', { isPlaying: false });
+          } else {
+            this.play();
+          }
+        },
+      };
+
+      // Mock React-like state management
+      let reactState = { playStatus: 'Paused' };
+
+      function setState(updater) {
+        const newState =
+          typeof updater === 'function' ? updater(reactState) : updater;
+        reactState = { ...reactState, ...newState };
+        log('🎨 React state updated:', reactState);
+        updateUI();
+      }
+
+      // Event handler (like in React component)
+      function handlePlayStateChanged(data) {
+        log('🎵 handlePlayStateChanged called with:', data);
+        setState({
+          playStatus: data.isPlaying ? 'Playing' : 'Paused',
+        });
+      }
+
+      // UI Button handler (like in React component)
+      function testPlayPause() {
+        log('🎮 UI Button clicked');
+
+        // Immediate state update (like in React component)
+        const wasPlaying = reactState.playStatus === 'Playing';
+        log('🎮 Current UI state wasPlaying:', wasPlaying);
+
+        const newPlayingState = !wasPlaying;
+        log(
+          '🎮 Setting immediate UI state to:',
+          newPlayingState ? 'Playing' : 'Paused'
+        );
+        setState({
+          playStatus: newPlayingState ? 'Playing' : 'Paused',
+        });
+
+        // Then trigger engine
+        log('🎮 Calling engine.togglePlayPause()');
+        mockEngine.togglePlayPause();
+      }
+
+      function testDirectPlay() {
+        log('🎯 Direct engine play test');
+        mockEngine.play();
+      }
+
+      function updateUI() {
+        document.getElementById('play-status').textContent =
+          reactState.playStatus;
+        document.getElementById('engine-status').textContent =
+          mockEngine.isPlaying() ? 'True' : 'False';
+      }
+
+      function log(message, data = null) {
+        const consoleEl = document.getElementById('console');
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message} ${data ? JSON.stringify(data) : ''}`;
+        consoleEl.appendChild(logEntry);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+
+        // Also log to browser console
+        console.log(message, data);
+      }
+
+      function clearConsole() {
+        document.getElementById('console').innerHTML = '';
+      }
+
+      // Set up event listener (like in React useEffect)
+      on('playStateChanged', handlePlayStateChanged);
+
+      // Initialize UI
+      updateUI();
+      log('🚀 Debug test initialized');
+    </script>
+  </body>
+</html>

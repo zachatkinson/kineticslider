@@ -409,13 +409,21 @@ test.describe('Configuration System E2E', () => {
         return {
           isValid: validationResult.isValid,
           errorCount: validationResult.errors.length,
-          errors: validationResult.errors.map((e: { code: string; message: string; path: string; expected?: unknown; actual?: unknown }) => ({
-            code: e.code,
-            message: e.message,
-            path: e.path,
-            hasExpected: !!e.expected,
-            hasActual: e.actual !== undefined,
-          })),
+          errors: validationResult.errors.map(
+            (e: {
+              code: string;
+              message: string;
+              path: string;
+              expected?: unknown;
+              actual?: unknown;
+            }) => ({
+              code: e.code,
+              message: e.message,
+              path: e.path,
+              hasExpected: !!e.expected,
+              hasActual: e.actual !== undefined,
+            })
+          ),
         };
       });
 
@@ -423,11 +431,19 @@ test.describe('Configuration System E2E', () => {
       expect(result.errorCount).toBeGreaterThan(0);
 
       // Should have detailed error information
-      result.errors.forEach((error: { code: string; message: string; path: string; hasExpected: boolean; hasActual: boolean }) => {
-        expect(error.code).toBeDefined();
-        expect(error.message).toBeDefined();
-        expect(error.path).toBeDefined();
-      });
+      result.errors.forEach(
+        (error: {
+          code: string;
+          message: string;
+          path: string;
+          hasExpected: boolean;
+          hasActual: boolean;
+        }) => {
+          expect(error.code).toBeDefined();
+          expect(error.message).toBeDefined();
+          expect(error.path).toBeDefined();
+        }
+      );
 
       // Should include errors for different validation issues
       const errorPaths = result.errors.map((e: { path: string }) => e.path);

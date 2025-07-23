@@ -97,7 +97,6 @@ test.describe('Complete System E2E - User Workflows', () => {
         .locator('#play-status')
         .textContent();
 
-
       // Toggle play/pause using space bar as user would
       await page.keyboard.press('Space');
       await page.waitForTimeout(1000); // Extra time for webkit
@@ -155,7 +154,7 @@ test.describe('Complete System E2E - User Workflows', () => {
       // Also check browser name to ensure desktop webkit uses mouse events
       const browserName = page.context().browser()?.browserType().name() || '';
       const isDesktopWebkit = browserName === 'webkit' && !isMobile;
-      
+
       // Track navigation success across different approaches
       let navigationSuccessful = false;
 
@@ -270,8 +269,9 @@ test.describe('Complete System E2E - User Workflows', () => {
       // Mobile Safari-specific handling with multiple fallbacks
       if (isMobile && !isDesktopWebkit) {
         // For Mobile Safari, we need to be more flexible with our expectations
-        const slideChanged = newSlideNumber !== initialSlideNumber || navigationSuccessful;
-        
+        const slideChanged =
+          newSlideNumber !== initialSlideNumber || navigationSuccessful;
+
         if (!slideChanged) {
           // Last resort: direct engine navigation
           await page.evaluate(() => {
@@ -303,7 +303,7 @@ test.describe('Complete System E2E - User Workflows', () => {
                 totalSlides: engine?.getTotalSlides?.(),
               };
             });
-            
+
             // At minimum, ensure the slider engine is working
             expect(engineState.hasEngine).toBe(true);
             expect(typeof engineState.currentIndex).toBe('number');
@@ -370,7 +370,7 @@ test.describe('Complete System E2E - User Workflows', () => {
         const browserName =
           page.context().browser()?.browserType().name() || '';
         const isDesktopWebkit = browserName === 'webkit' && !isMobile;
-        
+
         // Track navigation success across different approaches
         let navigationSuccessful = false;
 

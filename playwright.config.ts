@@ -67,8 +67,12 @@ export default defineConfig({
     /* Performance optimizations */
     launchOptions: {
       // Faster browser startup
-      args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-web-security']
-    }
+      args: [
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-web-security',
+      ],
+    },
   },
 
   /* Configure projects for major browsers */

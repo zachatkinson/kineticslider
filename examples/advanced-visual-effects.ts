@@ -60,10 +60,7 @@ export async function basicDisplacementEffectsExample(): Promise<void> {
     enabled: true,
   };
 
-  displacementEffects.createMouseFollowEffect(
-    sprite,
-    mouseFollowOptions
-  );
+  displacementEffects.createMouseFollowEffect(sprite, mouseFollowOptions);
 
   // Example 1b: Idle Animation
   const idleOptions: IdleEffectOptions = {
@@ -74,10 +71,7 @@ export async function basicDisplacementEffectsExample(): Promise<void> {
     enabled: true,
   };
 
-  displacementEffects.createIdleEffect(
-    sprite,
-    idleOptions
-  );
+  displacementEffects.createIdleEffect(sprite, idleOptions);
 
   // Example 1c: Transition Effect (requires two sprites)
   const secondSprite = new Sprite(slideTexture);
@@ -653,7 +647,10 @@ export async function completeIntegrationExample(): Promise<void> {
     });
 
     // Dynamic filter chain
-    const { BlurFilter, ColorMatrixFilter } = window as { BlurFilter?: typeof BlurFilter; ColorMatrixFilter?: typeof ColorMatrixFilter };
+    const { BlurFilter, ColorMatrixFilter } = window as {
+      BlurFilter?: typeof BlurFilter;
+      ColorMatrixFilter?: typeof ColorMatrixFilter;
+    };
     const blurFilter = new BlurFilter(0, 2);
     const colorFilter = new ColorMatrixFilter();
 
@@ -862,7 +859,9 @@ export async function customEffectsExample(): Promise<void> {
               ? 0.8
               : 1.0;
 
-      const { ColorMatrixFilter } = window as { ColorMatrixFilter?: typeof ColorMatrixFilter };
+      const { ColorMatrixFilter } = window as {
+        ColorMatrixFilter?: typeof ColorMatrixFilter;
+      };
       const colorFilter = new ColorMatrixFilter();
 
       const filterChain = new FilterChain({ name: 'custom-rainbow' });

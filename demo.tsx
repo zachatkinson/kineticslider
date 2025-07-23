@@ -5,6 +5,11 @@ import {
   SliderEngine,
   KINETIC_SLIDER_VERSION,
 } from './src/index';
+import {
+  ConfigurationSystem,
+  ConfigValidator,
+  DefaultsManager,
+} from './src/config';
 
 // Global types for E2E test data
 declare global {
@@ -12,6 +17,11 @@ declare global {
     kineticSlider: {
       engine: SliderEngine;
       version: string;
+    };
+    kineticSliderConfig: {
+      ConfigurationSystem: any;
+      ConfigValidator: any;
+      DefaultsManager: any;
     };
     physicsTestData: {
       velocitySamples: Array<{ velocity: number; timestamp: number }>;
@@ -135,7 +145,7 @@ function KineticSliderDemo(): JSX.Element {
     }
   }, []);
 
-  // Handle slider events
+  // Handle slider events - stable references without dependencies
   const handleSlideChanged = useCallback(
     (_data: unknown) => {
       const currentIndex = sliderEngine.current?.getCurrentIndex() || 0;
@@ -149,6 +159,7 @@ function KineticSliderDemo(): JSX.Element {
       }));
 
       // Update physics test data
+      // Call updatePhysicsTestData to handle error recovery and other test data
       updatePhysicsTestData();
     },
     [updatePhysicsTestData]
@@ -169,7 +180,7 @@ function KineticSliderDemo(): JSX.Element {
       try {
         await sliderEngine.current.previousSlide();
       } catch (error) {
-        console.error('Previous slide failed:', error);
+        // Handle navigation error silently
       }
     }
   }, []);
@@ -179,7 +190,7 @@ function KineticSliderDemo(): JSX.Element {
       try {
         await sliderEngine.current.nextSlide();
       } catch (error) {
-        console.error('Next slide failed:', error);
+        // Handle navigation error silently
       }
     }
   }, []);
@@ -195,7 +206,7 @@ function KineticSliderDemo(): JSX.Element {
       try {
         await sliderEngine.current.goToSlide(0);
       } catch (error) {
-        console.error('Go to first failed:', error);
+        // Handle navigation error silently
       }
     }
   }, []);
@@ -205,7 +216,7 @@ function KineticSliderDemo(): JSX.Element {
       try {
         await sliderEngine.current.goToSlide(4);
       } catch (error) {
-        console.error('Go to last failed:', error);
+        // Handle navigation error silently
       }
     }
   }, []);
@@ -236,6 +247,13 @@ function KineticSliderDemo(): JSX.Element {
         window.kineticSlider = {
           engine: slider,
           version: KINETIC_SLIDER_VERSION,
+        };
+
+        // Expose configuration system for E2E tests
+        window.kineticSliderConfig = {
+          ConfigurationSystem,
+          ConfigValidator,
+          DefaultsManager,
         };
 
         // Configuration matching the HTML demo
@@ -289,10 +307,7 @@ function KineticSliderDemo(): JSX.Element {
           currentIndex: 0,
           currentSlideText: '1',
         }));
-
-        console.log('✅ React KineticSlider initialized successfully');
       } catch (error) {
-        console.error('❌ Failed to initialize slider:', error);
         setState((prev) => ({
           ...prev,
           status: `Error: ${error.message}`,
@@ -309,7 +324,7 @@ function KineticSliderDemo(): JSX.Element {
         sliderEngine.current = null;
       }
     };
-  }, [initializeTestData, handleSlideChanged, handlePlayStateChanged, sampleImages]);
+  }, []); // Remove dependencies to prevent re-initialization
 
   return (
     <div
@@ -628,11 +643,6 @@ function KineticSliderDemo(): JSX.Element {
 }
 
 function App(): JSX.Element {
-  useEffect(() => {
-    console.log('🚀 KineticSlider Demo App Starting...');
-    console.log('📦 Version:', KINETIC_SLIDER_VERSION);
-  }, []);
-
   return <KineticSliderDemo />;
 }
 
@@ -641,14 +651,10 @@ const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
   root.render(<App />);
-} else {
-  console.error('❌ Could not find container element #root');
 }
 
 // Global error handling
-window.addEventListener('error', (e) => {
-  console.error('Global error:', e.error);
-
+window.addEventListener('error', () => {
   // Update error recovery data but show system can recover
   if (window.errorRecoveryData) {
     window.errorRecoveryData.errorsEncountered++;
@@ -661,13 +667,5 @@ window.addEventListener('error', (e) => {
 (window as { gc?: () => void }).gc =
   (window as { gc?: () => void }).gc ||
   ((): void => {
-    // Simulate garbage collection
-    if (window.performance && (window.performance as { memory?: { usedJSHeapSize?: number } }).memory) {
-      console.log(
-        'Simulated GC - Memory usage:',
-        (window.performance as { memory?: { usedJSHeapSize?: number } }).memory.usedJSHeapSize
-      );
-    }
+    // Simulate garbage collection without logging
   });
-
-console.log('✅ React KineticSlider Demo loaded successfully');
