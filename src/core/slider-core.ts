@@ -99,20 +99,20 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       // Initialize dependencies from service container
       await this.initializeServices(container);
 
-      // Create image metadata elements
-      this.createImageMetadataElements();
-
       // Get slides array
       const slideCount = this.config.slides.length;
 
-      // Set up initial state through StateManager
+      // Set up initial state through StateManager (proper way)
+      this.stateManager.setTotalSlides(slideCount, 'slider-core:initialize');
       this.stateManager.updateState({
-        totalSlides: slideCount,
         currentIndex: 0,
         isLoading: false,
         loadingProgress: 100,
         isInitialized: true,
       });
+
+      // Create image metadata elements AFTER state is properly set
+      this.createImageMetadataElements();
 
       // Configure managers with slider configuration
       this.configureManagers(this.config);
@@ -776,6 +776,8 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
   private async performInstantTransition(index: number): Promise<void> {
+    console.log(`[TRANSITION] Instant transition to slide ${index}`);
+    
     if (!this.renderer) {
       this.updateVisualSlideIndicator(index);
       return;
@@ -787,10 +789,16 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       return;
     }
 
+    console.log(`[TRANSITION] Processing ${sprites.length} sprites, target index: ${index}`);
+
     // Hide all sprites and show only the target
     sprites.forEach((sprite, i) => {
-      this.renderer!.setVisible(sprite, i === index);
+      const shouldBeVisible = i === index;
+      console.log(`[TRANSITION] Sprite ${i}: setting visible=${shouldBeVisible}`);
+      this.renderer!.setVisible(sprite, shouldBeVisible);
     });
+    
+    console.log(`[TRANSITION] Instant transition to slide ${index} complete`);
   }
 
   /**
@@ -870,9 +878,23 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       return;
     }
 
-    const titleElement = this.container.querySelector('.image-meta span');
+    // More robust element finding
+    let titleElement = this.container.querySelector('.image-meta span');
+    
+    if (!titleElement) {
+      // Try to find the container and span separately
+      const metadataContainer = this.container.querySelector('.image-meta');
+      if (metadataContainer) {
+        titleElement = metadataContainer.querySelector('span');
+      }
+    }
+    
     if (titleElement) {
-      titleElement.textContent = `Image ${index + 1} of ${this.stateManager.getTotalSlides()}`;
+      const newText = `Image ${index + 1} of ${this.stateManager.getTotalSlides()}`;
+      titleElement.textContent = newText;
+      console.log(`Updated counter to: ${newText}`); // Debug log
+    } else {
+      console.warn('Could not find title element to update'); // Debug log
     }
   }
 }

@@ -96,13 +96,51 @@ vi.mock('pixi.js', () => ({
   })),
   Assets: {
     init: vi.fn(),
-    load: vi.fn().mockResolvedValue({ width: 100, height: 100 }),
+    load: vi.fn().mockResolvedValue({ 
+      width: 100, 
+      height: 100,
+      source: { width: 100, height: 100 }
+    }),
   },
   Filter: vi.fn(() => ({
     enabled: true,
     uniforms: {},
   })),
   Texture: vi.fn(() => ({ width: 100, height: 100 })),
+  Container: vi.fn(() => {
+    const container = {
+      position: { set: vi.fn(), x: 0, y: 0 },
+      scale: { set: vi.fn(), x: 1, y: 1 },
+      x: 0, y: 0, alpha: 1, visible: true,
+      children: [] as unknown[],
+      addChild: vi.fn(),
+      removeChild: vi.fn(),
+      setChildIndex: vi.fn(),
+      destroy: vi.fn(),
+    };
+    
+    // Override addChild to properly add to children array
+    container.addChild = vi.fn((child: unknown) => {
+      container.children.push(child);
+      return child;
+    });
+    
+    return container;
+  }),
+}));
+
+// Mock GSAP since we now use gsap.killTweensOf in setVisible
+vi.mock('gsap', () => ({
+  gsap: {
+    killTweensOf: vi.fn(),
+    timeline: vi.fn(() => ({
+      set: vi.fn(),
+      to: vi.fn(),
+      call: vi.fn(),
+      progress: vi.fn(),
+      kill: vi.fn(),
+    })),
+  },
 }));
 
 // =============================================================================

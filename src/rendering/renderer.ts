@@ -138,6 +138,11 @@ export class SliderRenderer implements ISliderRenderer {
       this.container.appendChild(canvas);
       canvas.classList.add('kinetic-slider-canvas');
 
+      // Create main container for slides
+      this.pixiContainer = new PIXI.Container();
+      this.app.stage.addChild(this.pixiContainer);
+      console.log('Created pixiContainer and added to stage');
+
       this.isInitialized = true;
     } catch (error) {
       throw new Error(`Failed to initialize PIXI renderer: ${error}`);
@@ -225,11 +230,25 @@ export class SliderRenderer implements ISliderRenderer {
     // Add GSAP data attributes for targeting
     this.markSpriteForGSAP(sprite, index);
 
-    // Add to stage
-    this.app.stage.addChild(sprite);
+    // Add to container (not directly to stage)
+    if (this.pixiContainer) {
+      this.pixiContainer.addChild(sprite);
+      console.log(`Added sprite ${index} to pixiContainer`);
+    } else {
+      this.app.stage.addChild(sprite);
+      console.log(`Added sprite ${index} directly to stage (no container)`);
+    }
 
     // Use safe array assignment to prevent object injection
     safeArrayAssign(this.sprites, index, sprite);
+
+    // Debug logging for sprite creation
+    console.log(`Created sprite ${index}: texture=${!!sprite.texture}, width=${sprite.width}, height=${sprite.height}, alpha=${sprite.alpha}, visible=${sprite.visible}`);
+    
+    // Extra debugging for slide 1
+    if (index === 0) {
+      console.log(`SLIDE 1 CREATION - texture valid: ${!!pixiTexture}, sprite added, texture width: ${pixiTexture?.width || 'unknown'}, texture height: ${pixiTexture?.height || 'unknown'}`);
+    }
 
     return sprite;
   }
@@ -240,10 +259,21 @@ export class SliderRenderer implements ISliderRenderer {
   removeSprite(sprite: PIXI.Sprite): void {
     if (!this.app) return;
 
-    this.app.stage.removeChild(sprite);
+    const index = this.sprites.indexOf(sprite);
+    console.log(`Removing sprite ${index}`);
+
+    // Remove from proper container
+    if (this.pixiContainer && sprite.parent === this.pixiContainer) {
+      this.pixiContainer.removeChild(sprite);
+      console.log(`Removed sprite ${index} from pixiContainer`);
+    } else if (sprite.parent === this.app.stage) {
+      this.app.stage.removeChild(sprite);
+      console.log(`Removed sprite ${index} from stage`);
+    } else {
+      console.warn(`Sprite ${index} parent mismatch: parent=${!!sprite.parent}`);
+    }
 
     // Remove from tracking array
-    const index = this.sprites.indexOf(sprite);
     if (index !== -1) {
       this.sprites.splice(index, 1);
     }
@@ -263,8 +293,36 @@ export class SliderRenderer implements ISliderRenderer {
    * Control sprite visibility
    */
   setVisible(sprite: PIXI.Sprite, visible: boolean): void {
+    const spriteIndex = this.sprites.indexOf(sprite);
+    
+    console.log(`[VISIBILITY] Sprite ${spriteIndex}: visible=${visible}, current alpha=${sprite.alpha}, current visible=${sprite.visible}`);
+    
+    // KILL ANY EXISTING GSAP ANIMATIONS ON THIS SPRITE FIRST
+    gsap.killTweensOf(sprite);
+    
     sprite.visible = visible;
     sprite.alpha = visible ? 1 : 0;
+    
+    // Additional logging for slide 1 specifically
+    if (spriteIndex === 0) {
+      console.log(`[SLIDE 1] KILLED GSAP tweens, setting visible=${visible}, alpha=${sprite.alpha}, texture valid=${!!sprite.texture}, parent=${!!sprite.parent}`);
+      
+      if (visible) {
+        // Force sprite to front and render - but add slight delay
+        setTimeout(() => {
+          if (this.pixiContainer && sprite.parent === this.pixiContainer) {
+            console.log(`[SLIDE 1] Moving to front of ${this.pixiContainer.children.length} children`);
+            this.pixiContainer.setChildIndex(sprite, this.pixiContainer.children.length - 1);
+          }
+          
+          // Force a render frame
+          if (this.app) {
+            console.log(`[SLIDE 1] Forcing render`);
+            this.app.render();
+          }
+        }, 16); // Next frame
+      }
+    }
   }
 
   // =============================================================================
@@ -272,38 +330,44 @@ export class SliderRenderer implements ISliderRenderer {
   // =============================================================================
 
   /**
-   * Apply filter to sprite
+   * Apply filter to sprite (TEMPORARILY DISABLED FOR DEBUGGING)
    */
-  applyFilter(sprite: PIXI.Sprite, filter: PIXI.Filter): void {
-    if (!sprite.filters) {
-      sprite.filters = [];
-    }
+  applyFilter(_sprite: PIXI.Sprite, _filter: PIXI.Filter): void {
+    // Debug log - filter application disabled for debugging
+    // DISABLED: All filter application temporarily disabled
+    // if (!sprite.filters) {
+    //   sprite.filters = [];
+    // }
 
-    // Ensure filters is an array before pushing
-    if (Array.isArray(sprite.filters)) {
-      sprite.filters.push(filter);
-    } else {
-      sprite.filters = [filter];
-    }
+    // // Ensure filters is an array before pushing
+    // if (Array.isArray(sprite.filters)) {
+    //   sprite.filters.push(filter);
+    // } else {
+    //   sprite.filters = [filter];
+    // }
   }
 
   /**
-   * Remove specific filter from sprite
+   * Remove specific filter from sprite (TEMPORARILY DISABLED FOR DEBUGGING)
    */
-  removeFilter(sprite: PIXI.Sprite, filter: PIXI.Filter): void {
-    if (!sprite.filters || !Array.isArray(sprite.filters)) return;
+  removeFilter(_sprite: PIXI.Sprite, _filter: PIXI.Filter): void {
+    // Debug log - filter removal disabled for debugging
+    // DISABLED: All filter operations temporarily disabled
+    // if (!sprite.filters || !Array.isArray(sprite.filters)) return;
 
-    const index = sprite.filters.indexOf(filter);
-    if (index !== -1) {
-      sprite.filters.splice(index, 1);
-    }
+    // const index = sprite.filters.indexOf(filter);
+    // if (index !== -1) {
+    //   sprite.filters.splice(index, 1);
+    // }
   }
 
   /**
-   * Clear all filters from sprite
+   * Clear all filters from sprite (TEMPORARILY DISABLED FOR DEBUGGING)
    */
-  clearFilters(sprite: PIXI.Sprite): void {
-    sprite.filters = [];
+  clearFilters(_sprite: PIXI.Sprite): void {
+    // Debug log - filter clearing disabled for debugging
+    // DISABLED: All filter operations temporarily disabled
+    // sprite.filters = [];
   }
 
   // =============================================================================
