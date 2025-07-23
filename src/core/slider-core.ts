@@ -30,6 +30,7 @@ import {
   PHYSICS,
 } from './constants';
 import { ConfigurationSystem } from '../config';
+import { debugLogger } from '../utils/debug-logger';
 
 // Import extracted managers
 import { StateManager } from '../managers/state-manager';
@@ -88,6 +89,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     try {
       // Process configuration with validation and defaults
       this.config = ConfigurationSystem.processConfig(userConfig);
+
+      // Initialize debug logger with config
+      debugLogger.initialize(this.config.debug || false, this);
 
       // Initialize state through StateManager
       this.stateManager.updateState({ isLoading: true, loadingProgress: 0 });
@@ -776,8 +780,8 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
   private async performInstantTransition(index: number): Promise<void> {
-    console.log(`[TRANSITION] Instant transition to slide ${index}`);
-    
+    debugLogger.debug(`Instant transition to slide ${index}`, 'TRANSITION');
+
     if (!this.renderer) {
       this.updateVisualSlideIndicator(index);
       return;
@@ -789,16 +793,22 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       return;
     }
 
-    console.log(`[TRANSITION] Processing ${sprites.length} sprites, target index: ${index}`);
+    debugLogger.debug(
+      `Processing ${sprites.length} sprites, target index: ${index}`,
+      'TRANSITION'
+    );
 
     // Hide all sprites and show only the target
     sprites.forEach((sprite, i) => {
       const shouldBeVisible = i === index;
-      console.log(`[TRANSITION] Sprite ${i}: setting visible=${shouldBeVisible}`);
+      debugLogger.debug(
+        `Sprite ${i}: setting visible=${shouldBeVisible}`,
+        'TRANSITION'
+      );
       this.renderer!.setVisible(sprite, shouldBeVisible);
     });
-    
-    console.log(`[TRANSITION] Instant transition to slide ${index} complete`);
+
+    debugLogger.debug(`Instant transition to slide ${index} complete`, 'TRANSITION');
   }
 
   /**
@@ -880,7 +890,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
     // More robust element finding
     let titleElement = this.container.querySelector('.image-meta span');
-    
+
     if (!titleElement) {
       // Try to find the container and span separately
       const metadataContainer = this.container.querySelector('.image-meta');
@@ -888,13 +898,13 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         titleElement = metadataContainer.querySelector('span');
       }
     }
-    
+
     if (titleElement) {
       const newText = `Image ${index + 1} of ${this.stateManager.getTotalSlides()}`;
       titleElement.textContent = newText;
-      console.log(`Updated counter to: ${newText}`); // Debug log
+      debugLogger.debug(`Updated counter to: ${newText}`, 'VISUAL_UPDATE');
     } else {
-      console.warn('Could not find title element to update'); // Debug log
+      debugLogger.warn('Could not find title element to update', 'VISUAL_UPDATE');
     }
   }
 }

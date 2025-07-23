@@ -13,6 +13,7 @@ import type {
   SlideConfig,
   ResponsiveBreakpoint,
 } from '../core/types';
+import { warn } from '../utils/debug-logger';
 import {
   ANIMATION_DURATION,
   EASING,
@@ -358,9 +359,9 @@ export class DefaultsManager {
       const legacyImages = (normalized as any).images;
 
       // Log deprecation warning
-      // eslint-disable-next-line no-console
-      console.warn(
-        'Configuration warning: images property is deprecated. Use slides instead.'
+      warn(
+        'images property is deprecated. Use slides instead.',
+        'CONFIG_MIGRATION'
       );
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

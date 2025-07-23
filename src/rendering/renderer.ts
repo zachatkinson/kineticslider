@@ -16,6 +16,7 @@
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 import type { ISliderRenderer, RenderConfig } from '../core/types';
+import { debugLogger } from '../utils/debug-logger';
 
 // Import Sprite type specifically
 type Sprite = PIXI.Sprite;
@@ -141,7 +142,7 @@ export class SliderRenderer implements ISliderRenderer {
       // Create main container for slides
       this.pixiContainer = new PIXI.Container();
       this.app.stage.addChild(this.pixiContainer);
-      console.log('Created pixiContainer and added to stage');
+      debugLogger.debug('Created pixiContainer and added to stage', 'RENDERER');
 
       this.isInitialized = true;
     } catch (error) {
@@ -233,24 +234,26 @@ export class SliderRenderer implements ISliderRenderer {
     // Add to container (not directly to stage)
     if (this.pixiContainer) {
       this.pixiContainer.addChild(sprite);
-      console.log(`Added sprite ${index} to pixiContainer`);
+      debugLogger.debug(`Added sprite ${index} to pixiContainer`, 'RENDERER');
     } else {
       this.app.stage.addChild(sprite);
-      console.log(`Added sprite ${index} directly to stage (no container)`);
+      debugLogger.debug(`Added sprite ${index} directly to stage (no container)`, 'RENDERER');
     }
 
     // Use safe array assignment to prevent object injection
     safeArrayAssign(this.sprites, index, sprite);
 
     // Debug logging for sprite creation
-    console.log(
-      `Created sprite ${index}: texture=${!!sprite.texture}, width=${sprite.width}, height=${sprite.height}, alpha=${sprite.alpha}, visible=${sprite.visible}`
+    debugLogger.debug(
+      `Created sprite ${index}: texture=${!!sprite.texture}, width=${sprite.width}, height=${sprite.height}, alpha=${sprite.alpha}, visible=${sprite.visible}`,
+      'RENDERER'
     );
 
     // Extra debugging for slide 1
     if (index === 0) {
-      console.log(
-        `SLIDE 1 CREATION - texture valid: ${!!pixiTexture}, sprite added, texture width: ${pixiTexture?.width || 'unknown'}, texture height: ${pixiTexture?.height || 'unknown'}`
+      debugLogger.debug(
+        `SLIDE 1 CREATION - texture valid: ${!!pixiTexture}, sprite added, texture width: ${pixiTexture?.width || 'unknown'}, texture height: ${pixiTexture?.height || 'unknown'}`,
+        'RENDERER'
       );
     }
 
@@ -264,18 +267,19 @@ export class SliderRenderer implements ISliderRenderer {
     if (!this.app) return;
 
     const index = this.sprites.indexOf(sprite);
-    console.log(`Removing sprite ${index}`);
+    debugLogger.debug(`Removing sprite ${index}`, 'RENDERER');
 
     // Remove from proper container
     if (this.pixiContainer && sprite.parent === this.pixiContainer) {
       this.pixiContainer.removeChild(sprite);
-      console.log(`Removed sprite ${index} from pixiContainer`);
+      debugLogger.debug(`Removed sprite ${index} from pixiContainer`, 'RENDERER');
     } else if (sprite.parent === this.app.stage) {
       this.app.stage.removeChild(sprite);
-      console.log(`Removed sprite ${index} from stage`);
+      debugLogger.debug(`Removed sprite ${index} from stage`, 'RENDERER');
     } else {
-      console.warn(
-        `Sprite ${index} parent mismatch: parent=${!!sprite.parent}`
+      debugLogger.warn(
+        `Sprite ${index} parent mismatch: parent=${!!sprite.parent}`,
+        'RENDERER'
       );
     }
 
@@ -301,8 +305,9 @@ export class SliderRenderer implements ISliderRenderer {
   setVisible(sprite: PIXI.Sprite, visible: boolean): void {
     const spriteIndex = this.sprites.indexOf(sprite);
 
-    console.log(
-      `[VISIBILITY] Sprite ${spriteIndex}: visible=${visible}, current alpha=${sprite.alpha}, current visible=${sprite.visible}`
+    debugLogger.debug(
+      `Sprite ${spriteIndex}: visible=${visible}, current alpha=${sprite.alpha}, current visible=${sprite.visible}`,
+      'VISIBILITY'
     );
 
     // KILL ANY EXISTING GSAP ANIMATIONS ON THIS SPRITE FIRST
@@ -313,16 +318,18 @@ export class SliderRenderer implements ISliderRenderer {
 
     // Additional logging for slide 1 specifically
     if (spriteIndex === 0) {
-      console.log(
-        `[SLIDE 1] KILLED GSAP tweens, setting visible=${visible}, alpha=${sprite.alpha}, texture valid=${!!sprite.texture}, parent=${!!sprite.parent}`
+      debugLogger.debug(
+        `SLIDE 1 - KILLED GSAP tweens, setting visible=${visible}, alpha=${sprite.alpha}, texture valid=${!!sprite.texture}, parent=${!!sprite.parent}`,
+        'VISIBILITY'
       );
 
       if (visible) {
         // Force sprite to front and render - but add slight delay
         setTimeout(() => {
           if (this.pixiContainer && sprite.parent === this.pixiContainer) {
-            console.log(
-              `[SLIDE 1] Moving to front of ${this.pixiContainer.children.length} children`
+            debugLogger.debug(
+              `SLIDE 1 - Moving to front of ${this.pixiContainer.children.length} children`,
+              'VISIBILITY'
             );
             this.pixiContainer.setChildIndex(
               sprite,
@@ -332,7 +339,7 @@ export class SliderRenderer implements ISliderRenderer {
 
           // Force a render frame
           if (this.app) {
-            console.log(`[SLIDE 1] Forcing render`);
+            debugLogger.debug('SLIDE 1 - Forcing render', 'VISIBILITY');
             this.app.render();
           }
         }, 16); // Next frame
