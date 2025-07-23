@@ -1,9 +1,9 @@
 /**
  * @fileoverview Configuration Validation System
- * 
+ *
  * Runtime validation for SliderConfig and SlideConfig with helpful error messages.
  * Provides comprehensive validation rules and partial configuration support.
- * 
+ *
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 
@@ -19,10 +19,7 @@ import type {
   ResponsiveConfig,
   PerformanceConfig,
 } from '../core/types';
-import {
-  EASING,
-  SCALE,
-} from '../core/constants';
+import { EASING, SCALE } from '../core/constants';
 
 /**
  * Validation result for configuration validation
@@ -100,7 +97,7 @@ export class ConfigValidator {
 
   /**
    * Validate a complete slider configuration
-   * 
+   *
    * @param config - Configuration to validate
    * @returns Validation result with errors and warnings
    */
@@ -143,12 +140,15 @@ export class ConfigValidator {
 
   /**
    * Validate a single slide configuration
-   * 
+   *
    * @param slide - Slide configuration to validate
    * @param index - Slide index for error reporting
    * @returns Validation result with errors and warnings
    */
-  validateSlideConfig(slide: Partial<SlideConfig>, index?: number): ValidationResult {
+  validateSlideConfig(
+    slide: Partial<SlideConfig>,
+    index?: number
+  ): ValidationResult {
     this.reset();
     const indexStr = index !== undefined ? `[${index}]` : '';
     this.currentPath = `slide${indexStr}`;
@@ -225,7 +225,6 @@ export class ConfigValidator {
     });
   }
 
-
   private validateRequiredSlideProperties(slide: Partial<SlideConfig>): void {
     if (!slide.id) {
       this.addError(
@@ -278,7 +277,10 @@ export class ConfigValidator {
 
     // Validate auto-play interval
     if (config.autoPlayInterval !== undefined) {
-      if (typeof config.autoPlayInterval !== 'number' || config.autoPlayInterval <= 0) {
+      if (
+        typeof config.autoPlayInterval !== 'number' ||
+        config.autoPlayInterval <= 0
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'Auto-play interval must be a positive number',
@@ -537,7 +539,9 @@ export class ConfigValidator {
     }
   }
 
-  private validateAccessibilityConfig(accessibility: AccessibilityConfig): void {
+  private validateAccessibilityConfig(
+    accessibility: AccessibilityConfig
+  ): void {
     if (accessibility.reduceMotion) {
       this.addWarning(
         VALIDATION_WARNING_CODES.ACCESSIBILITY_CONCERN,
@@ -565,14 +569,17 @@ export class ConfigValidator {
       const sortedBreakpoints = [...responsive.breakpoints].sort(
         (a, b) => a.minWidth - b.minWidth
       );
-      
+
       for (let i = 0; i < sortedBreakpoints.length - 1; i++) {
         // eslint-disable-next-line security/detect-object-injection
         const currentBreakpoint = sortedBreakpoints[i];
         if (!currentBreakpoint) continue;
-        const current = currentBreakpoint as { minWidth: number; maxWidth?: number };
+        const current = currentBreakpoint as {
+          minWidth: number;
+          maxWidth?: number;
+        };
         const next = sortedBreakpoints[i + 1];
-        
+
         if (current.maxWidth && current.maxWidth >= next.minWidth) {
           this.addError(
             VALIDATION_ERROR_CODES.DEPENDENCY_CONFLICT,
@@ -588,7 +595,10 @@ export class ConfigValidator {
 
   private validatePerformanceConfig(performance: PerformanceConfig): void {
     if (performance.warnings) {
-      if (performance.warnings.fpsWarning !== undefined && performance.warnings.fpsWarning <= 0) {
+      if (
+        performance.warnings.fpsWarning !== undefined &&
+        performance.warnings.fpsWarning <= 0
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'FPS warning threshold must be positive',
@@ -598,7 +608,10 @@ export class ConfigValidator {
         );
       }
 
-      if (performance.warnings.memoryWarning !== undefined && performance.warnings.memoryWarning <= 0) {
+      if (
+        performance.warnings.memoryWarning !== undefined &&
+        performance.warnings.memoryWarning <= 0
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'Memory warning threshold must be positive',
@@ -610,7 +623,9 @@ export class ConfigValidator {
     }
   }
 
-  private validateDisplacementEffects(displacement: { intensity?: number }): void {
+  private validateDisplacementEffects(displacement: {
+    intensity?: number;
+  }): void {
     if (displacement.intensity !== undefined) {
       this.validateNumber(
         displacement.intensity,
@@ -624,7 +639,10 @@ export class ConfigValidator {
 
   private validateSlideMetadata(slide: Partial<SlideConfig>): void {
     if (slide.metadata?.priority !== undefined) {
-      if (!Number.isInteger(slide.metadata.priority) || slide.metadata.priority < 0) {
+      if (
+        !Number.isInteger(slide.metadata.priority) ||
+        slide.metadata.priority < 0
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'Slide priority must be a non-negative integer',
@@ -691,7 +709,10 @@ export class ConfigValidator {
     }
 
     if (slide.timing?.easing) {
-      this.validateEasing(slide.timing.easing, `${this.currentPath}.timing.easing`);
+      this.validateEasing(
+        slide.timing.easing,
+        `${this.currentPath}.timing.easing`
+      );
     }
   }
 
@@ -753,9 +774,10 @@ export class ConfigValidator {
       }
     } catch {
       // Check if it's a relative path or simple filename
-      const isRelativePath = url.startsWith('/') || url.startsWith('./') || url.startsWith('../');
+      const isRelativePath =
+        url.startsWith('/') || url.startsWith('./') || url.startsWith('../');
       const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(url); // Has extension like .jpg, .png, etc.
-      
+
       if (!isRelativePath && !hasFileExtension) {
         this.addError(
           VALIDATION_ERROR_CODES.INVALID_FORMAT,
@@ -770,7 +792,9 @@ export class ConfigValidator {
 
   private validateEasing(easing: string, path: string): void {
     const validEasings = Object.values(EASING);
-    if (!validEasings.includes(easing as typeof EASING[keyof typeof EASING])) {
+    if (
+      !validEasings.includes(easing as (typeof EASING)[keyof typeof EASING])
+    ) {
       this.addWarning(
         VALIDATION_WARNING_CODES.BEST_PRACTICE,
         `Unknown easing function "${easing}". Consider using a standard GSAP easing.`,

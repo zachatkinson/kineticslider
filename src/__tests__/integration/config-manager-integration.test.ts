@@ -1,9 +1,9 @@
 /**
  * @fileoverview Integration Tests for Configuration System and Manager Coordination
- * 
+ *
  * Tests the integration between the enhanced configuration system and existing
  * managers, ensuring proper configuration propagation and manager coordination.
- * 
+ *
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 
@@ -68,12 +68,12 @@ describe('Configuration System Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Register mock services
     serviceContainer.register('_slider-physics', () => mockPhysics);
     serviceContainer.register('_slider-renderer', () => mockRenderer);
     serviceContainer.register('_slider-controller', () => mockController);
-    
+
     // Create mock container
     mockContainer = document.createElement('div');
     mockContainer.style.width = '800px';
@@ -81,7 +81,7 @@ describe('Configuration System Integration', () => {
     document.body.appendChild(mockContainer);
 
     sliderCore = new SliderCore();
-    
+
     // Clear configuration cache
     ConfigurationSystem.clearCache();
   });
@@ -90,14 +90,14 @@ describe('Configuration System Integration', () => {
     if (sliderCore) {
       sliderCore.destroy();
     }
-    
+
     if (mockContainer.parentNode) {
       mockContainer.parentNode.removeChild(mockContainer);
     }
-    
+
     // Clear service container
     serviceContainer.clear();
-    
+
     vi.restoreAllMocks();
   });
 
@@ -122,7 +122,7 @@ describe('Configuration System Integration', () => {
       expect(state.isInitialized).toBe(true);
       expect(state.totalSlides).toBe(3);
       expect(state.currentIndex).toBe(0);
-      
+
       // Should be playing due to autoPlay: true
       expect(sliderCore.isPlaying()).toBe(true);
     });
@@ -147,7 +147,7 @@ describe('Configuration System Integration', () => {
 
       const state = sliderCore.getState();
       expect(state.isInitialized).toBe(true);
-      
+
       // Should have default values applied
       expect(sliderCore.isPlaying()).toBe(false); // autoPlay defaults to false
     });
@@ -178,7 +178,7 @@ describe('Configuration System Integration', () => {
           { id: 'slide3', src: 'test3.jpg' },
         ],
       };
-      
+
       await sliderCore.initialize(config, mockContainer);
     });
 
@@ -193,9 +193,11 @@ describe('Configuration System Integration', () => {
       };
 
       // Use reflection to access private managers for testing
-      const { asTestableSliderCore, getManagerConfig } = await import('../../testing/test-interfaces');
+      const { asTestableSliderCore, getManagerConfig } = await import(
+        '../../testing/test-interfaces'
+      );
       const core = asTestableSliderCore(sliderCore);
-      
+
       // Configure managers
       core.configureManagers(ConfigurationSystem.processConfig(config));
 
@@ -214,9 +216,11 @@ describe('Configuration System Integration', () => {
         loop: true,
       };
 
-      const { asTestableSliderCore, getManagerConfig } = await import('../../testing/test-interfaces');
+      const { asTestableSliderCore, getManagerConfig } = await import(
+        '../../testing/test-interfaces'
+      );
       const core = asTestableSliderCore(sliderCore);
-      
+
       core.configureManagers(ConfigurationSystem.processConfig(config));
 
       const managerConfig = getManagerConfig(core.loopManager);
@@ -233,9 +237,11 @@ describe('Configuration System Integration', () => {
         },
       };
 
-      const { asTestableSliderCore, getManagerConfig } = await import('../../testing/test-interfaces');
+      const { asTestableSliderCore, getManagerConfig } = await import(
+        '../../testing/test-interfaces'
+      );
       const core = asTestableSliderCore(sliderCore);
-      
+
       core.configureManagers(ConfigurationSystem.processConfig(config));
 
       const managerConfig = getManagerConfig(core.navigationManager);
@@ -256,7 +262,7 @@ describe('Configuration System Integration', () => {
         autoPlay: false,
         loop: false,
       };
-      
+
       await sliderCore.initialize(initialConfig, mockContainer);
     });
 
@@ -316,7 +322,7 @@ describe('Configuration System Integration', () => {
   describe('Event Coordination', () => {
     it('should coordinate events between managers and configuration system', async () => {
       const events: Array<{ event: string; data: unknown }> = [];
-      
+
       // Listen to various events
       [
         SLIDER_EVENTS.INITIALIZED,
@@ -324,7 +330,7 @@ describe('Configuration System Integration', () => {
         SLIDER_EVENTS.CONFIG_UPDATED,
         SLIDER_EVENTS.PLAY_STARTED,
         SLIDER_EVENTS.PLAY_PAUSED,
-      ].forEach(event => {
+      ].forEach((event) => {
         sliderCore.on(event, (data) => {
           events.push({ event, data });
         });
@@ -341,15 +347,21 @@ describe('Configuration System Integration', () => {
       await sliderCore.initialize(config, mockContainer);
 
       // Should have received initialization and state change events
-      const initEvent = events.find(e => e.event === SLIDER_EVENTS.INITIALIZED);
+      const initEvent = events.find(
+        (e) => e.event === SLIDER_EVENTS.INITIALIZED
+      );
       expect(initEvent).toBeDefined();
       expect((initEvent?.data as { totalSlides: number })?.totalSlides).toBe(2);
 
-      const stateEvent = events.find(e => e.event === SLIDER_EVENTS.STATE_CHANGED);
+      const stateEvent = events.find(
+        (e) => e.event === SLIDER_EVENTS.STATE_CHANGED
+      );
       expect(stateEvent).toBeDefined();
 
       // Should have started playing due to autoPlay
-      const playEvent = events.find(e => e.event === SLIDER_EVENTS.PLAY_STARTED);
+      const playEvent = events.find(
+        (e) => e.event === SLIDER_EVENTS.PLAY_STARTED
+      );
       expect(playEvent).toBeDefined();
     });
   });
@@ -419,7 +431,7 @@ describe('Configuration System Integration', () => {
 
       expect(sliderCore.getState().totalSlides).toBe(50);
       expect(sliderCore.getState().isInitialized).toBe(true);
-      
+
       // Should initialize reasonably quickly even with many slides
       expect(endTime - startTime).toBeLessThan(2000); // 2 seconds max
     });
@@ -497,7 +509,7 @@ describe('Configuration System Integration', () => {
       // Mock matchMedia for reduced motion tests
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
-        value: vi.fn().mockImplementation(query => ({
+        value: vi.fn().mockImplementation((query) => ({
           matches: query === '(prefers-reduced-motion: reduce)',
           media: query,
           onchange: null,

@@ -628,7 +628,7 @@ export class StateManager extends SimpleEventEmitter {
     const stateKeys = Object.keys(current) as (keyof SliderState)[];
     for (const key of stateKeys) {
       if (!(key in current) || !(key in prev)) continue;
-      
+
       // eslint-disable-next-line security/detect-object-injection
       const prevValue = prev[key];
       // eslint-disable-next-line security/detect-object-injection

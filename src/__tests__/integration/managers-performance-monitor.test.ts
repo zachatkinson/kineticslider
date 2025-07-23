@@ -101,7 +101,9 @@ describe('PerformanceMonitor Unit Tests', () => {
       performanceMonitor.start();
 
       // Trigger memory update manually
-      const { asTestablePerformanceMonitor } = await import('../../testing/test-interfaces');
+      const { asTestablePerformanceMonitor } = await import(
+        '../../testing/test-interfaces'
+      );
       const testableMonitor = asTestablePerformanceMonitor(performanceMonitor);
       testableMonitor.updateMemoryMetrics();
 
@@ -118,7 +120,9 @@ describe('PerformanceMonitor Unit Tests', () => {
       performanceMonitor.start();
 
       // Trigger memory update
-      const { asTestablePerformanceMonitor } = await import('../../testing/test-interfaces');
+      const { asTestablePerformanceMonitor } = await import(
+        '../../testing/test-interfaces'
+      );
       const testableMonitor = asTestablePerformanceMonitor(performanceMonitor);
       testableMonitor.updateMemoryMetrics();
 
@@ -176,7 +180,9 @@ describe('PerformanceMonitor Unit Tests', () => {
 
       // Need to also set good FPS metrics for excellent grade
       // Set up good performance metrics through testing interface
-      const { asTestablePerformanceMonitor } = await import('../../testing/test-interfaces');
+      const { asTestablePerformanceMonitor } = await import(
+        '../../testing/test-interfaces'
+      );
       const testableMonitor = asTestablePerformanceMonitor(performanceMonitor);
       testableMonitor.updateMemoryMetrics();
 
@@ -205,11 +211,14 @@ describe('PerformanceMonitor Unit Tests', () => {
       // Force low FPS by mocking fps data
       // Mock low FPS condition through metrics (testing internal behavior)
       const metricsRef = performanceMonitor.getMetrics();
-      Object.defineProperty(metricsRef.fps, 'current', { value: 15, writable: true });
+      Object.defineProperty(metricsRef.fps, 'current', {
+        value: 15,
+        writable: true,
+      });
 
       // Performance alerts are checked during monitoring loop, so start monitoring briefly
       performanceMonitor.start();
-      await new Promise(resolve => setTimeout(resolve, 2100)); // Wait longer than alert interval (2000ms)
+      await new Promise((resolve) => setTimeout(resolve, 2100)); // Wait longer than alert interval (2000ms)
       performanceMonitor.stop();
 
       // Performance monitoring system is working (may not emit alerts due to test environment)
@@ -226,11 +235,12 @@ describe('PerformanceMonitor Unit Tests', () => {
 
       // Set high memory usage
       // Set high memory usage through mocked environment
-      mockPerformanceMemory.usedJSHeapSize = PERFORMANCE_THRESHOLDS.MEMORY_CRITICAL_THRESHOLD + 1000;
-      
+      mockPerformanceMemory.usedJSHeapSize =
+        PERFORMANCE_THRESHOLDS.MEMORY_CRITICAL_THRESHOLD + 1000;
+
       // Update memory metrics and trigger monitoring
       performanceMonitor.start();
-      await new Promise(resolve => setTimeout(resolve, 2100)); // Wait longer than alert interval (2000ms)
+      await new Promise((resolve) => setTimeout(resolve, 2100)); // Wait longer than alert interval (2000ms)
       performanceMonitor.stop();
 
       // Performance monitoring system is working (may not emit alerts due to test environment)

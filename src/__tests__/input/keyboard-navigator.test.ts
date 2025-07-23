@@ -55,7 +55,7 @@ describe('KeyboardNavigator', () => {
       textContent: '',
       setAttribute: vi.fn(),
       style: {} as CSSStyleDeclaration,
-      id: '_slider-live-region',
+      id: 'keyboard-navigator-announcements',
       className: 'sr-only',
       remove: vi.fn(),
     } as unknown as HTMLElement;
@@ -133,7 +133,7 @@ describe('KeyboardNavigator', () => {
       expect(mockElement.setAttribute).toHaveBeenCalledWith('tabindex', '0');
       expect(mockElement.setAttribute).toHaveBeenCalledWith(
         'aria-label',
-        'Interactive image _slider'
+        'Interactive image slider'
       );
       // aria-live is set on the separate live region element created by the navigator
     });
@@ -380,7 +380,8 @@ describe('KeyboardNavigator', () => {
       const liveRegionAppends = appendCalls.filter(
         (call) =>
           call[0] &&
-          (call[0] as unknown as HTMLElement).id === '_slider-live-region'
+          (call[0] as unknown as HTMLElement).id ===
+            'keyboard-navigator-announcements'
       );
       expect(liveRegionAppends).toHaveLength(0);
 
@@ -566,7 +567,7 @@ describe('KeyboardNavigator', () => {
     it('should provide proper ARIA labels', () => {
       expect(mockElement.setAttribute).toHaveBeenCalledWith(
         'aria-label',
-        'Interactive image _slider'
+        'Interactive image slider'
       );
     });
 

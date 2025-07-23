@@ -321,7 +321,9 @@ export async function configurePixiForTesting(): Promise<void> {
     try {
       const pixiModule = await import('pixi.js');
       if ('DOMAdapter' in pixiModule) {
-        (pixiModule.DOMAdapter as { set: (adapter: unknown) => void }).set(PixiTestingAdapter);
+        (pixiModule.DOMAdapter as { set: (adapter: unknown) => void }).set(
+          PixiTestingAdapter
+        );
       }
     } catch {
       // Ignore PIXI configuration errors in testing environment

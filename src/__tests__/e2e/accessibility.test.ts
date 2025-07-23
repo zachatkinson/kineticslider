@@ -114,22 +114,31 @@ test.describe('Accessibility E2E', () => {
 
       // Test keyboard navigation with fallback like other working tests
       const initialEngineIndex = await page.evaluate(() =>
-        (window as { kineticSlider?: { engine?: { getCurrentIndex?: () => number } } })
-          .kineticSlider?.engine?.getCurrentIndex?.()
+        (
+          window as {
+            kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
+          }
+        ).kineticSlider?.engine?.getCurrentIndex?.()
       );
-      
+
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(300);
 
       const afterRightEngineIndex = await page.evaluate(() =>
-        (window as { kineticSlider?: { engine?: { getCurrentIndex?: () => number } } })
-          .kineticSlider?.engine?.getCurrentIndex?.()
+        (
+          window as {
+            kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
+          }
+        ).kineticSlider?.engine?.getCurrentIndex?.()
       );
 
       const afterRightAriaValue = await _slider.getAttribute('aria-valuenow');
-      
+
       // Handle intermittent keyboard navigation
-      if (afterRightEngineIndex !== undefined && afterRightEngineIndex !== initialEngineIndex) {
+      if (
+        afterRightEngineIndex !== undefined &&
+        afterRightEngineIndex !== initialEngineIndex
+      ) {
         expect(afterRightAriaValue).not.toBe(initialAriaValue);
       } else {
         expect(afterRightAriaValue).toBeTruthy();
@@ -139,7 +148,7 @@ test.describe('Accessibility E2E', () => {
       await page.waitForTimeout(300);
 
       const afterLeftAriaValue = await _slider.getAttribute('aria-valuenow');
-      
+
       // For left arrow, just verify aria value exists since navigation is intermittent
       expect(afterLeftAriaValue).toBeTruthy();
 
@@ -169,22 +178,31 @@ test.describe('Accessibility E2E', () => {
 
       // Test D key (right) with fallback
       const initialEngineIndex = await page.evaluate(() =>
-        (window as { kineticSlider?: { engine?: { getCurrentIndex?: () => number } } })
-          .kineticSlider?.engine?.getCurrentIndex?.()
+        (
+          window as {
+            kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
+          }
+        ).kineticSlider?.engine?.getCurrentIndex?.()
       );
-      
+
       await page.keyboard.press('d');
       await page.waitForTimeout(300);
 
       const afterDEngineIndex = await page.evaluate(() =>
-        (window as { kineticSlider?: { engine?: { getCurrentIndex?: () => number } } })
-          .kineticSlider?.engine?.getCurrentIndex?.()
+        (
+          window as {
+            kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
+          }
+        ).kineticSlider?.engine?.getCurrentIndex?.()
       );
 
       const afterDAriaValue = await _slider.getAttribute('aria-valuenow');
-      
+
       // Handle intermittent WASD navigation
-      if (afterDEngineIndex !== undefined && afterDEngineIndex !== initialEngineIndex) {
+      if (
+        afterDEngineIndex !== undefined &&
+        afterDEngineIndex !== initialEngineIndex
+      ) {
         expect(afterDAriaValue).not.toBe(initialAriaValue);
       } else {
         expect(afterDAriaValue).toBeTruthy();
@@ -223,7 +241,9 @@ test.describe('Accessibility E2E', () => {
       await expect(_slider).toBeVisible();
 
       // Check for live region (target the primary one for testing)
-      const liveRegion = page.locator('#slider-announcements[aria-live="polite"]');
+      const liveRegion = page.locator(
+        '#slider-announcements[aria-live="polite"]'
+      );
       await expect(liveRegion).toBeAttached();
 
       await _slider.focus();
@@ -242,8 +262,11 @@ test.describe('Accessibility E2E', () => {
       // WAIT FOR FULL INITIALIZATION - like the working navigation test
       await page.waitForFunction(
         () => {
-          const engine = (window as { kineticSlider?: { engine?: { getCurrentIndex?: () => number } } })
-            .kineticSlider?.engine;
+          const engine = (
+            window as {
+              kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
+            }
+          ).kineticSlider?.engine;
           return engine?.getCurrentIndex?.() !== undefined;
         },
         { timeout: 5000 }
@@ -258,25 +281,34 @@ test.describe('Accessibility E2E', () => {
 
       // Navigate and check values update - using ROBUST approach like working tests
       await _slider.focus();
-      
+
       const initialEngineIndex = await page.evaluate(() =>
-        (window as { kineticSlider?: { engine?: { getCurrentIndex?: () => number } } })
-          .kineticSlider?.engine?.getCurrentIndex?.()
+        (
+          window as {
+            kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
+          }
+        ).kineticSlider?.engine?.getCurrentIndex?.()
       );
-      
+
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(1000);
 
       const finalEngineIndex = await page.evaluate(() =>
-        (window as { kineticSlider?: { engine?: { getCurrentIndex?: () => number } } })
-          .kineticSlider?.engine?.getCurrentIndex?.()
+        (
+          window as {
+            kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
+          }
+        ).kineticSlider?.engine?.getCurrentIndex?.()
       );
 
       const newValueNow = await _slider.getAttribute('aria-valuenow');
       const newValueText = await _slider.getAttribute('aria-valuetext');
 
       // Handle keyboard navigation like the working navigation test
-      if (finalEngineIndex !== undefined && finalEngineIndex !== initialEngineIndex) {
+      if (
+        finalEngineIndex !== undefined &&
+        finalEngineIndex !== initialEngineIndex
+      ) {
         // Navigation worked - test aria updates
         expect(newValueNow).not.toBe(initialValueNow);
         expect(newValueText).not.toBe(initialValueText);

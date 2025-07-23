@@ -124,11 +124,16 @@ export function KineticSlider({
         };
 
         // Set up event listeners
-        slider.on('slideChanged', ((...args: unknown[]) => {
-          const data = args[0] as { currentIndex: number; previousIndex: number };
+        slider.on('slideChanged', (...args: unknown[]) => {
+          const data = args[0] as {
+            currentIndex: number;
+            previousIndex: number;
+          };
           handleSlideChanged(data);
-        }));
-        slider.on('playStateChanged', (...args: unknown[]) => handlePlayStateChanged(...args));
+        });
+        slider.on('playStateChanged', (...args: unknown[]) =>
+          handlePlayStateChanged(...args)
+        );
 
         // Initialize slider
         await slider.initialize(config, sliderRef.current);

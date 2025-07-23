@@ -1,9 +1,9 @@
 /**
  * @fileoverview Configuration System Exports
- * 
+ *
  * Main entry point for the enhanced configuration system providing
  * validation, defaults management, and type-safe configuration handling.
- * 
+ *
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 
@@ -66,28 +66,32 @@ export class ConfigurationSystem {
 
   /**
    * Validate and merge configuration with intelligent defaults
-   * 
+   *
    * @param userConfig - User-provided configuration
    * @returns Validated and merged configuration
    * @throws Error if validation fails
    */
-  static processConfig(userConfig: Partial<import('../core/types').SliderConfig>): import('../core/types').SliderConfig {
+  static processConfig(
+    userConfig: Partial<import('../core/types').SliderConfig>
+  ): import('../core/types').SliderConfig {
     // Validate configuration
     const validationResult = this.validator.validateConfig(userConfig);
-    
+
     if (!validationResult.isValid) {
-      const errorMessages = validationResult.errors.map(
-        error => `${error.path}: ${error.message}`
-      ).join('\n');
-      
+      const errorMessages = validationResult.errors
+        .map((error) => `${error.path}: ${error.message}`)
+        .join('\n');
+
       throw new Error(`Configuration validation failed:\n${errorMessages}`);
     }
 
     // Log warnings to console
     if (validationResult.warnings.length > 0) {
-      validationResult.warnings.forEach(warning => {
+      validationResult.warnings.forEach((warning) => {
         // eslint-disable-next-line no-console
-        console.warn(`Configuration warning: ${warning.path}: ${warning.message}`);
+        console.warn(
+          `Configuration warning: ${warning.path}: ${warning.message}`
+        );
       });
     }
 
@@ -97,17 +101,19 @@ export class ConfigurationSystem {
 
   /**
    * Validate configuration without merging defaults
-   * 
+   *
    * @param config - Configuration to validate
    * @returns Validation result
    */
-  static validateConfig(config: Partial<import('../core/types').SliderConfig>): import('./config-validator').ValidationResult {
+  static validateConfig(
+    config: Partial<import('../core/types').SliderConfig>
+  ): import('./config-validator').ValidationResult {
     return this.validator.validateConfig(config);
   }
 
   /**
    * Get default configuration
-   * 
+   *
    * @returns Complete default configuration
    */
   static getDefaults(): import('../core/types').SliderConfig {
@@ -116,11 +122,13 @@ export class ConfigurationSystem {
 
   /**
    * Process slide configuration with defaults
-   * 
+   *
    * @param slideConfig - Slide configuration to process
    * @returns Complete slide configuration
    */
-  static processSlideConfig(slideConfig: Partial<import('../core/types').SlideConfig>): import('../core/types').SlideConfig {
+  static processSlideConfig(
+    slideConfig: Partial<import('../core/types').SlideConfig>
+  ): import('../core/types').SlideConfig {
     return this.defaultsManager.getSlideDefaults(slideConfig);
   }
 

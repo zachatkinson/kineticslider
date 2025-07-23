@@ -1,9 +1,9 @@
 /**
  * @fileoverview Unit Tests for ConfigValidator
- * 
+ *
  * Comprehensive tests for the configuration validation system ensuring
  * type safety, validation rules, and helpful error messages.
- * 
+ *
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 
@@ -33,7 +33,7 @@ describe('ConfigValidator', () => {
         };
 
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(true);
         expect(result.errors).toHaveLength(0);
       });
@@ -41,8 +41,8 @@ describe('ConfigValidator', () => {
       it('should validate complete configuration', () => {
         const config: Partial<SliderConfig> = {
           slides: [
-            { 
-              id: 'slide1', 
+            {
+              id: 'slide1',
               src: 'image1.jpg',
               alt: 'First image',
               title: 'First slide',
@@ -68,7 +68,7 @@ describe('ConfigValidator', () => {
         };
 
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(true);
         expect(result.errors).toHaveLength(0);
       });
@@ -77,21 +77,25 @@ describe('ConfigValidator', () => {
     describe('Invalid configurations', () => {
       it('should reject null/undefined config', () => {
         const result = validator.validateConfig(null as never);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors).toHaveLength(1);
-        expect(result.errors[0].code).toBe(VALIDATION_ERROR_CODES.REQUIRED_PROPERTY);
+        expect(result.errors[0].code).toBe(
+          VALIDATION_ERROR_CODES.REQUIRED_PROPERTY
+        );
         expect(result.errors[0].path).toBe('config');
       });
 
       it('should reject config without slides or images', () => {
         const config: Partial<SliderConfig> = {};
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors.length).toBeGreaterThanOrEqual(1);
-        expect(result.errors[0].code).toBe(VALIDATION_ERROR_CODES.REQUIRED_PROPERTY);
+        expect(result.errors[0].code).toBe(
+          VALIDATION_ERROR_CODES.REQUIRED_PROPERTY
+        );
         expect(result.errors[0].message).toContain('slides');
       });
 
@@ -99,12 +103,14 @@ describe('ConfigValidator', () => {
         const config: Partial<SliderConfig> = {
           slides: [],
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors.length).toBeGreaterThanOrEqual(1);
-        expect(result.errors[0].code).toBe(VALIDATION_ERROR_CODES.INVALID_VALUE);
+        expect(result.errors[0].code).toBe(
+          VALIDATION_ERROR_CODES.INVALID_VALUE
+        );
         expect(result.errors[0].message).toContain('empty');
       });
 
@@ -113,9 +119,9 @@ describe('ConfigValidator', () => {
           slides: [{ id: 'slide1', src: 'image1.jpg' }],
           duration: -100,
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors).toHaveLength(1);
         expect(result.errors[0].code).toBe(VALIDATION_ERROR_CODES.OUT_OF_RANGE);
@@ -127,9 +133,9 @@ describe('ConfigValidator', () => {
           slides: [{ id: 'slide1', src: 'image1.jpg' }],
           preloadCount: -5,
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors).toHaveLength(1);
         expect(result.errors[0].code).toBe(VALIDATION_ERROR_CODES.OUT_OF_RANGE);
@@ -138,19 +144,18 @@ describe('ConfigValidator', () => {
     });
 
     describe('Warnings', () => {
-
       it('should warn about performance concerns', () => {
         const config: Partial<SliderConfig> = {
           slides: [{ id: 'slide1', src: 'image1.jpg' }],
           duration: 50, // Very short duration
           preloadCount: 15, // High preload count
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.warnings.length).toBeGreaterThan(0);
         const perfWarnings = result.warnings.filter(
-          w => w.code === VALIDATION_WARNING_CODES.PERFORMANCE_IMPACT
+          (w) => w.code === VALIDATION_WARNING_CODES.PERFORMANCE_IMPACT
         );
         expect(perfWarnings.length).toBeGreaterThan(0);
       });
@@ -164,11 +169,11 @@ describe('ConfigValidator', () => {
           },
           autoPlay: true,
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         const a11yWarnings = result.warnings.filter(
-          w => w.code === VALIDATION_WARNING_CODES.ACCESSIBILITY_CONCERN
+          (w) => w.code === VALIDATION_WARNING_CODES.ACCESSIBILITY_CONCERN
         );
         expect(a11yWarnings.length).toBeGreaterThan(0);
       });
@@ -178,11 +183,11 @@ describe('ConfigValidator', () => {
           slides: [{ id: 'slide1', src: 'image1.jpg' }],
           easing: 'customUnknownEasing',
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         const easingWarnings = result.warnings.filter(
-          w => w.code === VALIDATION_WARNING_CODES.BEST_PRACTICE
+          (w) => w.code === VALIDATION_WARNING_CODES.BEST_PRACTICE
         );
         expect(easingWarnings.length).toBeGreaterThan(0);
       });
@@ -199,9 +204,9 @@ describe('ConfigValidator', () => {
             momentumDamping: 0.85,
           },
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(true);
       });
 
@@ -215,9 +220,9 @@ describe('ConfigValidator', () => {
             momentumDamping: 2.0, // Out of range
           },
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors.length).toBeGreaterThan(0);
       });
@@ -234,9 +239,9 @@ describe('ConfigValidator', () => {
             antialias: true,
           },
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(true);
       });
 
@@ -249,9 +254,9 @@ describe('ConfigValidator', () => {
             resolution: 5.0, // Too high
           },
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors.length).toBeGreaterThan(0);
       });
@@ -278,9 +283,9 @@ describe('ConfigValidator', () => {
             ],
           },
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(true);
       });
 
@@ -305,12 +310,14 @@ describe('ConfigValidator', () => {
             ],
           },
         };
-        
+
         const result = validator.validateConfig(config);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors).toHaveLength(1);
-        expect(result.errors[0].code).toBe(VALIDATION_ERROR_CODES.DEPENDENCY_CONFLICT);
+        expect(result.errors[0].code).toBe(
+          VALIDATION_ERROR_CODES.DEPENDENCY_CONFLICT
+        );
       });
     });
   });
@@ -324,7 +331,7 @@ describe('ConfigValidator', () => {
         };
 
         const result = validator.validateSlideConfig(slide);
-        
+
         expect(result.isValid).toBe(true);
         expect(result.errors).toHaveLength(0);
       });
@@ -357,7 +364,7 @@ describe('ConfigValidator', () => {
         };
 
         const result = validator.validateSlideConfig(slide);
-        
+
         expect(result.isValid).toBe(true);
         expect(result.errors).toHaveLength(0);
       });
@@ -366,15 +373,15 @@ describe('ConfigValidator', () => {
     describe('Invalid slide configurations', () => {
       it('should reject slide without required properties', () => {
         const slide: Partial<SlideConfig> = {};
-        
+
         const result = validator.validateSlideConfig(slide);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors.length).toBeGreaterThan(0);
-        
-        const idError = result.errors.find(e => e.path.includes('.id'));
-        const srcError = result.errors.find(e => e.path.includes('.src'));
-        
+
+        const idError = result.errors.find((e) => e.path.includes('.id'));
+        const srcError = result.errors.find((e) => e.path.includes('.src'));
+
         expect(idError).toBeDefined();
         expect(srcError).toBeDefined();
       });
@@ -394,9 +401,9 @@ describe('ConfigValidator', () => {
             timeout: -5000, // Invalid - should be positive
           },
         };
-        
+
         const result = validator.validateSlideConfig(slide);
-        
+
         expect(result.isValid).toBe(false);
         expect(result.errors.length).toBeGreaterThan(0);
       });
@@ -420,9 +427,9 @@ describe('ConfigValidator', () => {
             id: 'slide1',
             src: url,
           };
-          
+
           const result = validator.validateSlideConfig(slide);
-          
+
           if (!result.isValid) {
             // Should be valid, log the error for debugging
             console.log(`URL ${url} failed validation:`, result.errors);
@@ -434,11 +441,15 @@ describe('ConfigValidator', () => {
             id: 'slide1',
             src: url,
           };
-          
+
           const result = validator.validateSlideConfig(slide);
-          
+
           expect(result.isValid).toBe(false);
-          expect(result.errors.some(e => e.code === VALIDATION_ERROR_CODES.INVALID_FORMAT)).toBe(true);
+          expect(
+            result.errors.some(
+              (e) => e.code === VALIDATION_ERROR_CODES.INVALID_FORMAT
+            )
+          ).toBe(true);
         }
       });
     });
@@ -453,21 +464,21 @@ describe('ConfigValidator', () => {
             src: 'invalid-url', // Invalid URL
             effects: {
               opacity: 2.0, // Out of range
-              scale: -1.0, // Out of range  
+              scale: -1.0, // Out of range
             },
           },
         ],
         duration: -500, // Invalid duration
         preloadCount: -10, // Invalid preload count
       };
-      
+
       const result = validator.validateConfig(config);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(3); // Multiple errors should be collected
-      
+
       // Check that different types of errors are present
-      const errorCodes = result.errors.map(e => e.code);
+      const errorCodes = result.errors.map((e) => e.code);
       expect(errorCodes).toContain(VALIDATION_ERROR_CODES.REQUIRED_PROPERTY);
       expect(errorCodes).toContain(VALIDATION_ERROR_CODES.OUT_OF_RANGE);
     });
@@ -479,9 +490,9 @@ describe('ConfigValidator', () => {
         slides: [{ id: 'slide1', src: 'image1.jpg' }],
         duration: -100,
       };
-      
+
       const result = validator.validateConfig(config);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors[0].message).toContain('positive');
       expect(result.errors[0].path).toBe('config.duration');
@@ -494,9 +505,9 @@ describe('ConfigValidator', () => {
         slides: [{ id: 'slide1', src: 'image1.jpg' }],
         easing: 'customUnknownEasing', // Unknown easing warning
       };
-      
+
       const result = validator.validateConfig(config);
-      
+
       expect(result.warnings[0].message).toContain('easing');
       expect(result.warnings[0].suggestion).toContain('One of:');
     });

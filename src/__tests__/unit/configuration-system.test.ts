@@ -1,9 +1,9 @@
 /**
  * @fileoverview Unit Tests for ConfigurationSystem
- * 
+ *
  * Integration tests for the complete configuration system combining
  * validation, defaults management, and configuration processing.
- * 
+ *
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 
@@ -31,12 +31,12 @@ describe('ConfigurationSystem', () => {
         };
 
         const result = ConfigurationSystem.processConfig(userConfig);
-        
+
         expect(result).toBeDefined();
         expect(result.slides).toHaveLength(2);
         expect(result.slides[0].id).toBe('slide1');
         expect(result.slides[1].id).toBe('slide2');
-        
+
         // Defaults should be applied
         expect(result.autoPlay).toBeDefined();
         expect(result.duration).toBeDefined();
@@ -49,14 +49,14 @@ describe('ConfigurationSystem', () => {
       it('should process comprehensive configuration', () => {
         const userConfig: Partial<SliderConfig> = {
           slides: [
-            { 
-              id: 'slide1', 
+            {
+              id: 'slide1',
               src: 'https://example.com/image1.jpg',
               alt: 'First slide',
               metadata: { priority: 1 },
             },
-            { 
-              id: 'slide2', 
+            {
+              id: 'slide2',
               src: 'https://example.com/image2.jpg',
               alt: 'Second slide',
             },
@@ -101,7 +101,7 @@ describe('ConfigurationSystem', () => {
         };
 
         const result = ConfigurationSystem.processConfig(userConfig);
-        
+
         // User values should be preserved
         expect(result.autoPlay).toBe(true);
         expect(result.autoPlayInterval).toBe(4000);
@@ -112,13 +112,12 @@ describe('ConfigurationSystem', () => {
         expect(result.physics?.transitionDuration).toBe(0.7);
         expect(result.rendering?.width).toBe(1920);
         expect(result.input?.enableTouch).toBe(false);
-        
+
         // Defaults should be applied for missing values
         expect(result.physics?.transitionEase).toBeDefined();
         expect(result.rendering?.backgroundColor).toBeDefined();
         expect(result.input?.enableKeyboard).toBe(true);
       });
-
     });
 
     describe('Invalid configurations', () => {
@@ -145,7 +144,9 @@ describe('ConfigurationSystem', () => {
           expect(true).toBe(false); // Should have thrown
         } catch (error) {
           expect(error).toBeInstanceOf(Error);
-          expect((error as Error).message).toContain('Configuration validation failed');
+          expect((error as Error).message).toContain(
+            'Configuration validation failed'
+          );
           expect((error as Error).message).toContain('config.slides');
           expect((error as Error).message).toContain('config.duration');
           expect((error as Error).message).toContain('config.preloadCount');
@@ -183,8 +184,10 @@ describe('ConfigurationSystem', () => {
 
     describe('Warning handling', () => {
       it('should log warnings but not fail processing', () => {
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-        
+        const consoleSpy = vi
+          .spyOn(console, 'warn')
+          .mockImplementation(() => {});
+
         const configWithWarnings: Partial<SliderConfig> = {
           slides: [{ id: 'slide1', src: 'image1.jpg' }],
           preloadCount: 15, // High preload count warning
@@ -192,16 +195,16 @@ describe('ConfigurationSystem', () => {
         };
 
         const result = ConfigurationSystem.processConfig(configWithWarnings);
-        
+
         // Processing should succeed
         expect(result).toBeDefined();
         expect(result.slides).toHaveLength(1);
-        
+
         // Warnings should have been logged
         expect(consoleSpy).toHaveBeenCalled();
-        const warnings = consoleSpy.mock.calls.map(call => call[0]);
+        const warnings = consoleSpy.mock.calls.map((call) => call[0]);
         expect(warnings.some((w: string) => w.includes('easing'))).toBe(true);
-        
+
         consoleSpy.mockRestore();
       });
     });
@@ -215,7 +218,7 @@ describe('ConfigurationSystem', () => {
       };
 
       const result = ConfigurationSystem.validateConfig(config);
-      
+
       expect(result).toBeDefined();
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
@@ -229,7 +232,7 @@ describe('ConfigurationSystem', () => {
       };
 
       const result = ConfigurationSystem.validateConfig(invalidConfig);
-      
+
       expect(result).toBeDefined();
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
@@ -239,7 +242,7 @@ describe('ConfigurationSystem', () => {
   describe('getDefaults', () => {
     it('should return complete default configuration', () => {
       const defaults = ConfigurationSystem.getDefaults();
-      
+
       expect(defaults).toBeDefined();
       expect(defaults.slides).toEqual([]);
       expect(defaults.autoPlay).toBeDefined();
@@ -263,12 +266,12 @@ describe('ConfigurationSystem', () => {
       };
 
       const result = ConfigurationSystem.processSlideConfig(slideConfig);
-      
+
       expect(result).toBeDefined();
       expect(result.id).toBe('slide1');
       expect(result.src).toBe('image1.jpg');
       expect(result.alt).toBe('First slide');
-      
+
       // Defaults should be applied
       expect(result.title).toBeDefined();
       expect(result.metadata).toBeDefined();
@@ -291,12 +294,12 @@ describe('ConfigurationSystem', () => {
       };
 
       const result = ConfigurationSystem.processSlideConfig(slideConfig);
-      
+
       // User values should be preserved
       expect(result.metadata?.priority).toBe(5);
       expect(result.metadata?.tags).toEqual(['featured']);
       expect(result.effects?.opacity).toBe(0.8);
-      
+
       // Defaults should be applied for missing values
       expect(result.metadata?.description).toBeDefined();
       expect(result.effects?.scale).toBeDefined();
@@ -311,21 +314,21 @@ describe('ConfigurationSystem', () => {
       const config: Partial<SliderConfig> = {
         slides: [{ id: 'slide1', src: 'image1.jpg' }],
       };
-      
+
       const result1 = ConfigurationSystem.processConfig(config);
       const defaults1 = ConfigurationSystem.getDefaults();
-      
+
       // Clear cache
       ConfigurationSystem.clearCache();
-      
+
       // Get again - should be fresh instances
       const result2 = ConfigurationSystem.processConfig(config);
       const defaults2 = ConfigurationSystem.getDefaults();
-      
+
       // Content should be the same
       expect(result1).toEqual(result2);
       expect(defaults1).toEqual(defaults2);
-      
+
       // But references might be different due to cache clearing
       // This is implementation-dependent, so we just test that clearing doesn't break anything
       expect(result2).toBeDefined();
@@ -380,7 +383,7 @@ describe('ConfigurationSystem', () => {
       };
 
       const result = ConfigurationSystem.processConfig(userConfig);
-      
+
       // TypeScript should enforce these types
       expect(typeof result.autoPlay).toBe('boolean');
       expect(typeof result.duration).toBe('number');
@@ -397,11 +400,11 @@ describe('ConfigurationSystem', () => {
       };
 
       const result = ConfigurationSystem.processConfig(userConfig);
-      
+
       // Optional properties should have defaults or be properly typed as optional
       expect(result.texts).toBeDefined(); // Should be empty array default
       expect(result.filters).toBeDefined(); // Should be empty array default
-      
+
       // These can be undefined in the processed config if not set
       if (result.displacementEffects) {
         expect(typeof result.displacementEffects).toBe('object');
@@ -440,10 +443,10 @@ describe('ConfigurationSystem', () => {
       const startTime = Date.now();
       const result = ConfigurationSystem.processConfig(userConfig);
       const endTime = Date.now();
-      
+
       expect(result).toBeDefined();
       expect(result.slides).toHaveLength(100);
-      
+
       // Should complete reasonably quickly (adjust threshold as needed)
       expect(endTime - startTime).toBeLessThan(1000); // 1 second max
     });

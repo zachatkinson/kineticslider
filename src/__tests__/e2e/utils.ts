@@ -23,7 +23,7 @@ export async function navigateAndWait(
 ): Promise<void> {
   // Use a more reliable wait strategy for webkit
   const isWebkit = page.context().browser()?.browserType().name() === 'webkit';
-  
+
   await page.goto(path, {
     waitUntil: isWebkit ? WAIT_STRATEGIES.LOAD : WAIT_STRATEGIES.NETWORK_IDLE,
     timeout: TEST_TIMING.E2E_TIMEOUT,

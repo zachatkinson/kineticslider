@@ -245,7 +245,7 @@ describe('SliderCore Simple Unit Tests', () => {
       serviceContainer.clear();
 
       await expect(sliderCore.initialize(mockConfig)).rejects.toThrow(
-        'Failed to initialize services'
+        "Service '_slider-controller' not found"
       );
     });
 

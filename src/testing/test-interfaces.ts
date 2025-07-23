@@ -1,6 +1,6 @@
 /**
  * @fileoverview Testing interfaces for accessing internal methods
- * 
+ *
  * Provides type-safe access to internal methods for testing without
  * using any types or eslint-disable comments.
  */
@@ -26,7 +26,9 @@ export interface PerformanceMonitorTestable {
 /**
  * Type-safe cast for accessing testable methods
  */
-export function asTestablePerformanceMonitor(monitor: PerformanceMonitor): PerformanceMonitorTestable {
+export function asTestablePerformanceMonitor(
+  monitor: PerformanceMonitor
+): PerformanceMonitorTestable {
   return monitor as unknown as PerformanceMonitorTestable;
 }
 
@@ -106,6 +108,8 @@ export function asTestableSliderCore(core: SliderCore): SliderCoreTestable {
 /**
  * Type-safe cast for accessing manager config
  */
-export function getManagerConfig(manager: AutoPlayManager | NavigationManager | LoopManager): ManagerConfigTestable {
+export function getManagerConfig(
+  manager: AutoPlayManager | NavigationManager | LoopManager
+): ManagerConfigTestable {
   return (manager as unknown as { config: ManagerConfigTestable }).config;
 }

@@ -77,6 +77,19 @@ declare global {
     };
 
     /**
+     * Global KineticSlider configuration for E2E tests
+     * @type {object}
+     */
+    kineticSliderConfig?: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ConfigurationSystem: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ConfigValidator: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DefaultsManager: any;
+    };
+
+    /**
      * Keyboard debug information for testing
      * @type {object}
      */

@@ -206,7 +206,11 @@ test.describe('ColorMatrixFilter Effects E2E', () => {
 
         for (const intensity of intensityLevels) {
           const effect = effectPresets.createEffect('vintage', {
-            intensity: intensity as 'subtle' | 'moderate' | 'strong' | 'intense',
+            intensity: intensity as
+              | 'subtle'
+              | 'moderate'
+              | 'strong'
+              | 'intense',
             duration: 0.5,
           });
 

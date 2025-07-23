@@ -1,9 +1,9 @@
 /**
  * @fileoverview Unit Tests for DefaultsManager
- * 
+ *
  * Comprehensive tests for the configuration defaults management system
  * ensuring intelligent merging, responsive behavior, and proper defaults.
- * 
+ *
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 
@@ -32,7 +32,7 @@ describe('DefaultsManager', () => {
     it('should return the same instance', () => {
       const instance1 = DefaultsManager.getInstance();
       const instance2 = DefaultsManager.getInstance();
-      
+
       expect(instance1).toBe(instance2);
     });
 
@@ -45,25 +45,37 @@ describe('DefaultsManager', () => {
   describe('getDefaults', () => {
     it('should return complete default configuration', () => {
       const defaults = manager.getDefaults();
-      
+
       // Check core properties
       expect(defaults.slides).toEqual([]);
       expect(defaults.autoPlay).toBe(DEFAULT_CONFIGS.CORE.autoPlay);
-      expect(defaults.autoPlayInterval).toBe(DEFAULT_CONFIGS.CORE.autoPlayInterval);
+      expect(defaults.autoPlayInterval).toBe(
+        DEFAULT_CONFIGS.CORE.autoPlayInterval
+      );
       expect(defaults.duration).toBe(DEFAULT_CONFIGS.CORE.duration);
       expect(defaults.easing).toBe(DEFAULT_CONFIGS.CORE.easing);
       expect(defaults.loop).toBe(DEFAULT_CONFIGS.CORE.loop);
       expect(defaults.interactive).toBe(DEFAULT_CONFIGS.CORE.interactive);
-      
+
       // Check interaction settings
-      expect(defaults.pauseOnHover).toBe(DEFAULT_CONFIGS.INTERACTION.pauseOnHover);
-      expect(defaults.pauseOnFocus).toBe(DEFAULT_CONFIGS.INTERACTION.pauseOnFocus);
-      expect(defaults.pauseOnInteraction).toBe(DEFAULT_CONFIGS.INTERACTION.pauseOnInteraction);
-      
+      expect(defaults.pauseOnHover).toBe(
+        DEFAULT_CONFIGS.INTERACTION.pauseOnHover
+      );
+      expect(defaults.pauseOnFocus).toBe(
+        DEFAULT_CONFIGS.INTERACTION.pauseOnFocus
+      );
+      expect(defaults.pauseOnInteraction).toBe(
+        DEFAULT_CONFIGS.INTERACTION.pauseOnInteraction
+      );
+
       // Check performance settings
-      expect(defaults.preloadCount).toBe(DEFAULT_CONFIGS.PERFORMANCE.preloadCount);
-      expect(defaults.enableVirtualization).toBe(DEFAULT_CONFIGS.PERFORMANCE.enableVirtualization);
-      
+      expect(defaults.preloadCount).toBe(
+        DEFAULT_CONFIGS.PERFORMANCE.preloadCount
+      );
+      expect(defaults.enableVirtualization).toBe(
+        DEFAULT_CONFIGS.PERFORMANCE.enableVirtualization
+      );
+
       // Check complex objects
       expect(defaults.physics).toBeDefined();
       expect(defaults.rendering).toBeDefined();
@@ -77,7 +89,7 @@ describe('DefaultsManager', () => {
     it('should cache defaults for performance', () => {
       const defaults1 = manager.getDefaults();
       const defaults2 = manager.getDefaults();
-      
+
       expect(defaults1).toBe(defaults2); // Same reference due to caching
     });
 
@@ -85,7 +97,7 @@ describe('DefaultsManager', () => {
       const defaults1 = manager.getDefaults();
       manager.clearCache();
       const defaults2 = manager.getDefaults();
-      
+
       expect(defaults1).not.toBe(defaults2); // Different references
       expect(defaults1).toEqual(defaults2); // But same content
     });
@@ -103,16 +115,18 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       // User values should be preserved
       expect(merged.slides).toEqual(userConfig.slides);
       expect(merged.autoPlay).toBe(true);
       expect(merged.duration).toBe(2000);
-      
+
       // Defaults should be applied for missing values
       expect(merged.loop).toBe(DEFAULT_CONFIGS.CORE.loop);
       expect(merged.easing).toBe(DEFAULT_CONFIGS.CORE.easing);
-      expect(merged.pauseOnHover).toBe(DEFAULT_CONFIGS.INTERACTION.pauseOnHover);
+      expect(merged.pauseOnHover).toBe(
+        DEFAULT_CONFIGS.INTERACTION.pauseOnHover
+      );
       expect(merged.physics).toBeDefined();
       expect(merged.rendering).toBeDefined();
     });
@@ -135,20 +149,25 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       // User physics values should be preserved
       expect(merged.physics?.transitionDuration).toBe(0.8);
       // Default physics values should be applied
-      expect(merged.physics?.transitionEase).toBe(DEFAULT_CONFIGS.PHYSICS.transitionEase);
-      expect(merged.physics?.swipeThreshold).toBe(DEFAULT_CONFIGS.PHYSICS.swipeThreshold);
-      
+      expect(merged.physics?.transitionEase).toBe(
+        DEFAULT_CONFIGS.PHYSICS.transitionEase
+      );
+      expect(merged.physics?.swipeThreshold).toBe(
+        DEFAULT_CONFIGS.PHYSICS.swipeThreshold
+      );
+
       // User rendering values should be preserved
       expect(merged.rendering?.width).toBe(1920);
       expect(merged.rendering?.height).toBe(1080);
       // Default rendering values should be applied
-      expect(merged.rendering?.antialias).toBe(DEFAULT_CONFIGS.RENDERING.antialias);
+      expect(merged.rendering?.antialias).toBe(
+        DEFAULT_CONFIGS.RENDERING.antialias
+      );
     });
-
   });
 
   describe('getSlideDefaults', () => {
@@ -159,11 +178,11 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.getSlideDefaults(slideConfig);
-      
+
       // User values preserved
       expect(merged.id).toBe('slide1');
       expect(merged.src).toBe('image1.jpg');
-      
+
       // Defaults applied
       expect(merged.alt).toBe('');
       expect(merged.title).toBe('');
@@ -171,7 +190,7 @@ describe('DefaultsManager', () => {
       expect(merged.loading).toBeDefined();
       expect(merged.timing).toBeDefined();
       expect(merged.effects).toBeDefined();
-      
+
       // Check specific defaults
       expect(merged.metadata?.priority).toBe(0);
       expect(merged.loading?.lazy).toBe(false);
@@ -197,12 +216,12 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.getSlideDefaults(slideConfig);
-      
+
       // User values preserved
       expect(merged.metadata?.priority).toBe(5);
       expect(merged.metadata?.tags).toEqual(['featured']);
       expect(merged.timing?.duration).toBe(2000);
-      
+
       // Defaults applied for missing values
       expect(merged.metadata?.description).toBe('');
       expect(merged.timing?.delay).toBe(0);
@@ -216,13 +235,13 @@ describe('DefaultsManager', () => {
       // Remove unused variable to fix lint
       // const tabletDefaults = manager.getBreakpointDefaults('tablet');
       const desktopDefaults = manager.getBreakpointDefaults('desktop');
-      
+
       // Mobile should have mobile viewport settings
       expect(mobileDefaults.rendering?.width).toBeLessThan(800);
-      
+
       // Desktop should have larger viewport
       expect(desktopDefaults.rendering?.width).toBeGreaterThan(1000);
-      
+
       // Non-existent breakpoint should return empty config
       const unknownDefaults = manager.getBreakpointDefaults('unknown');
       expect(unknownDefaults).toEqual({});
@@ -234,7 +253,7 @@ describe('DefaultsManager', () => {
       // Mock window.matchMedia for reduced motion tests
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
-        value: vi.fn().mockImplementation(query => ({
+        value: vi.fn().mockImplementation((query) => ({
           matches: query === '(prefers-reduced-motion: reduce)',
           media: query,
           onchange: null,
@@ -257,7 +276,7 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       expect(merged.preloadCount).toBeLessThanOrEqual(2);
     });
 
@@ -273,7 +292,7 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       expect(merged.enableVirtualization).toBe(true);
     });
 
@@ -291,7 +310,7 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       // Should increase interval to account for duration + buffer (500 + 500 = 1000)
       expect(merged.autoPlayInterval).toBe(1000);
     });
@@ -303,7 +322,7 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       expect(merged.performance?.enabled).toBe(true);
       expect(merged.performance?.logging).toBe(true);
     });
@@ -317,13 +336,15 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
-      expect(merged.memoryManagement?.maxMemoryUsage).toBeGreaterThanOrEqual(512);
+
+      expect(merged.memoryManagement?.maxMemoryUsage).toBeGreaterThanOrEqual(
+        512
+      );
     });
 
     it('should apply reduced motion preferences', () => {
       // Mock reduced motion preference
-      vi.mocked(window.matchMedia).mockImplementation(query => ({
+      vi.mocked(window.matchMedia).mockImplementation((query) => ({
         matches: query === '(prefers-reduced-motion: reduce)',
         media: query,
         onchange: null,
@@ -340,9 +361,11 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       expect(merged.accessibility?.reduceMotion).toBe(true);
-      expect(merged.duration).toBeLessThanOrEqual(ANIMATION_DURATION.FAST * 1000);
+      expect(merged.duration).toBeLessThanOrEqual(
+        ANIMATION_DURATION.FAST * 1000
+      );
     });
   });
 
@@ -367,7 +390,7 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       // Should have mobile-specific settings
       expect(merged.rendering?.width).toBeLessThan(800);
       expect(merged.input?.swipeThreshold).toBeLessThan(INPUT.SWIPE_THRESHOLD);
@@ -384,7 +407,7 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       // Should have desktop-specific settings
       expect(merged.rendering?.width).toBeGreaterThan(1000);
     });
@@ -401,7 +424,7 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       // User settings should be preserved without responsive overrides
       expect(merged.rendering?.width).toBe(1920);
     });
@@ -422,11 +445,11 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       // User values should be preserved
       expect(merged.effects?.blur?.enabled).toBe(true);
       expect(merged.effects?.blur?.intensity).toBe(5);
-      
+
       // Defaults should be applied for missing nested values
       expect(merged.effects?.blur?.quality).toBe('medium');
       expect(merged.effects?.colorAdjustments).toBeDefined();
@@ -454,13 +477,15 @@ describe('DefaultsManager', () => {
       };
 
       const merged = manager.mergeWithDefaults(userConfig);
-      
+
       // User array should completely override default array
       expect(merged.responsive?.breakpoints).toHaveLength(1);
       expect(merged.responsive?.breakpoints?.[0].name).toBe('custom');
-      
+
       // But nested object merging should still work
-      expect(merged.accessibility?.ariaLabels?.sliderLabel).toBe('My custom slider');
+      expect(merged.accessibility?.ariaLabels?.sliderLabel).toBe(
+        'My custom slider'
+      );
       expect(merged.accessibility?.ariaLabels?.nextButton).toBe('Next slide');
     });
   });

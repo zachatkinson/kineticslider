@@ -53,6 +53,20 @@ vi.mock('pixi.js', () => ({
       children: [],
     },
     renderer: {
+      canvas: {
+        style: {},
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        classList: {
+          add: vi.fn(),
+          remove: vi.fn(),
+          contains: vi.fn(),
+        },
+        clientWidth: 800,
+        clientHeight: 600,
+        width: 800,
+        height: 600,
+      },
       resize: vi.fn(),
       render: vi.fn(),
       destroy: vi.fn(),

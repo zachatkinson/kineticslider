@@ -33,13 +33,13 @@ export interface SliderState {
 
 /**
  * Comprehensive slider configuration interface with complete type safety
- * 
+ *
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 export interface SliderConfig {
   /** Array of slide configurations */
   slides: SlideConfig[];
-  
+
   // Core playback settings
   /** Enable auto-play functionality */
   autoPlay?: boolean;
@@ -51,7 +51,7 @@ export interface SliderConfig {
   easing?: string;
   /** Enable infinite loop */
   loop?: boolean;
-  
+
   // Interaction settings
   /** Enable mouse/touch interaction */
   interactive?: boolean;
@@ -61,7 +61,7 @@ export interface SliderConfig {
   pauseOnFocus?: boolean;
   /** Pause on user interaction */
   pauseOnInteraction?: boolean;
-  
+
   // Performance settings
   /** Number of slides to preload */
   preloadCount?: number;
@@ -69,7 +69,7 @@ export interface SliderConfig {
   enableVirtualization?: boolean;
   /** Memory management configuration */
   memoryManagement?: MemoryManagementConfig;
-  
+
   // Visual settings
   /** Physics animation configuration */
   physics?: Partial<PhysicsConfig>;
@@ -77,17 +77,17 @@ export interface SliderConfig {
   rendering?: Partial<RenderConfig>;
   /** Visual effects configuration */
   effects?: VisualEffectsConfig;
-  
+
   // Input handling
   /** Input system configuration */
   input?: Partial<InputConfig>;
   /** Accessibility configuration */
   accessibility?: AccessibilityConfig;
-  
+
   // Responsive behavior
   /** Responsive configuration for different breakpoints */
   responsive?: ResponsiveConfig;
-  
+
   // Advanced features (Phase 4+ compatibility)
   /** Text overlays for slides */
   texts?: SliderText[];
@@ -95,7 +95,7 @@ export interface SliderConfig {
   filters?: FilterConfig[];
   /** Displacement effects configuration */
   displacementEffects?: DisplacementConfig;
-  
+
   // Development and debugging
   /** Enable debug mode */
   debug?: boolean;
@@ -124,7 +124,7 @@ export interface SlideData {
 
 /**
  * Comprehensive slide configuration interface
- * 
+ *
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 export interface SlideConfig extends SlideData {

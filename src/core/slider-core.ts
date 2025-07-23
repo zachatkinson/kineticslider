@@ -232,10 +232,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
    * Navigate to next slide
    */
   async nextSlide(): Promise<void> {
-    console.log('🔄 nextSlide() called');
-    
     if (!this.config) {
-      console.error('❌ Slider not initialized!');
       throw new Error(
         `${SLIDER_ERROR_CODES.NOT_INITIALIZED}: Slider not initialized`
       );
@@ -243,7 +240,6 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
     const currentIndex = this.stateManager.getCurrentIndex();
     const totalSlides = this.stateManager.getTotalSlides();
-    console.log(`📊 Current state: slide ${currentIndex} of ${totalSlides}`);
 
     // Use LoopManager to determine next index
     const loopTransition = this.loopManager.getNextIndex(
@@ -251,10 +247,8 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       totalSlides,
       'forward'
     );
-    console.log('🔄 Loop transition:', loopTransition);
 
     if (!loopTransition.shouldNavigate) {
-      console.log('🚫 Navigation blocked by loop manager');
       // If auto-play is running and we can't loop, pause auto-play
       if (this.stateManager.isPlaying()) {
         this.pause();
@@ -262,7 +256,6 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       return;
     }
 
-    console.log(`➡️ Navigating to slide ${loopTransition.targetIndex}`);
     await this.goToSlide(loopTransition.targetIndex);
   }
 
@@ -303,6 +296,21 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
     // Update state through StateManager
     this.stateManager.updateState({ isPlaying: true });
+
+    // Enable auto-play temporarily if not already enabled (for manual play button)
+    const currentState = this.autoPlayManager.getState();
+
+    if (!currentState.config.enabled) {
+      this.autoPlayManager.updateConfig({ enabled: true });
+    }
+
+    // For manual play, also disable automatic pausing that might interfere
+    this.autoPlayManager.updateConfig({
+      enabled: true,
+      pauseOnFocus: false,
+      pauseOnHover: false,
+      pauseOnInteraction: false,
+    });
 
     // Start auto-play through AutoPlayManager
     this.autoPlayManager.start(async () => {
@@ -499,6 +507,35 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       this.emit(SLIDER_EVENTS.PLAY_STOPPED);
     });
 
+    // Auto-play resume events with proper callback restoration
+    this.autoPlayManager.on(SLIDER_EVENTS.PLAY_RESUMED, () => {
+      // Reconnect the nextSlide callback when auto-play resumes
+      this.autoPlayManager.start(async () => {
+        await this.nextSlide();
+      });
+      this.emit(SLIDER_EVENTS.PLAY_RESUMED);
+    });
+
+    this.autoPlayManager.on(SLIDER_EVENTS.VISIBILITY_RESUMED, () => {
+      // Handle page visibility resumed
+      if (this.stateManager.isPlaying()) {
+        this.autoPlayManager.start(async () => {
+          await this.nextSlide();
+        });
+      }
+      this.emit(SLIDER_EVENTS.VISIBILITY_RESUMED);
+    });
+
+    this.autoPlayManager.on(SLIDER_EVENTS.WINDOW_FOCUS_RESUMED, () => {
+      // Handle window focus resumed
+      if (this.stateManager.isPlaying()) {
+        this.autoPlayManager.start(async () => {
+          await this.nextSlide();
+        });
+      }
+      this.emit(SLIDER_EVENTS.WINDOW_FOCUS_RESUMED);
+    });
+
     // NavigationManager events
     this.navigationManager.on(SLIDER_EVENTS.NAVIGATION_REQUESTED, (data) => {
       this.emit(SLIDER_EVENTS.NAVIGATION_REQUESTED, data);
@@ -521,9 +558,12 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     // Configure AutoPlayManager with enhanced options
     this.autoPlayManager.updateConfig({
       enabled: config.autoPlay || false,
-      interval: config.autoPlayInterval || config.duration || ANIMATION_DURATION.STANDARD * 1000,
+      interval:
+        config.autoPlayInterval ||
+        config.duration ||
+        ANIMATION_DURATION.STANDARD * 1000,
       pauseOnHover: config.pauseOnHover !== false, // Default true unless explicitly disabled
-      pauseOnFocus: config.pauseOnFocus !== false, // Default true unless explicitly disabled  
+      pauseOnFocus: config.pauseOnFocus !== false, // Default true unless explicitly disabled
       pauseOnInteraction: config.pauseOnInteraction !== false, // Default true unless explicitly disabled
     });
 
@@ -548,181 +588,125 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
   private async initializeServices(container?: HTMLElement): Promise<void> {
-    // Track errors globally to bypass catch blocks
-    const errors: Array<{ service: string; error: unknown }> = [];
-    (
-      window as {
-        __serviceInitErrors?: Array<{ service: string; error: unknown }>;
-      }
-    ).__serviceInitErrors = errors;
+    // Get services from container - simplified error handling
 
+    // Physics service (optional)
     try {
-      // Get services from container - with more resilient error handling
+      this.physics = serviceContainer.get<ISliderPhysics>(SERVICE_KEYS.PHYSICS);
+    } catch {
+      this.physics = null;
+    }
+
+    // Renderer service (optional for production, required for visual experience)
+    try {
+      this.renderer = serviceContainer.get<ISliderRenderer>(
+        SERVICE_KEYS.RENDERER
+      );
+    } catch {
+      this.renderer = null;
+    }
+
+    // Controller service (required)
+    this.controller = serviceContainer.get<ISliderController>(
+      SERVICE_KEYS.CONTROLLER
+    );
+    if (!this.controller) {
+      throw new Error(
+        `${SLIDER_ERROR_CODES.DEPENDENCY_MISSING}: Controller service is required but not available`
+      );
+    }
+
+    // Initialize renderer if available and container provided
+    if (container && this.renderer) {
+      const renderConfig = {
+        width: container.clientWidth || 800,
+        height: container.clientHeight || 600,
+        backgroundColor: 0x000000,
+        antialias: true,
+        resolution: 1,
+        ...this.config?.rendering,
+      };
 
       try {
-        this.physics = serviceContainer.get<ISliderPhysics>(
-          SERVICE_KEYS.PHYSICS
-        );
-      } catch (physicsError) {
-        errors.push({ service: 'physics', error: physicsError });
-        console.warn('Physics service failed to initialize:', physicsError);
-        // Continue - physics is not critical for basic functionality
-        this.physics = null;
-      }
+        await this.renderer.initialize(container, renderConfig);
 
-      try {
-        this.renderer = serviceContainer.get<ISliderRenderer>(
-          SERVICE_KEYS.RENDERER
-        );
-      } catch (rendererError) {
-        errors.push({ service: 'renderer', error: rendererError });
-        console.warn('Renderer service failed to initialize:', rendererError);
-        // Continue - renderer may not be available in headless mode
+        // Create sprites for all slides
+        for (const [i, slide] of this.config!.slides.entries()) {
+          try {
+            await this.renderer.createSprite(slide.src, i);
+          } catch {
+            // Sprite creation failed, continue with next slide
+          }
+        }
+
+        // Update sprite visibility for created sprites
+        const sprites = this.renderer.getSprites();
+        sprites.forEach((sprite, i) => {
+          const shouldBeVisible = i === this.stateManager.getCurrentIndex();
+          this.renderer!.setVisible(sprite, shouldBeVisible);
+        });
+      } catch {
         this.renderer = null;
       }
+    }
 
-      try {
-        this.controller = serviceContainer.get<ISliderController>(
-          SERVICE_KEYS.CONTROLLER
-        );
-      } catch (controllerError) {
-        errors.push({ service: 'controller', error: controllerError });
-        console.warn('Controller service failed to initialize:', controllerError);
-        // Continue - but controller is critical, so we'll handle this below
-        this.controller = null;
-      }
-
-      // Allow functioning without renderer (headless mode) but require controller for input
-      if (!this.controller) {
-        throw new Error(
-          `${SLIDER_ERROR_CODES.DEPENDENCY_MISSING}: Controller service is required but not available`
-        );
-      }
-
-      // Physics and renderer are optional - warn if missing but continue
-      if (!this.physics) {
-        console.warn('Physics service not available - using basic transitions');
-      }
-      if (!this.renderer) {
-        console.warn('Renderer service not available - running in headless mode');
-      }
-
-      // Initialize renderer with container and config (if available)
-      if (container && this.renderer) {
-        // Use provided rendering config or default
-        const renderConfig = {
-          width: 800,
-          height: 600,
-          backgroundColor: 0x000000,
-          antialias: true,
-          resolution: 1,
-          ...this.config?.rendering,
+    // Configure services - regardless of renderer success
+    if (this.config) {
+      // Configure physics if available
+      if (this.physics) {
+        // Use provided physics config or default
+        const physicsConfig = {
+          transitionDuration: 0.3,
+          transitionEase: 'power2.out',
+          swipeThreshold: 50,
+          scaleIntensity: 0.1,
+          momentumDamping: 0.8,
+          ...this.config.physics,
         };
-        try {
-          await this.renderer.initialize(container, renderConfig);
 
-          // Create sprites for all slides
-          for (const [i, slide] of this.config!.slides.entries()) {
-            try {
-              await this.renderer.createSprite(slide.src, i);
-            } catch (spriteError) {
-              // Handle sprite creation error
-              errors.push({ service: 'renderer', error: spriteError });
-            }
-          }
-
-          // Update sprite visibility for created sprites
-          const sprites = this.renderer.getSprites();
-          sprites.forEach((sprite, i) => {
-            const shouldBeVisible = i === this.stateManager.getCurrentIndex();
-            this.renderer!.setVisible(sprite, shouldBeVisible);
-          });
-        } catch (rendererInitError) {
-          console.warn('Renderer initialization failed, continuing in headless mode:', rendererInitError);
-          errors.push({ service: 'renderer', error: rendererInitError });
-          this.renderer = null; // Set to null so other code knows renderer is unavailable
-        }
-      } else if (!this.renderer) {
-        // No renderer available - headless mode
-        console.log('Running in headless mode - no visual rendering');
-      } else {
-        // No container provided - headless mode
-        console.log('No container provided - headless mode');
+        this.physics.setPhysicsConfig(physicsConfig);
       }
 
-      // Configure services
-      if (this.config) {
-        // Configure physics if available
-        if (this.physics) {
-          // Use provided physics config or default
-          const physicsConfig = {
-            transitionDuration: 0.3,
-            transitionEase: 'power2.out',
-            swipeThreshold: 50,
-            scaleIntensity: 0.1,
-            momentumDamping: 0.8,
-            ...this.config.physics,
-          };
-
-          this.physics.setPhysicsConfig(physicsConfig);
-        }
-
-        // Initialize controller with input callbacks
-        if (this.controller && container) {
-          console.log('🎮 Initializing controller with callbacks');
-          this.controller.initialize(container, {
-            onSwipeLeft: () => {
-              console.log('🔄 Swipe left triggered -> nextSlide()');
-              return this.nextSlide();
-            },
-            onSwipeRight: () => {
-              console.log('🔄 Swipe right triggered -> previousSlide()');
-              return this.previousSlide();
-            },
-            onDragStart: (_x: number, _y: number) => {
-              // Drag start handling - could be used for momentum
-            },
-            onDragMove: (
-              _x: number,
-              _y: number,
-              _deltaX: number,
-              _deltaY: number
-            ) => {
-              // Drag move handling - could be used for follow dragging
-            },
-            onDragEnd: (_x: number, _y: number) => {
-              // Drag end handling - could be used for release animations
-            },
-            onKeyLeft: () => {
-              console.log('⬅️ Key left triggered -> previousSlide()');
-              return this.previousSlide();
-            },
-            onKeyRight: () => {
-              console.log('➡️ Key right triggered -> nextSlide()');
-              return this.nextSlide();
-            },
-            onTogglePlayPause: () => {
-              console.log('⏯️ Toggle play/pause triggered');
-              return this.togglePlayPause();
-            },
-            onGoToSlide: (index: number) => {
-              console.log(`🎯 Go to slide ${index} triggered`);
-              return this.goToSlide(index);
-            },
-            onEscape: () => {
-              console.log('🚪 Escape triggered');
-              return this.handleEscape();
-            },
-          });
-        } else {
-          console.warn('❌ Controller or container missing - input will not work!', {
-            controller: !!this.controller,
-            container: !!container
-          });
-        }
+      // Initialize controller with input callbacks
+      if (this.controller && container) {
+        this.controller.initialize(container, {
+          onSwipeLeft: () => {
+            return this.nextSlide();
+          },
+          onSwipeRight: () => {
+            return this.previousSlide();
+          },
+          onDragStart: (_x: number, _y: number) => {
+            // Drag start handling - could be used for momentum
+          },
+          onDragMove: (
+            _x: number,
+            _y: number,
+            _deltaX: number,
+            _deltaY: number
+          ) => {
+            // Drag move handling - could be used for follow dragging
+          },
+          onDragEnd: (_x: number, _y: number) => {
+            // Drag end handling - could be used for release animations
+          },
+          onKeyLeft: () => {
+            return this.previousSlide();
+          },
+          onKeyRight: () => {
+            return this.nextSlide();
+          },
+          onTogglePlayPause: () => {
+            return this.togglePlayPause();
+          },
+          onGoToSlide: (index: number) => {
+            return this.goToSlide(index);
+          },
+          onEscape: () => {
+            return this.handleEscape();
+          },
+        });
       }
-    } catch (error) {
-      throw new Error(`Failed to initialize services: ${error}`);
     }
   }
 
@@ -829,7 +813,6 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     });
   }
 
-
   private setupErrorHandling(): void {
     this.on(SLIDER_EVENTS.ERROR, () => {
       // Central error handling
@@ -892,7 +875,6 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       titleElement.textContent = `Image ${index + 1} of ${this.stateManager.getTotalSlides()}`;
     }
   }
-
 }
 
 // Note: SliderCore is registered in index.ts to avoid circular dependencies

@@ -105,7 +105,9 @@ describe('DisplacementEffects', () => {
     };
 
     // Mock DisplacementFilter constructor
-    vi.mocked(DisplacementFilter).mockImplementation(() => mockFilter as unknown as DisplacementFilter);
+    vi.mocked(DisplacementFilter).mockImplementation(
+      () => mockFilter as unknown as DisplacementFilter
+    );
   });
 
   afterEach(() => {
@@ -518,7 +520,9 @@ describe('DisplacementEffects', () => {
 
       displacementEffects.createMouseFollowEffect(sprite);
 
-      expect(sprite.filters.filter((f) => f === (mockFilter as unknown as Filter))).toHaveLength(1);
+      expect(
+        sprite.filters.filter((f) => f === (mockFilter as unknown as Filter))
+      ).toHaveLength(1);
     });
 
     it('should handle existing filters array', () => {
