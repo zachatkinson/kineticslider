@@ -259,4 +259,202 @@ describe('SliderCore Unit Tests', () => {
       expect(sliderCore.isTransitioning()).toBe(false);
     });
   });
+
+  describe('Displacement Texture Loading', () => {
+    let mockDisplacementTextureLoader: MockService;
+    let mockEffectPresets: MockService;
+
+    beforeEach(() => {
+      // Mock DisplacementTextureLoader
+      mockDisplacementTextureLoader = createMockService([
+        'loadDisplacementTextures',
+      ]);
+
+      // Mock EffectPresets
+      mockEffectPresets = createMockService(['setDisplacementTexture']);
+
+      // Replace the real instances with our mocks
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (sliderCore as any).displacementTextureLoader = mockDisplacementTextureLoader;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (sliderCore as any).effectPresets = mockEffectPresets;
+    });
+
+    it('should load displacement textures during initialization', async () => {
+      const mockTexture = { width: 256, height: 256 };
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockResolvedValue({
+        background: mockTexture,
+        cursor: null,
+      });
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      await sliderCore.initialize(mockConfig);
+
+      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(mockTexture);
+    });
+
+    it('should handle successful displacement texture loading', async () => {
+      const mockBackgroundTexture = { width: 512, height: 512 };
+      const mockCursorTexture = { width: 128, height: 128 };
+
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockResolvedValue({
+        background: mockBackgroundTexture,
+        cursor: mockCursorTexture,
+      });
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      await sliderCore.initialize(mockConfig);
+
+      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalledTimes(1);
+      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(mockBackgroundTexture);
+    });
+
+    it('should handle null background texture gracefully', async () => {
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockResolvedValue({
+        background: null,
+        cursor: null,
+      });
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      await sliderCore.initialize(mockConfig);
+
+      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
+    });
+
+    it('should handle displacement texture loading errors gracefully', async () => {
+      const loadingError = new Error('Failed to load displacement texture');
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockRejectedValue(loadingError);
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      // Should not throw - error should be caught and logged
+      await expect(sliderCore.initialize(mockConfig)).resolves.not.toThrow();
+
+      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
+    });
+
+    it('should handle non-Error displacement texture loading failures', async () => {
+      // Test with string error
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockRejectedValue('Network error');
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      await expect(sliderCore.initialize(mockConfig)).resolves.not.toThrow();
+
+      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
+    });
+
+    it('should handle undefined displacement texture result', async () => {
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockResolvedValue(undefined);
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      await expect(sliderCore.initialize(mockConfig)).resolves.not.toThrow();
+
+      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
+    });
+
+    it('should handle displacement texture loading timeout', async () => {
+      // Simulate a timeout by never resolving the promise
+      let rejectTimeout: (reason?: unknown) => void;
+      const timeoutPromise = new Promise((_, reject) => {
+        rejectTimeout = reject;
+      });
+
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockReturnValue(timeoutPromise);
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      // Start initialization
+      const initPromise = sliderCore.initialize(mockConfig);
+
+      // Simulate timeout after a short delay
+      setTimeout(() => {
+        rejectTimeout!(new Error('Timeout loading displacement textures'));
+      }, 10);
+
+      await expect(initPromise).resolves.not.toThrow();
+      expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
+    });
+
+    it('should load displacement textures only once per initialization', async () => {
+      const mockTexture = { width: 256, height: 256 };
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockResolvedValue({
+        background: mockTexture,
+        cursor: null,
+      });
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      // Initialize slider
+      await sliderCore.initialize(mockConfig);
+
+      // Verify displacement texture loading was called once
+      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalledTimes(1);
+      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not interfere with initialization if displacement texture loading fails', async () => {
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockRejectedValue(
+        new Error('Displacement texture loading failed')
+      );
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      // Initialization should complete successfully despite displacement texture failure
+      await sliderCore.initialize(mockConfig);
+
+      const state = sliderCore.getState();
+      expect(state.isInitialized).toBe(true);
+      expect(state.totalSlides).toBe(3);
+    });
+
+    it('should handle concurrent displacement texture loading', async () => {
+      const mockTexture = { width: 256, height: 256 };
+      let resolveTextureLoading: (value: unknown) => void;
+      const textureLoadingPromise = new Promise((resolve) => {
+        resolveTextureLoading = resolve;
+      });
+
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockReturnValue(
+        textureLoadingPromise
+      );
+
+      mockRenderer.initialize.mockResolvedValue(undefined);
+      mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
+
+      // Start initialization
+      const initPromise = sliderCore.initialize(mockConfig);
+
+      // Resolve texture loading after a delay
+      setTimeout(() => {
+        resolveTextureLoading!({
+          background: mockTexture,
+          cursor: null,
+        });
+      }, 50);
+
+      await initPromise;
+
+      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(mockTexture);
+    });
+  });
 });

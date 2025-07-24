@@ -71,7 +71,7 @@ test.describe('Filter System E2E', () => {
 
         // Check if renderer and sprites are available
         try {
-          const renderer = engine.renderer;
+          const renderer = engine?.renderer;
           if (!renderer) return false;
 
           const sprites = renderer.getSprites?.();
@@ -195,7 +195,7 @@ test.describe('Filter System E2E', () => {
 
         // Check if renderer and sprites are available
         try {
-          const renderer = engine.renderer;
+          const renderer = engine?.renderer;
           if (!renderer) return false;
 
           const sprites = renderer.getSprites?.();
@@ -269,7 +269,7 @@ test.describe('Filter System E2E', () => {
 
         // Check if renderer and sprites are available
         try {
-          const renderer = engine.renderer;
+          const renderer = engine?.renderer;
           if (!renderer) return false;
 
           const sprites = renderer.getSprites?.();
@@ -395,4 +395,5 @@ test.describe('Filter System E2E', () => {
     const clearButton = page.locator('button:has-text("Clear Filters")');
     await clearButton.click();
   });
+
 });
