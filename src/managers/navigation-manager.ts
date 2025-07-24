@@ -8,7 +8,9 @@
  */
 
 import { SimpleEventEmitter } from '../core/event-emitter';
-import { SLIDER_EVENTS } from '../core/constants';
+import { SLIDER_EVENTS, SLIDER_ERROR_CODES, ERROR_HANDLING_DEFAULTS } from '../core/constants';
+import { SliderError } from '../core/types';
+import { ErrorRecovery } from '../core/error-recovery';
 
 /**
  * Navigation input types
@@ -120,6 +122,9 @@ export class NavigationManager extends SimpleEventEmitter {
   private totalSlides = 0;
   private lastNavigationTime = 0;
   private pendingNavigation: NavigationRequest | null = null;
+  private errorRecovery: ErrorRecovery;
+  private errorCount = 0;
+  private lastErrorTime = 0;
 
   constructor(config: Partial<NavigationConfig> = {}) {
     super();
@@ -138,6 +143,16 @@ export class NavigationManager extends SimpleEventEmitter {
       enableA11yAnnouncements: true,
       ...config,
     };
+
+    // Initialize error recovery
+    this.errorRecovery = new ErrorRecovery({
+      maxAttempts: ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS,
+      baseDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_BASE_DELAY,
+      backoffMultiplier: ERROR_HANDLING_DEFAULTS.RECOVERY_BACKOFF_MULTIPLIER,
+      maxDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_MAX_DELAY,
+      useExponentialBackoff: true,
+      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT
+    });
   }
 
   /**
@@ -192,46 +207,55 @@ export class NavigationManager extends SimpleEventEmitter {
     animated: boolean = true,
     context?: Record<string, unknown>
   ): NavigationRequest | null {
-    const request: NavigationRequest = {
-      target,
-      inputType,
-      animated,
-      context,
-      timestamp: Date.now(),
-    };
+    try {
+      const request: NavigationRequest = {
+        target,
+        inputType,
+        animated,
+        context,
+        timestamp: Date.now(),
+      };
 
-    // Check debouncing
-    if (this.shouldDebounce(request)) {
-      return null;
-    }
-
-    // Check if navigation is currently allowed
-    if (!this.isNavigationAllowed(request)) {
-      if (this.config.preventDuringTransition && this.isTransitioning) {
-        // Store for later execution
-        this.pendingNavigation = request;
-        this.emit(SLIDER_EVENTS.NAVIGATION_DEFERRED, { request });
-      } else {
-        this.emit(SLIDER_EVENTS.NAVIGATION_BLOCKED, {
-          request,
-          reason: 'Navigation not allowed',
-        });
+      // Check debouncing
+      if (this.shouldDebounce(request)) {
+        return null;
       }
+
+      // Check if navigation is currently allowed
+      if (!this.isNavigationAllowed(request)) {
+        if (this.config.preventDuringTransition && this.isTransitioning) {
+          // Store for later execution
+          this.pendingNavigation = request;
+          this.emit(SLIDER_EVENTS.NAVIGATION_DEFERRED, { request });
+        } else {
+          this.emit(SLIDER_EVENTS.NAVIGATION_BLOCKED, {
+            request,
+            reason: 'Navigation not allowed',
+          });
+        }
+        return null;
+      }
+
+      // Validate and process the request
+      const validatedRequest = this.validateNavigationRequest(request);
+      if (!validatedRequest) {
+        return null;
+      }
+
+      this.lastNavigationTime = request.timestamp;
+      this.emit(SLIDER_EVENTS.NAVIGATION_REQUESTED, {
+        request: validatedRequest,
+      });
+
+      return validatedRequest;
+    } catch (error) {
+      this.handleNavigationError(
+        error instanceof Error ? error : new Error(String(error)),
+        'requestNavigation',
+        { target, inputType, animated, context }
+      );
       return null;
     }
-
-    // Validate and process the request
-    const validatedRequest = this.validateNavigationRequest(request);
-    if (!validatedRequest) {
-      return null;
-    }
-
-    this.lastNavigationTime = request.timestamp;
-    this.emit(SLIDER_EVENTS.NAVIGATION_REQUESTED, {
-      request: validatedRequest,
-    });
-
-    return validatedRequest;
   }
 
   /**
@@ -241,71 +265,80 @@ export class NavigationManager extends SimpleEventEmitter {
     key: string,
     context?: Record<string, unknown>
   ): NavigationRequest | null {
-    if (!this.config.enableKeyboard) {
+    try {
+      if (!this.config.enableKeyboard) {
+        return null;
+      }
+
+      let target: number | NavigationDirection | null = null;
+
+      switch (key) {
+        case 'ArrowRight':
+          target = NavigationDirection.NEXT;
+          break;
+        case 'ArrowLeft':
+          target = NavigationDirection.PREVIOUS;
+          break;
+        case 'Home':
+          if (this.config.enableHomeEnd) {
+            target = NavigationDirection.FIRST;
+          }
+          break;
+        case 'End':
+          if (this.config.enableHomeEnd) {
+            target = NavigationDirection.LAST;
+          }
+          break;
+        case 'KeyD':
+        case 'KeyS':
+          if (this.config.enableWASD) {
+            target = NavigationDirection.NEXT;
+          }
+          break;
+        case 'KeyA':
+        case 'KeyW':
+          if (this.config.enableWASD) {
+            target = NavigationDirection.PREVIOUS;
+          }
+          break;
+        case 'Space':
+          if (this.config.enableSpacebarToggle) {
+            this.emit(SLIDER_EVENTS.NAVIGATION_PLAY_PAUSE_REQUESTED, {
+              inputType: NavigationInputType.KEYBOARD,
+              context,
+            });
+            return null;
+          }
+          break;
+        case 'Escape':
+          if (this.config.enableEscapeStop) {
+            this.emit(SLIDER_EVENTS.NAVIGATION_EMERGENCY_STOP_REQUESTED, {
+              inputType: NavigationInputType.KEYBOARD,
+              context,
+            });
+            return null;
+          }
+          break;
+      }
+
+      if (target !== null) {
+        return this.requestNavigation(
+          target,
+          NavigationInputType.KEYBOARD,
+          true,
+          context
+        );
+      }
+
+      return null;
+    } catch (error) {
+      this.handleNavigationError(
+        error instanceof Error ? error : new Error(String(error)),
+        'handleKeyboardInput',
+        { key, context }
+      );
       return null;
     }
-
-    let target: number | NavigationDirection | null = null;
-
-    switch (key) {
-      case 'ArrowRight':
-        target = NavigationDirection.NEXT;
-        break;
-      case 'ArrowLeft':
-        target = NavigationDirection.PREVIOUS;
-        break;
-      case 'Home':
-        if (this.config.enableHomeEnd) {
-          target = NavigationDirection.FIRST;
-        }
-        break;
-      case 'End':
-        if (this.config.enableHomeEnd) {
-          target = NavigationDirection.LAST;
-        }
-        break;
-      case 'KeyD':
-      case 'KeyS':
-        if (this.config.enableWASD) {
-          target = NavigationDirection.NEXT;
-        }
-        break;
-      case 'KeyA':
-      case 'KeyW':
-        if (this.config.enableWASD) {
-          target = NavigationDirection.PREVIOUS;
-        }
-        break;
-      case 'Space':
-        if (this.config.enableSpacebarToggle) {
-          this.emit(SLIDER_EVENTS.NAVIGATION_PLAY_PAUSE_REQUESTED, {
-            inputType: NavigationInputType.KEYBOARD,
-            context,
-          });
-          return null;
-        }
-        break;
-      case 'Escape':
-        if (this.config.enableEscapeStop) {
-          this.emit(SLIDER_EVENTS.NAVIGATION_EMERGENCY_STOP_REQUESTED, {
-            inputType: NavigationInputType.KEYBOARD,
-            context,
-          });
-          return null;
-        }
-        break;
-    }
-
-    if (target !== null) {
-      return this.requestNavigation(
-        target,
-        NavigationInputType.KEYBOARD,
-        true,
-        context
-      );
-    }
-
-    return null;
   }
 
   /**
@@ -315,40 +348,49 @@ export class NavigationManager extends SimpleEventEmitter {
     action: 'click' | 'wheel',
     data: Record<string, unknown>
   ): NavigationRequest | null {
-    if (!this.config.enableMouse) {
+    try {
+      if (!this.config.enableMouse) {
+        return null;
+      }
+
+      let target: number | NavigationDirection | null = null;
+
+      switch (action) {
+        case 'click':
+          if (typeof data.targetIndex === 'number') {
+            target = data.targetIndex;
+          } else if (data.direction === 'next') {
+            target = NavigationDirection.NEXT;
+          } else if (data.direction === 'previous') {
+            target = NavigationDirection.PREVIOUS;
+          }
+          break;
+        case 'wheel':
+          if (typeof data.deltaY === 'number') {
+            target =
+              data.deltaY > 0
+                ? NavigationDirection.NEXT
+                : NavigationDirection.PREVIOUS;
+          }
+          break;
+      }
+
+      if (target !== null) {
+        return this.requestNavigation(target, NavigationInputType.MOUSE, true, {
+          action,
+          ...data,
+        });
+      }
+
+      return null;
+    } catch (error) {
+      this.handleNavigationError(
+        error instanceof Error ? error : new Error(String(error)),
+        'handleMouseInput',
+        { action, data }
+      );
       return null;
     }
-
-    let target: number | NavigationDirection | null = null;
-
-    switch (action) {
-      case 'click':
-        if (typeof data.targetIndex === 'number') {
-          target = data.targetIndex;
-        } else if (data.direction === 'next') {
-          target = NavigationDirection.NEXT;
-        } else if (data.direction === 'previous') {
-          target = NavigationDirection.PREVIOUS;
-        }
-        break;
-      case 'wheel':
-        if (typeof data.deltaY === 'number') {
-          target =
-            data.deltaY > 0
-              ? NavigationDirection.NEXT
-              : NavigationDirection.PREVIOUS;
-        }
-        break;
-    }
-
-    if (target !== null) {
-      return this.requestNavigation(target, NavigationInputType.MOUSE, true, {
-        action,
-        ...data,
-      });
-    }
-
-    return null;
   }
 
   /**
@@ -358,50 +400,59 @@ export class NavigationManager extends SimpleEventEmitter {
     gesture: 'swipe' | 'tap' | 'pinch',
     data: Record<string, unknown>
   ): NavigationRequest | null {
-    const inputType =
-      gesture === 'swipe'
-        ? NavigationInputType.GESTURE
-        : NavigationInputType.TOUCH;
+    try {
+      const inputType =
+        gesture === 'swipe'
+          ? NavigationInputType.GESTURE
+          : NavigationInputType.TOUCH;
 
-    if (
-      (!this.config.enableTouch && inputType === NavigationInputType.TOUCH) ||
-      (!this.config.enableGesture && inputType === NavigationInputType.GESTURE)
-    ) {
+      if (
+        (!this.config.enableTouch && inputType === NavigationInputType.TOUCH) ||
+        (!this.config.enableGesture && inputType === NavigationInputType.GESTURE)
+      ) {
+        return null;
+      }
+
+      let target: number | NavigationDirection | null = null;
+
+      switch (gesture) {
+        case 'swipe':
+          if (data.direction === 'left') {
+            target = NavigationDirection.NEXT;
+          } else if (data.direction === 'right') {
+            target = NavigationDirection.PREVIOUS;
+          }
+          break;
+        case 'tap':
+          if (typeof data.targetIndex === 'number') {
+            target = data.targetIndex;
+          }
+          break;
+        case 'pinch':
+          // Pinch gestures might be used for zoom, but we'll emit a custom event
+          this.emit(SLIDER_EVENTS.NAVIGATION_PINCH_GESTURE, {
+            inputType,
+            data,
+          });
+          return null;
+      }
+
+      if (target !== null) {
+        return this.requestNavigation(target, inputType, true, {
+          gesture,
+          ...data,
+        });
+      }
+
+      return null;
+    } catch (error) {
+      this.handleNavigationError(
+        error instanceof Error ? error : new Error(String(error)),
+        'handleTouchInput',
+        { gesture, data }
+      );
       return null;
     }
-
-    let target: number | NavigationDirection | null = null;
-
-    switch (gesture) {
-      case 'swipe':
-        if (data.direction === 'left') {
-          target = NavigationDirection.NEXT;
-        } else if (data.direction === 'right') {
-          target = NavigationDirection.PREVIOUS;
-        }
-        break;
-      case 'tap':
-        if (typeof data.targetIndex === 'number') {
-          target = data.targetIndex;
-        }
-        break;
-      case 'pinch':
-        // Pinch gestures might be used for zoom, but we'll emit a custom event
-        this.emit(SLIDER_EVENTS.NAVIGATION_PINCH_GESTURE, {
-          inputType,
-          data,
-        });
-        return null;
-    }
-
-    if (target !== null) {
-      return this.requestNavigation(target, inputType, true, {
-        gesture,
-        ...data,
-      });
-    }
-
-    return null;
   }
 
   /**
@@ -438,7 +489,16 @@ export class NavigationManager extends SimpleEventEmitter {
    * Validate slide index
    */
   validateSlideIndex(index: number): boolean {
-    return Number.isInteger(index) && index >= 0 && index < this.totalSlides;
+    try {
+      return Number.isInteger(index) && index >= 0 && index < this.totalSlides;
+    } catch (error) {
+      this.handleNavigationError(
+        error instanceof Error ? error : new Error(String(error)),
+        'validateSlideIndex',
+        { index }
+      );
+      return false;
+    }
   }
 
   /**
@@ -610,6 +670,81 @@ export class NavigationManager extends SimpleEventEmitter {
   }
 
   /**
+   * Handle navigation-related errors with recovery
+   */
+  private async handleNavigationError(
+    error: Error,
+    context: string,
+    data?: Record<string, unknown>
+  ): Promise<void> {
+    this.errorCount++;
+    this.lastErrorTime = Date.now();
+
+    // Enhanced error with context
+    const navigationError = new SliderError(
+      `Navigation error in ${context}: ${error.message}`,
+      SLIDER_ERROR_CODES.NAVIGATION_ERROR,
+      { originalError: error, context, data, manager: 'NavigationManager' }
+    );
+
+    // Emit error event
+    this.emit(SLIDER_EVENTS.ERROR, {
+      error: navigationError,
+      context: `NavigationManager.${context}`,
+      recoverable: true
+    });
+
+    // Attempt recovery if not too many recent errors
+    const timeSinceLastError = Date.now() - this.lastErrorTime;
+    if (this.errorCount < ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS || 
+        timeSinceLastError > ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT) {
+      
+      try {
+        const recoveryResult = await this.errorRecovery.attemptRecovery(navigationError, {
+          component: 'NavigationManager',
+          operation: context,
+          timestamp: Date.now(),
+          previousAttempts: this.errorCount,
+          data: { currentIndex: this.currentIndex, totalSlides: this.totalSlides, ...data }
+        });
+
+        if (recoveryResult.success) {
+          // Reset error count on successful recovery
+          this.errorCount = Math.max(0, this.errorCount - 1);
+          
+          this.emit(SLIDER_EVENTS.ERROR_RECOVERED, {
+            originalError: navigationError,
+            recoveryResult,
+            context: `NavigationManager.${context}`
+          });
+        }
+      } catch (recoveryError) {
+        // Recovery failed, but don't cascade errors
+        // eslint-disable-next-line no-console
+        console.warn('NavigationManager error recovery failed:', recoveryError);
+      }
+    }
+  }
+
+  /**
+   * Get error statistics for debugging
+   */
+  getErrorStats(): { errorCount: number; lastErrorTime: number } {
+    return {
+      errorCount: this.errorCount,
+      lastErrorTime: this.lastErrorTime
+    };
+  }
+
+  /**
+   * Reset error tracking
+   */
+  resetErrorTracking(): void {
+    this.errorCount = 0;
+    this.lastErrorTime = 0;
+  }
+
+  /**
    * Destroy the manager and cleanup resources
    */
   destroy(): void {
@@ -617,6 +752,7 @@ export class NavigationManager extends SimpleEventEmitter {
     this.emit(SLIDER_EVENTS.NAVIGATION_DESTROYED);
 
     this.reset();
+    this.resetErrorTracking();
     this.removeAllListeners();
   }
 }

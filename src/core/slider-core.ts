@@ -28,11 +28,17 @@ import {
   EASING,
   SLIDER_ERROR_CODES,
   PHYSICS,
+  ERROR_HANDLING_DEFAULTS,
+  FALLBACK_RENDERER_MODES,
 } from './constants';
 import { ConfigurationSystem } from '../config';
 import { debugLogger } from '../utils/debug-logger';
 import { EffectPresets } from '../rendering/effect-presets';
 import { DisplacementTextureLoader } from '../rendering/displacement-texture-loader';
+import { ErrorBoundary } from '../components/error-boundary';
+import { ErrorRecovery } from './error-recovery';
+import { ValidationError } from './validation-error';
+import { FallbackRenderer } from '../rendering/fallback-renderer';
 
 // Import extracted managers
 import { StateManager } from '../managers/state-manager';
@@ -68,6 +74,12 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private displacementTextureLoader: DisplacementTextureLoader;
   private currentFilterEffect: { cleanup?: () => void } | null = null;
 
+  // Error handling system
+  private errorBoundary: ErrorBoundary | null = null;
+  private errorRecovery: ErrorRecovery;
+  private fallbackRenderer: FallbackRenderer | null = null;
+  private errorHandlingEnabled = true;
+
   constructor(timelineFactory?: GSAPTimelineFactory) {
     super();
     this.timelineFactory = timelineFactory || new GSAPTimelineFactory();
@@ -81,6 +93,16 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     // Initialize filter system
     this.effectPresets = new EffectPresets();
     this.displacementTextureLoader = new DisplacementTextureLoader();
+
+    // Initialize error handling system using DRY constants
+    this.errorRecovery = new ErrorRecovery({
+      maxAttempts: ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS,
+      baseDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_BASE_DELAY,
+      backoffMultiplier: ERROR_HANDLING_DEFAULTS.RECOVERY_BACKOFF_MULTIPLIER,
+      maxDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_MAX_DELAY,
+      useExponentialBackoff: true,
+      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT,
+    });
 
     this.setupManagerEventHandling();
     this.setupErrorHandling();
@@ -344,7 +366,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     });
 
     // Start auto-play through AutoPlayManager
-    this.autoPlayManager.start(async () => {
+    this.autoPlayManager.start(async (): Promise<void> => {
       await this.nextSlide();
     });
 
@@ -432,7 +454,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       this.autoPlayManager.updateConfig({
         interval: (updates as { autoPlayInterval?: number }).autoPlayInterval!,
       });
-      this.autoPlayManager.start(async () => {
+      this.autoPlayManager.start(async (): Promise<void> => {
         await this.nextSlide();
       });
     }
@@ -658,7 +680,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     // Auto-play resume events with proper callback restoration
     this.autoPlayManager.on(SLIDER_EVENTS.PLAY_RESUMED, () => {
       // Reconnect the nextSlide callback when auto-play resumes
-      this.autoPlayManager.start(async () => {
+      this.autoPlayManager.start(async (): Promise<void> => {
         await this.nextSlide();
       });
       this.emit(SLIDER_EVENTS.PLAY_RESUMED);
@@ -667,7 +689,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     this.autoPlayManager.on(SLIDER_EVENTS.VISIBILITY_RESUMED, () => {
       // Handle page visibility resumed
       if (this.stateManager.isPlaying()) {
-        this.autoPlayManager.start(async () => {
+        this.autoPlayManager.start(async (): Promise<void> => {
           await this.nextSlide();
         });
       }
@@ -677,7 +699,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     this.autoPlayManager.on(SLIDER_EVENTS.WINDOW_FOCUS_RESUMED, () => {
       // Handle window focus resumed
       if (this.stateManager.isPlaying()) {
-        this.autoPlayManager.start(async () => {
+        this.autoPlayManager.start(async (): Promise<void> => {
           await this.nextSlide();
         });
       }
@@ -979,11 +1001,51 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
   private setupErrorHandling(): void {
-    this.on(SLIDER_EVENTS.ERROR, () => {
-      // Central error handling
+    // Type the error event handler properly
+    this.on(SLIDER_EVENTS.ERROR, async (...args: unknown[]) => {
+      const errorEvent = args[0] as { error: Error; context: string; state: SliderState };
+      // Enhanced error handling with recovery
+      if (!this.errorHandlingEnabled) return;
+
+      const { error, context, state } = errorEvent;
+
+      // Reset transition state if needed
       if (this.stateManager.isTransitioning()) {
         this.stateManager.updateState({ isTransitioning: false });
         this.navigationManager.updateTransitionState(false);
+      }
+
+      // Attempt automatic recovery
+      try {
+        const recoveryResult = await this.errorRecovery.attemptRecovery(error, {
+          component: 'SliderCore',
+          operation: context,
+          timestamp: Date.now(),
+          previousAttempts: 0,
+          data: { state }
+        });
+
+        if (recoveryResult.success) {
+          debugLogger.error('Error recovery successful:', 'SliderCore', recoveryResult);
+          this.emit(SLIDER_EVENTS.ERROR_RECOVERED, { 
+            originalError: error, 
+            recoveryResult,
+            context 
+          });
+        } else if (recoveryResult.shouldRetry) {
+          // Schedule retry if suggested
+          if (recoveryResult.retryDelay) {
+            setTimeout(() => {
+              this.emit(SLIDER_EVENTS.ERROR_RETRY, { error, context, delay: recoveryResult.retryDelay });
+            }, recoveryResult.retryDelay);
+          }
+        } else {
+          // Recovery failed, activate fallback mode
+          await this.activateFallbackMode(error, context);
+        }
+      } catch (recoveryError) {
+        debugLogger.error('Error recovery failed:', 'SliderCore', recoveryError);
+        await this.activateFallbackMode(error, context);
       }
     });
   }
@@ -991,11 +1053,136 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private handleError(error: unknown, context: string): void {
     const sliderError =
       error instanceof Error ? error : new Error(String(error));
+    
+    // Enhanced error with validation details if applicable
+    let enhancedError = sliderError;
+    if (error instanceof ValidationError) {
+      enhancedError = error;
+    }
+    
     this.emit(SLIDER_EVENTS.ERROR, {
-      error: sliderError,
+      error: enhancedError,
       context,
       state: this.stateManager.getState(),
     });
+  }
+
+  /**
+   * Activate fallback mode when error recovery fails
+   */
+  private async activateFallbackMode(error: Error, context: string): Promise<void> {
+    try {
+      if (!this.container || !this.config) {
+        debugLogger.error('Cannot activate fallback mode: missing container or config');
+        return;
+      }
+
+      // Setup error boundary if not already active
+      if (!this.errorBoundary) {
+        this.errorBoundary = new ErrorBoundary(this.container, {
+          onError: (boundaryError, errorInfo): void => {
+            debugLogger.error('Error boundary caught error: ' + boundaryError.message, 'ErrorBoundary', errorInfo);
+          },
+          onRecovery: (boundaryError, successful): void => {
+            if (successful) {
+              this.emit(SLIDER_EVENTS.ERROR_RECOVERED, { 
+                error: boundaryError, 
+                context: 'ErrorBoundary',
+                successful 
+              });
+            }
+          }
+        });
+      }
+
+      // Create fallback renderer
+      this.fallbackRenderer = new FallbackRenderer(this.container, this.config, {
+        mode: FALLBACK_RENDERER_MODES.CSS_ANIMATIONS,
+        autoUpgrade: ERROR_HANDLING_DEFAULTS.AUTO_UPGRADE,
+        upgradeCheckInterval: ERROR_HANDLING_DEFAULTS.UPGRADE_CHECK_INTERVAL
+      });
+
+      // Render fallback UI
+      this.fallbackRenderer.renderBasicHTMLSlider();
+
+      // Set current slide to match state
+      const currentIndex = this.stateManager.getCurrentIndex();
+      await this.fallbackRenderer.goToSlide(currentIndex);
+
+      // Listen for upgrade events
+      this.container.addEventListener('kinetic-slider-upgrade-ready', async (): Promise<void> => {
+        await this.handleFallbackUpgrade();
+      });
+
+      // Emit fallback activation event
+      this.emit(SLIDER_EVENTS.FALLBACK_ACTIVATED, {
+        originalError: error,
+        context,
+        fallbackMode: FALLBACK_RENDERER_MODES.CSS_ANIMATIONS,
+        timestamp: Date.now()
+      });
+
+      debugLogger.error('Fallback mode activated due to error:', 'SliderCore', error.message);
+
+    } catch (fallbackError) {
+      debugLogger.error('Failed to activate fallback mode:', 'SliderCore', fallbackError);
+      // Last resort: disable error handling to prevent infinite loop
+      this.errorHandlingEnabled = false;
+    }
+  }
+
+  /**
+   * Handle upgrade from fallback mode to full renderer
+   */
+  private async handleFallbackUpgrade(): Promise<void> {
+    try {
+      if (!this.fallbackRenderer || !this.container || !this.config) {
+        return;
+      }
+
+      const currentSlideIndex = this.fallbackRenderer.getCurrentSlideIndex();
+      
+      // Destroy fallback renderer
+      this.fallbackRenderer.destroy();
+      this.fallbackRenderer = null;
+
+      // Re-initialize with full renderer
+      const renderer = serviceContainer.get<ISliderRenderer>(SERVICE_KEYS.RENDERER);
+      if (renderer) {
+        // Create a complete render config with defaults
+        const renderConfig = {
+          width: this.config.rendering?.width || this.container.clientWidth || 800,
+          height: this.config.rendering?.height || this.container.clientHeight || 600,
+          backgroundColor: this.config.rendering?.backgroundColor || 0x000000,
+          antialias: this.config.rendering?.antialias || true,
+          resolution: this.config.rendering?.resolution || window.devicePixelRatio || 1,
+          ...this.config.rendering
+        };
+        await renderer.initialize(this.container, renderConfig);
+        this.renderer = renderer;
+      }
+
+      // Restore slide position
+      await this.goToSlide(currentSlideIndex, false);
+
+      // Reset error boundary
+      if (this.errorBoundary) {
+        this.errorBoundary.reset();
+      }
+
+      // Re-enable error handling
+      this.errorHandlingEnabled = true;
+
+      this.emit(SLIDER_EVENTS.FALLBACK_UPGRADED, {
+        restoredSlideIndex: currentSlideIndex,
+        timestamp: Date.now()
+      });
+
+      debugLogger.error('Successfully upgraded from fallback mode', 'SliderCore');
+
+    } catch (upgradeError) {
+      debugLogger.error('Failed to upgrade from fallback mode:', 'SliderCore', upgradeError);
+    }
   }
 
   /**

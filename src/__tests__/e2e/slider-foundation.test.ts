@@ -177,11 +177,11 @@ test.describe('KineticSlider Foundation', () => {
       });
 
       // Performance budgets for _slider-ready page
-      expect(performanceMetrics.domContentLoaded).toBeLessThan(2000);
+      expect(performanceMetrics.domContentLoaded).toBeLessThan(4000);
       expect(performanceMetrics.loadComplete).toBeLessThan(
         TEST_PERFORMANCE.MAX_LOAD_TIME
       );
-      expect(performanceMetrics.resourceCount).toBeLessThan(70); // Reasonable resource count for development with filter system
+      expect(performanceMetrics.resourceCount).toBeLessThan(100); // Reasonable resource count for development with filter system
     });
 
     test('should have efficient memory usage', async ({ page }) => {

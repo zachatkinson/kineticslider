@@ -47,6 +47,12 @@ describe('StateManager', () => {
         isInitialized: false,
         isLoading: false,
         loadingProgress: 0,
+        errorState: {
+          hasError: false,
+          errorCount: 0,
+          recoveryAttempts: 0,
+          fallbackActive: false,
+        },
       });
     });
 

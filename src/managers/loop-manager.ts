@@ -8,7 +8,9 @@
  */
 
 import { SimpleEventEmitter } from '../core/event-emitter';
-import { SLIDER_EVENTS } from '../core/constants';
+import { SLIDER_EVENTS, SLIDER_ERROR_CODES, ERROR_HANDLING_DEFAULTS } from '../core/constants';
+import { SliderError } from '../core/types';
+import { ErrorRecovery } from '../core/error-recovery';
 
 /**
  * Loop mode types
@@ -68,6 +70,9 @@ export class LoopManager extends SimpleEventEmitter {
   private bounceDirection: 'forward' | 'backward' = 'forward';
   private isRapidChanging = false;
   private rapidChangeTimeout: number | null = null;
+  private errorRecovery: ErrorRecovery;
+  private errorCount = 0;
+  private lastErrorTime = 0;
 
   constructor(config: Partial<LoopConfig> = {}) {
     super();
@@ -80,6 +85,16 @@ export class LoopManager extends SimpleEventEmitter {
       bounceEffects: true,
       ...config,
     };
+
+    // Initialize error recovery
+    this.errorRecovery = new ErrorRecovery({
+      maxAttempts: ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS,
+      baseDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_BASE_DELAY,
+      backoffMultiplier: ERROR_HANDLING_DEFAULTS.RECOVERY_BACKOFF_MULTIPLIER,
+      maxDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_MAX_DELAY,
+      useExponentialBackoff: true,
+      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT
+    });
   }
 
   /**
@@ -90,25 +105,8 @@ export class LoopManager extends SimpleEventEmitter {
     totalSlides: number,
     direction: 'forward' | 'backward'
   ): LoopTransition {
-    if (!this.config.enabled) {
-      return {
-        shouldNavigate: false,
-        targetIndex: currentIndex,
-        isLoop: false,
-        loopDirection: direction,
-      };
-    }
-
-    // Handle single slide - bounce mode should still allow "bouncing" in place
-    if (totalSlides <= 1) {
-      if (this.config.mode === LoopMode.BOUNCE) {
-        return {
-          shouldNavigate: true,
-          targetIndex: currentIndex,
-          isLoop: true,
-          loopDirection: 'bounce',
-        };
-      } else {
+    try {
+      if (!this.config.enabled) {
         return {
           shouldNavigate: false,
           targetIndex: currentIndex,
@@ -116,28 +114,69 @@ export class LoopManager extends SimpleEventEmitter {
           loopDirection: direction,
         };
       }
-    }
 
-    const isAtStart = currentIndex === 0;
-    const isAtEnd = currentIndex === totalSlides - 1;
+      // Validate inputs
+      if (!Number.isInteger(currentIndex) || currentIndex < 0) {
+        throw new Error(`Invalid currentIndex: ${currentIndex}`);
+      }
+      if (!Number.isInteger(totalSlides) || totalSlides < 0) {
+        throw new Error(`Invalid totalSlides: ${totalSlides}`);
+      }
 
-    if (direction === 'forward') {
-      if (isAtEnd) {
-        return this.handleEndBoundary(currentIndex, totalSlides);
+      // Handle single slide - bounce mode should still allow "bouncing" in place
+      if (totalSlides <= 1) {
+        if (this.config.mode === LoopMode.BOUNCE) {
+          return {
+            shouldNavigate: true,
+            targetIndex: currentIndex,
+            isLoop: true,
+            loopDirection: 'bounce',
+          };
+        } else {
+          return {
+            shouldNavigate: false,
+            targetIndex: currentIndex,
+            isLoop: false,
+            loopDirection: direction,
+          };
+        }
       }
-      return {
-        shouldNavigate: true,
-        targetIndex: currentIndex + 1,
-        isLoop: false,
-        loopDirection: direction,
-      };
-    } else {
-      if (isAtStart) {
-        return this.handleStartBoundary(currentIndex, totalSlides);
+
+      const isAtStart = currentIndex === 0;
+      const isAtEnd = currentIndex === totalSlides - 1;
+
+      if (direction === 'forward') {
+        if (isAtEnd) {
+          return this.handleEndBoundary(currentIndex, totalSlides);
+        }
+        return {
+          shouldNavigate: true,
+          targetIndex: currentIndex + 1,
+          isLoop: false,
+          loopDirection: direction,
+        };
+      } else {
+        if (isAtStart) {
+          return this.handleStartBoundary(currentIndex, totalSlides);
+        }
+        return {
+          shouldNavigate: true,
+          targetIndex: currentIndex - 1,
+          isLoop: false,
+          loopDirection: direction,
+        };
       }
+    } catch (error) {
+      this.handleLoopError(
+        error instanceof Error ? error : new Error(String(error)),
+        'getNextIndex',
+        { currentIndex, totalSlides, direction }
+      );
+      
+      // Return safe fallback
       return {
-        shouldNavigate: true,
-        targetIndex: currentIndex - 1,
+        shouldNavigate: false,
+        targetIndex: Math.max(0, Math.min(currentIndex, totalSlides - 1)),
         isLoop: false,
         loopDirection: direction,
       };
@@ -274,28 +313,45 @@ export class LoopManager extends SimpleEventEmitter {
     originalIndex: number,
     position: 'before' | 'after'
   ): VirtualSlide | null {
-    if (!this.config.useVirtualSlides) {
+    try {
+      if (!this.config.useVirtualSlides) {
+        return null;
+      }
+
+      // Validate inputs
+      if (!Number.isInteger(originalIndex) || originalIndex < 0) {
+        throw new Error(`Invalid originalIndex: ${originalIndex}`);
+      }
+      if (position !== 'before' && position !== 'after') {
+        throw new Error(`Invalid position: ${position}`);
+      }
+
+      // Check virtual slide limit
+      if (this.virtualSlides.size >= this.config.maxVirtualSlides) {
+        this.cleanupOldestVirtualSlide();
+      }
+
+      const virtualSlide: VirtualSlide = {
+        id: `virtual-${originalIndex}-${position}-${Date.now()}`,
+        originalIndex,
+        position,
+      };
+
+      this.virtualSlides.set(virtualSlide.id, virtualSlide);
+
+      this.emit(SLIDER_EVENTS.VIRTUAL_SLIDE_CREATED, {
+        virtualSlide,
+      });
+
+      return virtualSlide;
+    } catch (error) {
+      this.handleLoopError(
+        error instanceof Error ? error : new Error(String(error)),
+        'createVirtualSlide',
+        { originalIndex, position }
+      );
       return null;
     }
-
-    // Check virtual slide limit
-    if (this.virtualSlides.size >= this.config.maxVirtualSlides) {
-      this.cleanupOldestVirtualSlide();
-    }
-
-    const virtualSlide: VirtualSlide = {
-      id: `virtual-${originalIndex}-${position}-${Date.now()}`,
-      originalIndex,
-      position,
-    };
-
-    this.virtualSlides.set(virtualSlide.id, virtualSlide);
-
-    this.emit(SLIDER_EVENTS.VIRTUAL_SLIDE_CREATED, {
-      virtualSlide,
-    });
-
-    return virtualSlide;
   }
 
   /**
@@ -344,25 +400,33 @@ export class LoopManager extends SimpleEventEmitter {
    * Update loop configuration
    */
   updateConfig(updates: Partial<LoopConfig>): void {
-    const oldMode = this.config.mode;
-    const oldUseVirtualSlides = this.config.useVirtualSlides;
-    this.config = { ...this.config, ...updates };
+    try {
+      const oldMode = this.config.mode;
+      const oldUseVirtualSlides = this.config.useVirtualSlides;
+      this.config = { ...this.config, ...updates };
 
-    // Reset bounce direction if mode changed
-    if (oldMode !== this.config.mode) {
-      this.bounceDirection = 'forward';
+      // Reset bounce direction if mode changed
+      if (oldMode !== this.config.mode) {
+        this.bounceDirection = 'forward';
+      }
+
+      // Clean up virtual slides if disabled
+      if (oldUseVirtualSlides && !this.config.useVirtualSlides) {
+        this.cleanupAllVirtualSlides();
+      }
+
+      this.emit(SLIDER_EVENTS.LOOP_CONFIG_UPDATED, {
+        config: { ...this.config },
+        oldMode,
+        newMode: this.config.mode,
+      });
+    } catch (error) {
+      this.handleLoopError(
+        error instanceof Error ? error : new Error(String(error)),
+        'updateConfig',
+        { updates }
+      );
     }
-
-    // Clean up virtual slides if disabled
-    if (oldUseVirtualSlides && !this.config.useVirtualSlides) {
-      this.cleanupAllVirtualSlides();
-    }
-
-    this.emit(SLIDER_EVENTS.LOOP_CONFIG_UPDATED, {
-      config: { ...this.config },
-      oldMode,
-      newMode: this.config.mode,
-    });
   }
 
   /**
@@ -425,6 +489,86 @@ export class LoopManager extends SimpleEventEmitter {
   }
 
   /**
+   * Handle loop-related errors with recovery
+   */
+  private async handleLoopError(
+    error: Error,
+    context: string,
+    data?: Record<string, unknown>
+  ): Promise<void> {
+    this.errorCount++;
+    this.lastErrorTime = Date.now();
+
+    // Enhanced error with context
+    const loopError = new SliderError(
+      `Loop error in ${context}: ${error.message}`,
+      SLIDER_ERROR_CODES.LOOP_ERROR,
+      { originalError: error, context, data, manager: 'LoopManager' }
+    );
+
+    // Emit error event
+    this.emit(SLIDER_EVENTS.ERROR, {
+      error: loopError,
+      context: `LoopManager.${context}`,
+      recoverable: true
+    });
+
+    // Attempt recovery if not too many recent errors
+    const timeSinceLastError = Date.now() - this.lastErrorTime;
+    if (this.errorCount < ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS || 
+        timeSinceLastError > ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT) {
+      
+      try {
+        const recoveryResult = await this.errorRecovery.attemptRecovery(loopError, {
+          component: 'LoopManager',
+          operation: context,
+          timestamp: Date.now(),
+          previousAttempts: this.errorCount,
+          data: { 
+            config: this.config, 
+            virtualSlidesCount: this.virtualSlides.size,
+            bounceDirection: this.bounceDirection,
+            ...data 
+          }
+        });
+
+        if (recoveryResult.success) {
+          // Reset error count on successful recovery
+          this.errorCount = Math.max(0, this.errorCount - 1);
+          
+          this.emit(SLIDER_EVENTS.ERROR_RECOVERED, {
+            originalError: loopError,
+            recoveryResult,
+            context: `LoopManager.${context}`
+          });
+        }
+      } catch (recoveryError) {
+        // Recovery failed, but don't cascade errors
+        // eslint-disable-next-line no-console
+        console.warn('LoopManager error recovery failed:', recoveryError);
+      }
+    }
+  }
+
+  /**
+   * Get error statistics for debugging
+   */
+  getErrorStats(): { errorCount: number; lastErrorTime: number } {
+    return {
+      errorCount: this.errorCount,
+      lastErrorTime: this.lastErrorTime
+    };
+  }
+
+  /**
+   * Reset error tracking
+   */
+  resetErrorTracking(): void {
+    this.errorCount = 0;
+    this.lastErrorTime = 0;
+  }
+
+  /**
    * Destroy the manager and cleanup resources
    */
   destroy(): void {
@@ -432,6 +576,7 @@ export class LoopManager extends SimpleEventEmitter {
     this.emit(SLIDER_EVENTS.LOOP_DESTROYED);
 
     this.reset();
+    this.resetErrorTracking();
     this.removeAllListeners();
   }
 }

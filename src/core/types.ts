@@ -101,6 +101,8 @@ export interface SliderConfig {
   debug?: boolean;
   /** Performance monitoring configuration */
   performance?: PerformanceConfig;
+  /** Error handling and recovery configuration */
+  errorHandling?: ErrorHandlingConfig;
 
   // Legacy compatibility (deprecated, use slides instead)
   /** @deprecated Use slides instead */
@@ -128,6 +130,8 @@ export interface SlideData {
  * @version 2.0.0 - Phase 4.2 Enhanced Configuration System
  */
 export interface SlideConfig extends SlideData {
+  /** Slide description for accessibility */
+  description?: string;
   /** Additional slide metadata */
   metadata?: SlideMetadata;
   /** Slide-specific animations */
@@ -478,6 +482,74 @@ export interface PerformanceConfig {
   warnings?: PerformanceWarnings;
   /** Enable performance logging */
   logging?: boolean;
+}
+
+/**
+ * Error handling and recovery configuration
+ */
+export interface ErrorHandlingConfig {
+  /** Enable error handling system */
+  enabled?: boolean;
+  /** Error handling mode */
+  mode?: 'full' | 'basic' | 'disabled';
+  /** Maximum recovery attempts per error */
+  maxRecoveryAttempts?: number;
+  /** Base delay between recovery attempts (ms) */
+  recoveryBaseDelay?: number;
+  /** Exponential backoff multiplier */
+  recoveryBackoffMultiplier?: number;
+  /** Maximum delay between attempts (ms) */
+  recoveryMaxDelay?: number;
+  /** Recovery operation timeout (ms) */
+  recoveryTimeout?: number;
+  /** Whether to show fallback indicator */
+  showFallbackIndicator?: boolean;
+  /** Whether to auto-upgrade from fallback */
+  autoUpgrade?: boolean;
+  /** Upgrade check interval (ms) */
+  upgradeCheckInterval?: number;
+  /** Whether to log errors to console */
+  logErrors?: boolean;
+  /** Custom error handler */
+  onError?: (error: Error, context: string) => void;
+  /** Custom recovery handler */
+  onRecovery?: (error: Error, successful: boolean) => void;
+  /** Fallback renderer configuration */
+  fallback?: FallbackRendererConfig;
+  /** Error boundary configuration */
+  boundary?: ErrorBoundaryConfig;
+}
+
+/**
+ * Fallback renderer configuration
+ */
+export interface FallbackRendererConfig {
+  /** Fallback rendering mode */
+  mode?: 'static' | 'basic' | 'css-animations';
+  /** CSS class prefix for fallback styles */
+  cssPrefix?: string;
+  /** Whether to use reduced motion */
+  reducedMotion?: boolean;
+  /** Whether to log errors to console */
+  logErrors?: boolean;
+}
+
+/**
+ * Error boundary configuration
+ */
+export interface ErrorBoundaryConfig {
+  /** Maximum number of errors before disabling recovery */
+  maxErrors?: number;
+  /** Whether to attempt automatic recovery */
+  enableAutoRecovery?: boolean;
+  /** Delay before attempting recovery (ms) */
+  recoveryDelay?: number;
+  /** Custom fallback UI generator */
+  fallbackUI?: (error: Error) => HTMLElement;
+  /** Whether to log errors to console */
+  logErrors?: boolean;
+  /** Whether to show fallback indicator */
+  showFallbackIndicator?: boolean;
 }
 
 /**

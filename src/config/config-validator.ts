@@ -18,6 +18,9 @@ import type {
   AccessibilityConfig,
   ResponsiveConfig,
   PerformanceConfig,
+  ErrorHandlingConfig,
+  FallbackRendererConfig,
+  ErrorBoundaryConfig,
 } from '../core/types';
 import { EASING, SCALE } from '../core/constants';
 
@@ -129,6 +132,7 @@ export class ConfigValidator {
     // Validate configuration sections
     this.validateCoreSettings(config);
     this.validatePerformanceSettings(config);
+    this.validateErrorHandlingSettings(config);
     this.validateVisualSettings(config);
     this.validateInputSettings(config);
     this.validateAccessibilitySettings(config);
@@ -321,6 +325,15 @@ export class ConfigValidator {
     // Validate performance config
     if (config.performance) {
       this.validatePerformanceConfig(config.performance);
+    }
+  }
+
+  /**
+   * Validate error handling configuration
+   */
+  private validateErrorHandlingSettings(config: Partial<SliderConfig>): void {
+    if (config.errorHandling) {
+      this.validateErrorHandlingConfig(config.errorHandling);
     }
   }
 
@@ -618,6 +631,152 @@ export class ConfigValidator {
           'config.performance.warnings.memoryWarning',
           'positive number (MB)',
           performance.warnings.memoryWarning
+        );
+      }
+    }
+  }
+
+  /**
+   * Validate error handling configuration details
+   */
+  private validateErrorHandlingConfig(errorHandling: Partial<ErrorHandlingConfig>): void {
+    // Validate mode
+    if (errorHandling.mode !== undefined) {
+      const validModes = ['full', 'basic', 'disabled'];
+      if (!validModes.includes(errorHandling.mode)) {
+        this.addError(
+          VALIDATION_ERROR_CODES.INVALID_VALUE,
+          `Invalid error handling mode: "${errorHandling.mode}"`,
+          'config.errorHandling.mode',
+          validModes.join(' | '),
+          errorHandling.mode
+        );
+      }
+    }
+
+    // Validate recovery attempts
+    if (errorHandling.maxRecoveryAttempts !== undefined) {
+      if (!Number.isInteger(errorHandling.maxRecoveryAttempts) || errorHandling.maxRecoveryAttempts < 0) {
+        this.addError(
+          VALIDATION_ERROR_CODES.OUT_OF_RANGE,
+          'Max recovery attempts must be a non-negative integer',
+          'config.errorHandling.maxRecoveryAttempts',
+          'non-negative integer',
+          errorHandling.maxRecoveryAttempts
+        );
+      } else if (errorHandling.maxRecoveryAttempts > 10) {
+        this.addWarning(
+          VALIDATION_WARNING_CODES.PERFORMANCE_IMPACT,
+          'High recovery attempt count may cause delays',
+          'config.errorHandling.maxRecoveryAttempts',
+          'Consider maxRecoveryAttempts <= 10'
+        );
+      }
+    }
+
+    // Validate timing settings
+    if (errorHandling.recoveryBaseDelay !== undefined) {
+      if (typeof errorHandling.recoveryBaseDelay !== 'number' || errorHandling.recoveryBaseDelay < 0) {
+        this.addError(
+          VALIDATION_ERROR_CODES.OUT_OF_RANGE,
+          'Recovery base delay must be a non-negative number',
+          'config.errorHandling.recoveryBaseDelay',
+          'non-negative number (ms)',
+          errorHandling.recoveryBaseDelay
+        );
+      }
+    }
+
+    if (errorHandling.recoveryTimeout !== undefined) {
+      if (typeof errorHandling.recoveryTimeout !== 'number' || errorHandling.recoveryTimeout <= 0) {
+        this.addError(
+          VALIDATION_ERROR_CODES.OUT_OF_RANGE,
+          'Recovery timeout must be a positive number',
+          'config.errorHandling.recoveryTimeout',
+          'positive number (ms)',
+          errorHandling.recoveryTimeout
+        );
+      }
+    }
+
+    // Validate backoff multiplier
+    if (errorHandling.recoveryBackoffMultiplier !== undefined) {
+      if (typeof errorHandling.recoveryBackoffMultiplier !== 'number' || errorHandling.recoveryBackoffMultiplier < 1) {
+        this.addError(
+          VALIDATION_ERROR_CODES.OUT_OF_RANGE,
+          'Recovery backoff multiplier must be >= 1',
+          'config.errorHandling.recoveryBackoffMultiplier',
+          'number >= 1',
+          errorHandling.recoveryBackoffMultiplier
+        );
+      }
+    }
+
+    // Validate fallback config
+    if (errorHandling.fallback) {
+      this.validateFallbackRendererConfig(errorHandling.fallback);
+    }
+
+    // Validate boundary config
+    if (errorHandling.boundary) {
+      this.validateErrorBoundaryConfig(errorHandling.boundary);
+    }
+  }
+
+  /**
+   * Validate fallback renderer configuration
+   */
+  private validateFallbackRendererConfig(fallback: Partial<FallbackRendererConfig>): void {
+    if (fallback.mode !== undefined) {
+      const validModes = ['static', 'basic', 'css-animations'];
+      if (!validModes.includes(fallback.mode)) {
+        this.addError(
+          VALIDATION_ERROR_CODES.INVALID_VALUE,
+          `Invalid fallback renderer mode: "${fallback.mode}"`,
+          'config.errorHandling.fallback.mode',
+          validModes.join(' | '),
+          fallback.mode
+        );
+      }
+    }
+
+    if (fallback.cssPrefix !== undefined) {
+      if (typeof fallback.cssPrefix !== 'string' || fallback.cssPrefix.trim() === '') {
+        this.addError(
+          VALIDATION_ERROR_CODES.INVALID_VALUE,
+          'CSS prefix must be a non-empty string',
+          'config.errorHandling.fallback.cssPrefix',
+          'non-empty string',
+          fallback.cssPrefix
+        );
+      }
+    }
+  }
+
+  /**
+   * Validate error boundary configuration
+   */
+  private validateErrorBoundaryConfig(boundary: Partial<ErrorBoundaryConfig>): void {
+    if (boundary.maxErrors !== undefined) {
+      if (!Number.isInteger(boundary.maxErrors) || boundary.maxErrors < 1) {
+        this.addError(
+          VALIDATION_ERROR_CODES.OUT_OF_RANGE,
+          'Max errors must be a positive integer',
+          'config.errorHandling.boundary.maxErrors',
+          'positive integer',
+          boundary.maxErrors
+        );
+      }
+    }
+
+    if (boundary.recoveryDelay !== undefined) {
+      if (typeof boundary.recoveryDelay !== 'number' || boundary.recoveryDelay < 0) {
+        this.addError(
+          VALIDATION_ERROR_CODES.OUT_OF_RANGE,
+          'Recovery delay must be a non-negative number',
+          'config.errorHandling.boundary.recoveryDelay',
+          'non-negative number (ms)',
+          boundary.recoveryDelay
         );
       }
     }

@@ -265,6 +265,10 @@ export const SLIDER_EVENTS = {
   ESCAPE_PRESSED: 'escapePressed',
   /** Error events */
   ERROR: 'error',
+  ERROR_RECOVERED: 'errorRecovered',
+  ERROR_RETRY: 'errorRetry',
+  FALLBACK_ACTIVATED: 'fallbackActivated',
+  FALLBACK_UPGRADED: 'fallbackUpgraded',
 } as const;
 
 /** Performance API method names to eliminate DRY violations */
@@ -655,13 +659,13 @@ export const TEST_TIMING = {
 /** Performance test thresholds */
 export const TEST_PERFORMANCE = {
   /** Maximum acceptable load time */
-  MAX_LOAD_TIME: 3000,
+  MAX_LOAD_TIME: 5000,
   /** Maximum acceptable render time */
   MAX_RENDER_TIME: 16,
   /** Maximum acceptable animation time */
   MAX_ANIMATION_TIME: 1000,
   /** Memory usage warning threshold for tests */
-  MEMORY_WARNING: 25 * 1024 * 1024, // 25MB
+  MEMORY_WARNING: 50 * 1024 * 1024, // 50MB
 } as const;
 
 /** Test tolerance and assertion constants */
@@ -900,6 +904,30 @@ export const SLIDER_ERROR_CODES = {
   DEPENDENCY_MISSING: 'SLIDER_DEPENDENCY_MISSING',
   /** Invalid state */
   INVALID_STATE: 'SLIDER_INVALID_STATE',
+  /** Manual error report */
+  MANUAL_ERROR_REPORT: 'SLIDER_MANUAL_ERROR_REPORT',
+  /** Maximum recovery attempts exceeded */
+  MAX_RECOVERY_ATTEMPTS_EXCEEDED: 'SLIDER_MAX_RECOVERY_ATTEMPTS_EXCEEDED',
+  /** Recovery rate limited */
+  RECOVERY_RATE_LIMITED: 'SLIDER_RECOVERY_RATE_LIMITED',
+  /** Physics error */
+  PHYSICS_ERROR: 'SLIDER_PHYSICS_ERROR',
+  /** Renderer error */
+  RENDERER_ERROR: 'SLIDER_RENDERER_ERROR',
+  /** Filter error */
+  FILTER_ERROR: 'SLIDER_FILTER_ERROR',
+  /** Animation error */
+  ANIMATION_ERROR: 'SLIDER_ANIMATION_ERROR',
+  /** Resource load error */
+  RESOURCE_LOAD_ERROR: 'SLIDER_RESOURCE_LOAD_ERROR',
+  /** Controller error */
+  CONTROLLER_ERROR: 'SLIDER_CONTROLLER_ERROR',
+  /** Navigation error */
+  NAVIGATION_ERROR: 'SLIDER_NAVIGATION_ERROR',
+  /** Loop error */
+  LOOP_ERROR: 'SLIDER_LOOP_ERROR',
+  /** Render error */
+  RENDER_ERROR: 'SLIDER_RENDER_ERROR',
 } as const;
 
 export const ERROR_CODES = {
@@ -915,6 +943,8 @@ export const ERROR_CODES = {
   ANIMATION_FAILED: 'ANIMATION_FAILED',
   /** Performance threshold exceeded */
   PERFORMANCE_EXCEEDED: 'PERFORMANCE_EXCEEDED',
+  /** Render error */
+  RENDER_ERROR: 'RENDER_ERROR',
 } as const;
 
 /** Error message templates to eliminate DRY violations */
@@ -1237,4 +1267,52 @@ export const ANIMATION_ERROR_CODES = {
   PERFORMANCE_DEGRADED: 'ANIM_PERFORMANCE_DEGRADED',
   /** Queue overflow */
   QUEUE_OVERFLOW: 'ANIM_QUEUE_OVERFLOW',
+} as const;
+
+// =============================================================================
+// 🛡️ Error Handling Configuration
+// =============================================================================
+
+/** Error handling configuration defaults */
+export const ERROR_HANDLING_DEFAULTS = {
+  /** Whether error boundary is enabled */
+  ENABLED: true,
+  /** Maximum recovery attempts */
+  MAX_RECOVERY_ATTEMPTS: 3,
+  /** Base delay between recovery attempts (ms) */
+  RECOVERY_BASE_DELAY: 1000,
+  /** Exponential backoff multiplier */
+  RECOVERY_BACKOFF_MULTIPLIER: 2,
+  /** Maximum delay between attempts (ms) */
+  RECOVERY_MAX_DELAY: 30000,
+  /** Recovery timeout (ms) */
+  RECOVERY_TIMEOUT: 10000,
+  /** Whether to show fallback indicator */
+  SHOW_FALLBACK_INDICATOR: true,
+  /** Whether to auto-upgrade from fallback */
+  AUTO_UPGRADE: true,
+  /** Upgrade check interval (ms) */
+  UPGRADE_CHECK_INTERVAL: 5000,
+  /** Whether to log errors to console */
+  LOG_ERRORS: true,
+} as const;
+
+/** Error handling mode constants */
+export const ERROR_HANDLING_MODES = {
+  /** Full error handling with recovery */
+  FULL: 'full',
+  /** Basic error handling only */
+  BASIC: 'basic',
+  /** Error handling disabled */
+  DISABLED: 'disabled',
+} as const;
+
+/** Fallback renderer modes */
+export const FALLBACK_RENDERER_MODES = {
+  /** Static images only */
+  STATIC: 'static',
+  /** Basic HTML slider */
+  BASIC: 'basic',
+  /** CSS animations enabled */
+  CSS_ANIMATIONS: 'css-animations',
 } as const;

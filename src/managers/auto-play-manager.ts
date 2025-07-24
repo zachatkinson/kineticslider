@@ -8,7 +8,8 @@
  */
 
 import { SimpleEventEmitter } from '../core/event-emitter';
-import { SLIDER_EVENTS, ANIMATION_DURATION } from '../core/constants';
+import { SLIDER_EVENTS, ANIMATION_DURATION, SLIDER_ERROR_CODES } from '../core/constants';
+import { SliderError } from '../core/types';
 
 /**
  * Configuration options for AutoPlayManager
@@ -269,11 +270,19 @@ export class AutoPlayManager extends SimpleEventEmitter {
             this.scheduleNext(onNext);
           }
         } catch (error) {
+          const sliderError = error instanceof Error ? error : new Error(String(error));
+          
+          // Emit error with enhanced context
           this.emit(SLIDER_EVENTS.ERROR, {
-            error,
+            error: new SliderError(
+              `Auto-play failed: ${sliderError.message}`,
+              SLIDER_ERROR_CODES.ANIMATION_ERROR,
+              { originalError: sliderError, manager: 'AutoPlayManager' }
+            ),
             context: 'AutoPlayManager.scheduleNext',
           });
-          // Stop auto-play on error
+          
+          // Stop auto-play on error to prevent infinite error loops
           this.stop();
         }
       }

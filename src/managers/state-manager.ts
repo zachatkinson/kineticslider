@@ -8,7 +8,8 @@
  */
 
 import { SimpleEventEmitter } from '../core/event-emitter';
-import { SLIDER_EVENTS, SLIDER_ERROR_CODES } from '../core/constants';
+import { SLIDER_EVENTS, SLIDER_ERROR_CODES, ERROR_HANDLING_DEFAULTS } from '../core/constants';
+import { ErrorRecovery } from '../core/error-recovery';
 
 /**
  * Core state properties
@@ -28,6 +29,14 @@ export interface SliderState {
   isLoading: boolean;
   /** Loading progress (0-100) */
   loadingProgress: number;
+  /** Error state information */
+  errorState?: {
+    hasError: boolean;
+    lastError?: Error;
+    errorCount: number;
+    recoveryAttempts: number;
+    fallbackActive: boolean;
+  };
 }
 
 /**
@@ -122,6 +131,7 @@ export class StateManager extends SimpleEventEmitter {
   private history: StateHistoryEntry[] = [];
   private autoSaveTimer: number | null = null;
   private isValidating = false;
+  private errorRecovery: ErrorRecovery;
 
   constructor(config: Partial<StateManagerConfig> = {}) {
     super();
@@ -146,6 +156,16 @@ export class StateManager extends SimpleEventEmitter {
       ...config.persistence,
     };
 
+    // Initialize error recovery
+    this.errorRecovery = new ErrorRecovery({
+      maxAttempts: ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS,
+      baseDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_BASE_DELAY,
+      backoffMultiplier: ERROR_HANDLING_DEFAULTS.RECOVERY_BACKOFF_MULTIPLIER,
+      maxDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_MAX_DELAY,
+      useExponentialBackoff: true,
+      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT
+    });
+
     // Initialize state
     this.state = {
       currentIndex: 0,
@@ -155,6 +175,12 @@ export class StateManager extends SimpleEventEmitter {
       isInitialized: false,
       isLoading: false,
       loadingProgress: 0,
+      errorState: {
+        hasError: false,
+        errorCount: 0,
+        recoveryAttempts: 0,
+        fallbackActive: false
+      },
       ...config.initialState,
     };
 
@@ -725,6 +751,140 @@ export class StateManager extends SimpleEventEmitter {
       clearInterval(this.autoSaveTimer);
       this.autoSaveTimer = null;
     }
+  }
+
+  // =============================================================================
+  // Error Handling Methods  
+  // =============================================================================
+
+  /**
+   * Record an error in the state
+   */
+  recordError(error: Error, context?: string): void {
+    const errorState = this.state.errorState || {
+      hasError: false,
+      errorCount: 0,
+      recoveryAttempts: 0,
+      fallbackActive: false
+    };
+
+    this.updateState({
+      errorState: {
+        ...errorState,
+        hasError: true,
+        lastError: error,
+        errorCount: errorState.errorCount + 1
+      }
+    }, `error-recorded: ${context || 'unknown'}`);
+
+    this.emit(SLIDER_EVENTS.ERROR, {
+      error,
+      context: context || 'StateManager',
+      state: this.state
+    });
+  }
+
+  /**
+   * Attempt to recover from an error
+   */
+  async attemptErrorRecovery(error: Error, context: string): Promise<boolean> {
+    const errorState = this.state.errorState;
+    if (!errorState) return false;
+
+    try {
+      const recoveryResult = await this.errorRecovery.attemptRecovery(error, {
+        component: 'StateManager',
+        operation: context,
+        timestamp: Date.now(),
+        previousAttempts: errorState.recoveryAttempts,
+        data: { currentState: this.state }
+      });
+
+      // Update recovery attempts
+      this.updateState({
+        errorState: {
+          ...errorState,
+          recoveryAttempts: errorState.recoveryAttempts + 1
+        }
+      }, `recovery-attempt: ${context}`);
+
+      if (recoveryResult.success) {
+        this.clearErrorState();
+        this.emit(SLIDER_EVENTS.ERROR_RECOVERED, {
+          originalError: error,
+          recoveryResult,
+          context
+        });
+        return true;
+      }
+
+      return false;
+    } catch (recoveryError) {
+      this.recordError(
+        recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        'error-recovery-failed'
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Clear error state
+   */
+  clearErrorState(): void {
+    this.updateState({
+      errorState: {
+        hasError: false,
+        errorCount: this.state.errorState?.errorCount || 0,
+        recoveryAttempts: 0,
+        fallbackActive: false
+      }
+    }, 'error-cleared');
+  }
+
+  /**
+   * Activate fallback mode
+   */
+  activateFallbackMode(): void {
+    const errorState = this.state.errorState || {
+      hasError: false,
+      errorCount: 0,
+      recoveryAttempts: 0,
+      fallbackActive: false
+    };
+
+    this.updateState({
+      errorState: {
+        ...errorState,
+        fallbackActive: true
+      }
+    }, 'fallback-activated');
+
+    this.emit(SLIDER_EVENTS.FALLBACK_ACTIVATED, {
+      state: this.state,
+      timestamp: Date.now()
+    });
+  }
+
+  /**
+   * Get current error state
+   */
+  getErrorState(): SliderState['errorState'] {
+    return this.state.errorState;
+  }
+
+  /**
+   * Check if slider is in error state
+   */
+  hasError(): boolean {
+    return this.state.errorState?.hasError || false;
+  }
+
+  /**
+   * Check if fallback mode is active
+   */
+  isFallbackActive(): boolean {
+    return this.state.errorState?.fallbackActive || false;
   }
 
   /**
