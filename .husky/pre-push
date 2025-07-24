@@ -1,5 +1,12 @@
-echo "🧪 Running full test suite before push..."
-pnpm test
+# Fast pre-push validation - skip full test suite to prevent timeouts
+# Full test suite runs in CI/CD
+echo "🏗️ Running fast validation checks..."
 
-echo "🏗️ Testing build..."
+# Only check lint (fast) and build (essential)
+echo "  🔍 Linting..."
+pnpm lint
+
+echo "  🏗️ Testing build..."
 pnpm build
+
+echo "✅ Pre-push validation complete! Full tests run in CI."
