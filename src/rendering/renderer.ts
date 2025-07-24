@@ -16,7 +16,9 @@
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 import type { ISliderRenderer, RenderConfig } from '../core/types';
+import { ScaleMode } from '../core/types';
 import { debugLogger } from '../utils/debug-logger';
+import { setBaseScale } from '../core/sprite-helpers';
 
 // Import Sprite type specifically
 type Sprite = PIXI.Sprite;
@@ -74,6 +76,7 @@ export class SliderRenderer implements ISliderRenderer {
   private config: RenderConfig | null = null;
   private isInitialized = false;
   private sliderId: string;
+  private intendedScale: number = 1; // Store the scale based on ScaleMode
 
   // Animation management
   private activeTimelines = new Set<gsap.core.Timeline>();
@@ -110,18 +113,27 @@ export class SliderRenderer implements ISliderRenderer {
       // Store configuration
       this.config = config;
       this.container = container;
+      debugLogger.info(
+        `Renderer initialized with config - ScaleMode: ${config.scaleMode}, OverscanAmount: ${config.overscanAmount}`,
+        'RENDERER'
+      );
 
       // Create individual PIXI application (back to individual instances but with better cleanup)
       this.app = new PIXI.Application();
 
+      // Use logical dimensions for calculations, let PIXI handle device pixel ratio
+      const logicalWidth = container.clientWidth || config.width || 800;
+      const logicalHeight = container.clientHeight || config.height || 600;
+
       await this.app.init({
-        width: container.clientWidth || config.width || 800,
-        height: container.clientHeight || config.height || 600,
+        width: logicalWidth,
+        height: logicalHeight,
         backgroundAlpha: 0,
         backgroundColor: config.backgroundColor,
         antialias: config.antialias,
-        resolution: config.resolution,
-        resizeTo: container,
+        resolution: config.resolution || window.devicePixelRatio || 1,
+        // Remove resizeTo to prevent automatic canvas resizing that might interfere with our scaling
+        // resizeTo: container,
         preference: 'webgl',
         powerPreference: 'low-power',
         preserveDrawingBuffer: false,
@@ -138,6 +150,10 @@ export class SliderRenderer implements ISliderRenderer {
 
       this.container.appendChild(canvas);
       canvas.classList.add('kinetic-slider-canvas');
+
+      // Ensure canvas displays at logical size regardless of device pixel ratio
+      canvas.style.width = `${logicalWidth}px`;
+      canvas.style.height = `${logicalHeight}px`;
 
       // Create main container for slides
       this.pixiContainer = new PIXI.Container();
@@ -217,16 +233,83 @@ export class SliderRenderer implements ISliderRenderer {
 
     const sprite = new PIXI.Sprite(pixiTexture);
 
-    // Configure sprite
+    // Configure sprite using logical screen dimensions (PIXI handles pixel ratio automatically)
     sprite.anchor.set(0.5);
     sprite.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
 
-    // Scale sprite to cover canvas while maintaining aspect ratio (like CSS object-fit: cover)
+    // Debug app dimensions and sprite dimensions (including pixel ratio info)
+    debugLogger.debug(
+      `APP SCREEN DIMENSIONS: ${this.app.screen.width}×${this.app.screen.height}`,
+      'DIMENSION_DEBUG'
+    );
+    debugLogger.debug(
+      `CANVAS PHYSICAL DIMENSIONS: ${this.app.canvas.width}×${this.app.canvas.height}`,
+      'DIMENSION_DEBUG'
+    );
+    debugLogger.debug(
+      `DEVICE PIXEL RATIO: ${this.app.renderer.resolution}`,
+      'DIMENSION_DEBUG'
+    );
+    debugLogger.debug(
+      `SPRITE ORIGINAL DIMENSIONS: ${sprite.width}×${sprite.height}`,
+      'DIMENSION_DEBUG'
+    );
+    debugLogger.debug(
+      `SPRITE POSITION: ${sprite.position.x}, ${sprite.position.y}`,
+      'DIMENSION_DEBUG'
+    );
+
+    // Scale sprite based on configured scale mode
+    const scaleMode = this.config?.scaleMode || ScaleMode.COVER;
+    debugLogger.info(
+      `Sprite scaling - Mode: ${scaleMode}, Config exists: ${!!this.config}`,
+      'RENDERER'
+    );
+
     const scaleX = this.app.screen.width / sprite.width;
     const scaleY = this.app.screen.height / sprite.height;
-    const scale = Math.max(scaleX, scaleY); // Use the larger scale to cover entirely
+    debugLogger.debug(
+      `SCALE RATIOS: scaleX=${scaleX}, scaleY=${scaleY}`,
+      'DIMENSION_DEBUG'
+    );
+    let scale: number;
 
+    switch (scaleMode) {
+      case ScaleMode.CONTAIN:
+        // Fit entirely within stage, may show letterbox/pillarbox
+        scale = Math.min(scaleX, scaleY);
+        break;
+
+      case ScaleMode.OVERSCAN: {
+        // Step 1: Fit image completely within container (contain behavior)
+        const containScale = Math.min(scaleX, scaleY);
+        // Step 2: Apply slight enlargement to crop edges while preserving scene visibility
+        const overscanAmount = this.config?.overscanAmount || 1.05; // Default 5% overscan
+        scale = containScale * overscanAmount;
+        debugLogger.info(
+          `Overscan scaling - Contain scale: ${containScale}, Overscan amount: ${overscanAmount}, Final scale: ${scale}`,
+          'RENDERER'
+        );
+        break;
+      }
+
+      case ScaleMode.COVER:
+      default:
+        // Fill entire stage, may crop edges
+        scale = Math.max(scaleX, scaleY);
+        break;
+    }
+
+    // Store the intended scale for this configuration
+    this.intendedScale = scale;
     sprite.scale.set(scale);
+
+    // Set baseScale on sprite for physics system to respect
+    setBaseScale(sprite, scale);
+    debugLogger.info(
+      `Sprite created - Intended scale: ${scale}, BaseScale set: ${scale}, Current scale: ${sprite.scale.x}`,
+      'RENDERER'
+    );
 
     // Add GSAP data attributes for targeting
     this.markSpriteForGSAP(sprite, index);
@@ -303,6 +386,13 @@ export class SliderRenderer implements ISliderRenderer {
    */
   getSprites(): PIXI.Sprite[] {
     return [...this.sprites];
+  }
+
+  /**
+   * Get the intended scale based on ScaleMode configuration
+   */
+  getIntendedScale(): number {
+    return this.intendedScale;
   }
 
   /**

@@ -4,6 +4,7 @@ import {
   createKineticSlider,
   SliderEngine,
   KINETIC_SLIDER_VERSION,
+  ScaleMode,
 } from './src/index';
 import {
   ConfigurationSystem,
@@ -319,6 +320,7 @@ function KineticSliderDemo(): JSX.Element {
 
         // Configuration matching the HTML demo
         const config = {
+          debug: true, // Enable debug logging
           slides: sampleImages.map((img, index) => ({
             id: `slide-${index}`,
             src: img.src,
@@ -339,6 +341,8 @@ function KineticSliderDemo(): JSX.Element {
             backgroundColor: 0x000000,
             antialias: true,
             resolution: window.devicePixelRatio || 1,
+            scaleMode: ScaleMode.OVERSCAN,
+            overscanAmount: 1.05, // 5% overscan to crop edges while showing full scene
           },
           input: {
             enableMouse: true,
@@ -692,7 +696,7 @@ function KineticSliderDemo(): JSX.Element {
                 fontSize: '0.9rem',
               }}
             >
-              Soft Blur
+              Blur
             </button>
             <button
               onClick={() => handleApplyFilter('softGlow')}
@@ -706,7 +710,7 @@ function KineticSliderDemo(): JSX.Element {
                 fontSize: '0.9rem',
               }}
             >
-              Soft Glow
+              Glow
             </button>
             <button
               onClick={() => handleApplyFilter('blackAndWhite')}
@@ -720,7 +724,7 @@ function KineticSliderDemo(): JSX.Element {
                 fontSize: '0.9rem',
               }}
             >
-              B&W
+              Grayscale
             </button>
             <button
               onClick={() => handleApplyFilter('vintage')}
@@ -734,10 +738,10 @@ function KineticSliderDemo(): JSX.Element {
                 fontSize: '0.9rem',
               }}
             >
-              Vintage
+              Old Film
             </button>
             <button
-              onClick={() => handleApplyFilter('ripple')}
+              onClick={() => handleApplyFilter('displacement')}
               style={{
                 padding: '0.5rem 1rem',
                 background: '#8b5cf6',
@@ -748,7 +752,7 @@ function KineticSliderDemo(): JSX.Element {
                 fontSize: '0.9rem',
               }}
             >
-              Ripple
+              Displacement
             </button>
             <button
               onClick={handleClearFilters}

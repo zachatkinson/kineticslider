@@ -249,6 +249,18 @@ export interface PhysicsConfig {
 }
 
 /**
+ * Scale mode for sprite sizing
+ */
+export enum ScaleMode {
+  /** Scale to cover entire stage (may crop edges) */
+  COVER = 'cover',
+  /** Scale to fit within stage (may show letterbox/pillarbox) */
+  CONTAIN = 'contain',
+  /** Scale to cover with extra margin for effects (slight crop) */
+  OVERSCAN = 'overscan',
+}
+
+/**
  * Rendering Configuration
  */
 export interface RenderConfig {
@@ -262,6 +274,10 @@ export interface RenderConfig {
   antialias: boolean;
   /** Resolution */
   resolution: number;
+  /** Scale mode for sprite sizing */
+  scaleMode?: ScaleMode;
+  /** Amount of overscan when using OVERSCAN mode (1.1 = 110% scale) */
+  overscanAmount?: number;
 }
 
 /**

@@ -15,6 +15,9 @@
 // Export types explicitly
 export type * from './types';
 
+// Export enums explicitly (they need value exports, not just type exports)
+export { ScaleMode } from './types';
+
 // Export container
 export { serviceContainer, SERVICE_KEYS } from './container';
 

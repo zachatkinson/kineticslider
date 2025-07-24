@@ -88,7 +88,7 @@ describe('EffectPresets', () => {
       expect(presetNames).toContain('vintage');
       expect(presetNames).toContain('cyberpunk');
       expect(presetNames).toContain('blackAndWhite');
-      expect(presetNames).toContain('ripple');
+      expect(presetNames).toContain('displacement');
       expect(presetNames).toContain('wave');
       expect(presetNames).toContain('mouseFollowDisplacement');
       expect(presetNames).toContain('idleFloat');
@@ -103,7 +103,7 @@ describe('EffectPresets', () => {
 
       // Should not throw when creating displacement effects
       expect(() => {
-        effectPresets.createEffect('ripple');
+        effectPresets.createEffect('displacement');
       }).not.toThrow();
     });
   });
@@ -172,7 +172,7 @@ describe('EffectPresets', () => {
 
       expect(names).toContain('softBlur');
       expect(names).toContain('vintage');
-      expect(names).toContain('ripple');
+      expect(names).toContain('displacement');
       expect(names.length).toBeGreaterThan(10);
     });
   });
@@ -251,7 +251,7 @@ describe('EffectPresets', () => {
         const result = effectPresets.createEffect('softGlow');
 
         expect(result.filterChain).toBeDefined();
-        expect(result.filters).toHaveLength(2); // blur + color
+        expect(result.filters).toHaveLength(1); // glow filter
 
         result.cleanup();
       });
@@ -296,10 +296,10 @@ describe('EffectPresets', () => {
     });
 
     describe('Distortion effects', () => {
-      it('should create ripple effect', () => {
+      it('should create displacement effect', () => {
         effectPresets.setDisplacementTexture(texture);
 
-        const result = effectPresets.createEffect('ripple');
+        const result = effectPresets.createEffect('displacement');
 
         expect(result.filterChain).toBeDefined();
         expect(result.filters).toHaveLength(1);
@@ -320,7 +320,7 @@ describe('EffectPresets', () => {
 
       it('should throw error without displacement texture', () => {
         expect(() => {
-          effectPresets.createEffect('ripple');
+          effectPresets.createEffect('displacement');
         }).toThrow('Displacement texture required');
       });
     });
@@ -539,7 +539,7 @@ describe('EffectPresets', () => {
   describe('Error handling', () => {
     it('should handle missing displacement texture gracefully', () => {
       expect(() => {
-        effectPresets.createEffect('ripple');
+        effectPresets.createEffect('displacement');
       }).toThrow('Displacement texture required');
     });
 

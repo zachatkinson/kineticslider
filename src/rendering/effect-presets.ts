@@ -19,6 +19,7 @@ import {
   Container,
   Texture,
 } from 'pixi.js';
+import { GlowFilter, GrayscaleFilter, OldFilmFilter } from 'pixi-filters';
 import { FilterChain } from './filter-chain';
 import {
   DisplacementEffects,
@@ -289,13 +290,13 @@ export class EffectPresets {
 
     // Distortion Effects
     this.registerPreset({
-      name: 'ripple',
+      name: 'displacement',
       category: 'distortion',
-      description: 'Water ripple distortion effect',
+      description: 'Displacement distortion effect',
       performanceImpact: 4,
       compatibility: ['chrome', 'firefox', 'safari'],
       useCases: ['water effects', 'impact animations', 'magical themes'],
-      create: (options) => this.createRippleEffect(options),
+      create: (options) => this.createDisplacementEffect(options),
     });
 
     this.registerPreset({
@@ -468,38 +469,35 @@ export class EffectPresets {
   }
 
   /**
-   * Create soft glow effect
+   * Create glow effect
    */
   private createSoftGlowEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
     const intensity = this.getIntensityMultiplier(options.intensity);
 
-    // Create glow using blur + color matrix
-    const blurFilter = new BlurFilter({ strength: intensity * 6, quality: 4 });
-    const colorFilter = new ColorMatrixFilter();
-
-    // Adjust brightness and contrast for glow
-    colorFilter.brightness(1 + intensity * 0.3, false);
-    colorFilter.contrast(1 + intensity * 0.2, false);
-
-    const filterChain = new FilterChain({ name: 'softGlow' });
-    filterChain.addFilter(blurFilter, {
-      id: 'glowBlur',
-      animationProperties: { strength: intensity * 6 },
-      duration: options.duration,
-      ease: options.ease,
+    // Create glow using proper GlowFilter from pixi-filters with API defaults
+    const glowFilter = new GlowFilter({
+      distance: 10 + intensity * 5, // Default 10, slight increase based on intensity
+      outerStrength: 4 + intensity * 2, // Default 4, slight increase based on intensity
+      innerStrength: 0,
+      color: 0xff0000, // Red color for better visibility testing
+      quality: 0.1, // Use API default value
     });
 
-    filterChain.addFilter(colorFilter, {
-      id: 'glowColor',
-      animationProperties: { alpha: 1 },
+    const filterChain = new FilterChain({ name: 'softGlow' });
+    filterChain.addFilter(glowFilter, {
+      id: 'glow',
+      animationProperties: {
+        distance: 10 + intensity * 5,
+        outerStrength: 4 + intensity * 2,
+      },
       duration: options.duration,
       ease: options.ease,
     });
 
     const timeline = gsap.timeline();
-    const filters = [blurFilter, colorFilter];
+    const filters = [glowFilter];
 
     return {
       filterChain,
@@ -570,29 +568,40 @@ export class EffectPresets {
   }
 
   /**
-   * Create vintage effect
+   * Create old film effect
    */
   private createVintageEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
     const intensity = this.getIntensityMultiplier(options.intensity);
-    const colorFilter = new ColorMatrixFilter();
 
-    // Vintage color grading
-    colorFilter.sepia(intensity > 0.5);
-    colorFilter.contrast(1 + intensity * 0.1, true);
-    colorFilter.brightness(1 + intensity * 0.1, true);
+    // Create vintage using proper OldFilmFilter from pixi-filters with conservative values
+    const oldFilmFilter = new OldFilmFilter({
+      sepia: intensity * 0.3, // Reduced from 0.4
+      noise: intensity * 0.2, // Reduced from 0.3
+      noiseSize: 1,
+      scratch: intensity * 0.3, // Reduced from 0.5
+      scratchDensity: intensity * 0.2, // Reduced from 0.3
+      scratchWidth: 1,
+      vignetting: intensity * 0.2, // Reduced from 0.3
+      vignettingAlpha: 0.8, // Reduced from 1.0 to prevent too much darkening
+      vignettingBlur: 1,
+      seed: 0, // Added missing seed parameter
+    });
 
     const filterChain = new FilterChain({ name: 'vintage' });
-    filterChain.addFilter(colorFilter, {
-      id: 'vintageColor',
-      animationProperties: { alpha: 1 },
+    filterChain.addFilter(oldFilmFilter, {
+      id: 'oldFilm',
+      animationProperties: {
+        sepia: intensity * 0.3,
+        noise: intensity * 0.2,
+      },
       duration: options.duration,
       ease: options.ease,
     });
 
     const timeline = gsap.timeline();
-    const filters = [colorFilter];
+    const filters = [oldFilmFilter];
 
     return {
       filterChain,
@@ -655,28 +664,24 @@ export class EffectPresets {
   }
 
   /**
-   * Create black and white effect
+   * Create grayscale effect
    */
   private createBlackAndWhiteEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensity = this.getIntensityMultiplier(options.intensity);
-    const colorFilter = new ColorMatrixFilter();
-
-    // Desaturate and adjust contrast
-    colorFilter.desaturate();
-    colorFilter.contrast(1 + intensity * 0.2, false);
+    // Create grayscale using proper GrayscaleFilter from pixi-filters
+    const grayscaleFilter = new GrayscaleFilter();
 
     const filterChain = new FilterChain({ name: 'blackAndWhite' });
-    filterChain.addFilter(colorFilter, {
-      id: 'bwColor',
+    filterChain.addFilter(grayscaleFilter, {
+      id: 'grayscale',
       animationProperties: { alpha: 1 },
       duration: options.duration,
       ease: options.ease,
     });
 
     const timeline = gsap.timeline();
-    const filters = [colorFilter];
+    const filters = [grayscaleFilter];
 
     return {
       filterChain,
@@ -696,25 +701,33 @@ export class EffectPresets {
   }
 
   /**
-   * Create ripple effect
+   * Create displacement effect
    */
-  private createRippleEffect(
+  private createDisplacementEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
     if (!this.displacementTexture) {
-      throw new Error('Displacement texture required for ripple effect');
+      throw new Error('Displacement texture required for displacement effect');
     }
 
     const intensity = this.getIntensityMultiplier(options.intensity);
     const displacementSprite = new Sprite(this.displacementTexture);
-    const displacementFilter = new DisplacementFilter(displacementSprite, 0);
 
-    const filterChain = new FilterChain({ name: 'ripple' });
+    // Setup displacement sprite properly
+    displacementSprite.scale.x = intensity * 50;
+    displacementSprite.scale.y = intensity * 50;
+    displacementSprite.anchor.set(0.5);
+
+    const displacementFilter = new DisplacementFilter({
+      sprite: displacementSprite,
+      scale: intensity * 20,
+    });
+
+    const filterChain = new FilterChain({ name: 'displacement' });
     filterChain.addFilter(displacementFilter, {
-      id: 'rippleDisplacement',
+      id: 'displacement',
       animationProperties: {
-        'scale.x': intensity * 50,
-        'scale.y': intensity * 50,
+        scale: intensity * 20,
       },
       duration: options.duration,
       ease: options.ease,

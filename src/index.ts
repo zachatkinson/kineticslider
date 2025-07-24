@@ -70,6 +70,9 @@ export type { KineticSliderProps } from './components';
 // Export all types
 export type * from './core/types';
 
+// Export enums explicitly (they need value exports, not just type exports)
+export { ScaleMode } from './core/types';
+
 /**
  * Initialize the KineticSlider dependency injection container
  *

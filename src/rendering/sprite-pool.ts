@@ -13,6 +13,7 @@
 import { Sprite, Texture } from 'pixi.js';
 import type { ISpritePool, SpritePoolConfig } from '../core/types';
 import { SPRITE_POOL_CONSTANTS } from '../core/constants';
+import { getBaseScale } from '../core/sprite-helpers';
 
 /**
  * Pool statistics for monitoring
@@ -291,7 +292,9 @@ export class SpritePool implements ISpritePool {
     sprite.anchor.set(0.5);
     sprite.visible = true;
     sprite.alpha = 1;
-    sprite.scale.set(1);
+    // Use baseScale instead of hardcoded 1 to preserve intended scaling
+    const baseScale = getBaseScale(sprite);
+    sprite.scale.set(baseScale);
     sprite.rotation = 0;
     sprite.position.set(0, 0);
 
@@ -319,9 +322,12 @@ export class SpritePool implements ISpritePool {
         case 'y':
           sprite.y = 0;
           break;
-        case 'scale':
-          sprite.scale.set(1);
+        case 'scale': {
+          // Use baseScale instead of hardcoded 1 to preserve intended scaling
+          const baseScale = getBaseScale(sprite);
+          sprite.scale.set(baseScale);
           break;
+        }
         case 'rotation':
           sprite.rotation = 0;
           break;

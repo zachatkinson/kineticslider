@@ -32,6 +32,7 @@ import {
 import { ConfigurationSystem } from '../config';
 import { debugLogger } from '../utils/debug-logger';
 import { EffectPresets } from '../rendering/effect-presets';
+import { DisplacementTextureLoader } from '../rendering/displacement-texture-loader';
 
 // Import extracted managers
 import { StateManager } from '../managers/state-manager';
@@ -64,6 +65,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
   // Filter system
   private effectPresets: EffectPresets;
+  private displacementTextureLoader: DisplacementTextureLoader;
   private currentFilterEffect: { cleanup?: () => void } | null = null;
 
   constructor(timelineFactory?: GSAPTimelineFactory) {
@@ -78,6 +80,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
     // Initialize filter system
     this.effectPresets = new EffectPresets();
+    this.displacementTextureLoader = new DisplacementTextureLoader();
 
     this.setupManagerEventHandling();
     this.setupErrorHandling();
@@ -110,6 +113,22 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
       // Initialize dependencies from service container
       await this.initializeServices(container);
+
+      // Initialize displacement textures for filter effects
+      try {
+        const displacementTextures =
+          await this.displacementTextureLoader.loadDisplacementTextures();
+        if (displacementTextures.background) {
+          this.effectPresets.setDisplacementTexture(
+            displacementTextures.background
+          );
+        }
+      } catch (error) {
+        debugLogger.warn(
+          'Failed to load displacement textures, some filters may not work:',
+          error instanceof Error ? error.message : String(error)
+        );
+      }
 
       // Get slides array
       const slideCount = this.config.slides.length;
@@ -453,14 +472,27 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       }
 
       // Create filter effect using presets
+      debugLogger.info(
+        `Creating filter effect: ${filterName}`,
+        'slider-core:applyFilter'
+      );
       const filterEffect = this.effectPresets.createEffect(filterName, {
         intensity: 'moderate',
         duration: 0.5,
       });
 
       if (filterEffect && filterEffect.filters.length > 0) {
+        debugLogger.info(
+          `Filter effect created with ${filterEffect.filters.length} filters`,
+          'slider-core:applyFilter'
+        );
+
         // Apply each filter to the sprite
-        filterEffect.filters.forEach((filter) => {
+        filterEffect.filters.forEach((filter, index) => {
+          debugLogger.info(
+            `Applying filter ${index + 1}/${filterEffect.filters.length}: ${filter.constructor.name}`,
+            'slider-core:applyFilter'
+          );
           if (typeof this.renderer!.applyFilter === 'function') {
             this.renderer!.applyFilter(currentSprite, filter);
           }
@@ -471,6 +503,15 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
         // Store reference for cleanup
         this.currentFilterEffect = filterEffect;
+        debugLogger.info(
+          `Filter ${filterName} applied successfully`,
+          'slider-core:applyFilter'
+        );
+      } else {
+        debugLogger.warn(
+          `Filter effect not created or has no filters: ${filterName}`,
+          'slider-core:applyFilter'
+        );
       }
     } catch (error) {
       this.handleError(error, 'applyFilter');

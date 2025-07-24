@@ -402,9 +402,10 @@ export class TransformAnimator {
     if (animated) {
       return this.animateTransform(target, resetConfig);
     } else {
-      // Reset immediately
+      // Reset immediately using baseScale instead of hardcoded 1
       target.position.set(0, 0);
-      target.scale.set(1, 1);
+      const baseScale = getBaseScale(target as Sprite);
+      target.scale.set(baseScale, baseScale);
       target.rotation = 0;
       target.skew.set(0, 0);
     }

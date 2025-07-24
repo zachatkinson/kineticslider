@@ -125,7 +125,9 @@ test.describe('Configuration System E2E', () => {
 
       const result = await page.evaluate(async () => {
         const kineticSliderConfig = window.kineticSliderConfig! as unknown as {
-          ConfigurationSystem: { processConfig: (config: unknown) => { slides: unknown[] } };
+          ConfigurationSystem: {
+            processConfig: (config: unknown) => { slides: unknown[] };
+          };
           debugLogger: { initialize: (enabled: boolean) => void };
         };
         const { ConfigurationSystem, debugLogger } = kineticSliderConfig;

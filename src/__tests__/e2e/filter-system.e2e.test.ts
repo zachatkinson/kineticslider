@@ -52,34 +52,43 @@ test.describe('Filter System E2E', () => {
     await expect(slider).toBeVisible();
 
     // Wait for slider to be fully initialized AND sprites to be available
-    await page.waitForFunction(() => {
-      const engine = (window as { kineticSlider?: { engine?: { 
-        applyFilter: (name: string) => Promise<void>;
-        getCurrentIndex: () => number;
-        renderer: { getSprites: () => unknown[] };
-      } } }).kineticSlider?.engine;
-      if (!engine || typeof engine.applyFilter !== 'function') {
-        return false;
-      }
-      
-      // Check if renderer and sprites are available
-      try {
-        const renderer = engine.renderer;
-        if (!renderer) return false;
-        
-        const sprites = renderer.getSprites?.();
-        const currentIndex = engine.getCurrentIndex?.() ?? 0;
-        
-        return sprites && sprites.length > 0 && sprites[currentIndex];
-      } catch {
-        return false;
-      }
-    }, { timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        const engine = (
+          window as {
+            kineticSlider?: {
+              engine?: {
+                applyFilter: (name: string) => Promise<void>;
+                getCurrentIndex: () => number;
+                renderer: { getSprites: () => unknown[] };
+              };
+            };
+          }
+        ).kineticSlider?.engine;
+        if (!engine || typeof engine.applyFilter !== 'function') {
+          return false;
+        }
+
+        // Check if renderer and sprites are available
+        try {
+          const renderer = engine.renderer;
+          if (!renderer) return false;
+
+          const sprites = renderer.getSprites?.();
+          const currentIndex = engine.getCurrentIndex?.() ?? 0;
+
+          return sprites && sprites.length > 0 && sprites[currentIndex];
+        } catch {
+          return false;
+        }
+      },
+      { timeout: 10000 }
+    );
 
     // Test applying a filter through the UI
-    const softBlurButton = page.locator('button:has-text("Soft Blur")');
-    await expect(softBlurButton).toBeVisible();
-    await softBlurButton.click();
+    const blurButton = page.locator('button:has-text("Blur")');
+    await expect(blurButton).toBeVisible();
+    await blurButton.click();
 
     // Wait for filter application with more robust polling and debugging
     let result = { success: false, announcementText: '', debugInfo: '' };
@@ -89,15 +98,21 @@ test.describe('Filter System E2E', () => {
         const announcements = document.querySelector(
           '#slider-announcements'
         )?.textContent;
-        const sliderEngine = (window as { kineticSlider?: { engine?: { 
-          applyFilter: (name: string) => Promise<void>;
-          getState: () => { isInitialized?: boolean };
-        } } }).kineticSlider?.engine;
+        const sliderEngine = (
+          window as {
+            kineticSlider?: {
+              engine?: {
+                applyFilter: (name: string) => Promise<void>;
+                getState: () => { isInitialized?: boolean };
+              };
+            };
+          }
+        ).kineticSlider?.engine;
         const hasApplyFilter = typeof sliderEngine?.applyFilter === 'function';
         const sliderState = sliderEngine?.getState?.();
-        
+
         return {
-          success: !!(announcements?.includes('Applied softBlur filter')),
+          success: !!announcements?.includes('Applied softBlur filter'),
           announcementText: announcements || '',
           debugInfo: JSON.stringify({
             hasAnnouncements: !!announcements,
@@ -106,9 +121,9 @@ test.describe('Filter System E2E', () => {
             hasApplyFilter,
             sliderInitialized: sliderState?.isInitialized,
             iteration: iteration,
-            hasFailedMessage: !!(announcements?.includes('failed')),
-            hasNotAvailableMessage: !!(announcements?.includes('not available'))
-          })
+            hasFailedMessage: !!announcements?.includes('failed'),
+            hasNotAvailableMessage: !!announcements?.includes('not available'),
+          }),
         };
       }, i);
       if (result.success) break;
@@ -119,7 +134,7 @@ test.describe('Filter System E2E', () => {
       console.log('Filter test failure debug info:', {
         finalAnnouncementText: result.announcementText,
         debugInfo: result.debugInfo,
-        expectedText: 'Applied softBlur filter'
+        expectedText: 'Applied softBlur filter',
       });
     }
 
@@ -131,9 +146,9 @@ test.describe('Filter System E2E', () => {
     await expect(slider).toBeVisible();
 
     // First apply a filter
-    const vintageButton = page.locator('button:has-text("Vintage")');
-    await expect(vintageButton).toBeVisible();
-    await vintageButton.click();
+    const oldFilmButton = page.locator('button:has-text("Old Film")');
+    await expect(oldFilmButton).toBeVisible();
+    await oldFilmButton.click();
     await page.waitForTimeout(500);
 
     // Then clear filters
@@ -161,35 +176,44 @@ test.describe('Filter System E2E', () => {
     await expect(slider).toBeVisible();
 
     // Wait for slider to be fully initialized AND sprites to be available
-    await page.waitForFunction(() => {
-      const engine = (window as { kineticSlider?: { engine?: { 
-        applyFilter: (name: string) => Promise<void>;
-        getCurrentIndex: () => number;
-        renderer: { getSprites: () => unknown[] };
-      } } }).kineticSlider?.engine;
-      if (!engine || typeof engine.applyFilter !== 'function') {
-        return false;
-      }
-      
-      // Check if renderer and sprites are available
-      try {
-        const renderer = engine.renderer;
-        if (!renderer) return false;
-        
-        const sprites = renderer.getSprites?.();
-        const currentIndex = engine.getCurrentIndex?.() ?? 0;
-        
-        return sprites && sprites.length > 0 && sprites[currentIndex];
-      } catch {
-        return false;
-      }
-    }, { timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        const engine = (
+          window as {
+            kineticSlider?: {
+              engine?: {
+                applyFilter: (name: string) => Promise<void>;
+                getCurrentIndex: () => number;
+                renderer: { getSprites: () => unknown[] };
+              };
+            };
+          }
+        ).kineticSlider?.engine;
+        if (!engine || typeof engine.applyFilter !== 'function') {
+          return false;
+        }
+
+        // Check if renderer and sprites are available
+        try {
+          const renderer = engine.renderer;
+          if (!renderer) return false;
+
+          const sprites = renderer.getSprites?.();
+          const currentIndex = engine.getCurrentIndex?.() ?? 0;
+
+          return sprites && sprites.length > 0 && sprites[currentIndex];
+        } catch {
+          return false;
+        }
+      },
+      { timeout: 10000 }
+    );
 
     // Test different filter types by clicking their buttons
     const filterTests = [
-      { buttonText: 'Soft Blur', filterName: 'softBlur' },
-      { buttonText: 'B&W', filterName: 'blackAndWhite' },
-      { buttonText: 'Vintage', filterName: 'vintage' },
+      { buttonText: 'Blur', filterName: 'softBlur' },
+      { buttonText: 'Grayscale', filterName: 'blackAndWhite' },
+      { buttonText: 'Old Film', filterName: 'vintage' },
     ];
 
     for (const filterTest of filterTests) {
@@ -226,32 +250,41 @@ test.describe('Filter System E2E', () => {
     await expect(slider).toBeVisible();
 
     // Wait for slider to be fully initialized AND sprites to be available
-    await page.waitForFunction(() => {
-      const engine = (window as { kineticSlider?: { engine?: { 
-        applyFilter: (name: string) => Promise<void>;
-        getCurrentIndex: () => number;
-        renderer: { getSprites: () => unknown[] };
-      } } }).kineticSlider?.engine;
-      if (!engine || typeof engine.applyFilter !== 'function') {
-        return false;
-      }
-      
-      // Check if renderer and sprites are available
-      try {
-        const renderer = engine.renderer;
-        if (!renderer) return false;
-        
-        const sprites = renderer.getSprites?.();
-        const currentIndex = engine.getCurrentIndex?.() ?? 0;
-        
-        return sprites && sprites.length > 0 && sprites[currentIndex];
-      } catch {
-        return false;
-      }
-    }, { timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        const engine = (
+          window as {
+            kineticSlider?: {
+              engine?: {
+                applyFilter: (name: string) => Promise<void>;
+                getCurrentIndex: () => number;
+                renderer: { getSprites: () => unknown[] };
+              };
+            };
+          }
+        ).kineticSlider?.engine;
+        if (!engine || typeof engine.applyFilter !== 'function') {
+          return false;
+        }
+
+        // Check if renderer and sprites are available
+        try {
+          const renderer = engine.renderer;
+          if (!renderer) return false;
+
+          const sprites = renderer.getSprites?.();
+          const currentIndex = engine.getCurrentIndex?.() ?? 0;
+
+          return sprites && sprites.length > 0 && sprites[currentIndex];
+        } catch {
+          return false;
+        }
+      },
+      { timeout: 10000 }
+    );
 
     // Test applying multiple filters in sequence
-    const filterSequence = ['Soft Glow', 'Vintage'];
+    const filterSequence = ['Glow', 'Old Film'];
 
     for (const filterText of filterSequence) {
       const filterButton = page.locator(`button:has-text("${filterText}")`);
@@ -296,7 +329,7 @@ test.describe('Filter System E2E', () => {
     await expect(slider).toBeVisible();
 
     // Test applying visual filters that work reliably
-    const workingFilters = ['Soft Blur', 'Soft Glow'];
+    const workingFilters = ['Blur', 'Glow'];
 
     for (const filterText of workingFilters) {
       const filterButton = page.locator(`button:has-text("${filterText}")`);
@@ -343,7 +376,7 @@ test.describe('Filter System E2E', () => {
     await expect(slider).toBeVisible();
 
     // Test rapid filter switching to check performance
-    const filters = ['Soft Blur', 'Vintage', 'B&W'];
+    const filters = ['Blur', 'Old Film', 'Grayscale'];
     const startTime = Date.now();
 
     for (const filterText of filters) {

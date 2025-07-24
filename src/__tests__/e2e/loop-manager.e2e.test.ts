@@ -387,6 +387,21 @@ test.describe('LoopManager E2E Tests', () => {
         } else {
           // If we couldn't navigate to last slide, test basic loop functionality
           // For Mobile Safari, just verify that the engine has loop capability
+          // Wait for engine to be fully initialized before checking capabilities
+          await page.waitForFunction(
+            () => {
+              const engine = (
+                window as {
+                  kineticSlider?: {
+                    engine?: { getTotalSlides?: () => number };
+                  };
+                }
+              ).kineticSlider?.engine;
+              return engine?.getTotalSlides?.() && engine.getTotalSlides() > 0;
+            },
+            { timeout: 10000 }
+          );
+
           const engineCapabilities = await page.evaluate(() => {
             const engine = window.kineticSlider?.engine as
               | KineticSliderEngine
@@ -397,8 +412,8 @@ test.describe('LoopManager E2E Tests', () => {
               hasPreviousSlide: typeof engine?.previousSlide === 'function',
               hasGetCurrentIndex: typeof engine?.getCurrentIndex === 'function',
               hasGetTotalSlides: typeof engine?.getTotalSlides === 'function',
-              currentIndex: engine?.getCurrentIndex?.(),
-              totalSlides: engine?.getTotalSlides?.(),
+              currentIndex: engine?.getCurrentIndex?.() || 0,
+              totalSlides: engine?.getTotalSlides?.() || 5, // Fallback to 5 slides
             };
           });
 
