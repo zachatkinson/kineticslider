@@ -13,6 +13,7 @@ import type { Adapter } from 'pixi.js';
 import {
   Canvas,
   CanvasRenderingContext2D as NodeCanvasRenderingContext2D,
+// @ts-expect-error - Canvas package types not available in production build
 } from 'canvas';
 // @ts-expect-error - No types available for 'gl' package
 import gl from 'gl';
