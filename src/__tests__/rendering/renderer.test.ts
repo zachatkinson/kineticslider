@@ -349,9 +349,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           scaleMode: ScaleMode.COVER,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // With mock texture 100x100 and screen 800x600, COVER should use max scale
         // scaleX = 800/100 = 8, scaleY = 600/100 = 6, max = 8
         expect(sprite.scale.set).toHaveBeenCalledWith(8);
@@ -363,16 +363,16 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           scaleMode: ScaleMode.COVER,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         // Mock a wide image (landscape)
         vi.mocked(PIXI.Assets.load).mockResolvedValueOnce({
           width: 200,
           height: 100,
           source: { width: 200, height: 100 },
         } as Partial<PIXI.Texture>);
-        
+
         const sprite = await renderer.createSprite('wide-image.jpg', 0);
-        
+
         // scaleX = 800/200 = 4, scaleY = 600/100 = 6, max = 6
         expect(sprite.scale.set).toHaveBeenCalledWith(6);
       });
@@ -385,9 +385,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           scaleMode: ScaleMode.CONTAIN,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // With mock texture 100x100 and screen 800x600, CONTAIN should use min scale
         // scaleX = 800/100 = 8, scaleY = 600/100 = 6, min = 6
         expect(sprite.scale.set).toHaveBeenCalledWith(6);
@@ -399,16 +399,16 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           scaleMode: ScaleMode.CONTAIN,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         // Mock a tall image (portrait)
         vi.mocked(PIXI.Assets.load).mockResolvedValueOnce({
           width: 100,
           height: 300,
           source: { width: 100, height: 300 },
         } as Partial<PIXI.Texture>);
-        
+
         const sprite = await renderer.createSprite('tall-image.jpg', 0);
-        
+
         // scaleX = 800/100 = 8, scaleY = 600/300 = 2, min = 2
         expect(sprite.scale.set).toHaveBeenCalledWith(2);
       });
@@ -421,9 +421,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           scaleMode: ScaleMode.OVERSCAN,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // OVERSCAN: contain scale (6) * default 1.05 = 6.3
         expect(sprite.scale.set).toHaveBeenCalledWith(expect.closeTo(6.3, 2));
       });
@@ -435,9 +435,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           overscanAmount: 1.1, // 10% overscan
         };
         await renderer.initialize(mockContainer, config);
-        
+
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // OVERSCAN: contain scale (6) * custom 1.1 = 6.6
         expect(sprite.scale.set).toHaveBeenCalledWith(expect.closeTo(6.6, 2));
       });
@@ -449,9 +449,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           overscanAmount: 1.0, // No overscan
         };
         await renderer.initialize(mockContainer, config);
-        
+
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // OVERSCAN: contain scale (6) * 1.0 = 6 (same as contain)
         expect(sprite.scale.set).toHaveBeenCalledWith(6);
       });
@@ -463,16 +463,16 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           overscanAmount: 1.05,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         // Mock landscape image
         vi.mocked(PIXI.Assets.load).mockResolvedValueOnce({
           width: 400,
           height: 200,
           source: { width: 400, height: 200 },
         } as Partial<PIXI.Texture>);
-        
+
         const sprite = await renderer.createSprite('landscape.jpg', 0);
-        
+
         // scaleX = 800/400 = 2, scaleY = 600/200 = 3, contain = min(2,3) = 2
         // overscan = 2 * 1.05 = 2.1
         expect(sprite.scale.set).toHaveBeenCalledWith(2.1);
@@ -485,16 +485,16 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           overscanAmount: 1.08,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         // Mock portrait image
         vi.mocked(PIXI.Assets.load).mockResolvedValueOnce({
           width: 300,
           height: 500,
           source: { width: 300, height: 500 },
         } as Partial<PIXI.Texture>);
-        
+
         const sprite = await renderer.createSprite('portrait.jpg', 0);
-        
+
         // scaleX = 800/300 = 2.67, scaleY = 600/500 = 1.2, contain = min(2.67,1.2) = 1.2
         // overscan = 1.2 * 1.08 = 1.296
         expect(sprite.scale.set).toHaveBeenCalledWith(1.296);
@@ -508,9 +508,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           scaleMode: ScaleMode.COVER,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         await renderer.createSprite('test-image.jpg', 0);
-        
+
         expect(renderer.getIntendedScale()).toBe(8); // Max of scaleX=8, scaleY=6
       });
 
@@ -520,9 +520,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           scaleMode: ScaleMode.CONTAIN,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         await renderer.createSprite('test-image.jpg', 0);
-        
+
         expect(renderer.getIntendedScale()).toBe(6); // Min of scaleX=8, scaleY=6
       });
 
@@ -533,9 +533,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           overscanAmount: 1.2,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         await renderer.createSprite('test-image.jpg', 0);
-        
+
         expect(renderer.getIntendedScale()).toBeCloseTo(7.2, 2); // Contain(6) * 1.2
       });
     });
@@ -547,9 +547,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           scaleMode: undefined,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // Should default to COVER behavior (max scale = 8)
         expect(sprite.scale.set).toHaveBeenCalledWith(8);
       });
@@ -561,9 +561,9 @@ describe('SliderRenderer - Unified Implementation Tests', () => {
           overscanAmount: undefined,
         };
         await renderer.initialize(mockContainer, config);
-        
+
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // Should use default 1.05 overscan
         expect(sprite.scale.set).toHaveBeenCalledWith(expect.closeTo(6.3, 2));
       });

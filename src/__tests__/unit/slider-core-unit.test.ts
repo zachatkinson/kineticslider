@@ -275,7 +275,8 @@ describe('SliderCore Unit Tests', () => {
 
       // Replace the real instances with our mocks
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sliderCore as any).displacementTextureLoader = mockDisplacementTextureLoader;
+      (sliderCore as any).displacementTextureLoader =
+        mockDisplacementTextureLoader;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (sliderCore as any).effectPresets = mockEffectPresets;
     });
@@ -292,8 +293,12 @@ describe('SliderCore Unit Tests', () => {
 
       await sliderCore.initialize(mockConfig);
 
-      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
-      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(mockTexture);
+      expect(
+        mockDisplacementTextureLoader.loadDisplacementTextures
+      ).toHaveBeenCalled();
+      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(
+        mockTexture
+      );
     });
 
     it('should handle successful displacement texture loading', async () => {
@@ -310,8 +315,12 @@ describe('SliderCore Unit Tests', () => {
 
       await sliderCore.initialize(mockConfig);
 
-      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalledTimes(1);
-      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(mockBackgroundTexture);
+      expect(
+        mockDisplacementTextureLoader.loadDisplacementTextures
+      ).toHaveBeenCalledTimes(1);
+      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(
+        mockBackgroundTexture
+      );
     });
 
     it('should handle null background texture gracefully', async () => {
@@ -325,13 +334,17 @@ describe('SliderCore Unit Tests', () => {
 
       await sliderCore.initialize(mockConfig);
 
-      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(
+        mockDisplacementTextureLoader.loadDisplacementTextures
+      ).toHaveBeenCalled();
       expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
     });
 
     it('should handle displacement texture loading errors gracefully', async () => {
       const loadingError = new Error('Failed to load displacement texture');
-      mockDisplacementTextureLoader.loadDisplacementTextures.mockRejectedValue(loadingError);
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockRejectedValue(
+        loadingError
+      );
 
       mockRenderer.initialize.mockResolvedValue(undefined);
       mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
@@ -339,32 +352,42 @@ describe('SliderCore Unit Tests', () => {
       // Should not throw - error should be caught and logged
       await expect(sliderCore.initialize(mockConfig)).resolves.not.toThrow();
 
-      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(
+        mockDisplacementTextureLoader.loadDisplacementTextures
+      ).toHaveBeenCalled();
       expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
     });
 
     it('should handle non-Error displacement texture loading failures', async () => {
       // Test with string error
-      mockDisplacementTextureLoader.loadDisplacementTextures.mockRejectedValue('Network error');
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockRejectedValue(
+        'Network error'
+      );
 
       mockRenderer.initialize.mockResolvedValue(undefined);
       mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
 
       await expect(sliderCore.initialize(mockConfig)).resolves.not.toThrow();
 
-      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(
+        mockDisplacementTextureLoader.loadDisplacementTextures
+      ).toHaveBeenCalled();
       expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
     });
 
     it('should handle undefined displacement texture result', async () => {
-      mockDisplacementTextureLoader.loadDisplacementTextures.mockResolvedValue(undefined);
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockResolvedValue(
+        undefined
+      );
 
       mockRenderer.initialize.mockResolvedValue(undefined);
       mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
 
       await expect(sliderCore.initialize(mockConfig)).resolves.not.toThrow();
 
-      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
+      expect(
+        mockDisplacementTextureLoader.loadDisplacementTextures
+      ).toHaveBeenCalled();
       expect(mockEffectPresets.setDisplacementTexture).not.toHaveBeenCalled();
     });
 
@@ -375,7 +398,9 @@ describe('SliderCore Unit Tests', () => {
         rejectTimeout = reject;
       });
 
-      mockDisplacementTextureLoader.loadDisplacementTextures.mockReturnValue(timeoutPromise);
+      mockDisplacementTextureLoader.loadDisplacementTextures.mockReturnValue(
+        timeoutPromise
+      );
 
       mockRenderer.initialize.mockResolvedValue(undefined);
       mockRenderer.getSprites.mockReturnValue([{}, {}, {}]);
@@ -406,7 +431,9 @@ describe('SliderCore Unit Tests', () => {
       await sliderCore.initialize(mockConfig);
 
       // Verify displacement texture loading was called once
-      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalledTimes(1);
+      expect(
+        mockDisplacementTextureLoader.loadDisplacementTextures
+      ).toHaveBeenCalledTimes(1);
       expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledTimes(1);
     });
 
@@ -453,8 +480,12 @@ describe('SliderCore Unit Tests', () => {
 
       await initPromise;
 
-      expect(mockDisplacementTextureLoader.loadDisplacementTextures).toHaveBeenCalled();
-      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(mockTexture);
+      expect(
+        mockDisplacementTextureLoader.loadDisplacementTextures
+      ).toHaveBeenCalled();
+      expect(mockEffectPresets.setDisplacementTexture).toHaveBeenCalledWith(
+        mockTexture
+      );
     });
   });
 });

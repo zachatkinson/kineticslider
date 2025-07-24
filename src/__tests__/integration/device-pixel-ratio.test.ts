@@ -108,13 +108,14 @@ describe('Device Pixel Ratio Integration Tests', () => {
   let renderer: SliderRenderer;
   let mockContainer: HTMLElement;
 
-  const createMockContainer = () => ({
-    appendChild: vi.fn(),
-    removeChild: vi.fn(),
-    contains: vi.fn().mockReturnValue(true),
-    clientWidth: 800,
-    clientHeight: 600,
-  } as unknown as HTMLElement);
+  const createMockContainer = () =>
+    ({
+      appendChild: vi.fn(),
+      removeChild: vi.fn(),
+      contains: vi.fn().mockReturnValue(true),
+      clientWidth: 800,
+      clientHeight: 600,
+    }) as unknown as HTMLElement;
 
   beforeEach(() => {
     renderer = new SliderRenderer();
@@ -287,7 +288,9 @@ describe('Device Pixel Ratio Integration Tests', () => {
       };
 
       // Should not throw an error
-      await expect(renderer.initialize(mockContainer, config)).resolves.not.toThrow();
+      await expect(
+        renderer.initialize(mockContainer, config)
+      ).resolves.not.toThrow();
 
       const app = renderer.getApplication();
       expect(app!.renderer.resolution).toBe(10);
@@ -347,7 +350,7 @@ describe('Device Pixel Ratio Integration Tests', () => {
 
         expect(app).toBeDefined();
         expect(app!.renderer.resolution).toBe(dpi);
-        
+
         // Canvas logical size should be consistent regardless of DPI
         const canvas = app!.renderer.canvas;
         expect(canvas.style.width).toBe('800px');
@@ -372,9 +375,11 @@ describe('Device Pixel Ratio Integration Tests', () => {
         };
 
         await renderer.initialize(mockContainer, config);
-        
+
         // Sprite creation should work regardless of DPI
-        await expect(renderer.createSprite('test-image.jpg', 0)).resolves.toBeDefined();
+        await expect(
+          renderer.createSprite('test-image.jpg', 0)
+        ).resolves.toBeDefined();
 
         renderer.destroy();
         renderer = new SliderRenderer();

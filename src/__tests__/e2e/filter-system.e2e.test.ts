@@ -395,5 +395,4 @@ test.describe('Filter System E2E', () => {
     const clearButton = page.locator('button:has-text("Clear Filters")');
     await clearButton.click();
   });
-
 });

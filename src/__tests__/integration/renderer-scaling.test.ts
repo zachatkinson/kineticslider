@@ -114,7 +114,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(smallContainer, config);
       const app = renderer.getApplication();
-      
+
       expect(app).toBeDefined();
       expect(app!.renderer.canvas.style.width).toBe('375px');
       expect(app!.renderer.canvas.style.height).toBe('667px');
@@ -140,7 +140,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(mediumContainer, config);
       const app = renderer.getApplication();
-      
+
       expect(app).toBeDefined();
       expect(app!.renderer.canvas.style.width).toBe('768px');
       expect(app!.renderer.canvas.style.height).toBe('1024px');
@@ -167,7 +167,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(largeContainer, config);
       const app = renderer.getApplication();
-      
+
       expect(app).toBeDefined();
       expect(app!.renderer.canvas.style.width).toBe('1920px');
       expect(app!.renderer.canvas.style.height).toBe('1080px');
@@ -193,7 +193,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(ultraWideContainer, config);
       const app = renderer.getApplication();
-      
+
       expect(app).toBeDefined();
       expect(app!.renderer.canvas.style.width).toBe('3440px');
       expect(app!.renderer.canvas.style.height).toBe('1440px');
@@ -221,7 +221,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(squareContainer, config);
       const sprite = await renderer.createSprite('test-image.jpg', 0);
-      
+
       // With mock using default screen dimensions 800x600 and texture 100x100
       // scaleX = 800/100 = 8, scaleY = 600/100 = 6, max(8,6) = 8 for COVER mode
       expect(sprite.scale.set).toHaveBeenCalledWith(8);
@@ -247,7 +247,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(wideContainer, config);
       const sprite = await renderer.createSprite('test-image.jpg', 0);
-      
+
       // With mock using default screen dimensions 800x600 and texture 100x100
       // scaleX = 800/100 = 8, scaleY = 600/100 = 6, max(8,6) = 8 for COVER mode
       expect(sprite.scale.set).toHaveBeenCalledWith(8);
@@ -273,7 +273,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(tallContainer, config);
       const sprite = await renderer.createSprite('test-image.jpg', 0);
-      
+
       // With mock using default screen dimensions 800x600 and texture 100x100
       // scaleX = 800/100 = 8, scaleY = 600/100 = 6, max(8,6) = 8 for COVER mode
       expect(sprite.scale.set).toHaveBeenCalledWith(8);
@@ -308,12 +308,12 @@ describe('Renderer Scaling Integration Tests', () => {
 
         await renderer.initialize(container, config);
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // With mock using default screen dimensions 800x600 and texture 100x100
         // CONTAIN should use minimum scale to fit entirely
         // scaleX = 800/100 = 8, scaleY = 600/100 = 6, min(8,6) = 6
         expect(sprite.scale.set).toHaveBeenCalledWith(6);
-        
+
         // Cleanup for next iteration
         renderer.destroy();
         renderer = new SliderRenderer();
@@ -348,14 +348,14 @@ describe('Renderer Scaling Integration Tests', () => {
 
         await renderer.initialize(container, config);
         const sprite = await renderer.createSprite('test-image.jpg', 0);
-        
+
         // With mock using default screen dimensions 800x600 and texture 100x100
         // OVERSCAN: contain scale * overscan amount
         // scaleX = 800/100 = 8, scaleY = 600/100 = 6, min(8,6) = 6
         const expectedScale = 6 * containerDef.overscan;
-        
+
         expect(sprite.scale.set).toHaveBeenCalledWith(expectedScale);
-        
+
         // Cleanup for next iteration
         renderer.destroy();
         renderer = new SliderRenderer();
@@ -384,11 +384,11 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(highDPIContainer, config);
       const app = renderer.getApplication();
-      
+
       // Canvas should display at logical size regardless of resolution
       expect(app!.renderer.canvas.style.width).toBe('375px');
       expect(app!.renderer.canvas.style.height).toBe('667px');
-      
+
       // Create sprite and verify scaling is unaffected by device pixel ratio
       const sprite = await renderer.createSprite('test-image.jpg', 0);
       // With mock using default screen dimensions 800x600 and texture 100x100
@@ -424,11 +424,11 @@ describe('Renderer Scaling Integration Tests', () => {
 
         await renderer.initialize(container, config);
         const app = renderer.getApplication();
-        
+
         // Verify logical sizing is correct regardless of DPI
         expect(app!.renderer.canvas.style.width).toBe(`${testCase.width}px`);
         expect(app!.renderer.canvas.style.height).toBe(`${testCase.height}px`);
-        
+
         // Cleanup for next iteration
         renderer.destroy();
         renderer = new SliderRenderer();
@@ -456,15 +456,21 @@ describe('Renderer Scaling Integration Tests', () => {
       };
 
       await renderer.initialize(dynamicContainer, config);
-      
+
       // Simulate container resize (Note: in real scenarios this would be handled by resize observers)
-      Object.defineProperty(dynamicContainer, 'clientWidth', { value: 1200, configurable: true });
-      Object.defineProperty(dynamicContainer, 'clientHeight', { value: 800, configurable: true });
-      
+      Object.defineProperty(dynamicContainer, 'clientWidth', {
+        value: 1200,
+        configurable: true,
+      });
+      Object.defineProperty(dynamicContainer, 'clientHeight', {
+        value: 800,
+        configurable: true,
+      });
+
       // Verify initial setup
       const app = renderer.getApplication();
       expect(app).toBeDefined();
-      
+
       // Note: In a real scenario, we'd test the resize behavior
       // but that would require triggering resize events
     });
@@ -490,7 +496,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(orientationContainer, config);
       const sprite = await renderer.createSprite('test-image.jpg', 0);
-      
+
       // With mock using default screen dimensions 800x600 and texture 100x100
       // OVERSCAN: contain scale * overscan amount
       // scaleX = 800/100 = 8, scaleY = 600/100 = 6, min(8,6) = 6, * 1.05 = 6.3
@@ -519,7 +525,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(zeroContainer, config);
       const app = renderer.getApplication();
-      
+
       // Should use config dimensions as fallback
       expect(app!.renderer.canvas.style.width).toBe('800px');
       expect(app!.renderer.canvas.style.height).toBe('600px');
@@ -544,8 +550,10 @@ describe('Renderer Scaling Integration Tests', () => {
       };
 
       // Should not throw an error
-      await expect(renderer.initialize(largeContainer, config)).resolves.not.toThrow();
-      
+      await expect(
+        renderer.initialize(largeContainer, config)
+      ).resolves.not.toThrow();
+
       const app = renderer.getApplication();
       expect(app).toBeDefined();
     });
@@ -570,7 +578,7 @@ describe('Renderer Scaling Integration Tests', () => {
 
       await renderer.initialize(fractionalContainer, config);
       const app = renderer.getApplication();
-      
+
       expect(app).toBeDefined();
       expect(app!.renderer.canvas.style.width).toBe('375.5px');
       expect(app!.renderer.canvas.style.height).toBe('667.3px');
