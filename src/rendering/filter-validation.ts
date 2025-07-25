@@ -127,7 +127,15 @@ export class FilterValidator {
     const presets = new AdvancedFilterPresets();
 
     // Advanced filter presets to test
-    const advancedPresets = ['ascii', 'dot', 'glow', 'crt', 'pixelate', 'adjustment'];
+    const advancedPresets = [
+      'ascii',
+      'dot',
+      'glow',
+      'crt',
+      'pixelate',
+      'adjustment',
+      'advancedBloom',
+    ];
 
     for (const presetName of advancedPresets) {
       const startTime = performance.now();

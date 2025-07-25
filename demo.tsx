@@ -769,6 +769,20 @@ function KineticSliderDemo(): JSX.Element {
               Adjustment
             </button>
             <button
+              onClick={() => handleApplyFilter('advancedBloom')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Advanced Bloom
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

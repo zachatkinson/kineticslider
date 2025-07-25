@@ -21,6 +21,7 @@ import {
 
 // Import advanced filters from pixi-filters
 import {
+  AdvancedBloomFilter,
   AdjustmentFilter,
   AsciiFilter,
   DotFilter,
@@ -144,11 +145,22 @@ export class AdvancedFilterPresets extends EffectPresets {
     this.registerAdvancedPreset({
       name: 'adjustment',
       category: 'artistic' as EffectCategory,
-      description: 'Comprehensive color adjustment with brightness, contrast, and saturation',
+      description:
+        'Comprehensive color adjustment with brightness, contrast, and saturation',
       performanceImpact: 2,
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['color correction', 'mood enhancement', 'visual tuning'],
       create: (options) => this.createAdjustmentEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'advancedBloom',
+      category: 'glow' as EffectCategory,
+      description: 'Professional bloom effect with advanced brightness control',
+      performanceImpact: 4,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['dramatic lighting', 'glow effects', 'cinematic bloom'],
+      create: (options) => this.createAdvancedBloomEffect(options),
     });
 
     // Glitch Effects
@@ -706,6 +718,46 @@ export class AdvancedFilterPresets extends EffectPresets {
         brightness: adjustments.brightness,
         contrast: adjustments.contrast,
         saturation: adjustments.saturation,
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create advanced bloom effect with professional-grade parameters
+   */
+  private createAdvancedBloomEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { bloomScale: 0.8, threshold: 0.7, brightness: 1.0, blur: 1 },
+      moderate: { bloomScale: 1.0, threshold: 0.5, brightness: 1.1, blur: 2 },
+      strong: { bloomScale: 1.3, threshold: 0.4, brightness: 1.2, blur: 3 },
+      intense: { bloomScale: 1.6, threshold: 0.3, brightness: 1.3, blur: 4 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    const filter = new AdvancedBloomFilter({
+      bloomScale: settings.bloomScale,
+      threshold: settings.threshold,
+      brightness: settings.brightness,
+      blur: settings.blur,
+      quality: 4,
+      pixelSize: { x: 1, y: 1 },
+    });
+
+    const filterChain = new FilterChain({ name: 'advanced-bloom-effect' });
+    filterChain.addFilter(filter, {
+      id: 'advancedBloom',
+      animated: true,
+      animationProperties: {
+        bloomScale: settings.bloomScale,
+        threshold: settings.threshold,
+        brightness: settings.brightness,
+        blur: settings.blur,
       },
       duration: options.duration,
       ease: options.ease,
