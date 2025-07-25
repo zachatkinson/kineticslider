@@ -23,7 +23,6 @@ import {
 import {
   AdvancedBloomFilter,
   AdjustmentFilter,
-  AsciiFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -81,15 +80,6 @@ export class AdvancedFilterPresets extends EffectPresets {
    */
   private registerAdvancedPresets(): void {
     // Retro Effects
-    this.registerAdvancedPreset({
-      name: 'ascii',
-      category: 'retro' as EffectCategory,
-      description: 'Convert image to ASCII art representation',
-      performanceImpact: 4,
-      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
-      useCases: ['retro games', 'terminal effects', 'artistic processing'],
-      create: (options) => this.createAsciiEffect(options),
-    });
 
     this.registerAdvancedPreset({
       name: 'crt',
@@ -276,24 +266,6 @@ export class AdvancedFilterPresets extends EffectPresets {
   // Advanced Effect Creation Methods
   // =============================================================================
 
-  private createAsciiEffect(
-    options: Required<PresetOptions>
-  ): EffectPresetResult {
-    const intensityMap = { subtle: 6, moderate: 8, strong: 12, intense: 16 };
-    const size = intensityMap[options.intensity];
-
-    const filter = new AsciiFilter({ size });
-    const filterChain = new FilterChain({ name: 'ascii-effect' });
-    filterChain.addFilter(filter, {
-      id: 'ascii',
-      animated: true,
-      animationProperties: { size },
-      duration: options.duration,
-      ease: options.ease,
-    });
-
-    return this.createEffectResult(filterChain, [filter], options);
-  }
 
   private createDotEffect(
     options: Required<PresetOptions>
