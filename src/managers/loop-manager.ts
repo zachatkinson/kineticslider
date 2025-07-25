@@ -8,7 +8,11 @@
  */
 
 import { SimpleEventEmitter } from '../core/event-emitter';
-import { SLIDER_EVENTS, SLIDER_ERROR_CODES, ERROR_HANDLING_DEFAULTS } from '../core/constants';
+import {
+  SLIDER_EVENTS,
+  SLIDER_ERROR_CODES,
+  ERROR_HANDLING_DEFAULTS,
+} from '../core/constants';
 import { SliderError } from '../core/types';
 import { ErrorRecovery } from '../core/error-recovery';
 
@@ -93,7 +97,7 @@ export class LoopManager extends SimpleEventEmitter {
       backoffMultiplier: ERROR_HANDLING_DEFAULTS.RECOVERY_BACKOFF_MULTIPLIER,
       maxDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_MAX_DELAY,
       useExponentialBackoff: true,
-      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT
+      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT,
     });
   }
 
@@ -172,7 +176,7 @@ export class LoopManager extends SimpleEventEmitter {
         'getNextIndex',
         { currentIndex, totalSlides, direction }
       );
-      
+
       // Return safe fallback
       return {
         shouldNavigate: false,
@@ -510,36 +514,40 @@ export class LoopManager extends SimpleEventEmitter {
     this.emit(SLIDER_EVENTS.ERROR, {
       error: loopError,
       context: `LoopManager.${context}`,
-      recoverable: true
+      recoverable: true,
     });
 
     // Attempt recovery if not too many recent errors
     const timeSinceLastError = Date.now() - this.lastErrorTime;
-    if (this.errorCount < ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS || 
-        timeSinceLastError > ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT) {
-      
+    if (
+      this.errorCount < ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS ||
+      timeSinceLastError > ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT
+    ) {
       try {
-        const recoveryResult = await this.errorRecovery.attemptRecovery(loopError, {
-          component: 'LoopManager',
-          operation: context,
-          timestamp: Date.now(),
-          previousAttempts: this.errorCount,
-          data: { 
-            config: this.config, 
-            virtualSlidesCount: this.virtualSlides.size,
-            bounceDirection: this.bounceDirection,
-            ...data 
+        const recoveryResult = await this.errorRecovery.attemptRecovery(
+          loopError,
+          {
+            component: 'LoopManager',
+            operation: context,
+            timestamp: Date.now(),
+            previousAttempts: this.errorCount,
+            data: {
+              config: this.config,
+              virtualSlidesCount: this.virtualSlides.size,
+              bounceDirection: this.bounceDirection,
+              ...data,
+            },
           }
-        });
+        );
 
         if (recoveryResult.success) {
           // Reset error count on successful recovery
           this.errorCount = Math.max(0, this.errorCount - 1);
-          
+
           this.emit(SLIDER_EVENTS.ERROR_RECOVERED, {
             originalError: loopError,
             recoveryResult,
-            context: `LoopManager.${context}`
+            context: `LoopManager.${context}`,
           });
         }
       } catch (recoveryError) {
@@ -556,7 +564,7 @@ export class LoopManager extends SimpleEventEmitter {
   getErrorStats(): { errorCount: number; lastErrorTime: number } {
     return {
       errorCount: this.errorCount,
-      lastErrorTime: this.lastErrorTime
+      lastErrorTime: this.lastErrorTime,
     };
   }
 

@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run src/__tests__/unit src/__tests__/core --reporter=dot",
-    "test:integration": "vitest run src/__tests__/integration --reporter=dot", 
+    "test:integration": "vitest run src/__tests__/integration --reporter=dot",
     "test:rendering": "vitest run src/__tests__/rendering --reporter=dot",
     "test:quick": "vitest run src/__tests__/unit src/__tests__/core src/__tests__/rendering --reporter=dot --run --bail=5",
     "test:precommit": "vitest run src/__tests__/unit/slider-core-unit.test.ts src/__tests__/core/slider-core.test.ts --reporter=dot --run --bail=3",

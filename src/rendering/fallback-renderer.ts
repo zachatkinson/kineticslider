@@ -1,10 +1,10 @@
 /**
  * @fileoverview Fallback Renderer for KineticSlider
- * 
+ *
  * Provides graceful degradation when PIXI.js or WebGL is unavailable.
  * Falls back to CSS-based animations and basic HTML slider functionality
  * while maintaining core slider behavior and API compatibility.
- * 
+ *
  * @version 1.0.0 - Phase 4.4 Error Handling & Recovery
  */
 
@@ -67,7 +67,7 @@ interface SlideElement {
 
 /**
  * Fallback renderer for graceful degradation when WebGL/PIXI is unavailable
- * 
+ *
  * @example
  * ```typescript
  * const fallbackRenderer = new FallbackRenderer(container, sliderConfig, {
@@ -75,9 +75,9 @@ interface SlideElement {
  *   showFallbackIndicator: true,
  *   autoUpgrade: true
  * });
- * 
+ *
  * fallbackRenderer.renderStaticSlider();
- * 
+ *
  * // Check if upgrade is possible
  * if (fallbackRenderer.canUpgradeToFullRenderer()) {
  *   await fallbackRenderer.upgradeRenderer();
@@ -103,7 +103,7 @@ export class FallbackRenderer {
     this.container = container;
     this.config = config;
     this.cssPrefix = fallbackConfig.cssPrefix || 'kinetic-slider-fallback';
-    
+
     // Set up fallback configuration with defaults
     this.fallbackConfig = {
       mode: fallbackConfig.mode || 'css-animations',
@@ -136,7 +136,7 @@ export class FallbackRenderer {
     this.clearContainer();
     this.createStaticSlides();
     this.addFallbackStyles();
-    
+
     if (this.fallbackConfig.showFallbackIndicator) {
       this.addFallbackIndicator();
     }
@@ -150,7 +150,7 @@ export class FallbackRenderer {
     this.createBasicSlider();
     this.addBasicStyles();
     this.setupBasicInteractions();
-    
+
     if (this.fallbackConfig.showFallbackIndicator) {
       this.addFallbackIndicator();
     }
@@ -161,7 +161,7 @@ export class FallbackRenderer {
    */
   canUpgradeToFullRenderer(): boolean {
     const newCapabilities = this.detectCapabilities();
-    
+
     // Check if WebGL has become available
     return newCapabilities.webgl && !this.capabilities.webgl;
   }
@@ -173,7 +173,7 @@ export class FallbackRenderer {
     try {
       // Re-detect capabilities
       const newCapabilities = this.detectCapabilities();
-      
+
       if (!newCapabilities.webgl) {
         throw new SliderError(
           'WebGL still not available for upgrade',
@@ -189,10 +189,11 @@ export class FallbackRenderer {
       this.clearContainer();
 
       // Signal that upgrade is possible
-      this.container.dispatchEvent(new CustomEvent('kinetic-slider-upgrade-ready', {
-        detail: { capabilities: newCapabilities }
-      }));
-
+      this.container.dispatchEvent(
+        new CustomEvent('kinetic-slider-upgrade-ready', {
+          detail: { capabilities: newCapabilities },
+        })
+      );
     } catch (error) {
       throw new SliderError(
         `Failed to upgrade renderer: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -237,7 +238,6 @@ export class FallbackRenderer {
             this.isTransitioning = false;
             reject(error);
           });
-
       } catch (error) {
         reject(error);
       }
@@ -256,9 +256,10 @@ export class FallbackRenderer {
    * Navigate to previous slide
    */
   previousSlide(): Promise<void> {
-    const prevIndex = this.currentSlideIndex === 0 
-      ? this.config.slides.length - 1 
-      : this.currentSlideIndex - 1;
+    const prevIndex =
+      this.currentSlideIndex === 0
+        ? this.config.slides.length - 1
+        : this.currentSlideIndex - 1;
     return this.goToSlide(prevIndex);
   }
 
@@ -304,7 +305,7 @@ export class FallbackRenderer {
       cssAnimations: this.supportsCSSAnimations(),
       touchEvents: 'ontouchstart' in window,
       devicePixelRatio: window.devicePixelRatio || 1,
-      performanceTier: this.estimatePerformanceTier()
+      performanceTier: this.estimatePerformanceTier(),
     };
   }
 
@@ -313,9 +314,14 @@ export class FallbackRenderer {
    */
   private supportsCSSTransforms(): boolean {
     const testElement = document.createElement('div');
-    const transforms = ['transform', 'webkitTransform', 'mozTransform', 'msTransform'];
-    
-    return transforms.some(prop => prop in testElement.style);
+    const transforms = [
+      'transform',
+      'webkitTransform',
+      'mozTransform',
+      'msTransform',
+    ];
+
+    return transforms.some((prop) => prop in testElement.style);
   }
 
   /**
@@ -324,8 +330,8 @@ export class FallbackRenderer {
   private supportsCSSAnimations(): boolean {
     const testElement = document.createElement('div');
     const animations = ['animation', 'webkitAnimation', 'mozAnimation'];
-    
-    return animations.some(prop => prop in testElement.style);
+
+    return animations.some((prop) => prop in testElement.style);
   }
 
   /**
@@ -355,11 +361,17 @@ export class FallbackRenderer {
    */
   private adjustFallbackMode(): void {
     // Downgrade mode if capabilities are insufficient
-    if (this.fallbackConfig.mode === 'css-animations' && !this.capabilities.cssAnimations) {
+    if (
+      this.fallbackConfig.mode === 'css-animations' &&
+      !this.capabilities.cssAnimations
+    ) {
       this.fallbackConfig.mode = 'basic';
     }
-    
-    if (this.fallbackConfig.mode === 'basic' && !this.capabilities.cssTransforms) {
+
+    if (
+      this.fallbackConfig.mode === 'basic' &&
+      !this.capabilities.cssTransforms
+    ) {
       this.fallbackConfig.mode = 'static';
     }
 
@@ -379,8 +391,10 @@ export class FallbackRenderer {
    */
   private setupContainer(): void {
     this.container.classList.add(this.cssPrefix);
-    this.container.classList.add(`${this.cssPrefix}--${this.fallbackConfig.mode}`);
-    
+    this.container.classList.add(
+      `${this.cssPrefix}--${this.fallbackConfig.mode}`
+    );
+
     // Set ARIA attributes for accessibility
     this.container.setAttribute('role', 'region');
     this.container.setAttribute('aria-label', 'Image slider');
@@ -404,14 +418,15 @@ export class FallbackRenderer {
 
     this.config.slides.forEach((slideConfig, index) => {
       const slideElement = this.createSlideElement(slideConfig, index);
-      slideElement.style.display = index === this.currentSlideIndex ? 'block' : 'none';
-      
+      slideElement.style.display =
+        index === this.currentSlideIndex ? 'block' : 'none';
+
       slidesContainer.appendChild(slideElement);
       this.slideElements.push({
         element: slideElement,
         config: slideConfig,
         index,
-        loaded: false
+        loaded: false,
       });
     });
 
@@ -429,19 +444,21 @@ export class FallbackRenderer {
     const slidesContainer = document.createElement('div');
     slidesContainer.className = `${this.cssPrefix}__slides`;
     slidesContainer.style.display = 'flex';
-    slidesContainer.style.transition = this.fallbackConfig.reducedMotion ? 'none' : 'transform 0.3s ease';
+    slidesContainer.style.transition = this.fallbackConfig.reducedMotion
+      ? 'none'
+      : 'transform 0.3s ease';
 
     this.config.slides.forEach((slideConfig, index) => {
       const slideElement = this.createSlideElement(slideConfig, index);
       slideElement.style.flexShrink = '0';
       slideElement.style.width = '100%';
-      
+
       slidesContainer.appendChild(slideElement);
       this.slideElements.push({
         element: slideElement,
         config: slideConfig,
         index,
-        loaded: false
+        loaded: false,
       });
     });
 
@@ -453,7 +470,10 @@ export class FallbackRenderer {
   /**
    * Create individual slide element
    */
-  private createSlideElement(slideConfig: SlideConfig, index: number): HTMLElement {
+  private createSlideElement(
+    slideConfig: SlideConfig,
+    index: number
+  ): HTMLElement {
     const slide = document.createElement('div');
     slide.className = `${this.cssPrefix}__slide`;
     slide.setAttribute('data-slide-index', String(index));
@@ -466,9 +486,9 @@ export class FallbackRenderer {
       img.alt = slideConfig.alt || '';
       img.className = `${this.cssPrefix}__image`;
       img.loading = 'lazy';
-      
+
       img.onload = (): void => {
-        const slideElement = this.slideElements.find(s => s.index === index);
+        const slideElement = this.slideElements.find((s) => s.index === index);
         if (slideElement) {
           slideElement.loaded = true;
         }
@@ -514,14 +534,18 @@ export class FallbackRenderer {
     prevButton.className = `${this.cssPrefix}__button ${this.cssPrefix}__button--prev`;
     prevButton.textContent = '‹';
     prevButton.setAttribute('aria-label', 'Previous slide');
-    prevButton.onclick = (): void => { this.previousSlide(); };
+    prevButton.onclick = (): void => {
+      this.previousSlide();
+    };
 
     // Next button
     const nextButton = document.createElement('button');
     nextButton.className = `${this.cssPrefix}__button ${this.cssPrefix}__button--next`;
     nextButton.textContent = '›';
     nextButton.setAttribute('aria-label', 'Next slide');
-    nextButton.onclick = (): void => { this.nextSlide(); };
+    nextButton.onclick = (): void => {
+      this.nextSlide();
+    };
 
     // Slide indicators
     const indicators = document.createElement('div');
@@ -531,8 +555,10 @@ export class FallbackRenderer {
       const indicator = document.createElement('button');
       indicator.className = `${this.cssPrefix}__indicator`;
       indicator.setAttribute('aria-label', `Go to slide ${index + 1}`);
-      indicator.onclick = (): void => { this.goToSlide(index); };
-      
+      indicator.onclick = (): void => {
+        this.goToSlide(index);
+      };
+
       if (index === this.currentSlideIndex) {
         indicator.classList.add(`${this.cssPrefix}__indicator--active`);
       }
@@ -556,7 +582,7 @@ export class FallbackRenderer {
       <span class="${this.cssPrefix}__fallback-text">Basic mode</span>
       <span class="${this.cssPrefix}__fallback-reason">${this.getFallbackReason()}</span>
     `;
-    
+
     this.container.appendChild(indicator);
 
     // Auto-hide after 5 seconds
@@ -585,16 +611,19 @@ export class FallbackRenderer {
   /**
    * Perform slide transition
    */
-  private async performTransition(fromIndex: number, toIndex: number): Promise<void> {
+  private async performTransition(
+    fromIndex: number,
+    toIndex: number
+  ): Promise<void> {
     this.updateIndicators(toIndex);
 
     switch (this.fallbackConfig.mode) {
       case 'static':
         return this.performStaticTransition(fromIndex, toIndex);
-      
+
       case 'basic':
         return this.performBasicTransition(fromIndex, toIndex);
-      
+
       case 'css-animations':
         return this.performCSSTransition(fromIndex, toIndex);
     }
@@ -603,10 +632,15 @@ export class FallbackRenderer {
   /**
    * Perform static transition (instant)
    */
-  private async performStaticTransition(fromIndex: number, toIndex: number): Promise<void> {
-    const fromSlide = this.slideElements.find(slide => slide.index === fromIndex);
-    const toSlide = this.slideElements.find(slide => slide.index === toIndex);
-    
+  private async performStaticTransition(
+    fromIndex: number,
+    toIndex: number
+  ): Promise<void> {
+    const fromSlide = this.slideElements.find(
+      (slide) => slide.index === fromIndex
+    );
+    const toSlide = this.slideElements.find((slide) => slide.index === toIndex);
+
     if (fromSlide) {
       fromSlide.element.style.display = 'none';
     }
@@ -618,9 +652,14 @@ export class FallbackRenderer {
   /**
    * Perform basic CSS transform transition
    */
-  private async performBasicTransition(fromIndex: number, toIndex: number): Promise<void> {
+  private async performBasicTransition(
+    fromIndex: number,
+    toIndex: number
+  ): Promise<void> {
     return new Promise((resolve): void => {
-      const slidesContainer = this.container.querySelector(`.${this.cssPrefix}__slides`) as HTMLElement;
+      const slidesContainer = this.container.querySelector(
+        `.${this.cssPrefix}__slides`
+      ) as HTMLElement;
       if (!slidesContainer) {
         resolve();
         return;
@@ -638,7 +677,10 @@ export class FallbackRenderer {
   /**
    * Perform CSS animation transition
    */
-  private async performCSSTransition(fromIndex: number, toIndex: number): Promise<void> {
+  private async performCSSTransition(
+    fromIndex: number,
+    toIndex: number
+  ): Promise<void> {
     return this.performBasicTransition(fromIndex, toIndex);
   }
 
@@ -646,9 +688,14 @@ export class FallbackRenderer {
    * Update slide indicators
    */
   private updateIndicators(activeIndex: number): void {
-    const indicators = this.container.querySelectorAll(`.${this.cssPrefix}__indicator`);
+    const indicators = this.container.querySelectorAll(
+      `.${this.cssPrefix}__indicator`
+    );
     indicators.forEach((indicator, idx): void => {
-      indicator.classList.toggle(`${this.cssPrefix}__indicator--active`, idx === activeIndex);
+      indicator.classList.toggle(
+        `${this.cssPrefix}__indicator--active`,
+        idx === activeIndex
+      );
     });
   }
 

@@ -639,7 +639,9 @@ export class ConfigValidator {
   /**
    * Validate error handling configuration details
    */
-  private validateErrorHandlingConfig(errorHandling: Partial<ErrorHandlingConfig>): void {
+  private validateErrorHandlingConfig(
+    errorHandling: Partial<ErrorHandlingConfig>
+  ): void {
     // Validate mode
     if (errorHandling.mode !== undefined) {
       const validModes = ['full', 'basic', 'disabled'];
@@ -656,7 +658,10 @@ export class ConfigValidator {
 
     // Validate recovery attempts
     if (errorHandling.maxRecoveryAttempts !== undefined) {
-      if (!Number.isInteger(errorHandling.maxRecoveryAttempts) || errorHandling.maxRecoveryAttempts < 0) {
+      if (
+        !Number.isInteger(errorHandling.maxRecoveryAttempts) ||
+        errorHandling.maxRecoveryAttempts < 0
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'Max recovery attempts must be a non-negative integer',
@@ -676,7 +681,10 @@ export class ConfigValidator {
 
     // Validate timing settings
     if (errorHandling.recoveryBaseDelay !== undefined) {
-      if (typeof errorHandling.recoveryBaseDelay !== 'number' || errorHandling.recoveryBaseDelay < 0) {
+      if (
+        typeof errorHandling.recoveryBaseDelay !== 'number' ||
+        errorHandling.recoveryBaseDelay < 0
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'Recovery base delay must be a non-negative number',
@@ -688,7 +696,10 @@ export class ConfigValidator {
     }
 
     if (errorHandling.recoveryTimeout !== undefined) {
-      if (typeof errorHandling.recoveryTimeout !== 'number' || errorHandling.recoveryTimeout <= 0) {
+      if (
+        typeof errorHandling.recoveryTimeout !== 'number' ||
+        errorHandling.recoveryTimeout <= 0
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'Recovery timeout must be a positive number',
@@ -701,7 +712,10 @@ export class ConfigValidator {
 
     // Validate backoff multiplier
     if (errorHandling.recoveryBackoffMultiplier !== undefined) {
-      if (typeof errorHandling.recoveryBackoffMultiplier !== 'number' || errorHandling.recoveryBackoffMultiplier < 1) {
+      if (
+        typeof errorHandling.recoveryBackoffMultiplier !== 'number' ||
+        errorHandling.recoveryBackoffMultiplier < 1
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'Recovery backoff multiplier must be >= 1',
@@ -726,7 +740,9 @@ export class ConfigValidator {
   /**
    * Validate fallback renderer configuration
    */
-  private validateFallbackRendererConfig(fallback: Partial<FallbackRendererConfig>): void {
+  private validateFallbackRendererConfig(
+    fallback: Partial<FallbackRendererConfig>
+  ): void {
     if (fallback.mode !== undefined) {
       const validModes = ['static', 'basic', 'css-animations'];
       if (!validModes.includes(fallback.mode)) {
@@ -741,7 +757,10 @@ export class ConfigValidator {
     }
 
     if (fallback.cssPrefix !== undefined) {
-      if (typeof fallback.cssPrefix !== 'string' || fallback.cssPrefix.trim() === '') {
+      if (
+        typeof fallback.cssPrefix !== 'string' ||
+        fallback.cssPrefix.trim() === ''
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.INVALID_VALUE,
           'CSS prefix must be a non-empty string',
@@ -756,7 +775,9 @@ export class ConfigValidator {
   /**
    * Validate error boundary configuration
    */
-  private validateErrorBoundaryConfig(boundary: Partial<ErrorBoundaryConfig>): void {
+  private validateErrorBoundaryConfig(
+    boundary: Partial<ErrorBoundaryConfig>
+  ): void {
     if (boundary.maxErrors !== undefined) {
       if (!Number.isInteger(boundary.maxErrors) || boundary.maxErrors < 1) {
         this.addError(
@@ -770,7 +791,10 @@ export class ConfigValidator {
     }
 
     if (boundary.recoveryDelay !== undefined) {
-      if (typeof boundary.recoveryDelay !== 'number' || boundary.recoveryDelay < 0) {
+      if (
+        typeof boundary.recoveryDelay !== 'number' ||
+        boundary.recoveryDelay < 0
+      ) {
         this.addError(
           VALIDATION_ERROR_CODES.OUT_OF_RANGE,
           'Recovery delay must be a non-negative number',

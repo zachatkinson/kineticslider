@@ -8,7 +8,11 @@
  */
 
 import { SimpleEventEmitter } from '../core/event-emitter';
-import { SLIDER_EVENTS, SLIDER_ERROR_CODES, ERROR_HANDLING_DEFAULTS } from '../core/constants';
+import {
+  SLIDER_EVENTS,
+  SLIDER_ERROR_CODES,
+  ERROR_HANDLING_DEFAULTS,
+} from '../core/constants';
 import { ErrorRecovery } from '../core/error-recovery';
 
 /**
@@ -163,7 +167,7 @@ export class StateManager extends SimpleEventEmitter {
       backoffMultiplier: ERROR_HANDLING_DEFAULTS.RECOVERY_BACKOFF_MULTIPLIER,
       maxDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_MAX_DELAY,
       useExponentialBackoff: true,
-      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT
+      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT,
     });
 
     // Initialize state
@@ -179,7 +183,7 @@ export class StateManager extends SimpleEventEmitter {
         hasError: false,
         errorCount: 0,
         recoveryAttempts: 0,
-        fallbackActive: false
+        fallbackActive: false,
       },
       ...config.initialState,
     };
@@ -754,7 +758,7 @@ export class StateManager extends SimpleEventEmitter {
   }
 
   // =============================================================================
-  // Error Handling Methods  
+  // Error Handling Methods
   // =============================================================================
 
   /**
@@ -765,22 +769,25 @@ export class StateManager extends SimpleEventEmitter {
       hasError: false,
       errorCount: 0,
       recoveryAttempts: 0,
-      fallbackActive: false
+      fallbackActive: false,
     };
 
-    this.updateState({
-      errorState: {
-        ...errorState,
-        hasError: true,
-        lastError: error,
-        errorCount: errorState.errorCount + 1
-      }
-    }, `error-recorded: ${context || 'unknown'}`);
+    this.updateState(
+      {
+        errorState: {
+          ...errorState,
+          hasError: true,
+          lastError: error,
+          errorCount: errorState.errorCount + 1,
+        },
+      },
+      `error-recorded: ${context || 'unknown'}`
+    );
 
     this.emit(SLIDER_EVENTS.ERROR, {
       error,
       context: context || 'StateManager',
-      state: this.state
+      state: this.state,
     });
   }
 
@@ -797,23 +804,26 @@ export class StateManager extends SimpleEventEmitter {
         operation: context,
         timestamp: Date.now(),
         previousAttempts: errorState.recoveryAttempts,
-        data: { currentState: this.state }
+        data: { currentState: this.state },
       });
 
       // Update recovery attempts
-      this.updateState({
-        errorState: {
-          ...errorState,
-          recoveryAttempts: errorState.recoveryAttempts + 1
-        }
-      }, `recovery-attempt: ${context}`);
+      this.updateState(
+        {
+          errorState: {
+            ...errorState,
+            recoveryAttempts: errorState.recoveryAttempts + 1,
+          },
+        },
+        `recovery-attempt: ${context}`
+      );
 
       if (recoveryResult.success) {
         this.clearErrorState();
         this.emit(SLIDER_EVENTS.ERROR_RECOVERED, {
           originalError: error,
           recoveryResult,
-          context
+          context,
         });
         return true;
       }
@@ -821,7 +831,9 @@ export class StateManager extends SimpleEventEmitter {
       return false;
     } catch (recoveryError) {
       this.recordError(
-        recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        recoveryError instanceof Error
+          ? recoveryError
+          : new Error(String(recoveryError)),
         'error-recovery-failed'
       );
       return false;
@@ -832,14 +844,17 @@ export class StateManager extends SimpleEventEmitter {
    * Clear error state
    */
   clearErrorState(): void {
-    this.updateState({
-      errorState: {
-        hasError: false,
-        errorCount: this.state.errorState?.errorCount || 0,
-        recoveryAttempts: 0,
-        fallbackActive: false
-      }
-    }, 'error-cleared');
+    this.updateState(
+      {
+        errorState: {
+          hasError: false,
+          errorCount: this.state.errorState?.errorCount || 0,
+          recoveryAttempts: 0,
+          fallbackActive: false,
+        },
+      },
+      'error-cleared'
+    );
   }
 
   /**
@@ -850,19 +865,22 @@ export class StateManager extends SimpleEventEmitter {
       hasError: false,
       errorCount: 0,
       recoveryAttempts: 0,
-      fallbackActive: false
+      fallbackActive: false,
     };
 
-    this.updateState({
-      errorState: {
-        ...errorState,
-        fallbackActive: true
-      }
-    }, 'fallback-activated');
+    this.updateState(
+      {
+        errorState: {
+          ...errorState,
+          fallbackActive: true,
+        },
+      },
+      'fallback-activated'
+    );
 
     this.emit(SLIDER_EVENTS.FALLBACK_ACTIVATED, {
       state: this.state,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 

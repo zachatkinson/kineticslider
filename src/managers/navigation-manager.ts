@@ -8,7 +8,11 @@
  */
 
 import { SimpleEventEmitter } from '../core/event-emitter';
-import { SLIDER_EVENTS, SLIDER_ERROR_CODES, ERROR_HANDLING_DEFAULTS } from '../core/constants';
+import {
+  SLIDER_EVENTS,
+  SLIDER_ERROR_CODES,
+  ERROR_HANDLING_DEFAULTS,
+} from '../core/constants';
 import { SliderError } from '../core/types';
 import { ErrorRecovery } from '../core/error-recovery';
 
@@ -151,7 +155,7 @@ export class NavigationManager extends SimpleEventEmitter {
       backoffMultiplier: ERROR_HANDLING_DEFAULTS.RECOVERY_BACKOFF_MULTIPLIER,
       maxDelay: ERROR_HANDLING_DEFAULTS.RECOVERY_MAX_DELAY,
       useExponentialBackoff: true,
-      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT
+      recoveryTimeout: ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT,
     });
   }
 
@@ -408,7 +412,8 @@ export class NavigationManager extends SimpleEventEmitter {
 
       if (
         (!this.config.enableTouch && inputType === NavigationInputType.TOUCH) ||
-        (!this.config.enableGesture && inputType === NavigationInputType.GESTURE)
+        (!this.config.enableGesture &&
+          inputType === NavigationInputType.GESTURE)
       ) {
         return null;
       }
@@ -691,31 +696,39 @@ export class NavigationManager extends SimpleEventEmitter {
     this.emit(SLIDER_EVENTS.ERROR, {
       error: navigationError,
       context: `NavigationManager.${context}`,
-      recoverable: true
+      recoverable: true,
     });
 
     // Attempt recovery if not too many recent errors
     const timeSinceLastError = Date.now() - this.lastErrorTime;
-    if (this.errorCount < ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS || 
-        timeSinceLastError > ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT) {
-      
+    if (
+      this.errorCount < ERROR_HANDLING_DEFAULTS.MAX_RECOVERY_ATTEMPTS ||
+      timeSinceLastError > ERROR_HANDLING_DEFAULTS.RECOVERY_TIMEOUT
+    ) {
       try {
-        const recoveryResult = await this.errorRecovery.attemptRecovery(navigationError, {
-          component: 'NavigationManager',
-          operation: context,
-          timestamp: Date.now(),
-          previousAttempts: this.errorCount,
-          data: { currentIndex: this.currentIndex, totalSlides: this.totalSlides, ...data }
-        });
+        const recoveryResult = await this.errorRecovery.attemptRecovery(
+          navigationError,
+          {
+            component: 'NavigationManager',
+            operation: context,
+            timestamp: Date.now(),
+            previousAttempts: this.errorCount,
+            data: {
+              currentIndex: this.currentIndex,
+              totalSlides: this.totalSlides,
+              ...data,
+            },
+          }
+        );
 
         if (recoveryResult.success) {
           // Reset error count on successful recovery
           this.errorCount = Math.max(0, this.errorCount - 1);
-          
+
           this.emit(SLIDER_EVENTS.ERROR_RECOVERED, {
             originalError: navigationError,
             recoveryResult,
-            context: `NavigationManager.${context}`
+            context: `NavigationManager.${context}`,
           });
         }
       } catch (recoveryError) {
@@ -732,7 +745,7 @@ export class NavigationManager extends SimpleEventEmitter {
   getErrorStats(): { errorCount: number; lastErrorTime: number } {
     return {
       errorCount: this.errorCount,
-      lastErrorTime: this.lastErrorTime
+      lastErrorTime: this.lastErrorTime,
     };
   }
 

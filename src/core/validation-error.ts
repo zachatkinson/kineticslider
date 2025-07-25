@@ -1,10 +1,10 @@
 /**
  * @fileoverview Enhanced Validation Error System for KineticSlider
- * 
+ *
  * Extends the existing SliderError class to provide detailed validation error reporting
  * with path-based error tracking, user-friendly messages, and actionable suggestions.
  * Integrates with the existing ConfigValidator patterns.
- * 
+ *
  * @version 1.0.0 - Phase 4.4 Error Handling & Recovery
  */
 
@@ -41,7 +41,7 @@ export interface ValidationSuggestion {
 
 /**
  * Enhanced validation error class with detailed error reporting and suggestions
- * 
+ *
  * @example
  * ```typescript
  * // Basic validation error
@@ -52,10 +52,10 @@ export interface ValidationSuggestion {
  *   'positive number',
  *   'range_validation'
  * );
- * 
+ *
  * console.log(error.toDetailedString());
  * console.log(error.toUserFriendlyMessage());
- * 
+ *
  * const suggestions = error.getSuggestions();
  * suggestions.forEach(s => console.log(s.message));
  * ```
@@ -81,16 +81,16 @@ export class ValidationError extends SliderError {
     context?: ValidationContext
   ) {
     // Create a detailed error code
-    const errorCode = validationRule ? 
-      `${SLIDER_ERROR_CODES.INVALID_CONFIG}_${validationRule.toUpperCase()}` :
-      SLIDER_ERROR_CODES.INVALID_CONFIG;
+    const errorCode = validationRule
+      ? `${SLIDER_ERROR_CODES.INVALID_CONFIG}_${validationRule.toUpperCase()}`
+      : SLIDER_ERROR_CODES.INVALID_CONFIG;
 
     super(message, errorCode, {
       path,
       value,
       expectedType,
       validationRule,
-      context
+      context,
     });
 
     this.name = 'ValidationError';
@@ -105,17 +105,19 @@ export class ValidationError extends SliderError {
    * Create ValidationError from existing validation result
    */
   static fromValidationResult(
-    validationError: { 
-      code: string; 
-      message: string; 
-      path: string; 
-      expected?: unknown; 
-      actual?: unknown; 
+    validationError: {
+      code: string;
+      message: string;
+      path: string;
+      expected?: unknown;
+      actual?: unknown;
     },
     context?: ValidationContext
   ): ValidationError {
-    const pathArray = validationError.path ? validationError.path.split('.') : [];
-    
+    const pathArray = validationError.path
+      ? validationError.path.split('.')
+      : [];
+
     return new ValidationError(
       validationError.message,
       pathArray,
@@ -132,16 +134,16 @@ export class ValidationError extends SliderError {
   toDetailedString(): string {
     const pathStr = this.path.length > 0 ? this.path.join('.') : 'root';
     const valueStr = this.formatValue(this.value);
-    
+
     let details = `ValidationError: ${this.message}\n`;
     details += `  Path: ${pathStr}\n`;
     details += `  Expected: ${this.expectedType}\n`;
     details += `  Actual: ${valueStr}\n`;
-    
+
     if (this.validationRule) {
       details += `  Rule: ${this.validationRule}\n`;
     }
-    
+
     if (this.stack) {
       details += `  Stack: ${this.stack.split('\n')[1]?.trim() || 'N/A'}\n`;
     }
@@ -166,24 +168,24 @@ export class ValidationError extends SliderError {
    */
   toUserFriendlyMessage(): string {
     const pathStr = this.formatPathForUser(this.path);
-    
+
     // Handle common validation scenarios with friendly messages
     switch (this.validationRule) {
       case 'required':
         return `${pathStr} is required but was not provided.`;
-      
+
       case 'type':
         return `${pathStr} should be ${this.expectedType}, but received ${this.getValueType(this.value)}.`;
-      
+
       case 'range':
         return `${pathStr} is out of the allowed range. Expected ${this.expectedType}.`;
-      
+
       case 'format':
         return `${pathStr} has an invalid format. Expected ${this.expectedType}.`;
-      
+
       case 'dependency':
         return `${pathStr} conflicts with other settings. ${this.expectedType}`;
-      
+
       default:
         // Generic friendly message
         if (this.path.length > 0) {
@@ -206,15 +208,18 @@ export class ValidationError extends SliderError {
         suggestions.push({
           message: `Add the required ${this.formatPathForUser(this.path)} property`,
           suggestedValue: this.getDefaultValueForType(this.expectedType),
-          codeExample: `${pathStr}: ${this.formatCodeExample(this.getDefaultValueForType(this.expectedType))}`
+          codeExample: `${pathStr}: ${this.formatCodeExample(this.getDefaultValueForType(this.expectedType))}`,
         });
         break;
 
       case 'type':
         suggestions.push({
           message: `Change ${this.formatPathForUser(this.path)} to ${this.expectedType}`,
-          suggestedValue: this.convertToExpectedType(this.value, this.expectedType),
-          codeExample: `${pathStr}: ${this.formatCodeExample(this.convertToExpectedType(this.value, this.expectedType))}`
+          suggestedValue: this.convertToExpectedType(
+            this.value,
+            this.expectedType
+          ),
+          codeExample: `${pathStr}: ${this.formatCodeExample(this.convertToExpectedType(this.value, this.expectedType))}`,
         });
         break;
 
@@ -234,7 +239,7 @@ export class ValidationError extends SliderError {
         // Generic suggestions
         suggestions.push({
           message: `Check the ${this.formatPathForUser(this.path)} configuration`,
-          documentationLink: this.getDocumentationLink(this.path)
+          documentationLink: this.getDocumentationLink(this.path),
         });
     }
 
@@ -264,7 +269,10 @@ export class ValidationError extends SliderError {
     try {
       switch (this.validationRule) {
         case 'type': {
-          const converted = this.convertToExpectedType(this.value, this.expectedType);
+          const converted = this.convertToExpectedType(
+            this.value,
+            this.expectedType
+          );
           return { success: true, correctedValue: converted };
         }
 
@@ -306,15 +314,15 @@ export class ValidationError extends SliderError {
    */
   private formatPathForUser(path: string[]): string {
     if (path.length === 0) return 'configuration';
-    
+
     // Convert camelCase to readable format
     return path
-      .map(segment => {
+      .map((segment) => {
         // Convert array indices to readable format
         if (/^\d+$/.test(segment)) {
           return `item ${segment}`;
         }
-        
+
         // Convert camelCase to space-separated
         return segment.replace(/([A-Z])/g, ' $1').toLowerCase();
       })
@@ -335,12 +343,18 @@ export class ValidationError extends SliderError {
    */
   private getDefaultValueForType(type: string): unknown {
     switch (type.toLowerCase()) {
-      case 'string': return '';
-      case 'number': return 0;
-      case 'boolean': return false;
-      case 'array': return [];
-      case 'object': return {};
-      default: return null;
+      case 'string':
+        return '';
+      case 'number':
+        return 0;
+      case 'boolean':
+        return false;
+      case 'array':
+        return [];
+      case 'object':
+        return {};
+      default:
+        return null;
     }
   }
 
@@ -351,21 +365,21 @@ export class ValidationError extends SliderError {
     switch (expectedType.toLowerCase()) {
       case 'string':
         return String(value);
-      
+
       case 'number': {
         const num = Number(value);
         return isNaN(num) ? 0 : num;
       }
-      
+
       case 'boolean':
         if (typeof value === 'string') {
           return value.toLowerCase() === 'true';
         }
         return Boolean(value);
-      
+
       case 'array':
         return Array.isArray(value) ? value : [value];
-      
+
       default:
         return value;
     }
@@ -376,20 +390,21 @@ export class ValidationError extends SliderError {
    */
   private getRangeSuggestions(): ValidationSuggestion[] {
     const suggestions: ValidationSuggestion[] = [];
-    
+
     if (typeof this.value === 'number') {
       // Extract range from expected type (e.g., "number between 0 and 100")
-      // eslint-disable-next-line security/detect-unsafe-regex
-      const rangeMatch = this.expectedType.match(/between (\d+(?:\.\d+)?) and (\d+(?:\.\d+)?)/);  
+      const rangeMatch = this.expectedType.match(
+        /between ([\d.]+) and ([\d.]+)/
+      );
       if (rangeMatch) {
         const min = parseFloat(rangeMatch[1]);
         const max = parseFloat(rangeMatch[2]);
         const clamped = Math.max(min, Math.min(max, this.value));
-        
+
         suggestions.push({
           message: `Use a value between ${min} and ${max}`,
           suggestedValue: clamped,
-          codeExample: `${this.path.join('.')}: ${clamped}`
+          codeExample: `${this.path.join('.')}: ${clamped}`,
         });
       }
     }
@@ -408,7 +423,7 @@ export class ValidationError extends SliderError {
     if (pathStr.includes('url') || pathStr.includes('src')) {
       suggestions.push({
         message: 'Ensure the URL is properly formatted and accessible',
-        codeExample: `${pathStr}: "https://example.com/image.jpg"`
+        codeExample: `${pathStr}: "https://example.com/image.jpg"`,
       });
     }
 
@@ -416,14 +431,14 @@ export class ValidationError extends SliderError {
       suggestions.push({
         message: 'Use a valid GSAP easing function',
         codeExample: `${pathStr}: "power2.out"`,
-        documentationLink: 'https://greensock.com/ease-visualizer/'
+        documentationLink: 'https://greensock.com/ease-visualizer/',
       });
     }
 
     if (pathStr.includes('duration') || pathStr.includes('delay')) {
       suggestions.push({
         message: 'Use a positive number in seconds',
-        codeExample: `${pathStr}: 1.5`
+        codeExample: `${pathStr}: 1.5`,
       });
     }
 
@@ -440,14 +455,18 @@ export class ValidationError extends SliderError {
     if (this.message.includes('autoPlay') && this.message.includes('loop')) {
       suggestions.push({
         message: 'When using autoPlay, consider enabling loop mode',
-        codeExample: 'loop: { enabled: true, mode: "infinite" }'
+        codeExample: 'loop: { enabled: true, mode: "infinite" }',
       });
     }
 
-    if (this.message.includes('responsive') && this.message.includes('breakpoints')) {
+    if (
+      this.message.includes('responsive') &&
+      this.message.includes('breakpoints')
+    ) {
       suggestions.push({
         message: 'Ensure breakpoints are in ascending order',
-        codeExample: 'breakpoints: { mobile: 768, tablet: 1024, desktop: 1440 }'
+        codeExample:
+          'breakpoints: { mobile: 768, tablet: 1024, desktop: 1440 }',
       });
     }
 
@@ -465,7 +484,7 @@ export class ValidationError extends SliderError {
     if (pathStr.startsWith('slides')) {
       suggestions.push({
         message: 'Check the slides array configuration',
-        documentationLink: this.getDocumentationLink(['slides'])
+        documentationLink: this.getDocumentationLink(['slides']),
       });
     }
 
@@ -473,7 +492,7 @@ export class ValidationError extends SliderError {
     if (pathStr.includes('physics')) {
       suggestions.push({
         message: 'Verify physics settings are within recommended ranges',
-        documentationLink: this.getDocumentationLink(['physics'])
+        documentationLink: this.getDocumentationLink(['physics']),
       });
     }
 
@@ -481,7 +500,7 @@ export class ValidationError extends SliderError {
     if (pathStr.includes('rendering') || pathStr.includes('pixi')) {
       suggestions.push({
         message: 'Check rendering configuration for your target devices',
-        documentationLink: this.getDocumentationLink(['rendering'])
+        documentationLink: this.getDocumentationLink(['rendering']),
       });
     }
 
@@ -495,8 +514,7 @@ export class ValidationError extends SliderError {
     if (typeof value !== 'number') return null;
 
     // Extract range from expected type
-    // eslint-disable-next-line security/detect-unsafe-regex
-    const rangeMatch = this.expectedType.match(/between (\d+(?:\.\d+)?) and (\d+(?:\.\d+)?)/);
+    const rangeMatch = this.expectedType.match(/between ([\d.]+) and ([\d.]+)/);
     if (rangeMatch) {
       const min = parseFloat(rangeMatch[1]);
       const max = parseFloat(rangeMatch[2]);
@@ -514,7 +532,11 @@ export class ValidationError extends SliderError {
 
     // URL formatting
     if (pathStr.includes('url') || pathStr.includes('src')) {
-      if (typeof value === 'string' && !value.startsWith('http') && !value.startsWith('/')) {
+      if (
+        typeof value === 'string' &&
+        !value.startsWith('http') &&
+        !value.startsWith('/')
+      ) {
         return `/${value}`; // Assume relative path
       }
     }
@@ -566,7 +588,11 @@ export class ValidationErrorFactory {
   /**
    * Create type mismatch error
    */
-  static typeMismatch(path: string[], value: unknown, expectedType: string): ValidationError {
+  static typeMismatch(
+    path: string[],
+    value: unknown,
+    expectedType: string
+  ): ValidationError {
     const actualType = value === null ? 'null' : typeof value;
     return new ValidationError(
       `Expected ${expectedType}, got ${actualType}`,
@@ -580,7 +606,12 @@ export class ValidationErrorFactory {
   /**
    * Create range error
    */
-  static outOfRange(path: string[], value: unknown, min: number, max: number): ValidationError {
+  static outOfRange(
+    path: string[],
+    value: unknown,
+    min: number,
+    max: number
+  ): ValidationError {
     return new ValidationError(
       `Value must be between ${min} and ${max}`,
       path,
@@ -593,7 +624,11 @@ export class ValidationErrorFactory {
   /**
    * Create format error
    */
-  static invalidFormat(path: string[], value: unknown, expectedFormat: string): ValidationError {
+  static invalidFormat(
+    path: string[],
+    value: unknown,
+    expectedFormat: string
+  ): ValidationError {
     return new ValidationError(
       `Invalid format, expected ${expectedFormat}`,
       path,
@@ -606,7 +641,11 @@ export class ValidationErrorFactory {
   /**
    * Create dependency conflict error
    */
-  static dependencyConflict(path: string[], value: unknown, conflictDescription: string): ValidationError {
+  static dependencyConflict(
+    path: string[],
+    value: unknown,
+    conflictDescription: string
+  ): ValidationError {
     return new ValidationError(
       `Dependency conflict: ${conflictDescription}`,
       path,

@@ -1,18 +1,18 @@
 /**
  * @fileoverview Error Recovery System for KineticSlider
- * 
+ *
  * Provides automatic error recovery strategies for common error scenarios.
  * Builds on the existing retry patterns from TextureManager and extends them
  * to cover all slider components.
- * 
+ *
  * @version 1.0.0 - Phase 4.4 Error Handling & Recovery
  */
 
 import { SliderError } from './types';
-import { 
-  SLIDER_ERROR_CODES, 
-  ERROR_CODES, 
-  ANIMATION_ERROR_CODES
+import {
+  SLIDER_ERROR_CODES,
+  ERROR_CODES,
+  ANIMATION_ERROR_CODES,
 } from './constants';
 
 /**
@@ -111,7 +111,7 @@ interface PhysicsError extends Error {
 
 /**
  * Comprehensive error recovery system with automatic recovery strategies
- * 
+ *
  * @example
  * ```typescript
  * const recovery = new ErrorRecovery({
@@ -119,13 +119,13 @@ interface PhysicsError extends Error {
  *   baseDelay: 1000,
  *   useExponentialBackoff: true
  * });
- * 
+ *
  * // Register custom recovery strategy
  * recovery.registerRecoveryStrategy('CUSTOM_ERROR', async (error, context) => {
  *   // Custom recovery logic
  *   return { success: true, strategy: 'custom', duration: 100, shouldRetry: false };
  * });
- * 
+ *
  * // Attempt recovery
  * const result = await recovery.attemptRecovery(error, context);
  * if (result.success) {
@@ -156,20 +156,24 @@ export class ErrorRecovery {
   /**
    * Recover from texture loading errors
    */
-  static async recoverFromTextureLoadError(error: TextureLoadError): Promise<RecoveryResult> {
+  static async recoverFromTextureLoadError(
+    error: TextureLoadError
+  ): Promise<RecoveryResult> {
     const startTime = performance.now();
 
     try {
       // Strategy 1: Retry with different format
       if (error.url && error.message.includes('format')) {
-        const result = await ErrorRecovery.tryAlternativeTextureFormat(error.url);
+        const result = await ErrorRecovery.tryAlternativeTextureFormat(
+          error.url
+        );
         if (result.success) {
           return {
             success: true,
             strategy: 'alternative_format',
             duration: performance.now() - startTime,
             shouldRetry: false,
-            data: result.data
+            data: result.data,
           };
         }
       }
@@ -182,27 +186,31 @@ export class ErrorRecovery {
           strategy: 'clear_cache',
           duration: performance.now() - startTime,
           shouldRetry: result.success,
-          retryDelay: 1000
+          retryDelay: 1000,
         };
       }
 
       // Strategy 3: Use fallback texture
-      const fallbackResult = await ErrorRecovery.createFallbackTexture(error.url);
+      const fallbackResult = await ErrorRecovery.createFallbackTexture(
+        error.url
+      );
       return {
         success: fallbackResult.success,
         strategy: 'fallback_texture',
         duration: performance.now() - startTime,
         shouldRetry: false,
-        data: fallbackResult.data
+        data: fallbackResult.data,
       };
-
     } catch (recoveryError) {
       return {
         success: false,
-        error: recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        error:
+          recoveryError instanceof Error
+            ? recoveryError
+            : new Error(String(recoveryError)),
         strategy: 'texture_recovery',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
   }
@@ -210,7 +218,9 @@ export class ErrorRecovery {
   /**
    * Recover from animation errors
    */
-  static async recoverFromAnimationError(error: AnimationError): Promise<RecoveryResult> {
+  static async recoverFromAnimationError(
+    error: AnimationError
+  ): Promise<RecoveryResult> {
     const startTime = performance.now();
 
     try {
@@ -223,20 +233,25 @@ export class ErrorRecovery {
             strategy: 'reset_timeline',
             duration: performance.now() - startTime,
             shouldRetry: true,
-            retryDelay: 500
+            retryDelay: 500,
           };
         }
       }
 
       // Strategy 2: Simplify animation
-      if (error.message.includes('performance') || error.message.includes('memory')) {
-        const result = await ErrorRecovery.simplifyAnimation(error.animationType);
+      if (
+        error.message.includes('performance') ||
+        error.message.includes('memory')
+      ) {
+        const result = await ErrorRecovery.simplifyAnimation(
+          error.animationType
+        );
         return {
           success: result.success,
           strategy: 'simplify_animation',
           duration: performance.now() - startTime,
           shouldRetry: result.success,
-          retryDelay: 100
+          retryDelay: 100,
         };
       }
 
@@ -246,16 +261,18 @@ export class ErrorRecovery {
         success: result.success,
         strategy: 'disable_animations',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
-
     } catch (recoveryError) {
       return {
         success: false,
-        error: recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        error:
+          recoveryError instanceof Error
+            ? recoveryError
+            : new Error(String(recoveryError)),
         strategy: 'animation_recovery',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
   }
@@ -263,12 +280,17 @@ export class ErrorRecovery {
   /**
    * Recover from rendering errors
    */
-  static async recoverFromRenderError(error: RenderError): Promise<RecoveryResult> {
+  static async recoverFromRenderError(
+    error: RenderError
+  ): Promise<RecoveryResult> {
     const startTime = performance.now();
 
     try {
       // Strategy 1: Fallback to WebGL1
-      if (error.message.includes('WebGL2') || error.message.includes('context')) {
+      if (
+        error.message.includes('WebGL2') ||
+        error.message.includes('context')
+      ) {
         const result = await ErrorRecovery.fallbackToWebGL1();
         if (result.success) {
           return {
@@ -276,20 +298,23 @@ export class ErrorRecovery {
             strategy: 'webgl1_fallback',
             duration: performance.now() - startTime,
             shouldRetry: true,
-            retryDelay: 1000
+            retryDelay: 1000,
           };
         }
       }
 
       // Strategy 2: Reduce rendering quality
-      if (error.message.includes('memory') || error.message.includes('performance')) {
+      if (
+        error.message.includes('memory') ||
+        error.message.includes('performance')
+      ) {
         const result = await ErrorRecovery.reduceRenderingQuality();
         return {
           success: result.success,
           strategy: 'reduce_quality',
           duration: performance.now() - startTime,
           shouldRetry: result.success,
-          retryDelay: 500
+          retryDelay: 500,
         };
       }
 
@@ -299,16 +324,18 @@ export class ErrorRecovery {
         success: result.success,
         strategy: 'canvas_fallback',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
-
     } catch (recoveryError) {
       return {
         success: false,
-        error: recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        error:
+          recoveryError instanceof Error
+            ? recoveryError
+            : new Error(String(recoveryError)),
         strategy: 'render_recovery',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
   }
@@ -316,12 +343,17 @@ export class ErrorRecovery {
   /**
    * Recover from physics calculation errors
    */
-  static async recoverFromPhysicsError(error: PhysicsError): Promise<RecoveryResult> {
+  static async recoverFromPhysicsError(
+    error: PhysicsError
+  ): Promise<RecoveryResult> {
     const startTime = performance.now();
 
     try {
       // Strategy 1: Reset physics state
-      if (error.message.includes('state') || error.message.includes('invalid')) {
+      if (
+        error.message.includes('state') ||
+        error.message.includes('invalid')
+      ) {
         const result = await ErrorRecovery.resetPhysicsState();
         if (result.success) {
           return {
@@ -329,7 +361,7 @@ export class ErrorRecovery {
             strategy: 'reset_physics',
             duration: performance.now() - startTime,
             shouldRetry: true,
-            retryDelay: 100
+            retryDelay: 100,
           };
         }
       }
@@ -342,7 +374,7 @@ export class ErrorRecovery {
           strategy: 'simplified_physics',
           duration: performance.now() - startTime,
           shouldRetry: result.success,
-          retryDelay: 50
+          retryDelay: 50,
         };
       }
 
@@ -352,16 +384,18 @@ export class ErrorRecovery {
         success: result.success,
         strategy: 'disable_physics',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
-
     } catch (recoveryError) {
       return {
         success: false,
-        error: recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        error:
+          recoveryError instanceof Error
+            ? recoveryError
+            : new Error(String(recoveryError)),
         strategy: 'physics_recovery',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
   }
@@ -369,14 +403,20 @@ export class ErrorRecovery {
   /**
    * Register a custom recovery strategy
    */
-  registerRecoveryStrategy(errorType: string, strategy: RecoveryStrategy): void {
+  registerRecoveryStrategy(
+    errorType: string,
+    strategy: RecoveryStrategy
+  ): void {
     this.customStrategies.set(errorType, strategy);
   }
 
   /**
    * Attempt recovery for any error type
    */
-  async attemptRecovery(error: Error, context: ErrorContext): Promise<RecoveryResult> {
+  async attemptRecovery(
+    error: Error,
+    context: ErrorContext
+  ): Promise<RecoveryResult> {
     const errorKey = this.getErrorKey(error, context);
     const currentAttempts = this.recoveryAttempts.get(errorKey) || 0;
 
@@ -391,7 +431,7 @@ export class ErrorRecovery {
         ),
         strategy: 'max_attempts_exceeded',
         duration: 0,
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
 
@@ -409,7 +449,7 @@ export class ErrorRecovery {
         strategy: 'rate_limited',
         duration: 0,
         shouldRetry: true,
-        retryDelay: minDelay - (Date.now() - lastRecovery)
+        retryDelay: minDelay - (Date.now() - lastRecovery),
       };
     }
 
@@ -420,27 +460,33 @@ export class ErrorRecovery {
     // Update context with attempt count
     const updatedContext: ErrorContext = {
       ...context,
-      previousAttempts: currentAttempts
+      previousAttempts: currentAttempts,
     };
 
     try {
       // Try custom strategy first
       const customStrategy = this.getCustomStrategy(error);
       if (customStrategy) {
-        return await this.executeRecoveryWithTimeout(customStrategy, error, updatedContext);
+        return await this.executeRecoveryWithTimeout(
+          customStrategy,
+          error,
+          updatedContext
+        );
       }
 
       // Try built-in strategies
       return await this.executeBuiltInRecovery(error, updatedContext);
-
     } catch (recoveryError) {
       return {
         success: false,
-        error: recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        error:
+          recoveryError instanceof Error
+            ? recoveryError
+            : new Error(String(recoveryError)),
         strategy: 'recovery_execution_failed',
         duration: 0,
         shouldRetry: currentAttempts < this.config.maxAttempts - 1,
-        retryDelay: this.calculateDelay(currentAttempts + 1)
+        retryDelay: this.calculateDelay(currentAttempts + 1),
       };
     }
   }
@@ -457,14 +503,18 @@ export class ErrorRecovery {
   /**
    * Get recovery statistics
    */
-  getRecoveryStats(): Record<string, { attempts: number; lastRecovery: number }> {
-    const stats: Record<string, { attempts: number; lastRecovery: number }> = {};
-    
+  getRecoveryStats(): Record<
+    string,
+    { attempts: number; lastRecovery: number }
+  > {
+    const stats: Record<string, { attempts: number; lastRecovery: number }> =
+      {};
+
     for (const [key, attempts] of this.recoveryAttempts.entries()) {
       // eslint-disable-next-line security/detect-object-injection
       stats[key] = {
         attempts,
-        lastRecovery: this.lastRecoveryTime.get(key) || 0
+        lastRecovery: this.lastRecoveryTime.get(key) || 0,
       };
     }
 
@@ -480,17 +530,32 @@ export class ErrorRecovery {
    */
   private registerBuiltInStrategies(): void {
     // Texture errors
-    this.customStrategies.set(ERROR_CODES.ASSET_LOAD_FAILED, ErrorRecovery.recoverFromTextureLoadError);
-    
+    this.customStrategies.set(
+      ERROR_CODES.ASSET_LOAD_FAILED,
+      ErrorRecovery.recoverFromTextureLoadError
+    );
+
     // Animation errors
-    this.customStrategies.set(ANIMATION_ERROR_CODES.TIMELINE_CREATION_FAILED, ErrorRecovery.recoverFromAnimationError);
-    this.customStrategies.set(ANIMATION_ERROR_CODES.EXECUTION_FAILED, ErrorRecovery.recoverFromAnimationError);
-    
+    this.customStrategies.set(
+      ANIMATION_ERROR_CODES.TIMELINE_CREATION_FAILED,
+      ErrorRecovery.recoverFromAnimationError
+    );
+    this.customStrategies.set(
+      ANIMATION_ERROR_CODES.EXECUTION_FAILED,
+      ErrorRecovery.recoverFromAnimationError
+    );
+
     // Render errors
-    this.customStrategies.set(ERROR_CODES.RENDER_ERROR, ErrorRecovery.recoverFromRenderError);
-    
+    this.customStrategies.set(
+      ERROR_CODES.RENDER_ERROR,
+      ErrorRecovery.recoverFromRenderError
+    );
+
     // Physics errors
-    this.customStrategies.set(SLIDER_ERROR_CODES.PHYSICS_ERROR, ErrorRecovery.recoverFromPhysicsError);
+    this.customStrategies.set(
+      SLIDER_ERROR_CODES.PHYSICS_ERROR,
+      ErrorRecovery.recoverFromPhysicsError
+    );
   }
 
   /**
@@ -503,7 +568,9 @@ export class ErrorRecovery {
   ): Promise<RecoveryResult> {
     const timeoutPromise = new Promise<RecoveryResult>((_, reject) => {
       setTimeout(() => {
-        reject(new Error(`Recovery timeout after ${this.config.recoveryTimeout}ms`));
+        reject(
+          new Error(`Recovery timeout after ${this.config.recoveryTimeout}ms`)
+        );
       }, this.config.recoveryTimeout);
     });
 
@@ -514,10 +581,13 @@ export class ErrorRecovery {
     } catch (timeoutError) {
       return {
         success: false,
-        error: timeoutError instanceof Error ? timeoutError : new Error(String(timeoutError)),
+        error:
+          timeoutError instanceof Error
+            ? timeoutError
+            : new Error(String(timeoutError)),
         strategy: 'timeout',
         duration: this.config.recoveryTimeout,
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
   }
@@ -525,7 +595,10 @@ export class ErrorRecovery {
   /**
    * Execute built-in recovery based on error type
    */
-  private async executeBuiltInRecovery(error: Error, context: ErrorContext): Promise<RecoveryResult> {
+  private async executeBuiltInRecovery(
+    error: Error,
+    context: ErrorContext
+  ): Promise<RecoveryResult> {
     // Determine error type and use appropriate strategy
     if (error instanceof SliderError) {
       switch (error.code) {
@@ -540,10 +613,15 @@ export class ErrorRecovery {
 
     // Check error message patterns
     if (error.message.includes('texture') || error.message.includes('load')) {
-      return ErrorRecovery.recoverFromTextureLoadError(error as TextureLoadError);
+      return ErrorRecovery.recoverFromTextureLoadError(
+        error as TextureLoadError
+      );
     }
 
-    if (error.message.includes('animation') || error.message.includes('timeline')) {
+    if (
+      error.message.includes('animation') ||
+      error.message.includes('timeline')
+    ) {
       return ErrorRecovery.recoverFromAnimationError(error as AnimationError);
     }
 
@@ -551,7 +629,10 @@ export class ErrorRecovery {
       return ErrorRecovery.recoverFromRenderError(error as RenderError);
     }
 
-    if (error.message.includes('physics') || error.message.includes('calculation')) {
+    if (
+      error.message.includes('physics') ||
+      error.message.includes('calculation')
+    ) {
       return ErrorRecovery.recoverFromPhysicsError(error as PhysicsError);
     }
 
@@ -562,27 +643,33 @@ export class ErrorRecovery {
   /**
    * Recover from transition errors
    */
-  private async recoverFromTransitionError(_error: SliderError, _context: ErrorContext): Promise<RecoveryResult> {
+  private async recoverFromTransitionError(
+    _error: SliderError,
+    _context: ErrorContext
+  ): Promise<RecoveryResult> {
     const startTime = performance.now();
-    
+
     try {
       // Wait for current transition to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       return {
         success: true,
         strategy: 'wait_for_transition',
         duration: performance.now() - startTime,
         shouldRetry: true,
-        retryDelay: 100
+        retryDelay: 100,
       };
     } catch (recoveryError) {
       return {
         success: false,
-        error: recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        error:
+          recoveryError instanceof Error
+            ? recoveryError
+            : new Error(String(recoveryError)),
         strategy: 'transition_recovery',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
   }
@@ -590,27 +677,33 @@ export class ErrorRecovery {
   /**
    * Recover from state errors
    */
-  private async recoverFromStateError(_error: SliderError, _context: ErrorContext): Promise<RecoveryResult> {
+  private async recoverFromStateError(
+    _error: SliderError,
+    _context: ErrorContext
+  ): Promise<RecoveryResult> {
     const startTime = performance.now();
-    
+
     try {
       // Reset to safe state
       // This would integrate with StateManager
-      
+
       return {
         success: true,
         strategy: 'reset_state',
         duration: performance.now() - startTime,
         shouldRetry: true,
-        retryDelay: 50
+        retryDelay: 50,
       };
     } catch (recoveryError) {
       return {
         success: false,
-        error: recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+        error:
+          recoveryError instanceof Error
+            ? recoveryError
+            : new Error(String(recoveryError)),
         strategy: 'state_recovery',
         duration: performance.now() - startTime,
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
   }
@@ -618,18 +711,21 @@ export class ErrorRecovery {
   /**
    * Generic error recovery
    */
-  private async recoverFromGenericError(error: Error, context: ErrorContext): Promise<RecoveryResult> {
+  private async recoverFromGenericError(
+    error: Error,
+    context: ErrorContext
+  ): Promise<RecoveryResult> {
     const startTime = performance.now();
-    
+
     // Basic recovery: wait and retry
-    await new Promise(resolve => setTimeout(resolve, this.config.baseDelay));
-    
+    await new Promise((resolve) => setTimeout(resolve, this.config.baseDelay));
+
     return {
       success: false, // Generic recovery doesn't actually fix anything
       strategy: 'generic_wait',
       duration: performance.now() - startTime,
       shouldRetry: true,
-      retryDelay: this.calculateDelay(context.previousAttempts + 1)
+      retryDelay: this.calculateDelay(context.previousAttempts + 1),
     };
   }
 
@@ -655,7 +751,8 @@ export class ErrorRecovery {
    * Generate unique key for error tracking
    */
   private getErrorKey(error: Error, context: ErrorContext): string {
-    const errorId = error instanceof SliderError ? error.code : error.name || 'Unknown';
+    const errorId =
+      error instanceof SliderError ? error.code : error.name || 'Unknown';
     return `${context.component}:${context.operation}:${errorId}`;
   }
 
@@ -667,7 +764,9 @@ export class ErrorRecovery {
       return this.config.baseDelay;
     }
 
-    const delay = this.config.baseDelay * Math.pow(this.config.backoffMultiplier, attemptNumber);
+    const delay =
+      this.config.baseDelay *
+      Math.pow(this.config.backoffMultiplier, attemptNumber);
     return Math.min(delay, this.config.maxDelay);
   }
 
@@ -678,12 +777,17 @@ export class ErrorRecovery {
   /**
    * Try alternative texture format
    */
-  private static async tryAlternativeTextureFormat(_url?: string): Promise<{ success: boolean; data?: Record<string, unknown> }> {
+  private static async tryAlternativeTextureFormat(
+    _url?: string
+  ): Promise<{ success: boolean; data?: Record<string, unknown> }> {
     if (!_url) return { success: false };
 
     // This would integrate with TextureManager
     // For now, return success to indicate the strategy exists
-    return { success: true, data: { alternativeUrl: _url.replace(/\.\w+$/, '.png') } };
+    return {
+      success: true,
+      data: { alternativeUrl: _url.replace(/\.\w+$/, '.png') },
+    };
   }
 
   /**
@@ -702,15 +806,25 @@ export class ErrorRecovery {
   /**
    * Use fallback texture
    */
-  private static async createFallbackTexture(_url?: string): Promise<{ success: boolean; data?: Record<string, unknown> }> {
+  private static async createFallbackTexture(
+    _url?: string
+  ): Promise<{ success: boolean; data?: Record<string, unknown> }> {
     // This would use a default/placeholder texture
-    return { success: true, data: { fallbackTexture: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmOGY5ZmEiLz48L3N2Zz4=' } };
+    return {
+      success: true,
+      data: {
+        fallbackTexture:
+          'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmOGY5ZmEiLz48L3N2Zz4=',
+      },
+    };
   }
 
   /**
    * Reset GSAP timeline
    */
-  private static async resetGSAPTimeline(_timelineId?: string): Promise<{ success: boolean }> {
+  private static async resetGSAPTimeline(
+    _timelineId?: string
+  ): Promise<{ success: boolean }> {
     try {
       // This would integrate with animation managers
       return { success: true };
@@ -722,7 +836,9 @@ export class ErrorRecovery {
   /**
    * Simplify animation
    */
-  private static async simplifyAnimation(_animationType?: string): Promise<{ success: boolean }> {
+  private static async simplifyAnimation(
+    _animationType?: string
+  ): Promise<{ success: boolean }> {
     try {
       // This would reduce animation complexity
       return { success: true };
@@ -794,7 +910,9 @@ export class ErrorRecovery {
   /**
    * Use simplified physics
    */
-  private static async createSimplifiedPhysics(): Promise<{ success: boolean }> {
+  private static async createSimplifiedPhysics(): Promise<{
+    success: boolean;
+  }> {
     try {
       // This would disable complex physics calculations
       return { success: true };
