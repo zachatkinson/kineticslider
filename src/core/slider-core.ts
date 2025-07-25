@@ -33,7 +33,7 @@ import {
 } from './constants';
 import { ConfigurationSystem } from '../config';
 import { debugLogger } from '../utils/debug-logger';
-import { EffectPresets } from '../rendering/effect-presets';
+import { AdvancedFilterPresets } from '../rendering/advanced-filter-presets';
 import { DisplacementTextureLoader } from '../rendering/displacement-texture-loader';
 import { ErrorBoundary } from '../components/error-boundary';
 import { ErrorRecovery } from './error-recovery';
@@ -70,7 +70,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private controller: ISliderController | null = null;
 
   // Filter system
-  private effectPresets: EffectPresets;
+  private effectPresets: AdvancedFilterPresets;
   private displacementTextureLoader: DisplacementTextureLoader;
   private currentFilterEffect: { cleanup?: () => void } | null = null;
 
@@ -91,7 +91,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     this.loopManager = new LoopManager();
 
     // Initialize filter system
-    this.effectPresets = new EffectPresets();
+    this.effectPresets = new AdvancedFilterPresets();
     this.displacementTextureLoader = new DisplacementTextureLoader();
 
     // Initialize error handling system using DRY constants

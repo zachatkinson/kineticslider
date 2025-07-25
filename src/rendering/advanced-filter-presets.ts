@@ -21,6 +21,7 @@ import {
 
 // Import advanced filters from pixi-filters
 import {
+  AdjustmentFilter,
   AsciiFilter,
   DotFilter,
   GlowFilter,
@@ -138,6 +139,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['sculptural effects', 'texture enhancement', 'depth illusion'],
       create: (options) => this.createEmbossEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'adjustment',
+      category: 'artistic' as EffectCategory,
+      description: 'Comprehensive color adjustment with brightness, contrast, and saturation',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['color correction', 'mood enhancement', 'visual tuning'],
+      create: (options) => this.createAdjustmentEffect(options),
     });
 
     // Glitch Effects
@@ -660,6 +671,44 @@ export class AdvancedFilterPresets extends EffectPresets {
         // Animate god ray movement
         (filter as GodrayFilter).time = progress * 10;
       },
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  private createAdjustmentEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { brightness: 1.1, contrast: 1.05, saturation: 0.95 },
+      moderate: { brightness: 1.2, contrast: 1.1, saturation: 0.9 },
+      strong: { brightness: 1.4, contrast: 1.2, saturation: 0.8 },
+      intense: { brightness: 1.6, contrast: 1.3, saturation: 0.7 },
+    };
+    const adjustments = intensityMap[options.intensity];
+
+    const filter = new AdjustmentFilter({
+      brightness: adjustments.brightness,
+      contrast: adjustments.contrast,
+      saturation: adjustments.saturation,
+      gamma: 1.0,
+      red: 1.0,
+      green: 1.0,
+      blue: 1.0,
+      alpha: 1.0,
+    });
+
+    const filterChain = new FilterChain({ name: 'adjustment-effect' });
+    filterChain.addFilter(filter, {
+      id: 'adjustment',
+      animated: true,
+      animationProperties: {
+        brightness: adjustments.brightness,
+        contrast: adjustments.contrast,
+        saturation: adjustments.saturation,
+      },
+      duration: options.duration,
+      ease: options.ease,
     });
 
     return this.createEffectResult(filterChain, [filter], options);

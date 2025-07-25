@@ -755,6 +755,20 @@ function KineticSliderDemo(): JSX.Element {
               Displacement
             </button>
             <button
+              onClick={() => handleApplyFilter('adjustment')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Adjustment
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

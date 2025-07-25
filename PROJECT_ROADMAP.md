@@ -793,7 +793,7 @@ Build the **world's best slider component** - performant, accessible, and deligh
   // - Stylize: ascii, crt, dot-screen, emboss, outline
   ```
 - [ ] **Individual Filter Implementation** - One task per filter in alphabetical order:
-  - [ ] **AdjustmentFilter** - Brightness, contrast, gamma, saturation, hue adjustments
+  - ✅ **AdjustmentFilter** - Brightness, contrast, gamma, saturation, hue adjustments
   - [ ] **AlphaFilter** - Alpha channel manipulation
   - [ ] **ASCIIFilter** - ASCII art effect conversion
   - [ ] **BevelFilter** - 3D bevel effects
