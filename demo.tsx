@@ -1136,6 +1136,20 @@ function KineticSliderDemo(): JSX.Element {
               Kawase Blur
             </button>
             <button
+              onClick={() => handleApplyFilter('radialBlur')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#06b6d4',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Radial Blur
+            </button>
+            <button
               onClick={() => handleApplyFilter('bulgePinch')}
               style={{
                 padding: '0.5rem 1rem',

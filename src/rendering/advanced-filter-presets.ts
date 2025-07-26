@@ -1013,21 +1013,29 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createRadialBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { subtle: 5, moderate: 10, strong: 20, intense: 40 };
-    const radius = intensityMap[options.intensity];
+    const intensityMap = { 
+      subtle: { radius: -1, angle: 2, kernelSize: 5 },
+      moderate: { radius: -1, angle: 4, kernelSize: 5 },
+      strong: { radius: -1, angle: 6, kernelSize: 7 },
+      intense: { radius: -1, angle: 10, kernelSize: 9 }
+    };
+    const settings = intensityMap[options.intensity];
 
     const filter = new RadialBlurFilter({
-      angle: 0,
-      center: [0.5, 0.5],
-      radius,
-      kernelSize: 15,
+      angle: settings.angle, // Non-zero angle for visible blur
+      center: { x: 0.5, y: 0.5 }, // Use PointData object format, centered in image
+      radius: settings.radius,
+      kernelSize: settings.kernelSize, // Larger kernel for more blur
     });
 
     const filterChain = new FilterChain({ name: 'radial-blur-effect' });
     filterChain.addFilter(filter, {
       id: 'radial-blur',
       animated: true,
-      animationProperties: { radius, angle: 360 },
+      animationProperties: { 
+        radius: settings.radius,
+        angle: settings.angle * 2 // Animate to double the angle for motion effect
+      },
       duration: options.duration,
       ease: options.ease,
     });
