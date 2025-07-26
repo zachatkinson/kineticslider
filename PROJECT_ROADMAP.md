@@ -229,6 +229,7 @@
 - **🔘 DotFilter** - Halftone dot screen effects with configurable scale, angle, and grayscale modes for print media aesthetics
 - **🌑 DropShadowFilter** - Drop shadow effects with customizable offset, blur, and alpha for depth and layering visuals
 - **🏔️ EmbossFilter** - Embossed relief effects with configurable strength for sculptural texture enhancement and depth illusion
+- **⚡ GlitchFilter** - Digital glitch distortion effects with animated parameters for cyberpunk aesthetic and error simulation
 - **🔧 Filter System Integration** - Seamless integration with existing FilterManager and filter validation
 - **🎮 Interactive Testing** - Demo buttons for all new filters with proper color coding and organization
 - **📊 Performance Optimization** - Lightweight filter options for performance-focused applications
