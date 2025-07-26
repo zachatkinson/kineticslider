@@ -329,19 +329,49 @@ export class AdvancedFilterPresets extends EffectPresets {
       applyTo: (target: Sprite | Container): void => {
         const sprite = target as Sprite;
 
-        console.log('ASCII Filter: Pre-application texture check', {
+        console.log('🎯 ASCII DEBUG: Pre-application state', {
           isSprite: target instanceof Sprite,
           hasTexture: sprite.texture !== undefined,
           textureSize: {
             width: sprite.texture?.width,
             height: sprite.texture?.height,
           },
+          spriteVisible: sprite.visible,
+          spriteAlpha: sprite.alpha,
+          currentFilters: sprite.filters?.length || 0,
+          spritePosition: { x: sprite.x, y: sprite.y },
+          spriteScale: { x: sprite.scale.x, y: sprite.scale.y },
+          filterSettings: {
+            size: filter.size,
+            color: filter.color,
+            replaceColor: filter.replaceColor,
+          }
         });
 
         // Apply filter with minimal delay to ensure texture is ready
         requestAnimationFrame(() => {
-          console.log('ASCII Filter: Applying after frame delay');
+          console.log('🎯 ASCII DEBUG: Applying filter now');
+          
+          // Clear existing filters first to prevent stacking
+          console.log('🎯 ASCII DEBUG: Clearing existing filters', {
+            existingFilters: sprite.filters?.length || 0,
+            existingTypes: sprite.filters?.map(f => f.constructor.name) || []
+          });
+          sprite.filters = [];
+          
           originalResult.applyTo(target);
+          
+          // Check state after application
+          setTimeout(() => {
+            console.log('🎯 ASCII DEBUG: Post-application state', {
+              spriteVisible: sprite.visible,
+              spriteAlpha: sprite.alpha,
+              filtersApplied: sprite.filters?.length || 0,
+              filterTypes: sprite.filters?.map(f => f.constructor.name) || [],
+              parentVisible: sprite.parent?.visible,
+              containerChildren: sprite.parent?.children?.length || 0,
+            });
+          }, 50);
         });
       },
     };
