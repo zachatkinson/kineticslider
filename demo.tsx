@@ -1065,6 +1065,20 @@ function KineticSliderDemo(): JSX.Element {
               Cross Hatch
             </button>
             <button
+              onClick={() => handleApplyFilter('crt')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              CRT Monitor
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

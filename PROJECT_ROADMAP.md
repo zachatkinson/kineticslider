@@ -224,6 +224,8 @@
 - **🎨 ColorOverlayFilter** - Solid color overlay effects with configurable alpha blending for tinting and mood coloring
 - **🔄 ColorReplaceFilter** - Selective color replacement with configurable tolerance for precise color swapping
 - **🔢 ConvolutionFilter** - Custom convolution matrix effects for edge detection, sharpening, and embossing
+- **🎨 CrossHatchFilter** - Artistic cross-hatch pattern effects with intensity-based alpha control for line art aesthetics
+- **📺 CRTFilter** - Classic CRT monitor simulation with scanlines, noise, curvature, and vignetting for retro gaming effects
 - **🔧 Filter System Integration** - Seamless integration with existing FilterManager and filter validation
 - **🎮 Interactive Testing** - Demo buttons for all new filters with proper color coding and organization
 - **📊 Performance Optimization** - Lightweight filter options for performance-focused applications

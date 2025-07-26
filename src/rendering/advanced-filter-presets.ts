@@ -509,18 +509,23 @@ export class AdvancedFilterPresets extends EffectPresets {
     options: Required<PresetOptions>
   ): EffectPresetResult {
     const intensityMap = {
-      subtle: 0.3,
-      moderate: 0.5,
-      strong: 0.7,
-      intense: 1.0,
+      subtle: { curvature: 0.5, lineWidth: 0.8, lineContrast: 0.15, noise: 0.1, vignetting: 0.2 },
+      moderate: { curvature: 1.0, lineWidth: 1.0, lineContrast: 0.25, noise: 0.2, vignetting: 0.3 },
+      strong: { curvature: 1.5, lineWidth: 1.2, lineContrast: 0.35, noise: 0.3, vignetting: 0.4 },
+      intense: { curvature: 2.0, lineWidth: 1.5, lineContrast: 0.45, noise: 0.4, vignetting: 0.5 },
     };
-    const intensity = intensityMap[options.intensity];
+    const settings = intensityMap[options.intensity];
 
     const filter = new CRTFilter({
-      curvature: 2.0 * intensity,
-      lineWidth: 1.0 * intensity,
-      lineContrast: 0.25 * intensity,
-      noise: 0.1 * intensity,
+      curvature: settings.curvature,
+      lineWidth: settings.lineWidth,
+      lineContrast: settings.lineContrast,
+      noise: settings.noise,
+      vignetting: settings.vignetting,
+      vignettingAlpha: 1,
+      vignettingBlur: 0.3,
+      verticalLine: false,
+      time: 0.3,
     });
 
     const filterChain = new FilterChain({ name: 'crt-effect' });
@@ -528,8 +533,10 @@ export class AdvancedFilterPresets extends EffectPresets {
       id: 'crt',
       animated: true,
       animationProperties: {
-        curvature: 2.0 * intensity,
-        lineContrast: 0.25 * intensity,
+        curvature: settings.curvature,
+        lineContrast: settings.lineContrast,
+        noise: settings.noise,
+        vignetting: settings.vignetting,
       },
       duration: options.duration,
       ease: options.ease,
@@ -799,7 +806,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     // CrossHatchFilter in PIXI v8 doesn't have many configurable properties
     // We'll use a combination approach with alpha/blend modes for intensity
     const filter = new CrossHatchFilter();
-    
+
     // Intensity affects the overall visibility of the effect
     const intensityMap = {
       subtle: { alpha: 0.3 },
@@ -825,7 +832,7 @@ export class AdvancedFilterPresets extends EffectPresets {
         // The alpha is handled by the filter chain animation
       },
     });
-    
+
     debugLogger.info(
       `CrossHatch effect created with intensity: ${options.intensity}`,
       'FILTER_PRESETS'
