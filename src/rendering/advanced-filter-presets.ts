@@ -1027,18 +1027,19 @@ export class AdvancedFilterPresets extends EffectPresets {
     options: Required<PresetOptions>
   ): EffectPresetResult {
     const intensityMap = {
-      subtle: { strength: 0.3, center: [0.5, 0.5], radius: 200 },
-      moderate: { strength: 0.6, center: [0.5, 0.5], radius: 250 },
-      strong: { strength: 1.0, center: [0.5, 0.5], radius: 300 },
-      intense: { strength: 1.5, center: [0.5, 0.5], radius: 350 },
+      subtle: { strength: 0.5, centerX: 0.5, centerY: 0.5, radius: 200 },
+      moderate: { strength: 1.0, centerX: 0.5, centerY: 0.5, radius: 250 },
+      strong: { strength: 1.5, centerX: 0.5, centerY: 0.5, radius: 300 },
+      intense: { strength: 2.0, centerX: 0.5, centerY: 0.5, radius: 350 },
     };
     const settings = intensityMap[options.intensity];
 
-    const filter = new BulgePinchFilter({
-      center: settings.center,
-      radius: settings.radius,
-      strength: settings.strength,
-    });
+    // Use the simpler constructor approach for BulgePinchFilter
+    const filter = new BulgePinchFilter();
+    // Set properties directly
+    filter.center = [settings.centerX, settings.centerY];
+    filter.radius = settings.radius;
+    filter.strength = settings.strength;
 
     const filterChain = new FilterChain({ name: 'bulge-pinch-effect' });
     filterChain.addFilter(filter, {
