@@ -28,6 +28,7 @@ import {
   AsciiFilter,
   BackdropBlurFilter,
   BevelFilter,
+  BloomFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -156,6 +157,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['color correction', 'mood enhancement', 'visual tuning'],
       create: (options) => this.createAdjustmentEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'bloom',
+      category: 'glow' as EffectCategory,
+      description: 'Fast bloom effect for performance-focused applications',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['light glow', 'bright highlights', 'fast bloom effects'],
+      create: (options) => this.createBloomEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -850,6 +861,39 @@ export class AdvancedFilterPresets extends EffectPresets {
         brightness: adjustments.brightness,
         contrast: adjustments.contrast,
         saturation: adjustments.saturation,
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create fast bloom effect for performance-focused applications
+   */
+  private createBloomEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { strength: 0.5 },
+      moderate: { strength: 1.0 },
+      strong: { strength: 1.5 },
+      intense: { strength: 2.0 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Use the simpler constructor approach for BloomFilter
+    const filter = new BloomFilter();
+    // Set properties directly
+    filter.strength = settings.strength;
+
+    const filterChain = new FilterChain({ name: 'bloom-effect' });
+    filterChain.addFilter(filter, {
+      id: 'bloom',
+      animated: true,
+      animationProperties: {
+        strength: settings.strength,
       },
       duration: options.duration,
       ease: options.ease,
