@@ -51,6 +51,7 @@ import {
   RadialBlurFilter,
   CrossHatchFilter,
   GodrayFilter,
+  HslAdjustmentFilter,
 } from 'pixi-filters';
 
 /**
@@ -366,6 +367,16 @@ export class AdvancedFilterPresets extends EffectPresets {
         'brand color updates',
       ],
       create: (options) => this.createColorReplaceEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'hslAdjustment',
+      category: 'artistic' as EffectCategory,
+      description: 'HSL color adjustment for hue, saturation, and lightness',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['color correction', 'mood adjustment', 'artistic styling'],
+      create: (options) => this.createHslAdjustmentEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -1458,6 +1469,44 @@ export class AdvancedFilterPresets extends EffectPresets {
       animated: true,
       animationProperties: {
         mix: settings.mix,
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create HSL Adjustment effect for color correction
+   */
+  private createHslAdjustmentEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { hue: 15, saturation: 0.2, lightness: 0.1 },
+      moderate: { hue: 30, saturation: 0.4, lightness: 0.2 },
+      strong: { hue: 60, saturation: 0.6, lightness: 0.3 },
+      intense: { hue: 90, saturation: 0.8, lightness: 0.4 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    const filter = new HslAdjustmentFilter({
+      alpha: 1, // Default alpha
+      colorize: false, // Default colorize
+      hue: settings.hue, // Hue adjustment in degrees (-180 to 180)
+      lightness: settings.lightness, // Lightness adjustment (-1 to 1)
+      saturation: settings.saturation, // Saturation adjustment (-1 to 1)
+    });
+
+    const filterChain = new FilterChain({ name: 'hsl-adjustment-effect' });
+    filterChain.addFilter(filter, {
+      id: 'hslAdjustment',
+      animated: true,
+      animationProperties: {
+        hue: settings.hue,
+        saturation: settings.saturation,
+        lightness: settings.lightness,
       },
       duration: options.duration,
       ease: options.ease,
