@@ -1184,6 +1184,20 @@ function KineticSliderDemo(): JSX.Element {
               Cross Hatch
             </button>
             <button
+              onClick={() => handleApplyFilter('emboss')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#a855f7',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Emboss
+            </button>
+            <button
               onClick={() => handleApplyFilter('crt')}
               style={{
                 padding: '0.5rem 1rem',
