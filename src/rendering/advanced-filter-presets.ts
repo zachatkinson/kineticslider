@@ -48,6 +48,7 @@ import {
   RGBSplitFilter,
   MotionBlurFilter,
   KawaseBlurFilter,
+  MultiColorReplaceFilter,
   RadialBlurFilter,
   CrossHatchFilter,
   GodrayFilter,
@@ -241,6 +242,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['speed effects', 'movement indication', 'dynamic blur'],
       create: (options) => this.createAdvancedMotionBlurEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'multiColorReplace',
+      category: 'color-advanced' as AdvancedEffectCategory,
+      description: 'Replace multiple colors with new colors simultaneously',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['color theming', 'recoloring', 'palette swapping'],
+      create: (options) => this.createMultiColorReplaceEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -979,11 +990,13 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     const filter = new MotionBlurFilter({
       velocity, // Use PointData object format {x, y}
-      velocityX: velocity.x, // Add missing velocityX property
-      velocityY: velocity.y, // Add missing velocityY property
       kernelSize: 5, // Use correct default value (5 instead of 15)
       offset: 0,
     });
+
+    // Set velocityX and velocityY properties after creation (documented properties)
+    filter.velocityX = velocity.x;
+    filter.velocityY = velocity.y;
 
     const filterChain = new FilterChain({ name: 'motion-blur-effect' });
     filterChain.addFilter(filter, {
@@ -1015,6 +1028,55 @@ export class AdvancedFilterPresets extends EffectPresets {
       id: 'radial-blur',
       animated: true,
       animationProperties: { radius, angle: 360 },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create MultiColorReplace effect - replace multiple colors simultaneously
+   */
+  private createMultiColorReplaceEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    // Define color replacement pairs based on intensity
+    // Your colors: D9B94A (golden), C34672 (rose), 8FE2EA (cyan)
+    // Replaced with vibrant neons: electric lime, hot pink, electric blue
+    const colorReplacements = {
+      subtle: [
+        [0xd9b94a, 0x00ff41], // Golden to Electric Lime
+      ],
+      moderate: [
+        [0xd9b94a, 0x00ff41], // Golden to Electric Lime
+        [0xc34672, 0xff1493], // Rose to Hot Pink
+      ],
+      strong: [
+        [0xd9b94a, 0x00ff41], // Golden to Electric Lime
+        [0xc34672, 0xff1493], // Rose to Hot Pink
+        [0x8fe2ea, 0x0080ff], // Cyan to Electric Blue
+      ],
+      intense: [
+        [0xd9b94a, 0x00ff41], // Golden to Electric Lime
+        [0xc34672, 0xff1493], // Rose to Hot Pink
+        [0x8fe2ea, 0x0080ff], // Cyan to Electric Blue
+        [0xffffff, 0xff00ff], // White to Magenta (bonus replacement)
+      ],
+    };
+
+    const replacements = colorReplacements[options.intensity];
+
+    const filter = new MultiColorReplaceFilter({
+      replacements, // Array of [originalColor, targetColor] pairs
+      tolerance: 0.05, // Default tolerance for color matching
+    });
+
+    const filterChain = new FilterChain({ name: 'multi-color-replace-effect' });
+    filterChain.addFilter(filter, {
+      id: 'multi-color-replace',
+      animated: false, // Color replacement doesn't need animation
+      animationProperties: {},
       duration: options.duration,
       ease: options.ease,
     });

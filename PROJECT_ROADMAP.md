@@ -845,7 +845,7 @@ Build the **world's best slider component** - performant, accessible, and deligh
   - ✅ **HslAdjustmentFilter** - HSL color adjustment for hue, saturation, and lightness
   - ✅ **KawaseBlurFilter** - Kawase blur algorithm
   - ✅ **MotionBlurFilter** - Motion blur effects
-  - [ ] **MultiColorReplaceFilter** - Multiple color replacement
+  - ✅ **MultiColorReplaceFilter** - Multiple color replacement
   - [ ] **NoiseFilter** - Noise generation
   - ✅ **OldFilmFilter** - Old film effect (enhance existing)
   - ✅ **OutlineFilter** - Outline effects
