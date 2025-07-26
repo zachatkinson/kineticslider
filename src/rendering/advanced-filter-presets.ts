@@ -1046,31 +1046,31 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Replaced with vibrant neons: electric lime, hot pink, electric blue
     const colorReplacements = {
       subtle: [
-        [0xd9b94a, 0x00ff41], // Golden to Electric Lime
+        [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
       ],
       moderate: [
-        [0xd9b94a, 0x00ff41], // Golden to Electric Lime
-        [0xc34672, 0xff1493], // Rose to Hot Pink
+        [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
+        [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
       ],
       strong: [
-        [0xd9b94a, 0x00ff41], // Golden to Electric Lime
-        [0xc34672, 0xff1493], // Rose to Hot Pink
-        [0x8fe2ea, 0x0080ff], // Cyan to Electric Blue
+        [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
+        [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
+        [0x8fe2ea, 0x0080ff] as [number, number], // Cyan to Electric Blue
       ],
       intense: [
-        [0xd9b94a, 0x00ff41], // Golden to Electric Lime
-        [0xc34672, 0xff1493], // Rose to Hot Pink
-        [0x8fe2ea, 0x0080ff], // Cyan to Electric Blue
-        [0xffffff, 0xff00ff], // White to Magenta (bonus replacement)
+        [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
+        [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
+        [0x8fe2ea, 0x0080ff] as [number, number], // Cyan to Electric Blue
+        [0xffffff, 0xff00ff] as [number, number], // White to Magenta (bonus replacement)
       ],
     };
 
     const replacements = colorReplacements[options.intensity];
 
-    const filter = new MultiColorReplaceFilter({
+    const filter = new MultiColorReplaceFilter(
       replacements, // Array of [originalColor, targetColor] pairs
-      tolerance: 0.05, // Default tolerance for color matching
-    });
+      0.05 // tolerance for color matching
+    );
 
     const filterChain = new FilterChain({ name: 'multi-color-replace-effect' });
     filterChain.addFilter(filter, {

@@ -577,32 +577,63 @@ export class EffectPresets {
   ): EffectPresetResult {
     const intensity = this.getIntensityMultiplier(options.intensity);
 
-    // Create vintage using proper OldFilmFilter from pixi-filters with conservative values
+    // Create vintage using proper OldFilmFilter with enhanced scratch/noise effects
     const oldFilmFilter = new OldFilmFilter({
-      sepia: intensity * 0.3, // Reduced from 0.4
-      noise: intensity * 0.2, // Reduced from 0.3
-      noiseSize: 1,
-      scratch: intensity * 0.3, // Reduced from 0.5
-      scratchDensity: intensity * 0.2, // Reduced from 0.3
-      scratchWidth: 1,
-      vignetting: intensity * 0.2, // Reduced from 0.3
-      vignettingAlpha: 0.8, // Reduced from 1.0 to prevent too much darkening
-      vignettingBlur: 1,
-      seed: 0, // Added missing seed parameter
+      noise: 0.1 + (0.1 * intensity), // Much more subtle noise: 0.1-0.2 range
+      noiseSize: 1, // PIXI default
+      scratch: 0.6 + (0.4 * intensity), // Enhanced scratches: 0.6-1.0 range for more visible scratches
+      scratchDensity: 0.4 + (0.3 * intensity), // Enhanced scratch density: 0.4-0.7 range
+      scratchWidth: 1, // PIXI default
+      seed: Math.random(), // Random seed for varying effects
+      sepia: 0.3 * intensity, // Keep sepia as before
+      vignetting: 0.3 * intensity, // Keep vignetting as before
+      vignettingAlpha: 1, // PIXI default 1.0
+      vignettingBlur: 1, // PIXI default
     });
 
     const filterChain = new FilterChain({ name: 'vintage' });
     filterChain.addFilter(oldFilmFilter, {
       id: 'oldFilm',
       animationProperties: {
-        sepia: intensity * 0.3,
-        noise: intensity * 0.2,
+        seed: 'random', // Animate seed for continuous film grain effect
+        noise: 0.1 + (0.1 * intensity), // Much more subtle noise
+        scratch: 0.6 + (0.4 * intensity), // Animate scratches
       },
       duration: options.duration,
       ease: options.ease,
     });
 
-    const timeline = gsap.timeline();
+    // Create continuous animation timeline for authentic vintage film feel
+    const timeline = gsap.timeline({ repeat: -1 });
+    
+    // Continuously change seed every 0.1 seconds for flickering film grain
+    timeline.to(oldFilmFilter, {
+      duration: 0.1,
+      ease: 'none',
+      repeat: -1,
+      onRepeat: () => {
+        oldFilmFilter.seed = Math.random();
+      },
+    });
+
+    // Vary noise intensity every 0.3 seconds
+    timeline.to(oldFilmFilter, {
+      duration: 0.3,
+      noise: 0.08 + (0.12 * intensity), // Much more subtle noise animation
+      ease: 'power2.inOut',
+      repeat: -1,
+      yoyo: true,
+    }, 0);
+
+    // Vary scratch intensity every 0.5 seconds
+    timeline.to(oldFilmFilter, {
+      duration: 0.5,
+      scratch: 0.5 + (0.5 * intensity),
+      ease: 'power2.inOut',
+      repeat: -1,
+      yoyo: true,
+    }, 0);
+
     const filters = [oldFilmFilter];
 
     return {
