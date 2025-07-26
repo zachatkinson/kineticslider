@@ -128,6 +128,7 @@ export class FilterValidator {
 
     // Advanced filter presets to test
     const advancedPresets = [
+      'ascii',
       'dot',
       'glow',
       'crt',

@@ -128,7 +128,7 @@ export class SliderRenderer implements ISliderRenderer {
       await this.app.init({
         width: logicalWidth,
         height: logicalHeight,
-        backgroundAlpha: 0,
+        backgroundAlpha: 1, // Make background opaque so backgroundColor is visible
         backgroundColor: config.backgroundColor,
         antialias: config.antialias,
         resolution: config.resolution || window.devicePixelRatio || 1,

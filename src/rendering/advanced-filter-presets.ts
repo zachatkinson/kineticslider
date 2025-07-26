@@ -23,6 +23,7 @@ import {
 import {
   AdvancedBloomFilter,
   AdjustmentFilter,
+  AsciiFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -102,6 +103,16 @@ export class AdvancedFilterPresets extends EffectPresets {
     });
 
     // Artistic Effects
+    this.registerAdvancedPreset({
+      name: 'ascii',
+      category: 'artistic' as EffectCategory,
+      description: 'Convert image to ASCII art representation',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['retro games', 'terminal effects', 'artistic processing'],
+      create: (options) => this.createAsciiEffect(options),
+    });
+
     this.registerAdvancedPreset({
       name: 'dot',
       category: 'artistic' as EffectCategory,
@@ -266,6 +277,75 @@ export class AdvancedFilterPresets extends EffectPresets {
   // Advanced Effect Creation Methods
   // =============================================================================
 
+  /**
+   * Create ASCII effect using original image colors by default
+   */
+  private createAsciiEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    // Use replaceColor: false by default to preserve original image colors
+    // Size mapping: smaller size = more detailed ASCII characters
+    const intensityMap = {
+      subtle: { size: 16 }, // Large ASCII blocks
+      moderate: { size: 12 }, // Medium ASCII blocks
+      strong: { size: 8 }, // Smaller ASCII blocks
+      intense: { size: 6 }, // Finest ASCII detail
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create ASCII filter
+    const filter = new AsciiFilter({
+      size: settings.size,
+      color: 0xffffff,
+      replaceColor: false, // Use original image colors
+    });
+
+    console.log('ASCII Filter created:', {
+      size: filter.size,
+      color: filter.color,
+      replaceColor: filter.replaceColor,
+      intensity: options.intensity,
+      targetSize: settings.size,
+    });
+
+    const filterChain = new FilterChain({ name: 'ascii-effect' });
+    filterChain.addFilter(filter, {
+      id: 'ascii',
+      animated: true,
+      animationProperties: { size: settings.size },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    // Enhanced applyTo method that ensures texture is GPU-ready
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      applyTo: (target: Sprite | Container): void => {
+        const sprite = target as Sprite;
+
+        console.log('ASCII Filter: Pre-application texture check', {
+          isSprite: target instanceof Sprite,
+          hasTexture: sprite.texture !== undefined,
+          textureSize: {
+            width: sprite.texture?.width,
+            height: sprite.texture?.height,
+          },
+        });
+
+        // Apply filter with minimal delay to ensure texture is ready
+        requestAnimationFrame(() => {
+          console.log('ASCII Filter: Applying after frame delay');
+          originalResult.applyTo(target);
+        });
+      },
+    };
+  }
 
   private createDotEffect(
     options: Required<PresetOptions>

@@ -338,7 +338,7 @@ function KineticSliderDemo(): JSX.Element {
           rendering: {
             width: 800,
             height: 400,
-            backgroundColor: 0x000000,
+            backgroundColor: 0x1e1f22, // Dark background for better contrast
             antialias: true,
             resolution: window.devicePixelRatio || 1,
             scaleMode: ScaleMode.OVERSCAN,
@@ -781,6 +781,20 @@ function KineticSliderDemo(): JSX.Element {
               }}
             >
               Advanced Bloom
+            </button>
+            <button
+              onClick={() => handleApplyFilter('ascii')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              ASCII
             </button>
             <button
               onClick={handleClearFilters}
