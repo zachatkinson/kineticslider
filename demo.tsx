@@ -356,9 +356,11 @@ function KineticSliderDemo(): JSX.Element {
                 const glowFilter = new GlowFilter({
                   distance: 10,
                   outerStrength: 2,
-                  innerStrength: 1,
+                  innerStrength: 0, // Default is 0
                   color: 0xffffff,
-                  quality: 0.5,
+                  alpha: 1, // Default alpha
+                  knockout: false, // Default knockout
+                  quality: 0.1, // Use API default
                 });
                 
                 (renderer as ISliderRenderer).applyFilter(panel, glowFilter);
@@ -470,9 +472,11 @@ function KineticSliderDemo(): JSX.Element {
                 const glowFilter = new GlowFilter({
                   distance: 8,
                   outerStrength: 1.5,
-                  innerStrength: 0.8,
+                  innerStrength: 0, // Default is 0
                   color: 0xffffff,
-                  quality: 0.5,
+                  alpha: 1, // Default alpha
+                  knockout: false, // Default knockout
+                  quality: 0.1, // Use API default
                 });
                 
                 (renderer as ISliderRenderer).applyFilter(panel, glowFilter);
@@ -1112,6 +1116,20 @@ function KineticSliderDemo(): JSX.Element {
               }}
             >
               Glitch
+            </button>
+            <button
+              onClick={() => handleApplyFilter('godray')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#f59e0b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Godray
             </button>
             <button
               onClick={() => handleApplyFilter('colorGradient')}

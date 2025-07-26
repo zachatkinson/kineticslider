@@ -480,8 +480,10 @@ export class EffectPresets {
     const glowFilter = new GlowFilter({
       distance: 10 + intensity * 5, // Default 10, slight increase based on intensity
       outerStrength: 4 + intensity * 2, // Default 4, slight increase based on intensity
-      innerStrength: 0,
+      innerStrength: 0, // Default is 0
       color: 0xff0000, // Red color for better visibility testing
+      alpha: 1, // Default alpha
+      knockout: false, // Default knockout
       quality: 0.1, // Use API default value
     });
 

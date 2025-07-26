@@ -551,9 +551,11 @@ export class AdvancedFilterPresets extends EffectPresets {
     const filter = new GlowFilter({
       distance,
       outerStrength: 2,
-      innerStrength: 1,
+      innerStrength: 0, // Default is 0
       color: 0xffffff,
-      quality: 0.5,
+      alpha: 1, // Default alpha
+      knockout: false, // Default knockout
+      quality: 0.1, // Use API default
     });
 
     const filterChain = new FilterChain({ name: 'glow-effect' });
@@ -671,7 +673,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     });
 
     const filterChain = new FilterChain({ name: 'glitch-effect' });
-    
+
     // Create random glitch bursts like satellite/space camera feed
     let nextGlitchTime = Date.now() + (Math.random() * 7500 + 1500); // First glitch in 1.5-9 seconds
     let isGlitching = false;
@@ -680,7 +682,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     let hasResidualGlitch = false;
     let residualOffset = 0;
     let residualSlices = slices;
-    
+
     filterChain.addFilter(filter, {
       id: 'glitch',
       animated: true,
@@ -689,7 +691,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       ease: 'none',
       onUpdate: () => {
         const now = Date.now();
-        
+
         // Check if it's time to start a new glitch burst
         if (!isGlitching && now >= nextGlitchTime) {
           isGlitching = true;
@@ -700,13 +702,14 @@ export class AdvancedFilterPresets extends EffectPresets {
           // Schedule next glitch burst: 1.5-9 seconds later
           nextGlitchTime = glitchEndTime + (Math.random() * 7500 + 1500);
         }
-        
+
         // Check if current glitch burst should end
         if (isGlitching && now >= glitchEndTime) {
           isGlitching = false;
-          
+
           // 5-10% chance the signal doesn't fully recover
-          if (Math.random() < 0.075) { // 7.5% chance
+          if (Math.random() < 0.075) {
+            // 7.5% chance
             hasResidualGlitch = true;
             residualOffset = Math.random() * 8 + 2; // Small persistent offset
             residualSlices = Math.floor(slices * (0.8 + Math.random() * 0.4)); // Slightly off slice count
@@ -716,42 +719,57 @@ export class AdvancedFilterPresets extends EffectPresets {
             residualSlices = slices;
           }
         }
-        
+
         if (isGlitching) {
           // During glitch bursts - intensity varies randomly
           const burstElapsed = (now - (glitchEndTime - 1200)) / 1000;
-          
+
           // Horizontal glitch movement scaled by intensity
-          const baseOffset = Math.sin(burstElapsed * 8) * 25 + Math.cos(burstElapsed * 5.5) * 15 + (Math.random() - 0.5) * 20;
-          (filter as GlitchFilter).offset = Math.abs(baseOffset * glitchIntensity);
-          
+          const baseOffset =
+            Math.sin(burstElapsed * 8) * 25 +
+            Math.cos(burstElapsed * 5.5) * 15 +
+            (Math.random() - 0.5) * 20;
+          (filter as GlitchFilter).offset = Math.abs(
+            baseOffset * glitchIntensity
+          );
+
           // Keep direction horizontal for scan line effect
           (filter as GlitchFilter).direction = 0;
-          
+
           // Slice flickering scaled by intensity
           const baseSlices = slices;
-          const intenseBurst = Math.sin(burstElapsed * 20) * Math.cos(burstElapsed * 15);
-          const randomBurst = Math.random() < (0.4 + glitchIntensity * 0.3) ? Math.random() * 0.8 : 0;
-          const burstMultiplier = 1 + (intenseBurst * 0.5 * glitchIntensity) + (randomBurst * glitchIntensity);
-          (filter as GlitchFilter).slices = Math.floor(baseSlices * burstMultiplier);
-          
+          const intenseBurst =
+            Math.sin(burstElapsed * 20) * Math.cos(burstElapsed * 15);
+          const randomBurst =
+            Math.random() < 0.4 + glitchIntensity * 0.3
+              ? Math.random() * 0.8
+              : 0;
+          const burstMultiplier =
+            1 +
+            intenseBurst * 0.5 * glitchIntensity +
+            randomBurst * glitchIntensity;
+          (filter as GlitchFilter).slices = Math.floor(
+            baseSlices * burstMultiplier
+          );
+
           // Dramatic slice changes - more frequent with higher intensity
-          const sliceChangeChance = 0.15 + (glitchIntensity * 0.15);
+          const sliceChangeChance = 0.15 + glitchIntensity * 0.15;
           if (Math.random() < sliceChangeChance) {
-            (filter as GlitchFilter).slices = Math.random() < 0.4 ? 0 : baseSlices * (2 + glitchIntensity);
+            (filter as GlitchFilter).slices =
+              Math.random() < 0.4 ? 0 : baseSlices * (2 + glitchIntensity);
           }
-          
+
           // Rapid seed changes for chaotic corruption
           if (Math.floor(burstElapsed * 30) % 2 === 0) {
             (filter as GlitchFilter).seed = Math.random();
           }
-          
+
           // Offset spikes - more frequent and intense with higher intensity
-          const spikeChance = 0.1 + (glitchIntensity * 0.1);
+          const spikeChance = 0.1 + glitchIntensity * 0.1;
           if (Math.random() < spikeChance) {
-            (filter as GlitchFilter).offset = (Math.random() * 60 + 30) * glitchIntensity;
+            (filter as GlitchFilter).offset =
+              (Math.random() * 60 + 30) * glitchIntensity;
           }
-          
         } else {
           // During quiet periods - but check for residual corruption
           if (hasResidualGlitch) {
@@ -759,19 +777,22 @@ export class AdvancedFilterPresets extends EffectPresets {
             (filter as GlitchFilter).offset = residualOffset;
             (filter as GlitchFilter).direction = 0;
             (filter as GlitchFilter).slices = residualSlices;
-            
+
             // Very occasional minor fluctuations in the corrupted signal
-            if (Math.random() < 0.01) { // 1% chance
-              (filter as GlitchFilter).offset = residualOffset + (Math.random() - 0.5) * 3;
+            if (Math.random() < 0.01) {
+              // 1% chance
+              (filter as GlitchFilter).offset =
+                residualOffset + (Math.random() - 0.5) * 3;
             }
           } else {
             // Clean signal like normal camera feed
             (filter as GlitchFilter).offset = 0;
             (filter as GlitchFilter).direction = 0;
             (filter as GlitchFilter).slices = slices; // Normal slice count
-            
+
             // Occasional very minor static during quiet periods
-            if (Math.random() < 0.002) { // Very rare (0.2% chance)
+            if (Math.random() < 0.002) {
+              // Very rare (0.2% chance)
               (filter as GlitchFilter).offset = Math.random() * 3 + 1; // Tiny static
             }
           }
@@ -1093,14 +1114,24 @@ export class AdvancedFilterPresets extends EffectPresets {
     const intensity = intensityMap[options.intensity];
 
     const filter = new GodrayFilter({
-      angle: 30,
-      gain: 0.5 * intensity,
-      lacunarity: 2.5,
-      parallel: true,
-      time: 0,
+      alpha: 1, // Default alpha
+      angle: 30, // Default angle
+      center: { x: 0, y: 0 }, // Default center point (controls centerX/centerY)
+      gain: 0.5 * intensity, // Effect intensity scaled by user preference
+      lacunarity: 2.5, // Default lacunarity
+      parallel: true, // Default parallel rays
+      time: 0, // Default time
     });
 
     const filterChain = new FilterChain({ name: 'godray-effect' });
+
+    // Create continuous animation for god rays using setInterval
+    const startTime = Date.now();
+    const animationInterval = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      (filter as GodrayFilter).time = elapsed * 2; // Slow, smooth movement
+    }, 16); // ~60fps
+
     filterChain.addFilter(filter, {
       id: 'godray',
       animated: true,
@@ -1110,11 +1141,13 @@ export class AdvancedFilterPresets extends EffectPresets {
       },
       duration: options.duration,
       ease: options.ease,
-      onUpdate: (filter, progress) => {
-        // Animate god ray movement
-        (filter as GodrayFilter).time = progress * 10;
-      },
     });
+
+    // Store the interval for potential cleanup (though this is a simple demo)
+    // In a production app, you'd want to clear this when the filter is removed
+    (
+      filter as GodrayFilter & { _animationInterval?: NodeJS.Timeout }
+    )._animationInterval = animationInterval;
 
     return this.createEffectResult(filterChain, [filter], options);
   }
