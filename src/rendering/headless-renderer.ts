@@ -182,7 +182,9 @@ export class HeadlessRenderer implements ISliderRenderer {
 
   // Cleanup method
   // UI Panel Management (not implemented in headless mode)
-  async createUIPanel(_config: UIPanelConfig): Promise<import('pixi.js').Sprite> {
+  async createUIPanel(
+    _config: UIPanelConfig
+  ): Promise<import('pixi.js').Sprite> {
     const mockElement = document.createElement('div');
     return Promise.resolve({
       index: -1,
