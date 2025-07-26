@@ -29,6 +29,7 @@ import {
   BackdropBlurFilter,
   BevelFilter,
   BloomFilter,
+  BulgePinchFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -295,6 +296,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['3D buttons', 'raised surfaces', 'embossed text'],
       create: (options) => this.createBevelEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'bulgePinch',
+      category: 'distortion-advanced' as AdvancedEffectCategory,
+      description: 'Bulge and pinch distortion effects',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['lens distortion', 'magnification effects', 'warp distortion'],
+      create: (options) => this.createBulgePinchEffect(options),
     });
 
     // Modern Backdrop Blur Effect
@@ -1001,6 +1012,41 @@ export class AdvancedFilterPresets extends EffectPresets {
         thickness: settings.thickness,
         lightAlpha: settings.lightAlpha,
         shadowAlpha: settings.shadowAlpha,
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create BulgePinch effect for lens distortion
+   */
+  private createBulgePinchEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { strength: 0.3, center: [0.5, 0.5], radius: 200 },
+      moderate: { strength: 0.6, center: [0.5, 0.5], radius: 250 },
+      strong: { strength: 1.0, center: [0.5, 0.5], radius: 300 },
+      intense: { strength: 1.5, center: [0.5, 0.5], radius: 350 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    const filter = new BulgePinchFilter({
+      center: settings.center,
+      radius: settings.radius,
+      strength: settings.strength,
+    });
+
+    const filterChain = new FilterChain({ name: 'bulge-pinch-effect' });
+    filterChain.addFilter(filter, {
+      id: 'bulgePinch',
+      animated: true,
+      animationProperties: {
+        strength: settings.strength,
+        radius: settings.radius,
       },
       duration: options.duration,
       ease: options.ease,
