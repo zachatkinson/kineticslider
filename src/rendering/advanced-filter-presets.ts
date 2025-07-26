@@ -790,19 +790,48 @@ export class AdvancedFilterPresets extends EffectPresets {
     return this.createEffectResult(filterChain, [filter], options);
   }
 
+  /**
+   * Create CrossHatch effect - artistic sketch rendering
+   */
   private createCrosshatchEffect(
-    _options: Required<PresetOptions>
+    options: Required<PresetOptions>
   ): EffectPresetResult {
+    // CrossHatchFilter in PIXI v8 doesn't have many configurable properties
+    // We'll use a combination approach with alpha/blend modes for intensity
     const filter = new CrossHatchFilter();
+    
+    // Intensity affects the overall visibility of the effect
+    const intensityMap = {
+      subtle: { alpha: 0.3 },
+      moderate: { alpha: 0.5 },
+      strong: { alpha: 0.7 },
+      intense: { alpha: 1.0 },
+    };
+    const settings = intensityMap[options.intensity];
+
     const filterChain = new FilterChain({ name: 'crosshatch-effect' });
     filterChain.addFilter(filter, {
       id: 'crosshatch',
-      animated: false, // CrossHatch doesn't have animatable properties
-      duration: _options.duration,
-      ease: _options.ease,
+      animated: true,
+      animationProperties: {
+        // While CrossHatch itself doesn't have many properties,
+        // we can animate the overall filter alpha for a fade-in effect
+        alpha: settings.alpha,
+      },
+      duration: options.duration,
+      ease: options.ease,
+      onUpdate: (_progress) => {
+        // CrossHatch filter doesn't have direct alpha property
+        // The alpha is handled by the filter chain animation
+      },
     });
+    
+    debugLogger.info(
+      `CrossHatch effect created with intensity: ${options.intensity}`,
+      'FILTER_PRESETS'
+    );
 
-    return this.createEffectResult(filterChain, [filter], _options);
+    return this.createEffectResult(filterChain, [filter], options);
   }
 
   private createShockwaveEffect(

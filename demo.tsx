@@ -1051,6 +1051,20 @@ function KineticSliderDemo(): JSX.Element {
               Convolution
             </button>
             <button
+              onClick={() => handleApplyFilter('crosshatch')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#a855f7',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Cross Hatch
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',
