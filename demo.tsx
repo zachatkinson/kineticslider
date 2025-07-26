@@ -1037,6 +1037,20 @@ function KineticSliderDemo(): JSX.Element {
               Color Replace
             </button>
             <button
+              onClick={() => handleApplyFilter('convolution')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#84cc16',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Convolution
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

@@ -34,6 +34,7 @@ import {
   ColorMapFilter,
   ColorOverlayFilter,
   ColorReplaceFilter,
+  ConvolutionFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -354,6 +355,16 @@ export class AdvancedFilterPresets extends EffectPresets {
         'brand color updates',
       ],
       create: (options) => this.createColorReplaceEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'convolution',
+      category: 'artistic' as EffectCategory,
+      description: 'Custom convolution matrix effects',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['edge detection', 'sharpening', 'embossing'],
+      create: (options) => this.createConvolutionEffect(options),
     });
 
     // Modern Backdrop Blur Effect
@@ -1279,6 +1290,63 @@ export class AdvancedFilterPresets extends EffectPresets {
         filter.originalColor = 0xd9b94a;
         filter.targetColor = 0x00ff00;
         filter.tolerance = settings.tolerance;
+      },
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create Convolution effect
+   */
+  private createConvolutionEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    // Different convolution matrices for different intensities
+    const matrices = {
+      subtle: {
+        // Sharpen (subtle)
+        matrix: [0, -0.5, 0, -0.5, 3, -0.5, 0, -0.5, 0],
+        width: 3,
+        height: 3,
+      },
+      moderate: {
+        // Edge detection
+        matrix: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
+        width: 3,
+        height: 3,
+      },
+      strong: {
+        // Emboss
+        matrix: [-2, -1, 0, -1, 1, 1, 0, 1, 2],
+        width: 3,
+        height: 3,
+      },
+      intense: {
+        // Strong sharpen
+        matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0],
+        width: 3,
+        height: 3,
+      },
+    };
+
+    const settings = matrices[options.intensity];
+    const filter = new ConvolutionFilter(
+      settings.matrix,
+      settings.width,
+      settings.height
+    );
+
+    const filterChain = new FilterChain({ name: 'convolution-effect' });
+    filterChain.addFilter(filter, {
+      id: 'convolution',
+      animated: true,
+      animationProperties: {},
+      duration: options.duration,
+      ease: options.ease,
+      onUpdate: (_progress) => {
+        // Convolution matrices typically don't animate well
+        // Keep the effect static
       },
     });
 

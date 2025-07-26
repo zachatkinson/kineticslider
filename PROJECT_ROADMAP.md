@@ -223,6 +223,7 @@
 - **🗺️ ColorMapFilter** - Texture-based color mapping effects using external colormap.png for artistic color transformations
 - **🎨 ColorOverlayFilter** - Solid color overlay effects with configurable alpha blending for tinting and mood coloring
 - **🔄 ColorReplaceFilter** - Selective color replacement with configurable tolerance for precise color swapping
+- **🔢 ConvolutionFilter** - Custom convolution matrix effects for edge detection, sharpening, and embossing
 - **🔧 Filter System Integration** - Seamless integration with existing FilterManager and filter validation
 - **🎮 Interactive Testing** - Demo buttons for all new filters with proper color coding and organization
 - **📊 Performance Optimization** - Lightweight filter options for performance-focused applications
@@ -825,7 +826,7 @@ Build the **world's best slider component** - performant, accessible, and deligh
   - ✅ **ColorGradientFilter** - Color gradient overlay effects
   - [ ] **ColorMatrixFilter** - Advanced color manipulation
   - ✅ **ColorReplaceFilter** - Color replacement effects
-  - [ ] **ConvolutionFilter** - Custom convolution effects
+  - ✅ **ConvolutionFilter** - Custom convolution effects
   - ✅ **CrossHatchFilter** - Cross-hatch artistic effect
   - ✅ **CRTFilter** - CRT monitor simulation
   - [ ] **DisplacementFilter** - Displacement mapping (enhance existing)
