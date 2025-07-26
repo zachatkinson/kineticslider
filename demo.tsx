@@ -1202,6 +1202,20 @@ function KineticSliderDemo(): JSX.Element {
               HSL Adjust
             </button>
             <button
+              onClick={() => handleApplyFilter('motionBlur')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#7c3aed',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Motion Blur
+            </button>
+            <button
               onClick={() => handleApplyFilter('convolution')}
               style={{
                 padding: '0.5rem 1rem',

@@ -918,14 +918,23 @@ export class AdvancedFilterPresets extends EffectPresets {
     options: Required<PresetOptions>
   ): EffectPresetResult {
     const intensityMap = { subtle: 2, moderate: 4, strong: 8, intense: 16 };
-    const blur = intensityMap[options.intensity];
+    const strength = intensityMap[options.intensity];
 
-    const filter = new KawaseBlurFilter(blur, 3);
+    const filter = new KawaseBlurFilter({
+      clamp: false, // Default clamp
+      pixelSize: { x: 1, y: 1 }, // Default pixel size
+      quality: 3, // Default quality (integer > 1)
+      strength, // Blur amount scaled by intensity
+    });
+
+    // Set additional properties after creation (these are documented but not in constructor options)
+    filter.pixelSizeX = 1; // Default X pixel size
+    filter.pixelSizeY = 1; // Default Y pixel size
     const filterChain = new FilterChain({ name: 'kawase-blur-effect' });
     filterChain.addFilter(filter, {
       id: 'kawase-blur',
       animated: true,
-      animationProperties: { blur },
+      animationProperties: { strength },
       duration: options.duration,
       ease: options.ease,
     });
@@ -961,16 +970,18 @@ export class AdvancedFilterPresets extends EffectPresets {
     options: Required<PresetOptions>
   ): EffectPresetResult {
     const intensityMap = {
-      subtle: [10, 0],
-      moderate: [20, 0],
-      strong: [40, 0],
-      intense: [80, 0],
+      subtle: { x: 10, y: 0 },
+      moderate: { x: 20, y: 0 },
+      strong: { x: 40, y: 0 },
+      intense: { x: 80, y: 0 },
     };
-    const [velocityX, velocityY] = intensityMap[options.intensity];
+    const velocity = intensityMap[options.intensity];
 
     const filter = new MotionBlurFilter({
-      velocity: [velocityX, velocityY],
-      kernelSize: 15,
+      velocity, // Use PointData object format {x, y}
+      velocityX: velocity.x, // Add missing velocityX property
+      velocityY: velocity.y, // Add missing velocityY property
+      kernelSize: 5, // Use correct default value (5 instead of 15)
       offset: 0,
     });
 
