@@ -53,6 +53,7 @@ import {
   CrossHatchFilter,
   GodrayFilter,
   HslAdjustmentFilter,
+  ReflectionFilter,
 } from 'pixi-filters';
 
 /**
@@ -409,6 +410,17 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['depth effects', 'UI layering', 'focus effects'],
       create: (options) => this.createBackdropBlurEffect(options),
+    });
+
+    // Reflection Effect
+    this.registerAdvancedPreset({
+      name: 'reflection',
+      category: 'artistic' as EffectCategory,
+      description: 'Water reflection effect with animated waves',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['water effects', 'mirror reflections', 'artistic scenes'],
+      create: (options) => this.createReflectionEffect(options),
     });
   }
 
@@ -1013,11 +1025,11 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createRadialBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { 
+    const intensityMap = {
       subtle: { radius: -1, angle: 2, kernelSize: 5 },
       moderate: { radius: -1, angle: 4, kernelSize: 5 },
       strong: { radius: -1, angle: 6, kernelSize: 7 },
-      intense: { radius: -1, angle: 10, kernelSize: 9 }
+      intense: { radius: -1, angle: 10, kernelSize: 9 },
     };
     const settings = intensityMap[options.intensity];
 
@@ -1032,9 +1044,9 @@ export class AdvancedFilterPresets extends EffectPresets {
     filterChain.addFilter(filter, {
       id: 'radial-blur',
       animated: true,
-      animationProperties: { 
+      animationProperties: {
         radius: settings.radius,
-        angle: settings.angle * 2 // Animate to double the angle for motion effect
+        angle: settings.angle * 2, // Animate to double the angle for motion effect
       },
       duration: options.duration,
       ease: options.ease,
@@ -1803,6 +1815,99 @@ export class AdvancedFilterPresets extends EffectPresets {
             result.error
           );
         }
+      },
+    };
+  }
+
+  /**
+   * Create Reflection effect for water-like reflections
+   */
+  private createReflectionEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: {
+        amplitude: [0, 5],
+        waveLength: [30, 50],
+        alpha: [1, 0.8],
+        boundary: 0.5,
+      },
+      moderate: {
+        amplitude: [0, 10],
+        waveLength: [30, 70],
+        alpha: [1, 0.6],
+        boundary: 0.5,
+      },
+      strong: {
+        amplitude: [0, 15],
+        waveLength: [30, 90],
+        alpha: [1, 0.4],
+        boundary: 0.5,
+      },
+      intense: {
+        amplitude: [0, 20],
+        waveLength: [30, 100],
+        alpha: [1, 0.2],
+        boundary: 0.5,
+      },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create filter with minimal constructor options
+    const filter = new ReflectionFilter();
+    
+    // Set properties individually
+    // The types expect Range (Float32Array) but the filter works with arrays
+    Object.assign(filter, {
+      alpha: settings.alpha,
+      amplitude: settings.amplitude,
+      boundary: settings.boundary,
+      mirror: true,
+      time: 0,
+      waveLength: settings.waveLength,
+    });
+
+    const filterChain = new FilterChain({ name: 'reflection-effect' });
+
+    // Create continuous animation for water ripple effect
+    const startTime = Date.now();
+    const animationInterval = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      filter.time = elapsed * 2; // Animate water ripples
+    }, 16); // ~60fps
+
+    filterChain.addFilter(filter, {
+      id: 'reflection',
+      animated: true,
+      animationProperties: {
+        time: 10, // This will be overridden by the interval animation
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    // Store the interval for cleanup
+    (
+      filter as ReflectionFilter & { _animationInterval?: NodeJS.Timeout }
+    )._animationInterval = animationInterval;
+
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      cleanup: (): void => {
+        // Clear the animation interval
+        const filterWithInterval = filter as ReflectionFilter & {
+          _animationInterval?: NodeJS.Timeout;
+        };
+        if (filterWithInterval._animationInterval) {
+          clearInterval(filterWithInterval._animationInterval);
+        }
+        originalResult.cleanup();
       },
     };
   }

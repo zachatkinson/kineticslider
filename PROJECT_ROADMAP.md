@@ -851,7 +851,7 @@ Build the **world's best slider component** - performant, accessible, and deligh
   - ✅ **OutlineFilter** - Outline effects
   - ✅ **PixelateFilter** - Pixelation effect
   - ✅ **RadialBlurFilter** - Radial blur effects
-  - [ ] **ReflectionFilter** - Reflection effects
+  - ✅ **ReflectionFilter** - Reflection effects
   - ✅ **RGBSplitFilter** - RGB channel split effect
   - ✅ **ShockwaveFilter** - Shockwave distortion
   - [ ] **SimpleLightmapFilter** - Basic lighting effects

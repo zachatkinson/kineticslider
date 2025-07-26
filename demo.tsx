@@ -1374,6 +1374,20 @@ function KineticSliderDemo(): JSX.Element {
               Pixelate
             </button>
             <button
+              onClick={() => handleApplyFilter('reflection')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#0891b2',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Reflection
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',
