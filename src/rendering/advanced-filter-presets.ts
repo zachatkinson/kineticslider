@@ -32,6 +32,7 @@ import {
   BulgePinchFilter,
   ColorGradientFilter,
   ColorMapFilter,
+  ColorOverlayFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -328,6 +329,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['color grading', 'vintage effects', 'stylized rendering'],
       create: (options) => this.createColorMapEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'colorOverlay',
+      category: 'artistic' as EffectCategory,
+      description: 'Solid color overlay with alpha blending',
+      performanceImpact: 1,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['color tinting', 'mood effects', 'UI theming'],
+      create: (options) => this.createColorOverlayEffect(options),
     });
 
     // Modern Backdrop Blur Effect
@@ -1145,16 +1156,23 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Load the colormap texture asynchronously
     const loadColorMap = async (): Promise<void> => {
       try {
-        const colorMapTexture = await Assets.load('/images/colormap.png');
+        // Try loading from the correct path (Vite serves public folder from root)
+        const colorMapUrl = '/images/colormap.png';
+        debugLogger.debug(
+          `Attempting to load colormap from: ${colorMapUrl}`,
+          'FILTER_PRESETS'
+        );
+
+        const colorMapTexture = await Assets.load(colorMapUrl);
         filter.colorMap = colorMapTexture;
         filter.mix = settings.mix;
-        debugLogger.debug(
+        debugLogger.info(
           'ColorMap texture loaded successfully',
           'FILTER_PRESETS'
         );
       } catch (error) {
         debugLogger.error(
-          'Failed to load colormap texture',
+          'Failed to load colormap texture from /images/colormap.png',
           'FILTER_PRESETS',
           error
         );
@@ -1175,6 +1193,45 @@ export class AdvancedFilterPresets extends EffectPresets {
       },
       duration: options.duration,
       ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create ColorOverlay effect
+   */
+  private createColorOverlayEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { alpha: 0.2 },
+      moderate: { alpha: 0.4 },
+      strong: { alpha: 0.6 },
+      intense: { alpha: 0.8 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create filter with a nice blue color by default
+    const filter = new ColorOverlayFilter(0x4488ff, settings.alpha);
+
+    const filterChain = new FilterChain({ name: 'color-overlay-effect' });
+    filterChain.addFilter(filter, {
+      id: 'colorOverlay',
+      animated: true,
+      animationProperties: {
+        alpha: settings.alpha,
+      },
+      duration: options.duration,
+      ease: options.ease,
+      onUpdate: (progress) => {
+        // Animate color shift from blue to purple
+        const p = progress as unknown as number;
+        const r = Math.floor(0x44 + (0x88 - 0x44) * p);
+        const g = Math.floor(0x88 - (0x88 - 0x44) * p);
+        const b = 0xff;
+        filter.color = (r << 16) | (g << 8) | b;
+      },
     });
 
     return this.createEffectResult(filterChain, [filter], options);

@@ -1009,6 +1009,20 @@ function KineticSliderDemo(): JSX.Element {
               Color Map
             </button>
             <button
+              onClick={() => handleApplyFilter('colorOverlay')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#06b6d4',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Color Overlay
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',
