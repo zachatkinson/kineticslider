@@ -293,6 +293,8 @@ function KineticSliderDemo(): JSX.Element {
   const [controlPanelGlowEnabled, setControlPanelGlowEnabled] = useState(false);
   const [infoPanelBevelEnabled, setInfoPanelBevelEnabled] = useState(false);
   const [controlPanelBevelEnabled, setControlPanelBevelEnabled] = useState(false);
+  const [infoPanelOutlineEnabled, setInfoPanelOutlineEnabled] = useState(false);
+  const [controlPanelOutlineEnabled, setControlPanelOutlineEnabled] = useState(false);
   const [infoPanelVisible, setInfoPanelVisible] = useState(false);
   const [controlPanelVisible, setControlPanelVisible] = useState(false);
 
@@ -392,20 +394,42 @@ function KineticSliderDemo(): JSX.Element {
             }
           }
 
+          // Apply outline filter if enabled
+          if (infoPanelOutlineEnabled && panel && sliderEngine.current) {
+            try {
+              const renderer = sliderEngine.current.getRenderer();
+              if (renderer && 'applyFilter' in renderer) {
+                const { OutlineFilter } = await import('pixi-filters');
+                const outlineFilter = new OutlineFilter({
+                  thickness: 2, // Nice visible outline
+                  color: 0xffffff, // White outline
+                  alpha: 1, // Full opacity
+                  knockout: false, // Show content with outline
+                  quality: 0.1, // Default quality
+                });
+                
+                (renderer as ISliderRenderer).applyFilter(panel, outlineFilter);
+              }
+            } catch (filterError) {
+              console.warn('Could not apply outline to info panel:', filterError);
+            }
+          }
+
           const blurText = infoPanelBlurEnabled ? 'with backdrop blur' : 'without backdrop blur';
           const shadowText = infoPanelDropShadowEnabled ? 'with drop shadow' : 'without drop shadow';
           const glowText = infoPanelGlowEnabled ? 'with glow' : 'without glow';
           const bevelText = infoPanelBevelEnabled ? 'with bevel' : 'without bevel';
+          const outlineText = infoPanelOutlineEnabled ? 'with outline' : 'without outline';
           setState((prev) => ({
             ...prev,
-            announcements: `Info panel ${blurText}, ${shadowText}, ${glowText}, and ${bevelText} shown`,
+            announcements: `Info panel ${blurText}, ${shadowText}, ${glowText}, ${bevelText}, and ${outlineText} shown`,
           }));
         }
       } catch (error) {
         console.error('Failed to create info panel:', error);
       }
     }
-  }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled]);
+  }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled, infoPanelOutlineEnabled]);
 
   const handleShowInfoPanel = useCallback(async () => {
     await createInfoPanel();
@@ -508,20 +532,42 @@ function KineticSliderDemo(): JSX.Element {
             }
           }
 
+          // Apply outline filter if enabled
+          if (controlPanelOutlineEnabled && panel && sliderEngine.current) {
+            try {
+              const renderer = sliderEngine.current.getRenderer();
+              if (renderer && 'applyFilter' in renderer) {
+                const { OutlineFilter } = await import('pixi-filters');
+                const outlineFilter = new OutlineFilter({
+                  thickness: 2, // Nice visible outline
+                  color: 0xffffff, // White outline
+                  alpha: 1, // Full opacity
+                  knockout: false, // Show content with outline
+                  quality: 0.1, // Default quality
+                });
+                
+                (renderer as ISliderRenderer).applyFilter(panel, outlineFilter);
+              }
+            } catch (filterError) {
+              console.warn('Could not apply outline to control panel:', filterError);
+            }
+          }
+
           const blurText = controlPanelBlurEnabled ? 'with backdrop blur' : 'without backdrop blur';
           const shadowText = controlPanelDropShadowEnabled ? 'with drop shadow' : 'without drop shadow';
           const glowText = controlPanelGlowEnabled ? 'with glow' : 'without glow';
           const bevelText = controlPanelBevelEnabled ? 'with bevel' : 'without bevel';
+          const outlineText = controlPanelOutlineEnabled ? 'with outline' : 'without outline';
           setState((prev) => ({
             ...prev,
-            announcements: `Control panel ${blurText}, ${shadowText}, ${glowText}, and ${bevelText} shown`,
+            announcements: `Control panel ${blurText}, ${shadowText}, ${glowText}, ${bevelText}, and ${outlineText} shown`,
           }));
         }
       } catch (error) {
         console.error('Failed to create control panel:', error);
       }
     }
-  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled]);
+  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled, controlPanelOutlineEnabled]);
 
 
   const handleShowControlPanel = useCallback(async () => {
@@ -553,13 +599,13 @@ function KineticSliderDemo(): JSX.Element {
     if (infoPanelVisible) {
       createInfoPanel();
     }
-  }, [infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled, createInfoPanel, infoPanelVisible]);
+  }, [infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled, infoPanelOutlineEnabled, createInfoPanel, infoPanelVisible]);
 
   useEffect(() => {
     if (controlPanelVisible) {
       createControlPanel();
     }
-  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled, createControlPanel, controlPanelVisible]);
+  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled, controlPanelOutlineEnabled, createControlPanel, controlPanelVisible]);
 
   // Keyboard navigation is now handled by KeyboardNavigator class
 
@@ -1476,6 +1522,34 @@ function KineticSliderDemo(): JSX.Element {
               }}
             >
               Control Bevel: {controlPanelBevelEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setInfoPanelOutlineEnabled(!infoPanelOutlineEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: infoPanelOutlineEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Info Outline: {infoPanelOutlineEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setControlPanelOutlineEnabled(!controlPanelOutlineEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: controlPanelOutlineEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Control Outline: {controlPanelOutlineEnabled ? 'ON' : 'OFF'}
             </button>
             <button
               onClick={handleClearUIPanels}

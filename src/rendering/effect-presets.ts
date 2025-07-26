@@ -579,10 +579,10 @@ export class EffectPresets {
 
     // Create vintage using proper OldFilmFilter with enhanced scratch/noise effects
     const oldFilmFilter = new OldFilmFilter({
-      noise: 0.1 + (0.1 * intensity), // Much more subtle noise: 0.1-0.2 range
+      noise: 0.1 + 0.1 * intensity, // Much more subtle noise: 0.1-0.2 range
       noiseSize: 1, // PIXI default
-      scratch: 0.6 + (0.4 * intensity), // Enhanced scratches: 0.6-1.0 range for more visible scratches
-      scratchDensity: 0.4 + (0.3 * intensity), // Enhanced scratch density: 0.4-0.7 range
+      scratch: 0.6 + 0.4 * intensity, // Enhanced scratches: 0.6-1.0 range for more visible scratches
+      scratchDensity: 0.4 + 0.3 * intensity, // Enhanced scratch density: 0.4-0.7 range
       scratchWidth: 1, // PIXI default
       seed: Math.random(), // Random seed for varying effects
       sepia: 0.3 * intensity, // Keep sepia as before
@@ -595,9 +595,8 @@ export class EffectPresets {
     filterChain.addFilter(oldFilmFilter, {
       id: 'oldFilm',
       animationProperties: {
-        seed: 'random', // Animate seed for continuous film grain effect
-        noise: 0.1 + (0.1 * intensity), // Much more subtle noise
-        scratch: 0.6 + (0.4 * intensity), // Animate scratches
+        noise: 0.1 + 0.1 * intensity, // Much more subtle noise
+        scratch: 0.6 + 0.4 * intensity, // Animate scratches
       },
       duration: options.duration,
       ease: options.ease,
@@ -605,7 +604,7 @@ export class EffectPresets {
 
     // Create continuous animation timeline for authentic vintage film feel
     const timeline = gsap.timeline({ repeat: -1 });
-    
+
     // Continuously change seed every 0.1 seconds for flickering film grain
     timeline.to(oldFilmFilter, {
       duration: 0.1,
@@ -617,22 +616,30 @@ export class EffectPresets {
     });
 
     // Vary noise intensity every 0.3 seconds
-    timeline.to(oldFilmFilter, {
-      duration: 0.3,
-      noise: 0.08 + (0.12 * intensity), // Much more subtle noise animation
-      ease: 'power2.inOut',
-      repeat: -1,
-      yoyo: true,
-    }, 0);
+    timeline.to(
+      oldFilmFilter,
+      {
+        duration: 0.3,
+        noise: 0.08 + 0.12 * intensity, // Much more subtle noise animation
+        ease: 'power2.inOut',
+        repeat: -1,
+        yoyo: true,
+      },
+      0
+    );
 
     // Vary scratch intensity every 0.5 seconds
-    timeline.to(oldFilmFilter, {
-      duration: 0.5,
-      scratch: 0.5 + (0.5 * intensity),
-      ease: 'power2.inOut',
-      repeat: -1,
-      yoyo: true,
-    }, 0);
+    timeline.to(
+      oldFilmFilter,
+      {
+        duration: 0.5,
+        scratch: 0.5 + 0.5 * intensity,
+        ease: 'power2.inOut',
+        repeat: -1,
+        yoyo: true,
+      },
+      0
+    );
 
     const filters = [oldFilmFilter];
 
