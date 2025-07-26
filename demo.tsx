@@ -289,6 +289,10 @@ function KineticSliderDemo(): JSX.Element {
   const [controlPanelBlurEnabled, setControlPanelBlurEnabled] = useState(true);
   const [infoPanelDropShadowEnabled, setInfoPanelDropShadowEnabled] = useState(false);
   const [controlPanelDropShadowEnabled, setControlPanelDropShadowEnabled] = useState(false);
+  const [infoPanelGlowEnabled, setInfoPanelGlowEnabled] = useState(false);
+  const [controlPanelGlowEnabled, setControlPanelGlowEnabled] = useState(false);
+  const [infoPanelBevelEnabled, setInfoPanelBevelEnabled] = useState(false);
+  const [controlPanelBevelEnabled, setControlPanelBevelEnabled] = useState(false);
   const [infoPanelVisible, setInfoPanelVisible] = useState(false);
   const [controlPanelVisible, setControlPanelVisible] = useState(false);
 
@@ -343,18 +347,63 @@ function KineticSliderDemo(): JSX.Element {
             }
           }
 
+          // Apply glow filter if enabled
+          if (infoPanelGlowEnabled && panel && sliderEngine.current) {
+            try {
+              const renderer = sliderEngine.current.getRenderer();
+              if (renderer && 'applyFilter' in renderer) {
+                const { GlowFilter } = await import('pixi-filters');
+                const glowFilter = new GlowFilter({
+                  distance: 10,
+                  outerStrength: 2,
+                  innerStrength: 1,
+                  color: 0xffffff,
+                  quality: 0.5,
+                });
+                
+                (renderer as ISliderRenderer).applyFilter(panel, glowFilter);
+              }
+            } catch (filterError) {
+              console.warn('Could not apply glow to info panel:', filterError);
+            }
+          }
+
+          // Apply bevel filter if enabled
+          if (infoPanelBevelEnabled && panel && sliderEngine.current) {
+            try {
+              const renderer = sliderEngine.current.getRenderer();
+              if (renderer && 'applyFilter' in renderer) {
+                const { BevelFilter } = await import('pixi-filters');
+                const bevelFilter = new BevelFilter({
+                  rotation: 45,
+                  thickness: 4,
+                  lightColor: 0xffffff,
+                  lightAlpha: 0.8,
+                  shadowColor: 0x000000,
+                  shadowAlpha: 0.8,
+                });
+                
+                (renderer as ISliderRenderer).applyFilter(panel, bevelFilter);
+              }
+            } catch (filterError) {
+              console.warn('Could not apply bevel to info panel:', filterError);
+            }
+          }
+
           const blurText = infoPanelBlurEnabled ? 'with backdrop blur' : 'without backdrop blur';
           const shadowText = infoPanelDropShadowEnabled ? 'with drop shadow' : 'without drop shadow';
+          const glowText = infoPanelGlowEnabled ? 'with glow' : 'without glow';
+          const bevelText = infoPanelBevelEnabled ? 'with bevel' : 'without bevel';
           setState((prev) => ({
             ...prev,
-            announcements: `Info panel ${blurText} and ${shadowText} shown`,
+            announcements: `Info panel ${blurText}, ${shadowText}, ${glowText}, and ${bevelText} shown`,
           }));
         }
       } catch (error) {
         console.error('Failed to create info panel:', error);
       }
     }
-  }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled, infoPanelDropShadowEnabled]);
+  }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled]);
 
   const handleShowInfoPanel = useCallback(async () => {
     await createInfoPanel();
@@ -412,18 +461,63 @@ function KineticSliderDemo(): JSX.Element {
             }
           }
 
+          // Apply glow filter if enabled
+          if (controlPanelGlowEnabled && panel && sliderEngine.current) {
+            try {
+              const renderer = sliderEngine.current.getRenderer();
+              if (renderer && 'applyFilter' in renderer) {
+                const { GlowFilter } = await import('pixi-filters');
+                const glowFilter = new GlowFilter({
+                  distance: 8,
+                  outerStrength: 1.5,
+                  innerStrength: 0.8,
+                  color: 0xffffff,
+                  quality: 0.5,
+                });
+                
+                (renderer as ISliderRenderer).applyFilter(panel, glowFilter);
+              }
+            } catch (filterError) {
+              console.warn('Could not apply glow to control panel:', filterError);
+            }
+          }
+
+          // Apply bevel filter if enabled
+          if (controlPanelBevelEnabled && panel && sliderEngine.current) {
+            try {
+              const renderer = sliderEngine.current.getRenderer();
+              if (renderer && 'applyFilter' in renderer) {
+                const { BevelFilter } = await import('pixi-filters');
+                const bevelFilter = new BevelFilter({
+                  rotation: 45,
+                  thickness: 3,
+                  lightColor: 0xffffff,
+                  lightAlpha: 0.7,
+                  shadowColor: 0x000000,
+                  shadowAlpha: 0.7,
+                });
+                
+                (renderer as ISliderRenderer).applyFilter(panel, bevelFilter);
+              }
+            } catch (filterError) {
+              console.warn('Could not apply bevel to control panel:', filterError);
+            }
+          }
+
           const blurText = controlPanelBlurEnabled ? 'with backdrop blur' : 'without backdrop blur';
           const shadowText = controlPanelDropShadowEnabled ? 'with drop shadow' : 'without drop shadow';
+          const glowText = controlPanelGlowEnabled ? 'with glow' : 'without glow';
+          const bevelText = controlPanelBevelEnabled ? 'with bevel' : 'without bevel';
           setState((prev) => ({
             ...prev,
-            announcements: `Control panel ${blurText} and ${shadowText} shown`,
+            announcements: `Control panel ${blurText}, ${shadowText}, ${glowText}, and ${bevelText} shown`,
           }));
         }
       } catch (error) {
         console.error('Failed to create control panel:', error);
       }
     }
-  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled]);
+  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled]);
 
 
   const handleShowControlPanel = useCallback(async () => {
@@ -455,13 +549,13 @@ function KineticSliderDemo(): JSX.Element {
     if (infoPanelVisible) {
       createInfoPanel();
     }
-  }, [infoPanelBlurEnabled, infoPanelDropShadowEnabled, createInfoPanel, infoPanelVisible]);
+  }, [infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled, createInfoPanel, infoPanelVisible]);
 
   useEffect(() => {
     if (controlPanelVisible) {
       createControlPanel();
     }
-  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, createControlPanel, controlPanelVisible]);
+  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled, createControlPanel, controlPanelVisible]);
 
   // Keyboard navigation is now handled by KeyboardNavigator class
 
@@ -880,20 +974,6 @@ function KineticSliderDemo(): JSX.Element {
               Blur
             </button>
             <button
-              onClick={() => handleApplyFilter('softGlow')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Glow
-            </button>
-            <button
               onClick={() => handleApplyFilter('blackAndWhite')}
               style={{
                 padding: '0.5rem 1rem',
@@ -1004,20 +1084,6 @@ function KineticSliderDemo(): JSX.Element {
               }}
             >
               Kawase Blur
-            </button>
-            <button
-              onClick={() => handleApplyFilter('bevel')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#f59e0b',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Bevel
             </button>
             <button
               onClick={() => handleApplyFilter('bulgePinch')}
@@ -1266,6 +1332,62 @@ function KineticSliderDemo(): JSX.Element {
               }}
             >
               Control Shadow: {controlPanelDropShadowEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setInfoPanelGlowEnabled(!infoPanelGlowEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: infoPanelGlowEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Info Glow: {infoPanelGlowEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setControlPanelGlowEnabled(!controlPanelGlowEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: controlPanelGlowEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Control Glow: {controlPanelGlowEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setInfoPanelBevelEnabled(!infoPanelBevelEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: infoPanelBevelEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Info Bevel: {infoPanelBevelEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setControlPanelBevelEnabled(!controlPanelBevelEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: controlPanelBevelEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Control Bevel: {controlPanelBevelEnabled ? 'ON' : 'OFF'}
             </button>
             <button
               onClick={handleClearUIPanels}
