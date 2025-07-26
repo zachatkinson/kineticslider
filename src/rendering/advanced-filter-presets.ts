@@ -8,7 +8,7 @@
  */
 
 import { gsap } from 'gsap';
-import { Filter, Sprite, Container } from 'pixi.js';
+import { Filter, Sprite, Container, Assets, Texture } from 'pixi.js';
 import { FilterChain } from './filter-chain';
 import { FilterManager } from './filter-manager';
 import { debugLogger } from '../utils/debug-logger';
@@ -31,6 +31,7 @@ import {
   BloomFilter,
   BulgePinchFilter,
   ColorGradientFilter,
+  ColorMapFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -317,6 +318,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['mood tinting', 'color overlays', 'atmospheric effects'],
       create: (options) => this.createColorGradientEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'colorMap',
+      category: 'artistic' as EffectCategory,
+      description: 'Color remapping using texture-based color lookup',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['color grading', 'vintage effects', 'stylized rendering'],
+      create: (options) => this.createColorMapEffect(options),
     });
 
     // Modern Backdrop Blur Effect
@@ -1086,7 +1097,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Set properties directly - use simple red to blue gradient
     filter.stops = [
       { offset: 0, color: 0xff4444, alpha: settings.alpha },
-      { offset: 1, color: 0x4444ff, alpha: settings.alpha }
+      { offset: 1, color: 0x4444ff, alpha: settings.alpha },
     ];
     filter.type = 0; // 0 = linear
 
@@ -1095,6 +1106,73 @@ export class AdvancedFilterPresets extends EffectPresets {
       id: 'colorGradient',
       animated: true,
       animationProperties: {},
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create ColorMap effect using colormap texture
+   */
+  private createColorMapEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { mix: 0.3 },
+      moderate: { mix: 0.6 },
+      strong: { mix: 0.8 },
+      intense: { mix: 1.0 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create filter with a temporary 1x1 texture initially
+    const tempTexture =
+      Assets.cache.get('__empty') ||
+      (() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, 1, 1);
+        }
+        return Assets.cache.set('__empty', Texture.from(canvas));
+      })();
+    const filter = new ColorMapFilter({ colorMap: tempTexture });
+
+    // Load the colormap texture asynchronously
+    const loadColorMap = async (): Promise<void> => {
+      try {
+        const colorMapTexture = await Assets.load('/images/colormap.png');
+        filter.colorMap = colorMapTexture;
+        filter.mix = settings.mix;
+        debugLogger.debug(
+          'ColorMap texture loaded successfully',
+          'FILTER_PRESETS'
+        );
+      } catch (error) {
+        debugLogger.error(
+          'Failed to load colormap texture',
+          'FILTER_PRESETS',
+          error
+        );
+        // Set a reasonable mix value even without texture
+        filter.mix = settings.mix;
+      }
+    };
+
+    // Start loading the texture
+    loadColorMap();
+
+    const filterChain = new FilterChain({ name: 'color-map-effect' });
+    filterChain.addFilter(filter, {
+      id: 'colorMap',
+      animated: true,
+      animationProperties: {
+        mix: settings.mix,
+      },
       duration: options.duration,
       ease: options.ease,
     });

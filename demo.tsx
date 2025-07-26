@@ -995,6 +995,20 @@ function KineticSliderDemo(): JSX.Element {
               Color Gradient
             </button>
             <button
+              onClick={() => handleApplyFilter('colorMap')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Color Map
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

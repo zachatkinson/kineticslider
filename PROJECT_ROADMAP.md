@@ -220,6 +220,7 @@
 - **💫 BloomFilter** - Fast bloom effect (performance impact: 2) alongside existing AdvancedBloomFilter (impact: 4)
 - **🌀 BulgePinchFilter** - Lens distortion effects with configurable strength and radius for magnification and warp effects
 - **🎨 ColorGradientFilter** - Color gradient overlay effects with configurable stops and alpha for mood tinting
+- **🗺️ ColorMapFilter** - Texture-based color mapping effects using external colormap.png for artistic color transformations
 - **🔧 Filter System Integration** - Seamless integration with existing FilterManager and filter validation
 - **🎮 Interactive Testing** - Demo buttons for all new filters with proper color coding and organization
 - **📊 Performance Optimization** - Lightweight filter options for performance-focused applications
