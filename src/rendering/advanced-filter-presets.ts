@@ -913,17 +913,18 @@ export class AdvancedFilterPresets extends EffectPresets {
     options: Required<PresetOptions>
   ): EffectPresetResult {
     const intensityMap = {
-      subtle: [3, -3],
-      moderate: [5, -5],
-      strong: [10, -10],
-      intense: [20, -20],
+      subtle: { redX: -3, greenY: 3, blueX: 3 },
+      moderate: { redX: -5, greenY: 5, blueX: 5 },
+      strong: { redX: -10, greenY: 10, blueX: 10 },
+      intense: { redX: -20, greenY: 20, blueX: 20 },
     };
-    const [redX, blueX] = intensityMap[options.intensity];
+    const settings = intensityMap[options.intensity];
 
-    const filter = new RGBSplitFilter();
-    filter.red = [redX, 0];
-    filter.green = [0, 0];
-    filter.blue = [blueX, 0];
+    const filter = new RGBSplitFilter({
+      red: { x: settings.redX, y: 0 },
+      green: { x: 0, y: settings.greenY },
+      blue: { x: settings.blueX, y: 0 },
+    });
 
     const filterChain = new FilterChain({ name: 'rgbsplit-effect' });
     filterChain.addFilter(filter, {
@@ -1855,7 +1856,7 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     // Create filter with minimal constructor options
     const filter = new ReflectionFilter();
-    
+
     // Set properties individually
     // The types expect Range (Float32Array) but the filter works with arrays
     Object.assign(filter, {

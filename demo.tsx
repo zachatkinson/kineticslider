@@ -1178,6 +1178,20 @@ function KineticSliderDemo(): JSX.Element {
               Glitch
             </button>
             <button
+              onClick={() => handleApplyFilter('rgbSplit')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#ec4899',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              RGB Split
+            </button>
+            <button
               onClick={() => handleApplyFilter('godray')}
               style={{
                 padding: '0.5rem 1rem',
