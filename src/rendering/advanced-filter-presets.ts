@@ -27,6 +27,7 @@ import {
   AdjustmentFilter,
   AsciiFilter,
   BackdropBlurFilter,
+  BevelFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -273,6 +274,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['atmospheric lighting', 'divine effects', 'volumetric light'],
       create: (options) => this.createGodrayEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'bevel',
+      category: 'artistic' as EffectCategory,
+      description: '3D bevel effect with lighting and shadows',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['3D buttons', 'raised surfaces', 'embossed text'],
+      create: (options) => this.createBevelEffect(options),
     });
 
     // Modern Backdrop Blur Effect
@@ -913,6 +924,45 @@ export class AdvancedFilterPresets extends EffectPresets {
         filterChain.removeFrom(target, true);
       },
     };
+  }
+
+  /**
+   * Create Bevel effect for 3D appearance
+   */
+  private createBevelEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { thickness: 2, lightAlpha: 0.7, shadowAlpha: 0.7 },
+      moderate: { thickness: 4, lightAlpha: 0.8, shadowAlpha: 0.8 },
+      strong: { thickness: 6, lightAlpha: 0.9, shadowAlpha: 0.9 },
+      intense: { thickness: 10, lightAlpha: 1.0, shadowAlpha: 1.0 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    const filter = new BevelFilter({
+      rotation: 45, // Light angle in degrees
+      thickness: settings.thickness,
+      lightColor: 0xffffff,
+      lightAlpha: settings.lightAlpha,
+      shadowColor: 0x000000,
+      shadowAlpha: settings.shadowAlpha,
+    });
+
+    const filterChain = new FilterChain({ name: 'bevel-effect' });
+    filterChain.addFilter(filter, {
+      id: 'bevel',
+      animated: true,
+      animationProperties: {
+        thickness: settings.thickness,
+        lightAlpha: settings.lightAlpha,
+        shadowAlpha: settings.shadowAlpha,
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
   }
 
   /**
