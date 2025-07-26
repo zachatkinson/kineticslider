@@ -33,6 +33,7 @@ import {
   ColorGradientFilter,
   ColorMapFilter,
   ColorOverlayFilter,
+  ColorReplaceFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -339,6 +340,20 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['color tinting', 'mood effects', 'UI theming'],
       create: (options) => this.createColorOverlayEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'colorReplace',
+      category: 'artistic' as EffectCategory,
+      description: 'Replace specific colors with tolerance control',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: [
+        'color correction',
+        'selective recoloring',
+        'brand color updates',
+      ],
+      create: (options) => this.createColorReplaceEffect(options),
     });
 
     // Modern Backdrop Blur Effect
@@ -1152,20 +1167,27 @@ export class AdvancedFilterPresets extends EffectPresets {
       ctx.fillRect(0, 0, 256, 256);
     }
     const initialTexture = Texture.from(canvas);
-    
-    const filter = new ColorMapFilter({ 
+
+    const filter = new ColorMapFilter({
       colorMap: initialTexture,
-      mix: settings.mix 
+      mix: settings.mix,
     });
 
     // Load the actual colormap texture asynchronously and replace
     Assets.load('/images/colormap.png')
       .then((colorMapTexture) => {
         filter.colorMap = colorMapTexture;
-        debugLogger.info('ColorMap texture loaded and applied', 'FILTER_PRESETS');
+        debugLogger.info(
+          'ColorMap texture loaded and applied',
+          'FILTER_PRESETS'
+        );
       })
       .catch((error) => {
-        debugLogger.warn('Failed to load colormap.png, using default gradient', 'FILTER_PRESETS', error);
+        debugLogger.warn(
+          'Failed to load colormap.png, using default gradient',
+          'FILTER_PRESETS',
+          error
+        );
       });
 
     const filterChain = new FilterChain({ name: 'color-map-effect' });
@@ -1215,6 +1237,48 @@ export class AdvancedFilterPresets extends EffectPresets {
         const g = Math.floor(0x88 - (0x88 - 0x44) * p);
         const b = 0xff;
         filter.color = (r << 16) | (g << 8) | b;
+      },
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create ColorReplace effect
+   */
+  private createColorReplaceEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { tolerance: 0.1 },
+      moderate: { tolerance: 0.3 },
+      strong: { tolerance: 0.5 },
+      intense: { tolerance: 0.8 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Replace the specific color #D9B94A with lime green
+    const filter = new ColorReplaceFilter({
+      originalColor: 0xd9b94a, // #D9B94A (golden/beige color)
+      targetColor: 0x00ff00, // Lime green
+      tolerance: settings.tolerance,
+    });
+
+    const filterChain = new FilterChain({ name: 'color-replace-effect' });
+    filterChain.addFilter(filter, {
+      id: 'colorReplace',
+      animated: true,
+      animationProperties: {
+        tolerance: settings.tolerance,
+      },
+      duration: options.duration,
+      ease: options.ease,
+      onUpdate: (_progress) => {
+        // Keep the color replacement static - no animation
+        // This ensures the effect persists after animation completes
+        filter.originalColor = 0xd9b94a;
+        filter.targetColor = 0x00ff00;
+        filter.tolerance = settings.tolerance;
       },
     });
 
