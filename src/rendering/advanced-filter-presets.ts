@@ -1138,51 +1138,35 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
-    // Create filter with a temporary 1x1 texture initially
-    const tempTexture =
-      Assets.cache.get('__empty') ||
-      (() => {
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = 1;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.fillStyle = '#000';
-          ctx.fillRect(0, 0, 1, 1);
-        }
-        return Assets.cache.set('__empty', Texture.from(canvas));
-      })();
-    const filter = new ColorMapFilter({ colorMap: tempTexture });
+    // Create a simple canvas texture as initial colorMap (1x1 gradient)
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      // Create a simple gradient as initial colormap
+      const gradient = ctx.createLinearGradient(0, 0, 256, 0);
+      gradient.addColorStop(0, '#ff0000');
+      gradient.addColorStop(0.5, '#00ff00');
+      gradient.addColorStop(1, '#0000ff');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 256, 256);
+    }
+    const initialTexture = Texture.from(canvas);
+    
+    const filter = new ColorMapFilter({ 
+      colorMap: initialTexture,
+      mix: settings.mix 
+    });
 
-    // Load the colormap texture asynchronously
-    const loadColorMap = async (): Promise<void> => {
-      try {
-        // Try loading from the correct path (Vite serves public folder from root)
-        const colorMapUrl = '/images/colormap.png';
-        debugLogger.debug(
-          `Attempting to load colormap from: ${colorMapUrl}`,
-          'FILTER_PRESETS'
-        );
-
-        const colorMapTexture = await Assets.load(colorMapUrl);
+    // Load the actual colormap texture asynchronously and replace
+    Assets.load('/images/colormap.png')
+      .then((colorMapTexture) => {
         filter.colorMap = colorMapTexture;
-        filter.mix = settings.mix;
-        debugLogger.info(
-          'ColorMap texture loaded successfully',
-          'FILTER_PRESETS'
-        );
-      } catch (error) {
-        debugLogger.error(
-          'Failed to load colormap texture from /images/colormap.png',
-          'FILTER_PRESETS',
-          error
-        );
-        // Set a reasonable mix value even without texture
-        filter.mix = settings.mix;
-      }
-    };
-
-    // Start loading the texture
-    loadColorMap();
+        debugLogger.info('ColorMap texture loaded and applied', 'FILTER_PRESETS');
+      })
+      .catch((error) => {
+        debugLogger.warn('Failed to load colormap.png, using default gradient', 'FILTER_PRESETS', error);
+      });
 
     const filterChain = new FilterChain({ name: 'color-map-effect' });
     filterChain.addFilter(filter, {
