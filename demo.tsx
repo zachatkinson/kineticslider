@@ -981,6 +981,20 @@ function KineticSliderDemo(): JSX.Element {
               Bulge Pinch
             </button>
             <button
+              onClick={() => handleApplyFilter('colorGradient')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#7c3aed',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Color Gradient
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

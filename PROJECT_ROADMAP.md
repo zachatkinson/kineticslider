@@ -218,7 +218,9 @@
 ### **✅ EXPANDED FILTER LIBRARY:**
 - **🎯 BevelFilter** - 3D bevel effects with configurable thickness, lighting, and shadows for raised surfaces
 - **💫 BloomFilter** - Fast bloom effect (performance impact: 2) alongside existing AdvancedBloomFilter (impact: 4)
-- **🎨 Filter System Integration** - Seamless integration with existing FilterManager and filter validation
+- **🌀 BulgePinchFilter** - Lens distortion effects with configurable strength and radius for magnification and warp effects
+- **🎨 ColorGradientFilter** - Color gradient overlay effects with configurable stops and alpha for mood tinting
+- **🔧 Filter System Integration** - Seamless integration with existing FilterManager and filter validation
 - **🎮 Interactive Testing** - Demo buttons for all new filters with proper color coding and organization
 - **📊 Performance Optimization** - Lightweight filter options for performance-focused applications
 
@@ -816,7 +818,8 @@ Build the **world's best slider component** - performant, accessible, and deligh
   - ✅ **BevelFilter** - 3D bevel effects  
   - ✅ **BloomFilter** - Bloom lighting effects
   - [ ] **BlurFilter** - Standard blur effects
-  - [ ] **BulgePinchFilter** - Bulge and pinch distortion
+  - ✅ **BulgePinchFilter** - Bulge and pinch distortion
+  - ✅ **ColorGradientFilter** - Color gradient overlay effects
   - [ ] **ColorMatrixFilter** - Advanced color manipulation
   - [ ] **ColorReplaceFilter** - Color replacement effects
   - [ ] **ConvolutionFilter** - Custom convolution effects

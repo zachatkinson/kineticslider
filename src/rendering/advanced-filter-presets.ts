@@ -30,6 +30,7 @@ import {
   BevelFilter,
   BloomFilter,
   BulgePinchFilter,
+  ColorGradientFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -306,6 +307,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['lens distortion', 'magnification effects', 'warp distortion'],
       create: (options) => this.createBulgePinchEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'colorGradient',
+      category: 'artistic' as EffectCategory,
+      description: 'Color gradient overlay effects',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['mood tinting', 'color overlays', 'atmospheric effects'],
+      create: (options) => this.createColorGradientEffect(options),
     });
 
     // Modern Backdrop Blur Effect
@@ -1049,6 +1060,41 @@ export class AdvancedFilterPresets extends EffectPresets {
         strength: settings.strength,
         radius: settings.radius,
       },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create ColorGradient effect for color overlay effects
+   */
+  private createColorGradientEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { alpha: 0.3 },
+      moderate: { alpha: 0.5 },
+      strong: { alpha: 0.7 },
+      intense: { alpha: 0.9 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Use the simpler constructor approach for ColorGradientFilter
+    const filter = new ColorGradientFilter();
+    // Set properties directly - use simple red to blue gradient
+    filter.stops = [
+      { offset: 0, color: 0xff4444, alpha: settings.alpha },
+      { offset: 1, color: 0x4444ff, alpha: settings.alpha }
+    ];
+    filter.type = 0; // 0 = linear
+
+    const filterChain = new FilterChain({ name: 'color-gradient-effect' });
+    filterChain.addFilter(filter, {
+      id: 'colorGradient',
+      animated: true,
+      animationProperties: {},
       duration: options.duration,
       ease: options.ease,
     });
