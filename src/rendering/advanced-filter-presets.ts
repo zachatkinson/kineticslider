@@ -664,23 +664,118 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     const filter = new GlitchFilter({
       slices,
-      offset: 10,
+      offset: 15,
       direction: 0,
       fillMode: 0,
       seed: Math.random(),
     });
 
     const filterChain = new FilterChain({ name: 'glitch-effect' });
+    
+    // Create random glitch bursts like satellite/space camera feed
+    let nextGlitchTime = Date.now() + (Math.random() * 7500 + 1500); // First glitch in 1.5-9 seconds
+    let isGlitching = false;
+    let glitchEndTime = 0;
+    let glitchIntensity = 1; // Current burst intensity multiplier
+    let hasResidualGlitch = false;
+    let residualOffset = 0;
+    let residualSlices = slices;
+    
     filterChain.addFilter(filter, {
       id: 'glitch',
       animated: true,
-      animationProperties: { offset: 10, direction: 360 },
-      duration: options.duration,
-      ease: options.ease,
-      onUpdate: (filter, progress) => {
-        // Animate glitch parameters for dynamic effect
-        (filter as GlitchFilter).seed = Math.random();
-        (filter as GlitchFilter).direction = progress * 360;
+      animationProperties: { offset: 30 },
+      duration: 100, // Short duration for immediate application
+      ease: 'none',
+      onUpdate: () => {
+        const now = Date.now();
+        
+        // Check if it's time to start a new glitch burst
+        if (!isGlitching && now >= nextGlitchTime) {
+          isGlitching = true;
+          // Random glitch duration: 0.2-1.2 seconds
+          glitchEndTime = now + (Math.random() * 1000 + 200);
+          // Random intensity: 0.3 (mild) to 2.0 (severe)
+          glitchIntensity = Math.random() * 1.7 + 0.3;
+          // Schedule next glitch burst: 1.5-9 seconds later
+          nextGlitchTime = glitchEndTime + (Math.random() * 7500 + 1500);
+        }
+        
+        // Check if current glitch burst should end
+        if (isGlitching && now >= glitchEndTime) {
+          isGlitching = false;
+          
+          // 5-10% chance the signal doesn't fully recover
+          if (Math.random() < 0.075) { // 7.5% chance
+            hasResidualGlitch = true;
+            residualOffset = Math.random() * 8 + 2; // Small persistent offset
+            residualSlices = Math.floor(slices * (0.8 + Math.random() * 0.4)); // Slightly off slice count
+          } else {
+            hasResidualGlitch = false;
+            residualOffset = 0;
+            residualSlices = slices;
+          }
+        }
+        
+        if (isGlitching) {
+          // During glitch bursts - intensity varies randomly
+          const burstElapsed = (now - (glitchEndTime - 1200)) / 1000;
+          
+          // Horizontal glitch movement scaled by intensity
+          const baseOffset = Math.sin(burstElapsed * 8) * 25 + Math.cos(burstElapsed * 5.5) * 15 + (Math.random() - 0.5) * 20;
+          (filter as GlitchFilter).offset = Math.abs(baseOffset * glitchIntensity);
+          
+          // Keep direction horizontal for scan line effect
+          (filter as GlitchFilter).direction = 0;
+          
+          // Slice flickering scaled by intensity
+          const baseSlices = slices;
+          const intenseBurst = Math.sin(burstElapsed * 20) * Math.cos(burstElapsed * 15);
+          const randomBurst = Math.random() < (0.4 + glitchIntensity * 0.3) ? Math.random() * 0.8 : 0;
+          const burstMultiplier = 1 + (intenseBurst * 0.5 * glitchIntensity) + (randomBurst * glitchIntensity);
+          (filter as GlitchFilter).slices = Math.floor(baseSlices * burstMultiplier);
+          
+          // Dramatic slice changes - more frequent with higher intensity
+          const sliceChangeChance = 0.15 + (glitchIntensity * 0.15);
+          if (Math.random() < sliceChangeChance) {
+            (filter as GlitchFilter).slices = Math.random() < 0.4 ? 0 : baseSlices * (2 + glitchIntensity);
+          }
+          
+          // Rapid seed changes for chaotic corruption
+          if (Math.floor(burstElapsed * 30) % 2 === 0) {
+            (filter as GlitchFilter).seed = Math.random();
+          }
+          
+          // Offset spikes - more frequent and intense with higher intensity
+          const spikeChance = 0.1 + (glitchIntensity * 0.1);
+          if (Math.random() < spikeChance) {
+            (filter as GlitchFilter).offset = (Math.random() * 60 + 30) * glitchIntensity;
+          }
+          
+        } else {
+          // During quiet periods - but check for residual corruption
+          if (hasResidualGlitch) {
+            // Signal didn't fully recover - persistent glitch artifacts
+            (filter as GlitchFilter).offset = residualOffset;
+            (filter as GlitchFilter).direction = 0;
+            (filter as GlitchFilter).slices = residualSlices;
+            
+            // Very occasional minor fluctuations in the corrupted signal
+            if (Math.random() < 0.01) { // 1% chance
+              (filter as GlitchFilter).offset = residualOffset + (Math.random() - 0.5) * 3;
+            }
+          } else {
+            // Clean signal like normal camera feed
+            (filter as GlitchFilter).offset = 0;
+            (filter as GlitchFilter).direction = 0;
+            (filter as GlitchFilter).slices = slices; // Normal slice count
+            
+            // Occasional very minor static during quiet periods
+            if (Math.random() < 0.002) { // Very rare (0.2% chance)
+              (filter as GlitchFilter).offset = Math.random() * 3 + 1; // Tiny static
+            }
+          }
+        }
       },
     });
 
