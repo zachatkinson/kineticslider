@@ -36,6 +36,7 @@ import {
   ColorReplaceFilter,
   ConvolutionFilter,
   DotFilter,
+  DropShadowFilter,
   GlowFilter,
   CRTFilter,
   GlitchFilter,
@@ -132,6 +133,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['print media', 'comic book style', 'pop art'],
       create: (options) => this.createDotEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'dropShadow',
+      category: 'effects' as EffectCategory,
+      description: 'Drop shadow effect with customizable offset and blur',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['depth effects', 'layered visuals', 'text shadows'],
+      create: (options) => this.createDropShadowEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -483,6 +494,46 @@ export class AdvancedFilterPresets extends EffectPresets {
       animationProperties: {
         scale: settings.scale,
         angle: settings.angle,
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  private createDropShadowEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { offsetX: 2, offsetY: 2, blur: 1, alpha: 0.3 },
+      moderate: { offsetX: 4, offsetY: 4, blur: 2, alpha: 0.5 },
+      strong: { offsetX: 6, offsetY: 6, blur: 3, alpha: 0.7 },
+      intense: { offsetX: 8, offsetY: 8, blur: 4, alpha: 0.9 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    const filter = new DropShadowFilter({
+      offset: { x: settings.offsetX, y: settings.offsetY },
+      blur: settings.blur,
+      alpha: settings.alpha,
+      color: 0x000000,
+      quality: 4,
+      shadowOnly: false, // Show both panel and shadow
+    });
+
+    debugLogger.info(
+      `DropShadow filter created - offsetX: ${settings.offsetX}, offsetY: ${settings.offsetY}, blur: ${settings.blur}, alpha: ${settings.alpha}, shadowOnly: false`,
+      'FILTER_PRESETS'
+    );
+
+    const filterChain = new FilterChain({ name: 'dropshadow-effect' });
+    filterChain.addFilter(filter, {
+      id: 'dropShadow',
+      animated: true,
+      animationProperties: {
+        blur: settings.blur,
+        alpha: settings.alpha,
       },
       duration: options.duration,
       ease: options.ease,

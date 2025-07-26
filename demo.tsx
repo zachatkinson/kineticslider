@@ -284,9 +284,11 @@ function KineticSliderDemo(): JSX.Element {
     }
   }, []);
 
-  // UI Panel handlers with backdrop blur control
+  // UI Panel handlers with backdrop blur and drop shadow control
   const [infoPanelBlurEnabled, setInfoPanelBlurEnabled] = useState(true);
   const [controlPanelBlurEnabled, setControlPanelBlurEnabled] = useState(true);
+  const [infoPanelDropShadowEnabled, setInfoPanelDropShadowEnabled] = useState(false);
+  const [controlPanelDropShadowEnabled, setControlPanelDropShadowEnabled] = useState(false);
   const [infoPanelVisible, setInfoPanelVisible] = useState(false);
   const [controlPanelVisible, setControlPanelVisible] = useState(false);
 
@@ -300,7 +302,7 @@ function KineticSliderDemo(): JSX.Element {
             (renderer as ISliderRenderer & { removeUIPanel: (id: string) => void }).removeUIPanel('info-panel');
           }
           
-          await (renderer as ISliderRenderer & { createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite> }).createUIPanel({
+          const panel = await (renderer as ISliderRenderer & { createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite> }).createUIPanel({
             id: 'info-panel',
             position: 'center',
             size: { width: 300, height: 120 },
@@ -318,16 +320,41 @@ function KineticSliderDemo(): JSX.Element {
               quality: 4,
             },
           });
+
+          // Apply drop shadow if enabled
+          if (infoPanelDropShadowEnabled && panel && sliderEngine.current) {
+            try {
+              const renderer = sliderEngine.current.getRenderer();
+              if (renderer && 'applyFilter' in renderer) {
+                const { DropShadowFilter } = await import('pixi-filters');
+                const dropShadowFilter = new DropShadowFilter({
+                  offset: { x: 6, y: 6 },
+                  blur: 4,
+                  alpha: 0.6,
+                  color: 0x000000,
+                  quality: 4,
+                  shadowOnly: false,
+                });
+                
+                (renderer as ISliderRenderer).applyFilter(panel, dropShadowFilter);
+              }
+            } catch (filterError) {
+              console.warn('Could not apply drop shadow to info panel:', filterError);
+            }
+          }
+
+          const blurText = infoPanelBlurEnabled ? 'with backdrop blur' : 'without backdrop blur';
+          const shadowText = infoPanelDropShadowEnabled ? 'with drop shadow' : 'without drop shadow';
           setState((prev) => ({
             ...prev,
-            announcements: `Info panel ${infoPanelBlurEnabled ? 'with' : 'without'} backdrop blur shown`,
+            announcements: `Info panel ${blurText} and ${shadowText} shown`,
           }));
         }
       } catch (error) {
         console.error('Failed to create info panel:', error);
       }
     }
-  }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled]);
+  }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled, infoPanelDropShadowEnabled]);
 
   const handleShowInfoPanel = useCallback(async () => {
     await createInfoPanel();
@@ -344,7 +371,7 @@ function KineticSliderDemo(): JSX.Element {
             (renderer as ISliderRenderer & { removeUIPanel: (id: string) => void }).removeUIPanel('control-panel');
           }
           
-          await (renderer as ISliderRenderer & { createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite> }).createUIPanel({
+          const panel = await (renderer as ISliderRenderer & { createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite> }).createUIPanel({
             id: 'control-panel',
             position: 'bottom-right',
             size: { width: 200, height: 80 },
@@ -362,16 +389,42 @@ function KineticSliderDemo(): JSX.Element {
               quality: 5,
             },
           });
+
+          // Apply drop shadow if enabled
+          if (controlPanelDropShadowEnabled && panel && sliderEngine.current) {
+            try {
+              const renderer = sliderEngine.current.getRenderer();
+              if (renderer && 'applyFilter' in renderer) {
+                const { DropShadowFilter } = await import('pixi-filters');
+                const dropShadowFilter = new DropShadowFilter({
+                  offset: { x: 4, y: 4 },
+                  blur: 3,
+                  alpha: 0.5,
+                  color: 0x000000,
+                  quality: 4,
+                  shadowOnly: false,
+                });
+                
+                (renderer as ISliderRenderer).applyFilter(panel, dropShadowFilter);
+              }
+            } catch (filterError) {
+              console.warn('Could not apply drop shadow to control panel:', filterError);
+            }
+          }
+
+          const blurText = controlPanelBlurEnabled ? 'with backdrop blur' : 'without backdrop blur';
+          const shadowText = controlPanelDropShadowEnabled ? 'with drop shadow' : 'without drop shadow';
           setState((prev) => ({
             ...prev,
-            announcements: `Control panel ${controlPanelBlurEnabled ? 'with' : 'without'} backdrop blur shown`,
+            announcements: `Control panel ${blurText} and ${shadowText} shown`,
           }));
         }
       } catch (error) {
         console.error('Failed to create control panel:', error);
       }
     }
-  }, [controlPanelBlurEnabled]);
+  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled]);
+
 
   const handleShowControlPanel = useCallback(async () => {
     await createControlPanel();
@@ -397,18 +450,18 @@ function KineticSliderDemo(): JSX.Element {
     }
   }, []);
 
-  // Auto-recreate panels when blur settings change
+  // Auto-recreate panels when blur or drop shadow settings change
   useEffect(() => {
     if (infoPanelVisible) {
       createInfoPanel();
     }
-  }, [infoPanelBlurEnabled, createInfoPanel, infoPanelVisible]);
+  }, [infoPanelBlurEnabled, infoPanelDropShadowEnabled, createInfoPanel, infoPanelVisible]);
 
   useEffect(() => {
     if (controlPanelVisible) {
       createControlPanel();
     }
-  }, [controlPanelBlurEnabled, createControlPanel, controlPanelVisible]);
+  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, createControlPanel, controlPanelVisible]);
 
   // Keyboard navigation is now handled by KeyboardNavigator class
 
@@ -1185,6 +1238,34 @@ function KineticSliderDemo(): JSX.Element {
               }}
             >
               Control Blur: {controlPanelBlurEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setInfoPanelDropShadowEnabled(!infoPanelDropShadowEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: infoPanelDropShadowEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Info Shadow: {infoPanelDropShadowEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setControlPanelDropShadowEnabled(!controlPanelDropShadowEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: controlPanelDropShadowEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Control Shadow: {controlPanelDropShadowEnabled ? 'ON' : 'OFF'}
             </button>
             <button
               onClick={handleClearUIPanels}
