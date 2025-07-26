@@ -8,7 +8,11 @@
  * @version 1.0.0
  */
 
-import type { ISliderRenderer, RenderConfig } from '../core/types';
+import type {
+  ISliderRenderer,
+  RenderConfig,
+  UIPanelConfig,
+} from '../core/types';
 import type {
   AnimationSequence,
   SwipeAnimation,
@@ -177,6 +181,40 @@ export class HeadlessRenderer implements ISliderRenderer {
   }
 
   // Cleanup method
+  // UI Panel Management (not implemented in headless mode)
+  async createUIPanel(_config: UIPanelConfig): Promise<import('pixi.js').Sprite> {
+    const mockElement = document.createElement('div');
+    return Promise.resolve({
+      index: -1,
+      element: mockElement,
+      isHeadlessSprite: true,
+      visible: false,
+      alpha: 0,
+      scale: {
+        x: 1,
+        y: 1,
+        set: function (value: number) {
+          this.x = value;
+          this.y = value;
+        },
+      },
+      x: 0,
+      y: 0,
+    } as unknown as import('pixi.js').Sprite);
+  }
+
+  removeUIPanel(_panelId: string): void {
+    // Not implemented in headless mode
+  }
+
+  getUIPanels(): import('pixi.js').Sprite[] {
+    return [];
+  }
+
+  clearUIPanels(): void {
+    // Not implemented in headless mode
+  }
+
   destroy(): void {
     if (this.container) {
       this.container.innerHTML = '';

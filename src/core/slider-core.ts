@@ -571,7 +571,15 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
       // Clear filters through renderer
       if (typeof this.renderer.clearFilters === 'function') {
+        debugLogger.info(
+          `Clearing filters from sprite ${currentIndex}, current filters: ${currentSprite.filters?.length || 0}`,
+          'slider-core:clearFilters'
+        );
         this.renderer.clearFilters(currentSprite);
+        debugLogger.info(
+          `Filters cleared, remaining filters: ${currentSprite.filters?.length || 0}`,
+          'slider-core:clearFilters'
+        );
       }
     } catch (error) {
       this.handleError(error, 'clearFilters');
@@ -649,6 +657,13 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
   isPlaying(): boolean {
     return this.stateManager.isPlaying();
+  }
+
+  /**
+   * Get renderer instance for advanced operations
+   */
+  getRenderer(): ISliderRenderer | null {
+    return this.renderer;
   }
 
   // =============================================================================

@@ -135,6 +135,7 @@ export class FilterValidator {
       'pixelate',
       'adjustment',
       'advancedBloom',
+      'backdropBlur',
     ];
 
     for (const presetName of advancedPresets) {

@@ -282,6 +282,50 @@ export interface RenderConfig {
   scaleMode?: ScaleMode;
   /** Amount of overscan when using OVERSCAN mode (1.1 = 110% scale) */
   overscanAmount?: number;
+  /** UI panels configuration */
+  uiPanels?: UIPanelConfig[];
+}
+
+/**
+ * UI Panel Configuration for backdrop blur effects
+ */
+export interface UIPanelConfig {
+  /** Unique panel identifier */
+  id: string;
+  /** Panel position */
+  position:
+    | { x: number; y: number }
+    | 'center'
+    | 'top-left'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-right';
+  /** Panel size */
+  size: { width: number; height: number };
+  /** Panel content configuration */
+  content: {
+    /** Text content to display */
+    text?: string;
+    /** Background color */
+    backgroundColor?: number;
+    /** Text color */
+    textColor?: number;
+    /** Border radius for rounded corners */
+    borderRadius?: number;
+    /** Internal padding */
+    padding?: number;
+    /** Font size */
+    fontSize?: number;
+  };
+  /** Backdrop blur configuration */
+  backdropBlur?: {
+    /** Whether backdrop blur is enabled */
+    enabled: boolean;
+    /** Blur intensity */
+    intensity: number;
+    /** Blur quality */
+    quality?: number;
+  };
 }
 
 /**
@@ -661,6 +705,12 @@ export interface ISliderRenderer {
   createSprite(texture: string | Texture, index: number): Promise<Sprite>;
   removeSprite(sprite: Sprite): void;
   getSprites(): Sprite[];
+
+  // UI Panel Management
+  createUIPanel(config: UIPanelConfig): Promise<Sprite>;
+  removeUIPanel(panelId: string): void;
+  getUIPanels(): Sprite[];
+  clearUIPanels(): void;
 
   // Filter Management - Phase 4+ feature
   applyFilter(sprite: Sprite, filter: Filter): void;

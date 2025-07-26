@@ -15,7 +15,11 @@
 
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
-import type { ISliderRenderer, RenderConfig } from '../core/types';
+import type {
+  ISliderRenderer,
+  RenderConfig,
+  UIPanelConfig,
+} from '../core/types';
 import { ScaleMode } from '../core/types';
 import { debugLogger } from '../utils/debug-logger';
 import { setBaseScale } from '../core/sprite-helpers';
@@ -71,7 +75,9 @@ import {
 export class SliderRenderer implements ISliderRenderer {
   private app: PIXI.Application | null = null;
   private pixiContainer: PIXI.Container | null = null;
+  private uiContainer: PIXI.Container | null = null;
   private sprites: PIXI.Sprite[] = [];
+  private uiPanels: Map<string, PIXI.Sprite> = new Map();
   private container: HTMLElement | null = null;
   private config: RenderConfig | null = null;
   private isInitialized = false;
@@ -137,6 +143,7 @@ export class SliderRenderer implements ISliderRenderer {
         preference: 'webgl',
         powerPreference: 'low-power',
         preserveDrawingBuffer: false,
+        useBackBuffer: true, // Enable backBuffer for backdrop blur filters
       });
 
       if (!this.app || !this.app.renderer) {
@@ -159,6 +166,11 @@ export class SliderRenderer implements ISliderRenderer {
       this.pixiContainer = new PIXI.Container();
       this.app.stage.addChild(this.pixiContainer);
       debugLogger.debug('Created pixiContainer and added to stage', 'RENDERER');
+
+      // Create UI container for panels (above slides)
+      this.uiContainer = new PIXI.Container();
+      this.app.stage.addChild(this.uiContainer);
+      debugLogger.debug('Created uiContainer and added to stage', 'RENDERER');
 
       this.isInitialized = true;
     } catch (error) {
@@ -331,7 +343,7 @@ export class SliderRenderer implements ISliderRenderer {
 
     // Debug logging for sprite creation
     debugLogger.debug(
-      `Created sprite ${index}: texture=${!!sprite.texture}, width=${sprite.width}, height=${sprite.height}, alpha=${sprite.alpha}, visible=${sprite.visible}`,
+      `Created sprite ${index}: texture=${!!sprite.texture}, width=${sprite.width}, height=${sprite.height}, alpha=${sprite.alpha}, visible=${sprite.visible}, filters=${sprite.filters?.length || 0}`,
       'RENDERER'
     );
 
@@ -705,6 +717,237 @@ export class SliderRenderer implements ISliderRenderer {
   }
 
   // =============================================================================
+  // 🎯 UI Panel Management (implements ISliderRenderer)
+  // =============================================================================
+
+  /**
+   * Create a UI panel with optional backdrop blur
+   */
+  async createUIPanel(config: UIPanelConfig): Promise<PIXI.Sprite> {
+    if (!this.app || !this.uiContainer) {
+      throw new Error('Renderer not initialized');
+    }
+
+    debugLogger.info(`Creating UI panel: ${config.id}`, 'RENDERER');
+
+    // Create a graphics object for the panel background
+    const graphics = new PIXI.Graphics();
+
+    // Set background color with some transparency
+    const bgColor = config.content.backgroundColor || 0x000000;
+    const bgAlpha = 0.8;
+    graphics.rect(0, 0, config.size.width, config.size.height);
+    graphics.fill({ color: bgColor, alpha: bgAlpha });
+
+    // Add border radius if specified
+    if (config.content.borderRadius) {
+      // For rounded corners, we'd need to use different drawing methods
+      graphics.clear();
+      graphics.roundRect(
+        0,
+        0,
+        config.size.width,
+        config.size.height,
+        config.content.borderRadius
+      );
+      graphics.fill({ color: bgColor, alpha: bgAlpha });
+    }
+
+    // Create texture from graphics
+    const texture = this.app.renderer.generateTexture(graphics);
+
+    // Create sprite from texture
+    const panelSprite = new PIXI.Sprite(texture);
+
+    // Add text if specified
+    if (config.content.text) {
+      const textStyle = new PIXI.TextStyle({
+        fontFamily: 'Arial, sans-serif',
+        fontSize: config.content.fontSize || 16,
+        fill: config.content.textColor || 0xffffff,
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: config.size.width - (config.content.padding || 20) * 2,
+      });
+
+      const text = new PIXI.Text({
+        text: config.content.text,
+        style: textStyle,
+      });
+
+      // Center text in panel
+      text.anchor.set(0.5);
+      text.position.set(config.size.width / 2, config.size.height / 2);
+
+      // Add text to a container with the panel sprite
+      const panelContainer = new PIXI.Container();
+      panelContainer.addChild(panelSprite);
+      panelContainer.addChild(text);
+
+      // Position the entire container
+      this.positionUIPanel(panelContainer, config.position);
+
+      debugLogger.info(
+        `UI panel positioned: ${config.id} at ${config.position}, bounds: ${panelContainer.width}x${panelContainer.height}`,
+        'RENDERER'
+      );
+
+      // Add backdrop blur if enabled
+      if (config.backdropBlur?.enabled) {
+        await this.applyBackdropBlurToPanel(
+          panelContainer,
+          config.backdropBlur
+        );
+      }
+
+      this.uiContainer.addChild(panelContainer);
+      this.uiPanels.set(config.id, panelContainer as PIXI.Sprite);
+
+      debugLogger.info(`UI panel created with text: ${config.id}`, 'RENDERER');
+      return panelContainer as PIXI.Sprite;
+    } else {
+      // Position the sprite
+      this.positionUIPanel(panelSprite, config.position);
+
+      // Add backdrop blur if enabled
+      if (config.backdropBlur?.enabled) {
+        await this.applyBackdropBlurToPanel(panelSprite, config.backdropBlur);
+      }
+
+      this.uiContainer.addChild(panelSprite);
+      this.uiPanels.set(config.id, panelSprite);
+
+      debugLogger.info(`UI panel created: ${config.id}`, 'RENDERER');
+      return panelSprite;
+    }
+  }
+
+  /**
+   * Remove a UI panel by ID
+   */
+  removeUIPanel(panelId: string): void {
+    const panel = this.uiPanels.get(panelId);
+    if (panel && this.uiContainer) {
+      this.uiContainer.removeChild(panel);
+      this.uiPanels.delete(panelId);
+      panel.destroy();
+      debugLogger.info(`UI panel removed: ${panelId}`, 'RENDERER');
+    }
+  }
+
+  /**
+   * Get all UI panels
+   */
+  getUIPanels(): PIXI.Sprite[] {
+    return Array.from(this.uiPanels.values());
+  }
+
+  /**
+   * Clear all UI panels
+   */
+  clearUIPanels(): void {
+    this.uiPanels.forEach((panel, _id) => {
+      if (this.uiContainer) {
+        this.uiContainer.removeChild(panel);
+      }
+      panel.destroy();
+    });
+    this.uiPanels.clear();
+    debugLogger.info('All UI panels cleared', 'RENDERER');
+  }
+
+  /**
+   * Position a UI panel based on configuration
+   */
+  private positionUIPanel(
+    panel: PIXI.Container | PIXI.Sprite,
+    position: UIPanelConfig['position']
+  ): void {
+    if (!this.app) return;
+
+    const stageWidth = this.app.screen.width;
+    const stageHeight = this.app.screen.height;
+
+    debugLogger.info(
+      `Positioning panel: ${position}, stage: ${stageWidth}x${stageHeight}, panel: ${panel.width}x${panel.height}`,
+      'RENDERER'
+    );
+
+    if (typeof position === 'object') {
+      // Custom position
+      panel.position.set(position.x, position.y);
+    } else {
+      // Get panel bounds for pivot calculations
+      const bounds = panel.getBounds();
+      const panelWidth = bounds.width;
+      const panelHeight = bounds.height;
+
+      // Predefined positions
+      switch (position) {
+        case 'center':
+          if ('anchor' in panel) panel.anchor.set(0.5);
+          else panel.pivot.set(panelWidth / 2, panelHeight / 2);
+          panel.position.set(stageWidth / 2, stageHeight / 2);
+          break;
+        case 'top-left':
+          panel.position.set(20, 20);
+          break;
+        case 'top-right':
+          if ('anchor' in panel) panel.anchor.set(1, 0);
+          else panel.pivot.set(panelWidth, 0);
+          panel.position.set(stageWidth - 20, 20);
+          break;
+        case 'bottom-left':
+          if ('anchor' in panel) panel.anchor.set(0, 1);
+          else panel.pivot.set(0, panelHeight);
+          panel.position.set(20, stageHeight - 20);
+          break;
+        case 'bottom-right':
+          if ('anchor' in panel) panel.anchor.set(1, 1);
+          else panel.pivot.set(panelWidth, panelHeight);
+          panel.position.set(stageWidth - 20, stageHeight - 20);
+          debugLogger.info(
+            `Bottom-right positioned at: ${stageWidth - 20}, ${stageHeight - 20} with pivot: ${panelWidth}, ${panelHeight}`,
+            'RENDERER'
+          );
+          break;
+        default:
+          // Default to center
+          if ('anchor' in panel) panel.anchor.set(0.5);
+          else panel.pivot.set(panelWidth / 2, panelHeight / 2);
+          panel.position.set(stageWidth / 2, stageHeight / 2);
+      }
+    }
+  }
+
+  /**
+   * Apply backdrop blur to a UI panel
+   */
+  private async applyBackdropBlurToPanel(
+    panel: PIXI.Container | PIXI.Sprite,
+    blurConfig: NonNullable<UIPanelConfig['backdropBlur']>
+  ): Promise<void> {
+    try {
+      // Import BackdropBlurFilter dynamically
+      const { BackdropBlurFilter } = await import('pixi-filters');
+
+      const filter = new BackdropBlurFilter({
+        strength: blurConfig.intensity * 4, // Scale intensity
+        quality: blurConfig.quality || 4,
+        kernelSize: 5,
+        resolution: 1,
+      });
+
+      // Apply filter to panel
+      panel.filters = [filter];
+
+      debugLogger.info(`Backdrop blur applied to UI panel`, 'RENDERER');
+    } catch (error) {
+      debugLogger.error(`Failed to apply backdrop blur: ${error}`, 'RENDERER');
+    }
+  }
+
+  // =============================================================================
   // 🎯 Rendering Control and Cleanup (implements ISliderRenderer)
   // =============================================================================
 
@@ -732,6 +975,9 @@ export class SliderRenderer implements ISliderRenderer {
       sprite.destroy();
     });
     this.sprites = [];
+
+    // Cleanup UI panels
+    this.clearUIPanels();
 
     // Destroy PIXI app
     if (this.app) {

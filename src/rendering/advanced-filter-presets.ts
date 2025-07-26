@@ -10,6 +10,8 @@
 import { gsap } from 'gsap';
 import { Filter, Sprite, Container } from 'pixi.js';
 import { FilterChain } from './filter-chain';
+import { FilterManager } from './filter-manager';
+import { debugLogger } from '../utils/debug-logger';
 import {
   EffectPresets,
   type PresetOptions,
@@ -24,6 +26,7 @@ import {
   AdvancedBloomFilter,
   AdjustmentFilter,
   AsciiFilter,
+  BackdropBlurFilter,
   DotFilter,
   GlowFilter,
   CRTFilter,
@@ -271,6 +274,17 @@ export class AdvancedFilterPresets extends EffectPresets {
       useCases: ['atmospheric lighting', 'divine effects', 'volumetric light'],
       create: (options) => this.createGodrayEffect(options),
     });
+
+    // Modern Backdrop Blur Effect
+    this.registerAdvancedPreset({
+      name: 'backdropBlur',
+      category: 'blur-advanced' as AdvancedEffectCategory,
+      description: 'Backdrop blur effect for depth and layering',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['depth effects', 'UI layering', 'focus effects'],
+      create: (options) => this.createBackdropBlurEffect(options),
+    });
   }
 
   // =============================================================================
@@ -300,13 +314,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       replaceColor: false, // Use original image colors
     });
 
-    console.log('ASCII Filter created:', {
-      size: filter.size,
-      color: filter.color,
-      replaceColor: filter.replaceColor,
-      intensity: options.intensity,
-      targetSize: settings.size,
-    });
+    debugLogger.debug('ASCII Filter created', 'FILTER_PRESETS');
 
     const filterChain = new FilterChain({ name: 'ascii-effect' });
     filterChain.addFilter(filter, {
@@ -326,53 +334,36 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     return {
       ...originalResult,
-      applyTo: (target: Sprite | Container): void => {
-        const sprite = target as Sprite;
+      applyTo: async (target: Sprite | Container): Promise<void> => {
+        const filterManager = FilterManager.getInstance();
 
-        console.log('🎯 ASCII DEBUG: Pre-application state', {
-          isSprite: target instanceof Sprite,
-          hasTexture: sprite.texture !== undefined,
-          textureSize: {
-            width: sprite.texture?.width,
-            height: sprite.texture?.height,
-          },
-          spriteVisible: sprite.visible,
-          spriteAlpha: sprite.alpha,
-          currentFilters: sprite.filters?.length || 0,
-          spritePosition: { x: sprite.x, y: sprite.y },
-          spriteScale: { x: sprite.scale.x, y: sprite.scale.y },
-          filterSettings: {
-            size: filter.size,
-            color: filter.color,
-            replaceColor: filter.replaceColor,
+        debugLogger.debug(
+          'Applying ASCII filter with modern filter manager',
+          'FILTER_PRESETS'
+        );
+
+        // Use FilterManager for proper isolation
+        const result = await filterManager.applyFilter(
+          target,
+          filter,
+          'ascii',
+          {
+            isolate: true, // Clear all other filters to prevent conflicts
           }
-        });
+        );
 
-        // Apply filter with minimal delay to ensure texture is ready
-        requestAnimationFrame(() => {
-          console.log('🎯 ASCII DEBUG: Applying filter now');
-          
-          // Clear existing filters first to prevent stacking
-          console.log('🎯 ASCII DEBUG: Clearing existing filters', {
-            existingFilters: sprite.filters?.length || 0,
-            existingTypes: sprite.filters?.map(f => f.constructor.name) || []
-          });
-          sprite.filters = [];
-          
-          originalResult.applyTo(target);
-          
-          // Check state after application
-          setTimeout(() => {
-            console.log('🎯 ASCII DEBUG: Post-application state', {
-              spriteVisible: sprite.visible,
-              spriteAlpha: sprite.alpha,
-              filtersApplied: sprite.filters?.length || 0,
-              filterTypes: sprite.filters?.map(f => f.constructor.name) || [],
-              parentVisible: sprite.parent?.visible,
-              containerChildren: sprite.parent?.children?.length || 0,
-            });
-          }, 50);
-        });
+        if (result.success) {
+          debugLogger.debug(
+            'ASCII filter successfully applied',
+            'FILTER_PRESETS'
+          );
+        } else {
+          debugLogger.error(
+            'Failed to apply ASCII filter',
+            'FILTER_PRESETS',
+            result.error
+          );
+        }
       },
     };
   }
@@ -452,7 +443,31 @@ export class AdvancedFilterPresets extends EffectPresets {
       ease: options.ease,
     });
 
-    return this.createEffectResult(filterChain, [filter], options);
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      applyTo: async (target: Sprite | Container): Promise<void> => {
+        const filterManager = FilterManager.getInstance();
+
+        // CRT is an exclusive visual effect - use isolation
+        const result = await filterManager.applyFilter(target, filter, 'crt', {
+          isolate: true,
+        });
+
+        if (!result.success) {
+          debugLogger.error(
+            'Failed to apply CRT filter',
+            'FILTER_PRESETS',
+            result.error
+          );
+        }
+      },
+    };
   }
 
   private createAdvancedGlitchEffect(
@@ -602,7 +617,31 @@ export class AdvancedFilterPresets extends EffectPresets {
       ease: options.ease,
     });
 
-    return this.createEffectResult(filterChain, [filter], options);
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      applyTo: async (target: Sprite | Container): Promise<void> => {
+        const filterManager = FilterManager.getInstance();
+
+        // Kawase blur should replace other blur effects but allow other types
+        const result = await filterManager.applyFilter(target, filter, 'blur', {
+          replace: true,
+        });
+
+        if (!result.success) {
+          debugLogger.error(
+            'Failed to apply Kawase blur filter',
+            'FILTER_PRESETS',
+            result.error
+          );
+        }
+      },
+    };
   }
 
   private createAdvancedMotionBlurEffect(
@@ -872,6 +911,79 @@ export class AdvancedFilterPresets extends EffectPresets {
       },
       removeFrom: (target: Sprite | Container): void => {
         filterChain.removeFrom(target, true);
+      },
+    };
+  }
+
+  /**
+   * Create BackdropBlur effect with proper resource management
+   */
+  private createBackdropBlurEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { strength: 4, quality: 3 },
+      moderate: { strength: 8, quality: 4 },
+      strong: { strength: 12, quality: 5 },
+      intense: { strength: 16, quality: 6 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create BackdropBlur filter with proper configuration
+    const filter = new BackdropBlurFilter({
+      strength: settings.strength,
+      quality: settings.quality,
+      kernelSize: 5,
+      resolution: 1,
+    });
+
+    const filterChain = new FilterChain({ name: 'backdrop-blur-effect' });
+    filterChain.addFilter(filter, {
+      id: 'backdropBlur',
+      animated: true,
+      animationProperties: { strength: settings.strength },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      applyTo: async (target: Sprite | Container): Promise<void> => {
+        const filterManager = FilterManager.getInstance();
+
+        debugLogger.debug(
+          'Applying backdrop blur filter with modern filter manager',
+          'FILTER_PRESETS'
+        );
+
+        // Use FilterManager with replace mode for backdrop blur
+        const result = await filterManager.applyFilter(
+          target,
+          filter,
+          'backdropBlur',
+          {
+            replace: true, // Replace other backdrop blur filters, but don't clear all filters
+          }
+        );
+
+        if (result.success) {
+          debugLogger.debug(
+            'Backdrop blur filter successfully applied',
+            'FILTER_PRESETS'
+          );
+        } else {
+          debugLogger.error(
+            'Failed to apply backdrop blur filter',
+            'FILTER_PRESETS',
+            result.error
+          );
+        }
       },
     };
   }

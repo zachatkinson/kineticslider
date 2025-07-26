@@ -12,6 +12,8 @@ import {
   DefaultsManager,
 } from './src/config';
 import { debugLogger } from './src/utils/debug-logger';
+import type { ISliderRenderer, UIPanelConfig } from './src/core/types';
+import * as PIXI from 'pixi.js';
 
 // Note: This is a demo file combining multiple components for convenience.
 // In a production app, these would be in separate files.
@@ -281,6 +283,132 @@ function KineticSliderDemo(): JSX.Element {
       }
     }
   }, []);
+
+  // UI Panel handlers with backdrop blur control
+  const [infoPanelBlurEnabled, setInfoPanelBlurEnabled] = useState(true);
+  const [controlPanelBlurEnabled, setControlPanelBlurEnabled] = useState(true);
+  const [infoPanelVisible, setInfoPanelVisible] = useState(false);
+  const [controlPanelVisible, setControlPanelVisible] = useState(false);
+
+  const createInfoPanel = useCallback(async () => {
+    if (sliderEngine.current) {
+      try {
+        const renderer = sliderEngine.current.getRenderer();
+        if (renderer && 'createUIPanel' in renderer) {
+          // Remove existing panel first
+          if ('removeUIPanel' in renderer) {
+            (renderer as ISliderRenderer & { removeUIPanel: (id: string) => void }).removeUIPanel('info-panel');
+          }
+          
+          await (renderer as ISliderRenderer & { createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite> }).createUIPanel({
+            id: 'info-panel',
+            position: 'center',
+            size: { width: 300, height: 120 },
+            content: {
+              text: `Slide ${state.currentIndex + 1} of ${state.totalSlides}`,
+              backgroundColor: 0x2563eb,
+              textColor: 0xffffff,
+              fontSize: 18,
+              borderRadius: 12,
+              padding: 20,
+            },
+            backdropBlur: {
+              enabled: infoPanelBlurEnabled,
+              intensity: 2,
+              quality: 4,
+            },
+          });
+          setState((prev) => ({
+            ...prev,
+            announcements: `Info panel ${infoPanelBlurEnabled ? 'with' : 'without'} backdrop blur shown`,
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to create info panel:', error);
+      }
+    }
+  }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled]);
+
+  const handleShowInfoPanel = useCallback(async () => {
+    await createInfoPanel();
+    setInfoPanelVisible(true);
+  }, [createInfoPanel]);
+
+  const createControlPanel = useCallback(async () => {
+    if (sliderEngine.current) {
+      try {
+        const renderer = sliderEngine.current.getRenderer();
+        if (renderer && 'createUIPanel' in renderer) {
+          // Remove existing panel first
+          if ('removeUIPanel' in renderer) {
+            (renderer as ISliderRenderer & { removeUIPanel: (id: string) => void }).removeUIPanel('control-panel');
+          }
+          
+          await (renderer as ISliderRenderer & { createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite> }).createUIPanel({
+            id: 'control-panel',
+            position: 'bottom-right',
+            size: { width: 200, height: 80 },
+            content: {
+              text: 'Navigation Controls',
+              backgroundColor: 0x059669,
+              textColor: 0xffffff,
+              fontSize: 14,
+              borderRadius: 8,
+              padding: 15,
+            },
+            backdropBlur: {
+              enabled: controlPanelBlurEnabled,
+              intensity: 3,
+              quality: 5,
+            },
+          });
+          setState((prev) => ({
+            ...prev,
+            announcements: `Control panel ${controlPanelBlurEnabled ? 'with' : 'without'} backdrop blur shown`,
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to create control panel:', error);
+      }
+    }
+  }, [controlPanelBlurEnabled]);
+
+  const handleShowControlPanel = useCallback(async () => {
+    await createControlPanel();
+    setControlPanelVisible(true);
+  }, [createControlPanel]);
+
+  const handleClearUIPanels = useCallback(async () => {
+    if (sliderEngine.current) {
+      try {
+        const renderer = sliderEngine.current.getRenderer();
+        if (renderer && 'clearUIPanels' in renderer) {
+          (renderer as ISliderRenderer & { clearUIPanels: () => void }).clearUIPanels();
+          setInfoPanelVisible(false);
+          setControlPanelVisible(false);
+          setState((prev) => ({
+            ...prev,
+            announcements: 'All UI panels cleared',
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to clear UI panels:', error);
+      }
+    }
+  }, []);
+
+  // Auto-recreate panels when blur settings change
+  useEffect(() => {
+    if (infoPanelVisible) {
+      createInfoPanel();
+    }
+  }, [infoPanelBlurEnabled, createInfoPanel, infoPanelVisible]);
+
+  useEffect(() => {
+    if (controlPanelVisible) {
+      createControlPanel();
+    }
+  }, [controlPanelBlurEnabled, createControlPanel, controlPanelVisible]);
 
   // Keyboard navigation is now handled by KeyboardNavigator class
 
@@ -797,6 +925,20 @@ function KineticSliderDemo(): JSX.Element {
               ASCII
             </button>
             <button
+              onClick={() => handleApplyFilter('kawaseBlur')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Kawase Blur
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',
@@ -809,6 +951,100 @@ function KineticSliderDemo(): JSX.Element {
               }}
             >
               Clear Filters
+            </button>
+          </div>
+        </div>
+
+        {/* UI Panel Controls */}
+        <div
+          style={{
+            marginTop: '2rem',
+            padding: '1rem',
+            background: '#f8fafc',
+            borderRadius: '8px',
+            borderLeft: '4px solid #06b6d4',
+          }}
+        >
+          <h3>UI Panel Demonstrations</h3>
+          <p>Test backdrop blur effects with layered UI panels (backdrop blur works by blurring content behind these panels):</p>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.5rem',
+              marginTop: '1rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <button
+              onClick={handleShowInfoPanel}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#2563eb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Show Info Panel
+            </button>
+            <button
+              onClick={() => setInfoPanelBlurEnabled(!infoPanelBlurEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: infoPanelBlurEnabled ? '#1d4ed8' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Info Blur: {infoPanelBlurEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={handleShowControlPanel}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#059669',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Show Control Panel
+            </button>
+            <button
+              onClick={() => setControlPanelBlurEnabled(!controlPanelBlurEnabled)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: controlPanelBlurEnabled ? '#047857' : '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Control Blur: {controlPanelBlurEnabled ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={handleClearUIPanels}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#dc2626',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Clear UI Panels
             </button>
           </div>
         </div>
