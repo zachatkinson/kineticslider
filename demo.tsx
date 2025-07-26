@@ -1079,6 +1079,20 @@ function KineticSliderDemo(): JSX.Element {
               CRT Monitor
             </button>
             <button
+              onClick={() => handleApplyFilter('dot')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#f59e0b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Dot Screen
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

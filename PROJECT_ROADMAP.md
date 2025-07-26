@@ -226,6 +226,7 @@
 - **🔢 ConvolutionFilter** - Custom convolution matrix effects for edge detection, sharpening, and embossing
 - **🎨 CrossHatchFilter** - Artistic cross-hatch pattern effects with intensity-based alpha control for line art aesthetics
 - **📺 CRTFilter** - Classic CRT monitor simulation with scanlines, noise, curvature, and vignetting for retro gaming effects
+- **🔘 DotFilter** - Halftone dot screen effects with configurable scale, angle, and grayscale modes for print media aesthetics
 - **🔧 Filter System Integration** - Seamless integration with existing FilterManager and filter validation
 - **🎮 Interactive Testing** - Demo buttons for all new filters with proper color coding and organization
 - **📊 Performance Optimization** - Lightweight filter options for performance-focused applications

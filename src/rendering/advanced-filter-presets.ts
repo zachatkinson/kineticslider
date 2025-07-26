@@ -463,15 +463,27 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createDotEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { subtle: 3, moderate: 5, strong: 8, intense: 12 };
-    const scale = intensityMap[options.intensity];
+    const intensityMap = {
+      subtle: { scale: 2, angle: 5, grayscale: false },
+      moderate: { scale: 4, angle: 15, grayscale: false },
+      strong: { scale: 6, angle: 30, grayscale: true },
+      intense: { scale: 8, angle: 45, grayscale: true },
+    };
+    const settings = intensityMap[options.intensity];
 
-    const filter = new DotFilter({ scale, angle: 5 });
+    const filter = new DotFilter({
+      scale: settings.scale,
+      angle: settings.angle,
+      grayscale: settings.grayscale,
+    });
     const filterChain = new FilterChain({ name: 'dot-effect' });
     filterChain.addFilter(filter, {
       id: 'dot',
       animated: true,
-      animationProperties: { scale },
+      animationProperties: {
+        scale: settings.scale,
+        angle: settings.angle,
+      },
       duration: options.duration,
       ease: options.ease,
     });
@@ -509,10 +521,34 @@ export class AdvancedFilterPresets extends EffectPresets {
     options: Required<PresetOptions>
   ): EffectPresetResult {
     const intensityMap = {
-      subtle: { curvature: 0.5, lineWidth: 0.8, lineContrast: 0.15, noise: 0.1, vignetting: 0.2 },
-      moderate: { curvature: 1.0, lineWidth: 1.0, lineContrast: 0.25, noise: 0.2, vignetting: 0.3 },
-      strong: { curvature: 1.5, lineWidth: 1.2, lineContrast: 0.35, noise: 0.3, vignetting: 0.4 },
-      intense: { curvature: 2.0, lineWidth: 1.5, lineContrast: 0.45, noise: 0.4, vignetting: 0.5 },
+      subtle: {
+        curvature: 0.5,
+        lineWidth: 0.8,
+        lineContrast: 0.15,
+        noise: 0.1,
+        vignetting: 0.2,
+      },
+      moderate: {
+        curvature: 1.0,
+        lineWidth: 1.0,
+        lineContrast: 0.25,
+        noise: 0.2,
+        vignetting: 0.3,
+      },
+      strong: {
+        curvature: 1.5,
+        lineWidth: 1.2,
+        lineContrast: 0.35,
+        noise: 0.3,
+        vignetting: 0.4,
+      },
+      intense: {
+        curvature: 2.0,
+        lineWidth: 1.5,
+        lineContrast: 0.45,
+        noise: 0.4,
+        vignetting: 0.5,
+      },
     };
     const settings = intensityMap[options.intensity];
 
