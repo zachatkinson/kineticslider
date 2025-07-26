@@ -1346,6 +1346,20 @@ function KineticSliderDemo(): JSX.Element {
               Dot Screen
             </button>
             <button
+              onClick={() => handleApplyFilter('pixelate')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#e11d48',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Pixelate
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

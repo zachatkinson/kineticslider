@@ -828,7 +828,7 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createPixelateEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { subtle: 2, moderate: 5, strong: 10, intense: 20 };
+    const intensityMap = { subtle: 6, moderate: 13, strong: 19, intense: 32 };
     const size = intensityMap[options.intensity];
 
     const filter = new PixelateFilter(size);
