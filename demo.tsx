@@ -1416,6 +1416,20 @@ function KineticSliderDemo(): JSX.Element {
               Shockwave
             </button>
             <button
+              onClick={() => handleApplyFilter('simpleLightmap')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#fbbf24',
+                color: 'black',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Simple Lightmap
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

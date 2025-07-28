@@ -54,6 +54,7 @@ import {
   GodrayFilter,
   HslAdjustmentFilter,
   ReflectionFilter,
+  SimpleLightmapFilter,
 } from 'pixi-filters';
 
 /**
@@ -274,6 +275,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['impact effects', 'explosion ripples', 'wave distortions'],
       create: (options) => this.createShockwaveEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'simpleLightmap',
+      category: 'lighting' as EffectCategory,
+      description: 'Lightmap effect for dynamic lighting',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['dynamic lighting', 'atmospheric effects', 'spotlight effects'],
+      create: (options) => this.createSimpleLightmapEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -1178,7 +1189,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     let animationActive = false;
     let animationFrameId: number | null = null;
     let lastTime = Date.now();
-    
+
     const startAnimation = (): void => {
       if (animationActive) return;
       animationActive = true;
@@ -1227,8 +1238,12 @@ export class AdvancedFilterPresets extends EffectPresets {
       ease: options.ease,
     });
 
-    const originalResult = this.createEffectResult(filterChain, [filter], options);
-    
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
     return {
       ...originalResult,
       cleanup: (): void => {
@@ -1968,6 +1983,99 @@ export class AdvancedFilterPresets extends EffectPresets {
         if (filterWithInterval._animationInterval) {
           clearInterval(filterWithInterval._animationInterval);
         }
+        originalResult.cleanup();
+      },
+    };
+  }
+
+  /**
+   * Create SimpleLightmap effect for dynamic lighting
+   */
+  private createSimpleLightmapEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { alpha: 0.7, color: 0x444444 },
+      moderate: { alpha: 0.8, color: 0x666666 },
+      strong: { alpha: 0.9, color: 0x888888 },
+      intense: { alpha: 1.0, color: 0xaaaaaa },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create a gradient lightmap texture
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    if (ctx) {
+      // Create a radial gradient for spotlight effect
+      const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)'); // Bright center
+      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)'); // Mid brightness
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); // Dark edges
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 512, 512);
+    }
+
+    const lightmapTexture = Texture.from(canvas);
+
+    // Create the filter
+    const filter = new SimpleLightmapFilter(lightmapTexture, settings.color);
+    filter.alpha = settings.alpha;
+
+    debugLogger.info(
+      `SimpleLightmapFilter created - color: ${settings.color.toString(16)}, alpha: ${settings.alpha}`,
+      'FILTER_PRESETS'
+    );
+
+    const filterChain = new FilterChain({ name: 'simple-lightmap-effect' });
+
+    // Animate the lightmap for dynamic lighting
+    let animationActive = true;
+    let animationFrameId: number | null = null;
+    let time = 0;
+
+    const animate = (): void => {
+      if (!animationActive) return;
+
+      time += 0.02;
+      
+      // Animate alpha for pulsing light effect
+      filter.alpha = settings.alpha * (0.8 + Math.sin(time) * 0.2);
+      
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Start animation
+    animate();
+
+    filterChain.addFilter(filter, {
+      id: 'simpleLightmap',
+      animated: false, // We're handling animation manually
+      animationProperties: {},
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      cleanup: (): void => {
+        // Stop animation
+        animationActive = false;
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        // Destroy the lightmap texture
+        lightmapTexture.destroy();
         originalResult.cleanup();
       },
     };
