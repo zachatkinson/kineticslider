@@ -846,7 +846,7 @@ Build the **world's best slider component** - performant, accessible, and deligh
   - ✅ **KawaseBlurFilter** - Kawase blur algorithm
   - ✅ **MotionBlurFilter** - Motion blur effects
   - ✅ **MultiColorReplaceFilter** - Multiple color replacement
-  - [ ] **NoiseFilter** - Noise generation
+  - ✅ **SimplexNoiseFilter** - Procedural simplex noise generation
   - ✅ **OldFilmFilter** - Old film effect (enhance existing)
   - ✅ **OutlineFilter** - Outline effects
   - ✅ **PixelateFilter** - Pixelation effect

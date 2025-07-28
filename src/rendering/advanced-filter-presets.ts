@@ -55,6 +55,7 @@ import {
   HslAdjustmentFilter,
   ReflectionFilter,
   SimpleLightmapFilter,
+  SimplexNoiseFilter,
 } from 'pixi-filters';
 
 /**
@@ -283,8 +284,22 @@ export class AdvancedFilterPresets extends EffectPresets {
       description: 'Lightmap effect for dynamic lighting',
       performanceImpact: 3,
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
-      useCases: ['dynamic lighting', 'atmospheric effects', 'spotlight effects'],
+      useCases: [
+        'dynamic lighting',
+        'atmospheric effects',
+        'spotlight effects',
+      ],
       create: (options) => this.createSimpleLightmapEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'simplexNoise',
+      category: 'artistic' as EffectCategory,
+      description: 'Procedural simplex noise texture generation',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['texture generation', 'organic patterns', 'procedural effects'],
+      create: (options) => this.createSimplexNoiseEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -2007,14 +2022,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
-    
+
     if (ctx) {
       // Create a radial gradient for spotlight effect
       const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
       gradient.addColorStop(0, 'rgba(255, 255, 255, 1)'); // Bright center
       gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)'); // Mid brightness
       gradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); // Dark edges
-      
+
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 512, 512);
     }
@@ -2041,10 +2056,10 @@ export class AdvancedFilterPresets extends EffectPresets {
       if (!animationActive) return;
 
       time += 0.02;
-      
+
       // Animate alpha for pulsing light effect
       filter.alpha = settings.alpha * (0.8 + Math.sin(time) * 0.2);
-      
+
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -2076,6 +2091,91 @@ export class AdvancedFilterPresets extends EffectPresets {
         }
         // Destroy the lightmap texture
         lightmapTexture.destroy();
+        originalResult.cleanup();
+      },
+    };
+  }
+
+  /**
+   * Create SimplexNoise effect for procedural texture generation
+   */
+  private createSimplexNoiseEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    const intensityMap = {
+      subtle: { strength: 0.3, noiseScale: 8 },
+      moderate: { strength: 0.5, noiseScale: 10 },
+      strong: { strength: 0.7, noiseScale: 12 },
+      intense: { strength: 0.9, noiseScale: 15 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create the filter with proper options
+    const filter = new SimplexNoiseFilter({
+      strength: settings.strength,
+      noiseScale: settings.noiseScale,
+      offsetX: 0,
+      offsetY: 0,
+      offsetZ: 0,
+      step: -1, // Default value for smooth noise
+    });
+
+    debugLogger.info(
+      `SimplexNoiseFilter created - strength: ${settings.strength}, noiseScale: ${settings.noiseScale}`,
+      'FILTER_PRESETS'
+    );
+
+    const filterChain = new FilterChain({ name: 'simplex-noise-effect' });
+
+    // Animate the noise by shifting offsets for dynamic pattern
+    let animationActive = true;
+    let animationFrameId: number | null = null;
+    let time = 0;
+
+    const animate = (): void => {
+      if (!animationActive) return;
+
+      time += 0.01; // Slow animation speed for subtle movement
+      
+      // Create flowing noise pattern by animating offsets
+      filter.offsetX = Math.sin(time) * 20;
+      filter.offsetY = Math.cos(time * 0.7) * 15;
+      filter.offsetZ = time * 0.5; // Depth animation for 3D noise variation
+      
+      debugLogger.debug(
+        `SimplexNoise animation - time: ${time.toFixed(2)}, offsetX: ${filter.offsetX.toFixed(1)}, offsetY: ${filter.offsetY.toFixed(1)}, offsetZ: ${filter.offsetZ.toFixed(1)}`,
+        'FILTER_PRESETS'
+      );
+      
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Start animation
+    animate();
+
+    filterChain.addFilter(filter, {
+      id: 'simplexNoise',
+      animated: false, // We're handling animation manually
+      animationProperties: {},
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      cleanup: (): void => {
+        // Stop animation
+        animationActive = false;
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
         originalResult.cleanup();
       },
     };
