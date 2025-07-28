@@ -1458,6 +1458,20 @@ function KineticSliderDemo(): JSX.Element {
               Tilt Shift
             </button>
             <button
+              onClick={() => handleApplyFilter('twist')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Twist
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

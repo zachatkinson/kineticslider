@@ -57,6 +57,7 @@ import {
   SimpleLightmapFilter,
   SimplexNoiseFilter,
   TiltShiftFilter,
+  TwistFilter,
 } from 'pixi-filters';
 
 /**
@@ -315,6 +316,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['miniature effect', 'selective focus', 'depth of field'],
       create: (options) => this.createTiltShiftEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'twist',
+      category: 'distortion-advanced' as AdvancedEffectCategory,
+      description: 'Circular twist distortion effect',
+      performanceImpact: 3,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['whirlpool effect', 'spiral distortion', 'dynamic warping'],
+      create: (options) => this.createTwistEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -2217,11 +2228,11 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Larger gradientBlur = smoother transition between sharp and blurred areas
     const centerY = 0.5;
     const halfFocusHeight = settings.focusHeight / 2;
-    
+
     // These define the gradient transition points, not the focus boundaries
     const startY = centerY - halfFocusHeight;
     const endY = centerY + halfFocusHeight;
-    
+
     const filter = new TiltShiftFilter({
       blur: settings.blur,
       gradientBlur: settings.gradientBlur,
@@ -2245,24 +2256,24 @@ export class AdvancedFilterPresets extends EffectPresets {
       if (!animationActive) return;
 
       time += 0.005; // Even slower animation for more stable focus
-      
+
       // Very subtly shift the focus area up and down
       const focusOffset = Math.sin(time) * 0.05; // ±5% movement for subtle breathing effect
       const currentCenterY = centerY + focusOffset;
-      
+
       // Update focus area bounds with proper calculation
       const currentHalfFocusHeight = settings.focusHeight / 2;
       const currentStartY = currentCenterY - currentHalfFocusHeight;
       const currentEndY = currentCenterY + currentHalfFocusHeight;
-      
+
       filter.start = { x: 0, y: currentStartY };
       filter.end = { x: 1, y: currentEndY };
-      
+
       debugLogger.debug(
         `TiltShift animation - time: ${time.toFixed(2)}, centerY: ${currentCenterY.toFixed(2)}, startY: ${filter.start.y.toFixed(2)}, endY: ${filter.end.y.toFixed(2)}`,
         'FILTER_PRESETS'
       );
-      
+
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -2271,6 +2282,91 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     filterChain.addFilter(filter, {
       id: 'tiltShift',
+      animated: false, // We're handling animation manually
+      animationProperties: {},
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      cleanup: (): void => {
+        // Stop animation
+        animationActive = false;
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        originalResult.cleanup();
+      },
+    };
+  }
+
+  /**
+   * Create Twist effect for circular distortion/whirlpool effect
+   */
+  private createTwistEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    // Configure twist parameters based on intensity
+    const intensityMap = {
+      subtle: { angle: 2, radius: 150, speed: 0.01 },
+      moderate: { angle: 4, radius: 200, speed: 0.015 },
+      strong: { angle: 6, radius: 250, speed: 0.02 },
+      intense: { angle: 8, radius: 300, speed: 0.025 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create TwistFilter with center offset - using pixel coordinates for proper centering
+    // TwistFilter expects actual pixel coordinates, so we need to center it properly
+    const filter = new TwistFilter({
+      angle: settings.angle,
+      offset: { x: 400, y: 300 }, // Center based on typical slider dimensions (800x600)
+      radius: settings.radius,
+    });
+
+    debugLogger.info(
+      `TwistFilter created - angle: ${settings.angle}, radius: ${settings.radius}, speed: ${settings.speed}`,
+      'FILTER_PRESETS'
+    );
+
+    const filterChain = new FilterChain({ name: 'twist-effect' });
+
+    // Animate the twist angle and offset for dynamic effect
+    let animationActive = true;
+    let animationFrameId: number | null = null;
+    let time = 0;
+
+    const animate = (): void => {
+      if (!animationActive) return;
+
+      time += settings.speed;
+
+      // Animate twist angle with sine wave for smooth rotation
+      filter.angle = settings.angle + Math.sin(time) * (settings.angle * 0.3);
+
+      // Keep the twist center fixed at the center
+      filter.offset = { x: 400, y: 300 };
+
+      debugLogger.debug(
+        `Twist animation - time: ${time.toFixed(2)}, angle: ${filter.angle.toFixed(1)}, centered at (400,300)`,
+        'FILTER_PRESETS'
+      );
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Start animation
+    animate();
+
+    filterChain.addFilter(filter, {
+      id: 'twist',
       animated: false, // We're handling animation manually
       animationProperties: {},
       duration: options.duration,
