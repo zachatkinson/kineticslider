@@ -1444,6 +1444,20 @@ function KineticSliderDemo(): JSX.Element {
               Simplex Noise
             </button>
             <button
+              onClick={() => handleApplyFilter('tiltShift')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#06b6d4',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              Tilt Shift
+            </button>
+            <button
               onClick={handleClearFilters}
               style={{
                 padding: '0.5rem 1rem',

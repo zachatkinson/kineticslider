@@ -855,7 +855,7 @@ Build the **world's best slider component** - performant, accessible, and deligh
   - ✅ **RGBSplitFilter** - RGB channel split effect
   - ✅ **ShockwaveFilter** - Shockwave distortion
   - ✅ **SimpleLightmapFilter** - Basic lighting effects
-  - [ ] **TiltShiftFilter** - Tilt-shift camera effect
+  - ✅ **TiltShiftFilter** - Tilt-shift camera effect
   - [ ] **TwistFilter** - Twist distortion
   - [ ] **ZoomBlurFilter** - Zoom blur effects
 

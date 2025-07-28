@@ -56,6 +56,7 @@ import {
   ReflectionFilter,
   SimpleLightmapFilter,
   SimplexNoiseFilter,
+  TiltShiftFilter,
 } from 'pixi-filters';
 
 /**
@@ -298,8 +299,22 @@ export class AdvancedFilterPresets extends EffectPresets {
       description: 'Procedural simplex noise texture generation',
       performanceImpact: 3,
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
-      useCases: ['texture generation', 'organic patterns', 'procedural effects'],
+      useCases: [
+        'texture generation',
+        'organic patterns',
+        'procedural effects',
+      ],
       create: (options) => this.createSimplexNoiseEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'tiltShift',
+      category: 'blur-advanced' as AdvancedEffectCategory,
+      description: 'Tilt-shift camera effect with selective focus',
+      performanceImpact: 4,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['miniature effect', 'selective focus', 'depth of field'],
+      create: (options) => this.createTiltShiftEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -2136,14 +2151,115 @@ export class AdvancedFilterPresets extends EffectPresets {
       if (!animationActive) return;
 
       time += 0.01; // Slow animation speed for subtle movement
-      
+
       // Create flowing noise pattern by animating offsets
       filter.offsetX = Math.sin(time) * 20;
       filter.offsetY = Math.cos(time * 0.7) * 15;
       filter.offsetZ = time * 0.5; // Depth animation for 3D noise variation
-      
+
       debugLogger.debug(
         `SimplexNoise animation - time: ${time.toFixed(2)}, offsetX: ${filter.offsetX.toFixed(1)}, offsetY: ${filter.offsetY.toFixed(1)}, offsetZ: ${filter.offsetZ.toFixed(1)}`,
+        'FILTER_PRESETS'
+      );
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Start animation
+    animate();
+
+    filterChain.addFilter(filter, {
+      id: 'simplexNoise',
+      animated: false, // We're handling animation manually
+      animationProperties: {},
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
+    return {
+      ...originalResult,
+      cleanup: (): void => {
+        // Stop animation
+        animationActive = false;
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        originalResult.cleanup();
+      },
+    };
+  }
+
+  /**
+   * Create TiltShift effect for selective focus/miniature effect
+   */
+  private createTiltShiftEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    // Use proper PIXI.js TiltShiftFilter values based on API defaults
+    // Default blur: 100, gradientBlur: 600 - these create the wide focus area
+    const intensityMap = {
+      subtle: { blur: 50, gradientBlur: 300, focusHeight: 0.4 },
+      moderate: { blur: 75, gradientBlur: 450, focusHeight: 0.3 },
+      strong: { blur: 100, gradientBlur: 600, focusHeight: 0.25 },
+      intense: { blur: 150, gradientBlur: 800, focusHeight: 0.2 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // TiltShiftFilter uses start/end points to define the gradient transition
+    // Smaller distance between start/end = wider sharp focus area
+    // Larger gradientBlur = smoother transition between sharp and blurred areas
+    const centerY = 0.5;
+    const halfFocusHeight = settings.focusHeight / 2;
+    
+    // These define the gradient transition points, not the focus boundaries
+    const startY = centerY - halfFocusHeight;
+    const endY = centerY + halfFocusHeight;
+    
+    const filter = new TiltShiftFilter({
+      blur: settings.blur,
+      gradientBlur: settings.gradientBlur,
+      start: { x: 0, y: startY },
+      end: { x: 1, y: endY },
+    });
+
+    debugLogger.info(
+      `TiltShiftFilter created - blur: ${settings.blur}, gradientBlur: ${settings.gradientBlur}, focusHeight: ${settings.focusHeight}`,
+      'FILTER_PRESETS'
+    );
+
+    const filterChain = new FilterChain({ name: 'tilt-shift-effect' });
+
+    // Animate the focus area for dynamic tilt-shift effect
+    let animationActive = true;
+    let animationFrameId: number | null = null;
+    let time = 0;
+
+    const animate = (): void => {
+      if (!animationActive) return;
+
+      time += 0.005; // Even slower animation for more stable focus
+      
+      // Very subtly shift the focus area up and down
+      const focusOffset = Math.sin(time) * 0.05; // ±5% movement for subtle breathing effect
+      const currentCenterY = centerY + focusOffset;
+      
+      // Update focus area bounds with proper calculation
+      const currentHalfFocusHeight = settings.focusHeight / 2;
+      const currentStartY = currentCenterY - currentHalfFocusHeight;
+      const currentEndY = currentCenterY + currentHalfFocusHeight;
+      
+      filter.start = { x: 0, y: currentStartY };
+      filter.end = { x: 1, y: currentEndY };
+      
+      debugLogger.debug(
+        `TiltShift animation - time: ${time.toFixed(2)}, centerY: ${currentCenterY.toFixed(2)}, startY: ${filter.start.y.toFixed(2)}, endY: ${filter.end.y.toFixed(2)}`,
         'FILTER_PRESETS'
       );
       
@@ -2154,7 +2270,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     animate();
 
     filterChain.addFilter(filter, {
-      id: 'simplexNoise',
+      id: 'tiltShift',
       animated: false, // We're handling animation manually
       animationProperties: {},
       duration: options.duration,
