@@ -1152,35 +1152,95 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createShockwaveEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { subtle: 10, moderate: 20, strong: 40, intense: 80 };
+    // Use proper amplitude values based on main branch implementation
+    const intensityMap = { subtle: 30, moderate: 40, strong: 50, intense: 60 };
     const amplitude = intensityMap[options.intensity];
 
-    const filter = new ShockwaveFilter([0.5, 0.5]);
-    filter.radius = 0;
-    filter.amplitude = amplitude;
-    filter.wavelength = 160;
-    filter.brightness = 1;
-    filter.speed = 500;
-
-    const filterChain = new FilterChain({ name: 'shockwave-effect' });
-    filterChain.addFilter(filter, {
-      id: 'shockwave',
-      animated: true,
-      animationProperties: {
-        radius: 200,
-        amplitude: amplitude * 0.5,
-      },
-      duration: options.duration,
-      ease: options.ease,
-      onUpdate: (filter, progress) => {
-        // Animate shockwave expansion
-        (filter as ShockwaveFilter).radius = progress * 200;
-        (filter as ShockwaveFilter).amplitude =
-          amplitude * (1 - progress * 0.5);
-      },
+    // Use proper constructor format with center as {x, y} object (not array)
+    const filter = new ShockwaveFilter({
+      center: { x: 0.5, y: 0.5 }, // Should be center, but may need adjustment based on coordinate system
+      amplitude: amplitude,
+      wavelength: 160,
+      brightness: 1,
+      speed: 500,
+      radius: -1, // Infinite radius
+      time: 0,
     });
 
-    return this.createEffectResult(filterChain, [filter], options);
+    debugLogger.info(
+      `ShockwaveFilter created - center: {x:0.5, y:0.5}, amplitude: ${amplitude}, wavelength: 160, brightness: 1, speed: 500`,
+      'FILTER_PRESETS'
+    );
+
+    const filterChain = new FilterChain({ name: 'shockwave-effect' });
+
+    // Use requestAnimationFrame for continuous time animation (like main branch)
+    let animationActive = false;
+    let animationFrameId: number | null = null;
+    let lastTime = Date.now();
+    
+    const startAnimation = (): void => {
+      if (animationActive) return;
+      animationActive = true;
+      filter.time = 0; // Reset time
+      lastTime = Date.now();
+
+      const animate = () => {
+        const now = Date.now();
+        const delta = (now - lastTime) / 1000; // Convert to seconds
+        lastTime = now;
+
+        // Increment time for wave progression (like main branch)
+        filter.time += delta * 0.8; // Animation speed
+
+        debugLogger.debug(
+          `Shockwave animation - time: ${filter.time.toFixed(2)}, amplitude: ${filter.amplitude}`,
+          'FILTER_PRESETS'
+        );
+
+        // Reset wave after 3 seconds and pause
+        if (filter.time >= 3.0) {
+          animationActive = false;
+          // Pause for 1 second before next wave
+          setTimeout(() => {
+            if (animationFrameId !== null) {
+              startAnimation();
+            }
+          }, 1000);
+          return;
+        }
+
+        animationFrameId = requestAnimationFrame(animate);
+      };
+
+      animate();
+    };
+
+    // Start the animation
+    startAnimation();
+
+    filterChain.addFilter(filter, {
+      id: 'shockwave',
+      animated: false, // We're handling animation manually
+      animationProperties: {},
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const originalResult = this.createEffectResult(filterChain, [filter], options);
+    
+    return {
+      ...originalResult,
+      cleanup: (): void => {
+        // Stop the animation
+        animationActive = false;
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        originalResult.cleanup();
+      },
+    };
   }
 
   private createOutlineEffect(
