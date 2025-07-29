@@ -11,7 +11,13 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { EffectPresets } from '../rendering/effect-presets';
 import { AdvancedFilterPresets } from '../rendering/advanced-filter-presets';
 import type { SliderCore } from '../core/slider-core';
@@ -52,42 +58,6 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     return [...new Set([...baseFilters, ...advancedFilters])].sort();
   }, [effectPresets, advancedPresets]);
 
-  // Apply current filter stack (only enabled filters) - moved to top to avoid reference issues
-  const handleApplyFilters = useCallback(async () => {
-    if (!sliderEngine) {
-      return;
-    }
-
-    try {
-      const enabledFilters = activeFilters.filter((f) => f.enabled);
-
-      // Always apply the current enabled filter stack (clears and reapplies)
-      const filterNames = enabledFilters.map((f) => f.name);
-
-      if (enabledFilters.length > 0) {
-        // Create settings object with custom parameters for each filter
-        const filterSettings: Record<
-          string,
-          Record<string, number | string | boolean>
-        > = {};
-        enabledFilters.forEach((filter) => {
-          filterSettings[filter.name] = filter.settings;
-        });
-
-        await sliderEngine.applyFilters(filterNames, filterSettings);
-        onFilterApplied(filterNames);
-      } else {
-        // If no filters are enabled, clear all filters from the visual
-        await sliderEngine.clearFilters();
-        onFilterApplied([]);
-      }
-    } catch (error) {
-      onError(
-        error instanceof Error ? error.message : 'Filter application failed'
-      );
-    }
-  }, [sliderEngine, activeFilters, onFilterApplied, onError]);
-
   // Update available filters (exclude active ones)
   useEffect(() => {
     const allFilters = getAllAvailableFilters();
@@ -98,17 +68,83 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     setAvailableFilters(available);
   }, [activeFilters, getAllAvailableFilters]);
 
-  // Apply filters whenever activeFilters changes (handles enable/disable/settings changes)
+  // Stable filter state tracking with proper memoization
+  const isApplyingRef = useRef(false);
+  const lastSuccessfulStateRef = useRef<string>('');
+
+  // Memoized filter state to prevent unnecessary recalculations
+  const filterState = useMemo(() => {
+    const enabledFilters = activeFilters.filter((f) => f.enabled);
+    return {
+      enabled: enabledFilters,
+      filterNames: enabledFilters.map((f) => f.name),
+      signature: JSON.stringify({
+        filters: enabledFilters.map((f) => ({
+          name: f.name,
+          settings: f.settings,
+        })),
+      }),
+    };
+  }, [activeFilters]);
+
+  // Stable filter application function with proper state management
+  const applyFiltersStable = useCallback(
+    async (state: typeof filterState): Promise<void> => {
+      // Prevent concurrent operations
+      if (isApplyingRef.current || !sliderEngine) {
+        return;
+      }
+
+      // Skip if we're trying to apply the exact same state
+      if (state.signature === lastSuccessfulStateRef.current) {
+        return;
+      }
+
+      isApplyingRef.current = true;
+
+      try {
+        if (state.enabled.length > 0) {
+          const filterSettings: Record<
+            string,
+            Record<string, number | string | boolean>
+          > = {};
+          state.enabled.forEach((filter) => {
+            filterSettings[filter.name] = filter.settings;
+          });
+
+          await sliderEngine.applyFilters(state.filterNames, filterSettings);
+          onFilterApplied(state.filterNames);
+          lastSuccessfulStateRef.current = state.signature;
+        } else {
+          // Only clear if we previously had a successful state (not initial empty state)
+          if (lastSuccessfulStateRef.current !== '') {
+            await sliderEngine.clearFilters();
+            onFilterApplied([]);
+            lastSuccessfulStateRef.current = state.signature;
+          }
+        }
+      } catch (error) {
+        onError(
+          error instanceof Error ? error.message : 'Filter application failed'
+        );
+      } finally {
+        isApplyingRef.current = false;
+      }
+    },
+    [sliderEngine, onFilterApplied, onError]
+  );
+
+  // Effect with stable dependencies and proper cleanup
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      handleApplyFilters();
-    }, 50); // Small debounce to prevent excessive calls
+      applyFiltersStable(filterState);
+    }, 100); // Increased debounce for better stability
 
-    return (): void => clearTimeout(timeoutId);
-  }, [activeFilters, handleApplyFilters]);
+    return () => clearTimeout(timeoutId);
+  }, [filterState, applyFiltersStable]);
 
   // Add a new filter (enabled by default for immediate visual feedback)
-  const addFilter = useCallback((filterName: string) => {
+  const addFilter = useCallback((filterName: string): void => {
     const displayName =
       filterName.charAt(0).toUpperCase() + filterName.slice(1);
     const newFilter: FilterInstance = {
@@ -123,7 +159,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     setActiveFilters((prev) => [...prev, newFilter]);
     setShowDropdown(false);
 
-    // Note: handleApplyFilters will be called by useEffect when activeFilters changes
+    // Note: Filter will be applied by useEffect when activeFilters changes
   }, []);
 
   // Remove a filter
@@ -136,12 +172,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       if (newFilters.length === 0 && sliderEngine) {
         await sliderEngine.clearFilters();
         onFilterApplied([]);
-      } else {
-        // Otherwise just apply remaining enabled filters
-        setTimeout(() => handleApplyFilters(), 0);
       }
+      // Otherwise useEffect will handle applying remaining enabled filters
     },
-    [activeFilters, sliderEngine, onFilterApplied, handleApplyFilters]
+    [activeFilters, sliderEngine, onFilterApplied]
   );
 
   // Toggle filter enabled state
@@ -149,7 +183,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     setActiveFilters((prev) =>
       prev.map((f) => (f.id === filterId ? { ...f, enabled: !f.enabled } : f))
     );
-    // Note: handleApplyFilters will be called by useEffect when activeFilters changes
+    // Note: Filter will be applied by useEffect when activeFilters changes
   }, []);
 
   // Update filter settings
@@ -162,7 +196,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
             : f
         )
       );
-      // Note: handleApplyFilters will be called by useEffect when activeFilters changes
+      // Note: Filter will be applied by useEffect when activeFilters changes
     },
     []
   );
@@ -306,6 +340,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         quality: 4,
         threshold: 0.5,
       },
+      ascii: {
+        size: 12, // Match moderate intensity default that was working
+        replaceColor: false,
+        color: '#ffffff',
+      },
     };
 
     const validFilters = Object.keys(commonSettings);
@@ -341,7 +380,152 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
             >
               {key.charAt(0).toUpperCase() + key.slice(1)}
             </label>
-            {typeof value === 'number' ? (
+            {key === 'replaceColor' && typeof value === 'boolean' ? (
+              // Special handling for replaceColor as radio buttons
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-replaceColor`}
+                    checked={!value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, false);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>
+                    No (original colors)
+                  </span>
+                </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-replaceColor`}
+                    checked={value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, true);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>
+                    Yes (replace with color)
+                  </span>
+                </label>
+              </div>
+            ) : key === 'color' && typeof value === 'string' ? (
+              // Special handling for color property
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    marginBottom: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="color"
+                    value={value}
+                    onChange={(e) => {
+                      const updates = createSafeUpdate(key, e.target.value);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                    style={{
+                      width: '40px',
+                      height: '30px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => {
+                      // Validate hex color format
+                      const hexPattern = /^#[0-9A-Fa-f]{6}$/;
+                      if (
+                        hexPattern.test(e.target.value) ||
+                        e.target.value === ''
+                      ) {
+                        const updates = createSafeUpdate(key, e.target.value);
+                        updateFilterSettings(filter.id, updates);
+                      }
+                    }}
+                    placeholder="#ffffff"
+                    style={{
+                      width: '80px',
+                      padding: '0.2rem',
+                      borderRadius: '3px',
+                      border: '1px solid #d1d5db',
+                      fontSize: '0.8rem',
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      const defaultSettings = getDefaultSettings(filter.name);
+                      const defaultValue = Object.prototype.hasOwnProperty.call(
+                        defaultSettings,
+                        key
+                      )
+                        ? defaultSettings[key as keyof typeof defaultSettings]
+                        : '#ffffff';
+                      const updates = createSafeUpdate(key, defaultValue);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      padding: '0',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '3px',
+                      background: '#f9fafb',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    title={`Reset ${key} to default`}
+                  >
+                    ↻
+                  </button>
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Hex colors only (e.g., #ff0000)
+                </div>
+                {filter.settings.replaceColor === false && (
+                  <div
+                    style={{
+                      fontSize: '0.7rem',
+                      color: '#9ca3af',
+                      fontStyle: 'italic',
+                      marginTop: '0.2rem',
+                    }}
+                  >
+                    (Color ignored when "Replace Color" is No)
+                  </div>
+                )}
+              </div>
+            ) : typeof value === 'number' ? (
               <div
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >

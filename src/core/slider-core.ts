@@ -525,18 +525,12 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
           'slider-core:applyFilter'
         );
 
-        // Apply each filter to the sprite
-        filterEffect.filters.forEach((filter, index) => {
-          debugLogger.info(
-            `Applying filter ${index + 1}/${filterEffect.filters.length}: ${filter.constructor.name}`,
-            'slider-core:applyFilter'
-          );
-          if (typeof this.renderer!.applyFilter === 'function') {
-            this.renderer!.applyFilter(currentSprite, filter);
-          }
-        });
-
-        // Apply effect to sprite (this handles timeline animations)
+        // Apply effect to sprite (this handles both filter application and timeline animations)
+        // Note: Don't apply filters twice - the filterEffect.applyTo() handles filter application
+        debugLogger.info(
+          `Applying filter effect with ${filterEffect.filters.length} filters to sprite`,
+          'slider-core:applyFilter'
+        );
         filterEffect.applyTo(currentSprite);
 
         // Store reference for cleanup

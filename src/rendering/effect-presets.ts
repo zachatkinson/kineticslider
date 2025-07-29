@@ -1120,7 +1120,7 @@ export class EffectPresets {
       filterChain.addFilter(alphaFilter, {
         id: 'alpha',
       });
-      
+
       const timeline = gsap.timeline();
       const filters = [alphaFilter];
 

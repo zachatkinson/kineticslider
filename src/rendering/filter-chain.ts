@@ -468,6 +468,13 @@ export class FilterChain {
   }
 
   /**
+   * Check if the filter chain is disposed
+   */
+  isDisposed(): boolean {
+    return this.disposed;
+  }
+
+  /**
    * Dispose of the filter chain and cleanup resources
    */
   dispose(): void {

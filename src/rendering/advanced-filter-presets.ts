@@ -502,7 +502,123 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAsciiEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    // Use replaceColor: false by default to preserve original image colors
+    // Use custom settings if provided, otherwise fall back to intensity presets
+    if (options.customSettings) {
+      // Convert hex color string to RGB array [r, g, b] with values 0-1 (common PIXI.js format)
+      let colorValue: number | [number, number, number] = [1.0, 1.0, 1.0]; // Default white as RGB array
+      if (typeof options.customSettings.color === 'string') {
+        const hexColor = options.customSettings.color.replace('#', '');
+        const hexNum = parseInt(hexColor, 16);
+        // Convert hex to normalized RGB array
+        colorValue = [
+          ((hexNum >> 16) & 255) / 255, // R
+          ((hexNum >> 8) & 255) / 255, // G
+          (hexNum & 255) / 255, // B
+        ];
+      }
+
+      // Clamp size to reasonable range (ASCII filters typically work best with 4-32)
+      const sizeValue =
+        typeof options.customSettings.size === 'number'
+          ? Math.max(4, Math.min(32, options.customSettings.size))
+          : 8;
+
+      const filterSettings = {
+        size: sizeValue,
+        color: colorValue,
+        replaceColor:
+          typeof options.customSettings.replaceColor === 'boolean'
+            ? options.customSettings.replaceColor
+            : false,
+      };
+
+      debugLogger.info(
+        'ASCII Filter: Creating with settings',
+        'FILTER_PRESETS',
+        filterSettings
+      );
+      const filter = new AsciiFilter(filterSettings);
+
+      const filterChain = new FilterChain({ name: 'ascii-effect' });
+      filterChain.addFilter(filter, {
+        id: 'ascii',
+        animated: true,
+        animationProperties: { size: filter.size },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      // Enhanced applyTo method that ensures texture is GPU-ready (same as fallback)
+      const originalResult = this.createEffectResult(
+        filterChain,
+        [filter],
+        options
+      );
+
+      return {
+        ...originalResult,
+        applyTo: (target: Sprite | Container): void => {
+          const sprite = target as Sprite;
+          debugLogger.info(
+            'ASCII Filter: Attempting to apply filter to sprite',
+            'FILTER_PRESETS',
+            {
+              hasTexture: !!sprite.texture,
+              textureReady:
+                sprite.texture &&
+                sprite.texture.source &&
+                (sprite.texture.source as { valid?: boolean }).valid !== false,
+              currentFilters: sprite.filters?.length || 0,
+            }
+          );
+
+          // Check if texture is ready, if so apply immediately
+          if (
+            sprite.texture &&
+            sprite.texture.source &&
+            (sprite.texture.source as { valid?: boolean }).valid !== false
+          ) {
+            debugLogger.debug(
+              'ASCII Filter: Texture ready, applying immediately',
+              'FILTER_PRESETS'
+            );
+            originalResult.applyTo(target);
+            debugLogger.info(
+              'ASCII Filter: Applied, now sprite has filters:',
+              'FILTER_PRESETS',
+              sprite.filters?.length || 0
+            );
+          } else {
+            // Only use requestAnimationFrame if texture isn't ready yet
+            debugLogger.debug(
+              'ASCII Filter: Texture not ready, using requestAnimationFrame',
+              'FILTER_PRESETS'
+            );
+            requestAnimationFrame(() => {
+              // Check if filter chain is still valid before applying
+              if (
+                originalResult.filterChain &&
+                !originalResult.filterChain.isDisposed()
+              ) {
+                originalResult.applyTo(target);
+                debugLogger.info(
+                  'ASCII Filter: Applied via RAF, now sprite has filters:',
+                  'FILTER_PRESETS',
+                  sprite.filters?.length || 0
+                );
+              } else {
+                debugLogger.warn(
+                  'ASCII Filter: Skipped application, filter chain was disposed',
+                  'FILTER_PRESETS'
+                );
+              }
+            });
+          }
+        },
+      };
+    }
+
+    // Fallback to preset-based settings
     // Size mapping: smaller size = more detailed ASCII characters
     const intensityMap = {
       subtle: { size: 16 }, // Large ASCII blocks
@@ -512,10 +628,10 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
-    // Create ASCII filter
+    // Create ASCII filter with RGB array color format
     const filter = new AsciiFilter({
       size: settings.size,
-      color: 0xffffff,
+      color: [1.0, 1.0, 1.0], // White as RGB array
       replaceColor: false, // Use original image colors
     });
 
@@ -539,35 +655,40 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     return {
       ...originalResult,
-      applyTo: async (target: Sprite | Container): Promise<void> => {
-        const filterManager = FilterManager.getInstance();
+      applyTo: (target: Sprite | Container): void => {
+        const sprite = target as Sprite;
 
-        debugLogger.debug(
-          'Applying ASCII filter with modern filter manager',
-          'FILTER_PRESETS'
-        );
-
-        // Use FilterManager for proper isolation
-        const result = await filterManager.applyFilter(
-          target,
-          filter,
-          'ascii',
-          {
-            isolate: true, // Clear all other filters to prevent conflicts
-          }
-        );
-
-        if (result.success) {
+        // Check if texture is ready, if so apply immediately
+        if (
+          sprite.texture &&
+          sprite.texture.source &&
+          (sprite.texture.source as { valid?: boolean }).valid !== false
+        ) {
           debugLogger.debug(
-            'ASCII filter successfully applied',
+            'ASCII Filter: Texture ready, applying immediately',
             'FILTER_PRESETS'
           );
+          originalResult.applyTo(target);
         } else {
-          debugLogger.error(
-            'Failed to apply ASCII filter',
-            'FILTER_PRESETS',
-            result.error
+          // Only use requestAnimationFrame if texture isn't ready yet
+          debugLogger.debug(
+            'ASCII Filter: Texture not ready, using requestAnimationFrame',
+            'FILTER_PRESETS'
           );
+          requestAnimationFrame(() => {
+            // Check if filter chain is still valid before applying
+            if (
+              originalResult.filterChain &&
+              !originalResult.filterChain.isDisposed()
+            ) {
+              originalResult.applyTo(target);
+            } else {
+              debugLogger.warn(
+                'ASCII Filter: Skipped application, filter chain was disposed',
+                'FILTER_PRESETS'
+              );
+            }
+          });
         }
       },
     };
@@ -1429,7 +1550,24 @@ export class AdvancedFilterPresets extends EffectPresets {
             : 1.0,
       });
 
-      const filterChain = new FilterChain();
+      const filterChain = new FilterChain({ name: 'adjustment-effect' });
+      filterChain.addFilter(filter, {
+        id: 'adjustment',
+        animated: true,
+        animationProperties: {
+          brightness: filter.brightness,
+          contrast: filter.contrast,
+          saturation: filter.saturation,
+          gamma: filter.gamma,
+          red: filter.red,
+          green: filter.green,
+          blue: filter.blue,
+          alpha: filter.alpha,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
       return this.createEffectResult(filterChain, [filter], options);
     }
 
@@ -1543,7 +1681,20 @@ export class AdvancedFilterPresets extends EffectPresets {
         },
       });
 
-      const filterChain = new FilterChain();
+      const filterChain = new FilterChain({ name: 'advanced-bloom-effect' });
+      filterChain.addFilter(filter, {
+        id: 'advanced-bloom',
+        animated: true,
+        animationProperties: {
+          bloomScale: filter.bloomScale,
+          blur: filter.blur,
+          brightness: filter.brightness,
+          threshold: filter.threshold,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
       return this.createEffectResult(filterChain, [filter], options);
     }
 
