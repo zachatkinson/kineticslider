@@ -791,13 +791,13 @@ export class EffectPresets {
       strong: { scale: 40, spriteScale: 2 },
       intense: { scale: 80, spriteScale: 3 },
     };
-    
+
     const settings = scaleMap[options.intensity];
-    
+
     // Configure displacement sprite
     displacementSprite.scale.set(settings.spriteScale);
     displacementSprite.anchor.set(0.5);
-    
+
     // Create displacement filter with proper scale
     const displacementFilter = new DisplacementFilter({
       sprite: displacementSprite,
@@ -1102,7 +1102,9 @@ export class EffectPresets {
   /**
    * Create alpha transparency effect
    */
-  private createAlphaEffect(options: Required<PresetOptions>): EffectPresetResult {
+  private createAlphaEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
     const intensityMap = {
       subtle: 0.85,
       moderate: 0.7,
@@ -1144,7 +1146,9 @@ export class EffectPresets {
   /**
    * Create standard blur effect
    */
-  private createBlurEffect(options: Required<PresetOptions>): EffectPresetResult {
+  private createBlurEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
     const intensityMap = {
       subtle: 2,
       moderate: 4,
@@ -1186,7 +1190,9 @@ export class EffectPresets {
   /**
    * Create color matrix effect with various color transformations
    */
-  private createColorMatrixEffect(options: Required<PresetOptions>): EffectPresetResult {
+  private createColorMatrixEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
     const colorMatrixFilter = new ColorMatrixFilter();
 
     // Different color matrix effects based on intensity

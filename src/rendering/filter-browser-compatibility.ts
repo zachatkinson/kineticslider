@@ -57,7 +57,10 @@ export interface CompatibilityMatrix {
 export class FilterBrowserCompatibility {
   private static knownIssues: Record<string, Record<string, string[]>> = {
     displacement: {
-      safari: ['May have rendering artifacts on older versions', 'Performance degradation on iOS'],
+      safari: [
+        'May have rendering artifacts on older versions',
+        'Performance degradation on iOS',
+      ],
     },
     shockwave: {
       safari: ['Shader compilation issues on some devices'],
@@ -76,7 +79,10 @@ export class FilterBrowserCompatibility {
     },
   };
 
-  private static performanceRatings: Record<string, Record<string, 'excellent' | 'good' | 'poor'>> = {
+  private static performanceRatings: Record<
+    string,
+    Record<string, 'excellent' | 'good' | 'poor'>
+  > = {
     blur: {
       chrome: 'excellent',
       firefox: 'excellent',
@@ -109,7 +115,7 @@ export class FilterBrowserCompatibility {
   static detectBrowser(): BrowserInfo {
     const ua = navigator.userAgent.toLowerCase();
     const platform = navigator.platform.toLowerCase();
-    
+
     let name: BrowserInfo['name'] = 'unknown';
     let version = '0';
 
@@ -131,12 +137,12 @@ export class FilterBrowserCompatibility {
     }
 
     const mobile = /mobile|android|ios|iphone|ipad|tablet/i.test(ua);
-    
+
     // Detect WebGL support
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl');
     const gl2 = canvas.getContext('webgl2');
-    
+
     return {
       name,
       version,
@@ -150,13 +156,20 @@ export class FilterBrowserCompatibility {
   /**
    * Generate compatibility matrix for all filters
    */
-  static async generateCompatibilityMatrix(filterNames: string[]): Promise<CompatibilityMatrix> {
-    const browsers: BrowserInfo['name'][] = ['chrome', 'firefox', 'safari', 'edge'];
+  static async generateCompatibilityMatrix(
+    filterNames: string[]
+  ): Promise<CompatibilityMatrix> {
+    const browsers: BrowserInfo['name'][] = [
+      'chrome',
+      'firefox',
+      'safari',
+      'edge',
+    ];
     const matrix = new Map<string, Map<string, FilterCompatibilityStatus>>();
 
     for (const filter of filterNames) {
       const browserMap = new Map<string, FilterCompatibilityStatus>();
-      
+
       for (const browserName of browsers) {
         const browser: BrowserInfo = {
           name: browserName,
@@ -170,7 +183,7 @@ export class FilterBrowserCompatibility {
         const status = this.getFilterCompatibility(filter, browser);
         browserMap.set(browserName, status);
       }
-      
+
       matrix.set(filter, browserMap);
     }
 
@@ -215,14 +228,18 @@ export class FilterBrowserCompatibility {
     filter: string,
     browser: BrowserInfo
   ): FilterCompatibilityStatus {
-    const filterIssues = this.knownIssues[filter as keyof typeof this.knownIssues];
-    const issues = filterIssues?.[browser.name as keyof typeof filterIssues] || [];
-    const filterPerf = this.performanceRatings[filter as keyof typeof this.performanceRatings];
-    const performanceRating = filterPerf?.[browser.name as keyof typeof filterPerf] || 'good';
-    
+    const filterIssues =
+      this.knownIssues[filter as keyof typeof this.knownIssues];
+    const issues =
+      filterIssues?.[browser.name as keyof typeof filterIssues] || [];
+    const filterPerf =
+      this.performanceRatings[filter as keyof typeof this.performanceRatings];
+    const performanceRating =
+      filterPerf?.[browser.name as keyof typeof filterPerf] || 'good';
+
     // Determine status based on issues and WebGL support
     let status: FilterCompatibilityStatus['status'] = 'full';
-    
+
     if (!browser.webgl) {
       status = 'none';
       issues.push('WebGL not supported');
@@ -236,7 +253,10 @@ export class FilterBrowserCompatibility {
       issues.push('Requires WebGL2 for full functionality');
     }
 
-    if (browser.mobile && ['displacement', 'shockwave', 'advancedBloom'].includes(filter)) {
+    if (
+      browser.mobile &&
+      ['displacement', 'shockwave', 'advancedBloom'].includes(filter)
+    ) {
       status = 'partial';
       issues.push('Performance may be limited on mobile devices');
     }
@@ -263,11 +283,14 @@ export class FilterBrowserCompatibility {
 
     matrix.forEach((browserMap, filter) => {
       let hasIssues = false;
-      
+
       browserMap.forEach((status, browser) => {
         if (status.status !== 'full') {
           hasIssues = true;
-          problematicBrowsers.set(browser, (problematicBrowsers.get(browser) || 0) + 1);
+          problematicBrowsers.set(
+            browser,
+            (problematicBrowsers.get(browser) || 0) + 1
+          );
         }
       });
 
@@ -352,7 +375,7 @@ export class FilterBrowserCompatibility {
     matrix.filters.forEach((browserMap, filter) => {
       html += '<tr>';
       html += `<td><strong>${filter}</strong></td>`;
-      
+
       browsers.forEach((browser) => {
         const status = browserMap.get(browser);
         if (status) {
@@ -365,7 +388,7 @@ export class FilterBrowserCompatibility {
           html += '<td class="status-untested">?</td>';
         }
       });
-      
+
       html += '</tr>';
     });
 
@@ -401,31 +424,40 @@ export class FilterBrowserCompatibility {
     const data = {
       generated: new Date().toISOString(),
       summary: matrix.summary,
-      compatibility: {} as Record<string, Record<string, {
-        status: string;
-        issues: string[];
-        performance: string;
-      }>>,
+      compatibility: {} as Record<
+        string,
+        Record<
+          string,
+          {
+            status: string;
+            issues: string[];
+            performance: string;
+          }
+        >
+      >,
       recommendations: matrix.recommendations,
     };
 
     for (const [filter, browserMap] of matrix.filters.entries()) {
-      const filterObject: Record<string, {
-        status: string;
-        issues: string[];
-        performance: string;
-      }> = {};
-      
+      const filterObject: Record<
+        string,
+        {
+          status: string;
+          issues: string[];
+          performance: string;
+        }
+      > = {};
+
       for (const [browser, status] of browserMap.entries()) {
         Object.assign(filterObject, {
           [browser]: {
             status: status.status,
             issues: status.issues,
             performance: status.performance,
-          }
+          },
         });
       }
-      
+
       Object.assign(data.compatibility, { [filter]: filterObject });
     }
 

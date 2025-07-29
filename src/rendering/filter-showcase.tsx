@@ -17,12 +17,12 @@ import type { PresetIntensity } from './effect-presets';
 /**
  * Filter category for organization
  */
-type FilterCategory = 
-  | 'Core PIXI' 
-  | 'Blur Effects' 
-  | 'Color Effects' 
-  | 'Distortion Effects' 
-  | 'Artistic Effects' 
+type FilterCategory =
+  | 'Core PIXI'
+  | 'Blur Effects'
+  | 'Color Effects'
+  | 'Distortion Effects'
+  | 'Artistic Effects'
   | 'Special Effects';
 
 /**
@@ -64,10 +64,13 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
 
   const [filters, setFilters] = useState<FilterInfo[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
-  const [filterIntensity, setFilterIntensity] = useState<PresetIntensity>('moderate');
+  const [filterIntensity, setFilterIntensity] =
+    useState<PresetIntensity>('moderate');
   const [isLoading, setIsLoading] = useState(true);
   const [fps, setFps] = useState(60);
-  const [browserInfo, setBrowserInfo] = useState<ReturnType<typeof FilterBrowserCompatibility.detectBrowser> | null>(null);
+  const [browserInfo, setBrowserInfo] = useState<ReturnType<
+    typeof FilterBrowserCompatibility.detectBrowser
+  > | null>(null);
 
   // Initialize PIXI application
   useEffect(() => {
@@ -90,13 +93,16 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
       // Load image texture
       const texture = await Assets.load(imageUrl);
       const sprite = new Sprite(texture);
-      
+
       // Scale sprite to fit
-      const scale = Math.min(width / sprite.texture.width, height / sprite.texture.height);
+      const scale = Math.min(
+        width / sprite.texture.width,
+        height / sprite.texture.height
+      );
       sprite.scale.set(scale);
       sprite.anchor.set(0.5);
       sprite.position.set(width / 2, height / 2);
-      
+
       app.stage.addChild(sprite);
       spriteRef.current = sprite;
 
@@ -106,7 +112,9 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
 
       // Load displacement texture for displacement-based effects
       try {
-        const displacementTexture = await Assets.load('/images/effects/background-displace.jpg');
+        const displacementTexture = await Assets.load(
+          '/images/effects/background-displace.jpg'
+        );
         effectPresetsRef.current.setDisplacementTexture(displacementTexture);
         advancedPresetsRef.current.setDisplacementTexture(displacementTexture);
       } catch {
@@ -118,7 +126,7 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
 
       // Initialize filter list
       initializeFilters();
-      
+
       setIsLoading(false);
 
       // Start FPS monitoring
@@ -146,100 +154,264 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
   const initializeFilters = (): void => {
     const filterList: FilterInfo[] = [
       // Core PIXI Filters
-      { name: 'blur', category: 'Core PIXI', description: 'Standard blur effect', intensity: 'moderate', enabled: false },
-      { name: 'alpha', category: 'Core PIXI', description: 'Alpha transparency', intensity: 'moderate', enabled: false },
-      { name: 'colorMatrix', category: 'Core PIXI', description: 'Color matrix transformations', intensity: 'moderate', enabled: false },
-      { name: 'displacement', category: 'Core PIXI', description: 'Displacement mapping', intensity: 'moderate', enabled: false },
-      
+      {
+        name: 'blur',
+        category: 'Core PIXI',
+        description: 'Standard blur effect',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'alpha',
+        category: 'Core PIXI',
+        description: 'Alpha transparency',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'colorMatrix',
+        category: 'Core PIXI',
+        description: 'Color matrix transformations',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'displacement',
+        category: 'Core PIXI',
+        description: 'Displacement mapping',
+        intensity: 'moderate',
+        enabled: false,
+      },
+
       // Blur Effects
-      { name: 'motionBlur', category: 'Blur Effects', description: 'Directional motion blur', intensity: 'moderate', enabled: false },
-      { name: 'kawaseBlur', category: 'Blur Effects', description: 'High-quality Kawase blur', intensity: 'moderate', enabled: false },
-      { name: 'radialBlur', category: 'Blur Effects', description: 'Radial blur effect', intensity: 'moderate', enabled: false },
-      { name: 'zoomBlur', category: 'Blur Effects', description: 'Zoom blur effect', intensity: 'moderate', enabled: false },
-      
+      {
+        name: 'motionBlur',
+        category: 'Blur Effects',
+        description: 'Directional motion blur',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'kawaseBlur',
+        category: 'Blur Effects',
+        description: 'High-quality Kawase blur',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'radialBlur',
+        category: 'Blur Effects',
+        description: 'Radial blur effect',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'zoomBlur',
+        category: 'Blur Effects',
+        description: 'Zoom blur effect',
+        intensity: 'moderate',
+        enabled: false,
+      },
+
       // Color Effects
-      { name: 'vintage', category: 'Color Effects', description: 'Vintage color grading', intensity: 'moderate', enabled: false },
-      { name: 'cyberpunk', category: 'Color Effects', description: 'Cyberpunk color palette', intensity: 'moderate', enabled: false },
-      { name: 'blackAndWhite', category: 'Color Effects', description: 'Black and white conversion', intensity: 'moderate', enabled: false },
-      { name: 'adjustment', category: 'Color Effects', description: 'Color adjustments', intensity: 'moderate', enabled: false },
-      
+      {
+        name: 'vintage',
+        category: 'Color Effects',
+        description: 'Vintage color grading',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'cyberpunk',
+        category: 'Color Effects',
+        description: 'Cyberpunk color palette',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'blackAndWhite',
+        category: 'Color Effects',
+        description: 'Black and white conversion',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'adjustment',
+        category: 'Color Effects',
+        description: 'Color adjustments',
+        intensity: 'moderate',
+        enabled: false,
+      },
+
       // Distortion Effects
-      { name: 'wave', category: 'Distortion Effects', description: 'Wave distortion', intensity: 'moderate', enabled: false },
-      { name: 'twist', category: 'Distortion Effects', description: 'Twist distortion', intensity: 'moderate', enabled: false },
-      { name: 'bulgePinch', category: 'Distortion Effects', description: 'Bulge and pinch', intensity: 'moderate', enabled: false },
-      { name: 'shockwave', category: 'Distortion Effects', description: 'Shockwave ripple', intensity: 'moderate', enabled: false },
-      
+      {
+        name: 'wave',
+        category: 'Distortion Effects',
+        description: 'Wave distortion',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'twist',
+        category: 'Distortion Effects',
+        description: 'Twist distortion',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'bulgePinch',
+        category: 'Distortion Effects',
+        description: 'Bulge and pinch',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'shockwave',
+        category: 'Distortion Effects',
+        description: 'Shockwave ripple',
+        intensity: 'moderate',
+        enabled: false,
+      },
+
       // Artistic Effects
-      { name: 'pixelate', category: 'Artistic Effects', description: 'Pixelation effect', intensity: 'moderate', enabled: false },
-      { name: 'ascii', category: 'Artistic Effects', description: 'ASCII art conversion', intensity: 'moderate', enabled: false },
-      { name: 'dot', category: 'Artistic Effects', description: 'Halftone dots', intensity: 'moderate', enabled: false },
-      { name: 'crt', category: 'Artistic Effects', description: 'CRT monitor simulation', intensity: 'moderate', enabled: false },
-      { name: 'crosshatch', category: 'Artistic Effects', description: 'Cross-hatch pattern', intensity: 'moderate', enabled: false },
-      
+      {
+        name: 'pixelate',
+        category: 'Artistic Effects',
+        description: 'Pixelation effect',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'ascii',
+        category: 'Artistic Effects',
+        description: 'ASCII art conversion',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'dot',
+        category: 'Artistic Effects',
+        description: 'Halftone dots',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'crt',
+        category: 'Artistic Effects',
+        description: 'CRT monitor simulation',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'crosshatch',
+        category: 'Artistic Effects',
+        description: 'Cross-hatch pattern',
+        intensity: 'moderate',
+        enabled: false,
+      },
+
       // Special Effects
-      { name: 'glow', category: 'Special Effects', description: 'Glow effect', intensity: 'moderate', enabled: false },
-      { name: 'outline', category: 'Special Effects', description: 'Outline stroke', intensity: 'moderate', enabled: false },
-      { name: 'emboss', category: 'Special Effects', description: 'Emboss relief', intensity: 'moderate', enabled: false },
-      { name: 'glitch', category: 'Special Effects', description: 'Digital glitch', intensity: 'moderate', enabled: false },
-      { name: 'godray', category: 'Special Effects', description: 'God ray lighting', intensity: 'moderate', enabled: false },
+      {
+        name: 'glow',
+        category: 'Special Effects',
+        description: 'Glow effect',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'outline',
+        category: 'Special Effects',
+        description: 'Outline stroke',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'emboss',
+        category: 'Special Effects',
+        description: 'Emboss relief',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'glitch',
+        category: 'Special Effects',
+        description: 'Digital glitch',
+        intensity: 'moderate',
+        enabled: false,
+      },
+      {
+        name: 'godray',
+        category: 'Special Effects',
+        description: 'God ray lighting',
+        intensity: 'moderate',
+        enabled: false,
+      },
     ];
 
     setFilters(filterList);
   };
 
   // Apply filter to sprite
-  const applyFilter = useCallback((filterName: string, intensity: PresetIntensity) => {
-    if (!spriteRef.current || !effectPresetsRef.current || !advancedPresetsRef.current) return;
+  const applyFilter = useCallback(
+    (filterName: string, intensity: PresetIntensity) => {
+      if (
+        !spriteRef.current ||
+        !effectPresetsRef.current ||
+        !advancedPresetsRef.current
+      )
+        return;
 
-    try {
-      // Clear existing filters
-      if (spriteRef.current.filters) {
-        spriteRef.current.filters = [];
-      }
-
-      // Try to create the filter
-      let effect;
       try {
-        effect = effectPresetsRef.current.createEffect(filterName, {
-          intensity,
-          duration: 0.5,
-          ease: 'power2.out',
-        });
-      } catch {
-        // Try advanced presets
+        // Clear existing filters
+        if (spriteRef.current.filters) {
+          spriteRef.current.filters = [];
+        }
+
+        // Try to create the filter
+        let effect;
         try {
-          effect = advancedPresetsRef.current.createEffect(filterName, {
+          effect = effectPresetsRef.current.createEffect(filterName, {
             intensity,
             duration: 0.5,
             ease: 'power2.out',
           });
         } catch {
-          // Filter not found in advanced presets - skip silently
-          return;
+          // Try advanced presets
+          try {
+            effect = advancedPresetsRef.current.createEffect(filterName, {
+              intensity,
+              duration: 0.5,
+              ease: 'power2.out',
+            });
+          } catch {
+            // Filter not found in advanced presets - skip silently
+            return;
+          }
         }
+
+        // Apply the filter
+        effect.applyTo(spriteRef.current);
+
+        // Update state
+        setFilters((prev) =>
+          prev.map((f) => ({
+            ...f,
+            enabled: f.name === filterName,
+            intensity: f.name === filterName ? intensity : f.intensity,
+          }))
+        );
+        setSelectedFilter(filterName);
+      } catch {
+        // Filter application failed - error handled silently
       }
-
-      // Apply the filter
-      effect.applyTo(spriteRef.current);
-
-      // Update state
-      setFilters((prev) =>
-        prev.map((f) => ({
-          ...f,
-          enabled: f.name === filterName,
-          intensity: f.name === filterName ? intensity : f.intensity,
-        }))
-      );
-      setSelectedFilter(filterName);
-    } catch {
-      // Filter application failed - error handled silently
-    }
-  }, []);
+    },
+    []
+  );
 
   // Clear all filters
   const clearFilters = useCallback(() => {
     if (!spriteRef.current) return;
-    
+
     spriteRef.current.filters = [];
     setFilters((prev) => prev.map((f) => ({ ...f, enabled: false })));
     setSelectedFilter(null);
@@ -259,10 +431,12 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
 
   // Render filter button
   const renderFilterButton = (filter: FilterInfo): React.JSX.Element => {
-    const isCompatible = browserInfo && FilterBrowserCompatibility['getFilterCompatibility'](
-      filter.name,
-      browserInfo
-    ).status !== 'none';
+    const isCompatible =
+      browserInfo &&
+      FilterBrowserCompatibility['getFilterCompatibility'](
+        filter.name,
+        browserInfo
+      ).status !== 'none';
 
     return (
       <button
@@ -272,7 +446,11 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
         style={{
           padding: '8px 16px',
           margin: '4px',
-          background: filter.enabled ? '#4CAF50' : isCompatible ? '#2196F3' : '#9E9E9E',
+          background: filter.enabled
+            ? '#4CAF50'
+            : isCompatible
+              ? '#2196F3'
+              : '#9E9E9E',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
@@ -290,23 +468,38 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
   };
 
   // Group filters by category
-  const filtersByCategory = filters.reduce((acc, filter) => {
-    if (!acc[filter.category]) {
-      acc[filter.category] = [];
-    }
-    acc[filter.category].push(filter);
-    return acc;
-  }, {} as Record<FilterCategory, FilterInfo[]>);
+  const filtersByCategory = filters.reduce(
+    (acc, filter) => {
+      if (!acc[filter.category]) {
+        acc[filter.category] = [];
+      }
+      acc[filter.category].push(filter);
+      return acc;
+    },
+    {} as Record<FilterCategory, FilterInfo[]>
+  );
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>🎨 Interactive Filter Showcase</h1>
-      
+
       {/* Performance and Browser Info */}
-      <div style={{ marginBottom: '20px', padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>
-        <span style={{ marginRight: '20px' }}>FPS: <strong>{fps}</strong></span>
+      <div
+        style={{
+          marginBottom: '20px',
+          padding: '10px',
+          background: '#f5f5f5',
+          borderRadius: '8px',
+        }}
+      >
         <span style={{ marginRight: '20px' }}>
-          Browser: <strong>{browserInfo?.name} {browserInfo?.version}</strong>
+          FPS: <strong>{fps}</strong>
+        </span>
+        <span style={{ marginRight: '20px' }}>
+          Browser:{' '}
+          <strong>
+            {browserInfo?.name} {browserInfo?.version}
+          </strong>
         </span>
         <span>
           WebGL2: <strong>{browserInfo?.webgl2 ? '✅' : '❌'}</strong>
@@ -314,9 +507,9 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
       </div>
 
       {/* Canvas Container */}
-      <div 
-        ref={canvasRef} 
-        style={{ 
+      <div
+        ref={canvasRef}
+        style={{
           marginBottom: '20px',
           border: '2px solid #ddd',
           borderRadius: '8px',
@@ -346,7 +539,7 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
             <option value="intense">Intense</option>
           </select>
         </label>
-        
+
         <button
           onClick={clearFilters}
           style={{
@@ -379,16 +572,20 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
 
       {/* Selected Filter Info */}
       {selectedFilter && (
-        <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          background: '#e3f2fd', 
-          borderRadius: '8px',
-          border: '1px solid #2196F3',
-        }}>
+        <div
+          style={{
+            marginTop: '20px',
+            padding: '15px',
+            background: '#e3f2fd',
+            borderRadius: '8px',
+            border: '1px solid #2196F3',
+          }}
+        >
           <h3>Active Filter: {selectedFilter}</h3>
           <p>{filters.find((f) => f.name === selectedFilter)?.description}</p>
-          <p>Intensity: <strong>{filterIntensity}</strong></p>
+          <p>
+            Intensity: <strong>{filterIntensity}</strong>
+          </p>
         </div>
       )}
     </div>

@@ -522,7 +522,7 @@ export class DisplacementEffects {
       const bounds = container.getBounds();
       const relativeX = event.clientX - bounds.x;
       const relativeY = event.clientY - bounds.y;
-      
+
       this.state.targetMousePosition = {
         x: Math.max(0, Math.min(1, relativeX / bounds.width)),
         y: Math.max(0, Math.min(1, relativeY / bounds.height)),

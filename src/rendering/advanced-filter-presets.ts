@@ -335,7 +335,12 @@ export class AdvancedFilterPresets extends EffectPresets {
       description: 'Radial zoom blur effect from center point',
       performanceImpact: 4,
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
-      useCases: ['speed effects', 'zoom transitions', 'motion blur', 'impact effects'],
+      useCases: [
+        'speed effects',
+        'zoom transitions',
+        'motion blur',
+        'impact effects',
+      ],
       create: (options) => this.createZoomBlurEffect(options),
     });
 
@@ -2426,14 +2431,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       innerRadius: settings.innerRadius,
       radius: settings.radius,
     });
-    
+
     debugLogger.info(
       `ZoomBlurFilter created - strength: ${settings.strength}, center: {x:400, y:300}, radius: ${settings.radius}, innerRadius: ${settings.innerRadius}`,
       'FILTER_PRESETS'
     );
 
     const filterChain = new FilterChain({ name: 'zoom-blur-effect' });
-    
+
     filterChain.addFilter(filter, {
       id: 'zoomBlur',
       animated: true,
@@ -2444,31 +2449,40 @@ export class AdvancedFilterPresets extends EffectPresets {
       ease: options.ease,
     });
 
-    const originalResult = this.createEffectResult(filterChain, [filter], options);
-    
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+
     // Override applyTo to set proper center
     return {
       ...originalResult,
       applyTo: async (target: Sprite | Container): Promise<void> => {
         // Update center to sprite's actual center
         const app = target.parent?.parent;
-        
+
         // Calculate center position for zoom blur
-        if (app && (app as unknown as { screen?: { width: number; height: number } }).screen) {
-          const screen = (app as unknown as { screen: { width: number; height: number } }).screen;
-          
+        if (
+          app &&
+          (app as unknown as { screen?: { width: number; height: number } })
+            .screen
+        ) {
+          const screen = (
+            app as unknown as { screen: { width: number; height: number } }
+          ).screen;
+
           // Use screen center - filters use pixel coordinates
           const centerXPixel = screen.width / 2;
           const centerYPixel = screen.height / 2;
-          
-          // Set center to pixel coordinates 
+
+          // Set center to pixel coordinates
           filter.center = { x: centerXPixel, y: centerYPixel };
         }
-        
+
         // Call original applyTo
         await originalResult.applyTo(target);
       },
     };
   }
-
 }

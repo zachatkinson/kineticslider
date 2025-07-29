@@ -8,7 +8,10 @@
  */
 
 import { Application, Sprite, Texture, Filter } from 'pixi.js';
-import { ComprehensiveFilterValidator, PerformanceMetrics } from './comprehensive-filter-validator';
+import {
+  ComprehensiveFilterValidator,
+  PerformanceMetrics,
+} from './comprehensive-filter-validator';
 import { debugLogger } from '../utils/debug-logger';
 
 /**
@@ -120,7 +123,9 @@ export class FilterPerformanceBenchmark {
   /**
    * Run comprehensive benchmark
    */
-  async runBenchmark(config?: Partial<BenchmarkConfig>): Promise<BenchmarkReport> {
+  async runBenchmark(
+    config?: Partial<BenchmarkConfig>
+  ): Promise<BenchmarkReport> {
     const benchmarkConfig = { ...this.defaultConfig, ...config };
     const startTime = performance.now();
 
@@ -158,7 +163,10 @@ export class FilterPerformanceBenchmark {
     }
 
     // Generate recommendations
-    const recommendations = this.generateRecommendations(results, problematicFilters);
+    const recommendations = this.generateRecommendations(
+      results,
+      problematicFilters
+    );
 
     // Check for performance regression
     const hasRegression = problematicFilters.length > 0;
@@ -217,7 +225,9 @@ export class FilterPerformanceBenchmark {
 
     // Measure performance
     const frameTimes: number[] = [];
-    const startMemory = (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0;
+    const startMemory =
+      (performance as { memory?: { usedJSHeapSize?: number } }).memory
+        ?.usedJSHeapSize || 0;
     let drawCalls = 0;
 
     for (let frame = 0; frame < config.frameCount; frame++) {
@@ -233,7 +243,7 @@ export class FilterPerformanceBenchmark {
 
       // Render
       this.app.renderer.render(this.app.stage);
-      
+
       // Approximate draw calls (would need WebGL context for accurate count)
       drawCalls = sprites.length * filters.length;
 
@@ -241,11 +251,14 @@ export class FilterPerformanceBenchmark {
       frameTimes.push(frameEnd - frameStart);
     }
 
-    const endMemory = (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0;
+    const endMemory =
+      (performance as { memory?: { usedJSHeapSize?: number } }).memory
+        ?.usedJSHeapSize || 0;
     const memoryUsage = (endMemory - startMemory) / 1024 / 1024;
 
     // Calculate metrics
-    const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+    const avgFrameTime =
+      frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
     const maxFrameTime = Math.max(...frameTimes);
     const minFrameTime = Math.min(...frameTimes);
     const fps = 1000 / avgFrameTime;
@@ -304,7 +317,7 @@ export class FilterPerformanceBenchmark {
    */
   private getFilterCombinations(filters: string[]): string[][] {
     const combinations: string[][] = [];
-    
+
     // Test some common 2-filter combinations
     const commonPairs = [
       ['blur', 'glow'],
@@ -321,7 +334,11 @@ export class FilterPerformanceBenchmark {
     }
 
     // Test a 3-filter combination
-    if (filters.includes('blur') && filters.includes('glow') && filters.includes('colorMatrix')) {
+    if (
+      filters.includes('blur') &&
+      filters.includes('glow') &&
+      filters.includes('colorMatrix')
+    ) {
       combinations.push(['blur', 'glow', 'colorMatrix']);
     }
 
@@ -370,7 +387,8 @@ export class FilterPerformanceBenchmark {
       );
     }
 
-    const avgFps = results.reduce((sum, r) => sum + r.metrics.fps, 0) / results.length;
+    const avgFps =
+      results.reduce((sum, r) => sum + r.metrics.fps, 0) / results.length;
     if (avgFps < 50) {
       recommendations.push(
         '⚡ Overall performance below target, consider reducing default filter intensity'
@@ -394,25 +412,33 @@ export class FilterPerformanceBenchmark {
     lines.push('');
 
     // Summary
-    const avgFps = report.results.reduce((sum, r) => sum + r.metrics.fps, 0) / report.results.length;
+    const avgFps =
+      report.results.reduce((sum, r) => sum + r.metrics.fps, 0) /
+      report.results.length;
     lines.push('📈 Summary:');
     lines.push(`   Average FPS: ${avgFps.toFixed(1)}`);
     lines.push(`   Filters Tested: ${report.results.length}`);
-    lines.push(`   Has Regression: ${report.hasRegression ? 'YES ⚠️' : 'NO ✅'}`);
+    lines.push(
+      `   Has Regression: ${report.hasRegression ? 'YES ⚠️' : 'NO ✅'}`
+    );
     lines.push('');
 
     // Detailed results
     lines.push('🔍 Detailed Results:');
     lines.push('-'.repeat(60));
-    
+
     for (const result of report.results) {
       const status = result.metrics.maintains60fps ? '✅' : '❌';
       lines.push(
         `${status} ${result.filters.join(' + ')}: ${result.metrics.fps.toFixed(1)} FPS`
       );
-      lines.push(`   Frame Time: ${result.metrics.avgFrameTime.toFixed(2)}ms (max: ${result.metrics.maxFrameTime.toFixed(2)}ms)`);
+      lines.push(
+        `   Frame Time: ${result.metrics.avgFrameTime.toFixed(2)}ms (max: ${result.metrics.maxFrameTime.toFixed(2)}ms)`
+      );
       lines.push(`   Memory: ${result.metrics.memoryUsage.toFixed(1)}MB`);
-      lines.push(`   Config: ${result.config.spriteCount} sprites, ${result.config.frameCount} frames`);
+      lines.push(
+        `   Config: ${result.config.spriteCount} sprites, ${result.config.frameCount} frames`
+      );
       lines.push('');
     }
 

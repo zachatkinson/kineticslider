@@ -16,106 +16,108 @@ import { navigateAndWait } from './utils';
 // Comprehensive filter name mapping based on actual presets
 const filterNameMap: Record<string, string> = {
   // EffectPresets filters
-  'blur': 'blur',
-  'softblur': 'softBlur',
-  'motionblur': 'motionBlur',
-  'alpha': 'alpha',
-  'colormatrix': 'colorMatrix',
-  'softglow': 'softGlow',
-  'neonglow': 'neonGlow',
-  'vintage': 'vintage',
-  'cyberpunk': 'cyberpunk',
-  'blackandwhite': 'blackAndWhite',
-  'displacement': 'displacement',
-  'wave': 'wave',
-  'mousefollowdisplacement': 'mouseFollowDisplacement',
-  'idlefloat': 'idleFloat',
-  'cinematictransition': 'cinematicTransition',
-  'glitcheffect': 'glitchEffect',
-  
+  blur: 'blur',
+  softblur: 'softBlur',
+  motionblur: 'motionBlur',
+  alpha: 'alpha',
+  colormatrix: 'colorMatrix',
+  softglow: 'softGlow',
+  neonglow: 'neonGlow',
+  vintage: 'vintage',
+  cyberpunk: 'cyberpunk',
+  blackandwhite: 'blackAndWhite',
+  displacement: 'displacement',
+  wave: 'wave',
+  mousefollowdisplacement: 'mouseFollowDisplacement',
+  idlefloat: 'idleFloat',
+  cinematictransition: 'cinematicTransition',
+  glitcheffect: 'glitchEffect',
+
   // AdvancedFilterPresets filters
-  'crt': 'crt',
-  'oldfilm': 'oldFilm',
+  crt: 'crt',
+  oldfilm: 'oldFilm',
   'old film': 'oldFilm',
-  'ascii': 'ascii',
-  'dot': 'dot',
-  'dropshadow': 'dropShadow',
-  'crosshatch': 'crosshatch',
-  'emboss': 'emboss',
-  'adjustment': 'adjustment',
-  'bloom': 'bloom',
-  'advancedbloom': 'advancedBloom',
-  'glitch': 'glitch',
-  'rgbsplit': 'rgbSplit',
-  'kawaseblur': 'kawaseBlur',
-  'multicolorreplace': 'multiColorReplace',
-  'radialblur': 'radialBlur',
-  'shockwave': 'shockwave',
-  'simplelightmap': 'simpleLightmap',
-  'simplexnoise': 'simplexNoise',
-  'tiltshift': 'tiltShift',
-  'twist': 'twist',
-  'zoomblur': 'zoomBlur',
-  'pixelate': 'pixelate',
-  'glow': 'glow',
-  'outline': 'outline',
-  'godray': 'godray',
-  'bevel': 'bevel',
-  'bulgepinch': 'bulgePinch',
-  'colorgradient': 'colorGradient',
-  'colormap': 'colorMap',
-  'coloroverlay': 'colorOverlay',
-  'colorreplace': 'colorReplace',
-  'hsladjustment': 'hslAdjustment',
-  'convolution': 'convolution',
-  'backdropblur': 'backdropBlur',
-  'reflection': 'reflection',
+  ascii: 'ascii',
+  dot: 'dot',
+  dropshadow: 'dropShadow',
+  crosshatch: 'crosshatch',
+  emboss: 'emboss',
+  adjustment: 'adjustment',
+  bloom: 'bloom',
+  advancedbloom: 'advancedBloom',
+  glitch: 'glitch',
+  rgbsplit: 'rgbSplit',
+  kawaseblur: 'kawaseBlur',
+  multicolorreplace: 'multiColorReplace',
+  radialblur: 'radialBlur',
+  shockwave: 'shockwave',
+  simplelightmap: 'simpleLightmap',
+  simplexnoise: 'simplexNoise',
+  tiltshift: 'tiltShift',
+  twist: 'twist',
+  zoomblur: 'zoomBlur',
+  pixelate: 'pixelate',
+  glow: 'glow',
+  outline: 'outline',
+  godray: 'godray',
+  bevel: 'bevel',
+  bulgepinch: 'bulgePinch',
+  colorgradient: 'colorGradient',
+  colormap: 'colorMap',
+  coloroverlay: 'colorOverlay',
+  colorreplace: 'colorReplace',
+  hsladjustment: 'hslAdjustment',
+  convolution: 'convolution',
+  backdropblur: 'backdropBlur',
+  reflection: 'reflection',
 };
 
 // Helper functions for AdvancedFilterManager UI
 async function addAndEnableFilter(page: Page, filterName: string) {
   // Map the filter name to the correct case
   const mappedName = filterNameMap[filterName.toLowerCase()] || filterName;
-  
+
   // Wait for page to be ready and interactive
   await page.waitForLoadState('networkidle');
-  
+
   // Ensure we can see the add button and it's enabled
   const addButton = page.locator('[data-testid="add-filter-button"]');
   await expect(addButton).toBeVisible();
   await expect(addButton).toBeEnabled();
-  
+
   // Open dropdown with retry logic
   let dropdownVisible = false;
   for (let i = 0; i < 5; i++) {
     try {
       await addButton.click({ timeout: 5000 });
       await page.waitForTimeout(300);
-      
+
       const dropdown = page.locator('[data-testid="filter-dropdown"]');
       dropdownVisible = await dropdown.isVisible();
       if (dropdownVisible) break;
-      
+
       await page.waitForTimeout(200);
     } catch (error) {
       console.log(`Attempt ${i + 1} failed to click add button:`, error);
       await page.waitForTimeout(500);
     }
   }
-  
+
   if (!dropdownVisible) {
-    throw new Error(`Could not open dropdown after 5 attempts for filter: ${filterName}`);
+    throw new Error(
+      `Could not open dropdown after 5 attempts for filter: ${filterName}`
+    );
   }
-  
+
   // Click specific filter option
   const testId = mappedName.toLowerCase().replace(/\s+/g, '-');
   const filterOption = page.locator(`[data-testid="filter-option-${testId}"]`);
-  
+
   // Wait for the option to be visible and click it
   await expect(filterOption).toBeVisible();
   await filterOption.click();
   await page.waitForTimeout(300);
-  
+
   // Enable the filter by clicking its checkbox
   const filterCheckbox = page.locator('input[type="checkbox"]').last();
   await expect(filterCheckbox).toBeVisible();
@@ -130,7 +132,6 @@ async function clearAllFilters(page: Page) {
     await page.waitForTimeout(200);
   }
 }
-
 
 test.describe('Filter System E2E', () => {
   test.beforeEach(async ({ page }) => {
@@ -162,22 +163,26 @@ test.describe('Filter System E2E', () => {
     expect(result.hasSliderEngine).toBe(true);
   });
 
-  test('should validate filter dropdown contains 30+ filters @critical', async ({ page }) => {
+  test('should validate filter dropdown contains 30+ filters @critical', async ({
+    page,
+  }) => {
     // Open dropdown to see available filters
     const addFilterButton = page.locator('[data-testid="add-filter-button"]');
     await addFilterButton.click();
-    
+
     // Wait for dropdown to appear
     const dropdown = page.locator('[data-testid="filter-dropdown"]');
     await expect(dropdown).toBeVisible();
-    
+
     // Get all filter options from dropdown
-    const filterOptions = await page.locator('[data-testid="filter-dropdown"] button').all();
+    const filterOptions = await page
+      .locator('[data-testid="filter-dropdown"] button')
+      .all();
     expect(filterOptions.length).toBeGreaterThan(30);
 
     // Test a sample of basic filters work
     const testFilters = ['blur', 'glow', 'alpha'];
-    
+
     for (const filterName of testFilters) {
       try {
         // Close and reopen dropdown for each filter
@@ -185,11 +190,11 @@ test.describe('Filter System E2E', () => {
         await page.waitForTimeout(200);
         await addFilterButton.click(); // Open
         await page.waitForTimeout(200);
-        
+
         // Use our helper function to add and enable filter
         await addAndEnableFilter(page, filterName);
-        
-        // Verify filter was added to UI and enabled 
+
+        // Verify filter was added to UI and enabled
         const enabledCheckbox = page.locator('input[type="checkbox"]:checked');
         await expect(enabledCheckbox).toBeVisible();
 
@@ -202,34 +207,36 @@ test.describe('Filter System E2E', () => {
     }
   });
 
-  test('should maintain 60fps performance with filter library @performance', async ({ page }) => {
+  test('should maintain 60fps performance with filter library @performance', async ({
+    page,
+  }) => {
     // Monitor FPS during filter application
-    
+
     // Start FPS monitoring
     await page.evaluate(() => {
       let lastTime = performance.now();
       const fpsArray: number[] = [];
-      
+
       function measureFPS() {
         const currentTime = performance.now();
         const deltaTime = currentTime - lastTime;
         const fps = Math.round(1000 / deltaTime);
         fpsArray.push(fps);
         lastTime = currentTime;
-        
+
         if (fpsArray.length < 100) {
           requestAnimationFrame(measureFPS);
         } else {
           (window as { fpsData?: number[] }).fpsData = fpsArray;
         }
       }
-      
+
       requestAnimationFrame(measureFPS);
     });
 
     // Apply various filters during FPS measurement
     const performanceFilters = ['blur', 'glow', 'pixelate', 'colorMatrix'];
-    
+
     for (const filterName of performanceFilters) {
       try {
         await addAndEnableFilter(page, filterName);
@@ -242,26 +249,32 @@ test.describe('Filter System E2E', () => {
     }
 
     // Get FPS data
-    const fpsResults = await page.evaluate(() => (window as { fpsData?: number[] }).fpsData || []);
-    
+    const fpsResults = await page.evaluate(
+      () => (window as { fpsData?: number[] }).fpsData || []
+    );
+
     if (fpsResults.length > 0) {
-      const avgFps = fpsResults.reduce((sum: number, fps: number) => sum + fps, 0) / fpsResults.length;
+      const avgFps =
+        fpsResults.reduce((sum: number, fps: number) => sum + fps, 0) /
+        fpsResults.length;
       const minFps = Math.min(...fpsResults);
-      
+
       console.log(`Average FPS: ${avgFps.toFixed(1)}, Min FPS: ${minFps}`);
-      
+
       // Expect reasonable performance (allow some drops but maintain general smoothness)
       expect(avgFps).toBeGreaterThan(30); // Average should be acceptable
       expect(minFps).toBeGreaterThan(15); // Minimum should be usable
     }
   });
 
-  test('should handle filter combinations without crashing @stability', async ({ page }) => {
+  test('should handle filter combinations without crashing @stability', async ({
+    page,
+  }) => {
     // Test filter combinations that are commonly used together
     const combinations = [
       ['blur', 'Alpha'],
       ['colorMatrix', 'glow'],
-      ['pixelate', 'outline']
+      ['pixelate', 'outline'],
     ];
 
     for (const combo of combinations) {
@@ -269,19 +282,18 @@ test.describe('Filter System E2E', () => {
         // Apply first filter using new UI
         await addAndEnableFilter(page, combo[0]);
         await page.waitForTimeout(300);
-        
+
         // Apply second filter (this will stack them)
         await addAndEnableFilter(page, combo[1]);
         await page.waitForTimeout(300);
-        
+
         // Verify slider is still functional
         const slider = page.locator('[data-testid="kinetic-slider"]');
         await expect(slider).toBeVisible();
-        
+
         // Clear filters
         await clearAllFilters(page);
         await page.waitForTimeout(200);
-        
       } catch (error) {
         console.error(`Filter combination ${combo.join(' + ')} failed:`, error);
         // Don't fail the test for combination issues, just log them
@@ -295,7 +307,9 @@ test.describe('Filter System E2E', () => {
 
     // Wait for slider to be fully initialized
     await page.waitForFunction(
-      () => !!(window as { kineticSlider?: { engine?: unknown } }).kineticSlider?.engine,
+      () =>
+        !!(window as { kineticSlider?: { engine?: unknown } }).kineticSlider
+          ?.engine,
       { timeout: 10000 }
     );
 
@@ -305,7 +319,7 @@ test.describe('Filter System E2E', () => {
     // Verify the filter appears in the UI as enabled
     const enabledCheckbox = page.locator('input[type="checkbox"]:checked');
     await expect(enabledCheckbox).toBeVisible();
-    
+
     // Note: Filter application to engine is currently broken (checkbox click doesn't trigger application)
     // This test validates the UI interaction works correctly
   });
@@ -325,7 +339,9 @@ test.describe('Filter System E2E', () => {
     await clearAllFilters(page);
 
     // Check if filters were cleared by checking for "No filters active" message
-    const noFiltersVisible = await page.locator('text=No filters active').isVisible();
+    const noFiltersVisible = await page
+      .locator('text=No filters active')
+      .isVisible();
     expect(noFiltersVisible).toBe(true);
   });
 
@@ -335,7 +351,9 @@ test.describe('Filter System E2E', () => {
 
     // Wait for slider to be fully initialized
     await page.waitForFunction(
-      () => !!(window as { kineticSlider?: { engine?: unknown } }).kineticSlider?.engine,
+      () =>
+        !!(window as { kineticSlider?: { engine?: unknown } }).kineticSlider
+          ?.engine,
       { timeout: 10000 }
     );
 
@@ -362,7 +380,9 @@ test.describe('Filter System E2E', () => {
 
     // Wait for slider to be fully initialized
     await page.waitForFunction(
-      () => !!(window as { kineticSlider?: { engine?: unknown } }).kineticSlider?.engine,
+      () =>
+        !!(window as { kineticSlider?: { engine?: unknown } }).kineticSlider
+          ?.engine,
       { timeout: 10000 }
     );
 
@@ -382,7 +402,9 @@ test.describe('Filter System E2E', () => {
     await clearAllFilters(page);
 
     // Check for "No filters active" message
-    const noFiltersVisible = await page.locator('text=No filters active').isVisible();
+    const noFiltersVisible = await page
+      .locator('text=No filters active')
+      .isVisible();
     expect(noFiltersVisible).toBe(true);
   });
 
@@ -408,7 +430,7 @@ test.describe('Filter System E2E', () => {
     // Ensure filter controls are accessible
     const filterControls = page.locator('[data-testid="filter-controls"]');
     await expect(filterControls).toBeVisible();
-    
+
     const addButton = page.locator('[data-testid="add-filter-button"]');
     await expect(addButton).toBeVisible();
   });
@@ -432,7 +454,9 @@ test.describe('Filter System E2E', () => {
     await expect(dropdown).toBeVisible();
 
     // Check that there are filter options available
-    const filterOptions = await page.locator('[data-testid="filter-dropdown"] button').all();
+    const filterOptions = await page
+      .locator('[data-testid="filter-dropdown"] button')
+      .all();
     expect(filterOptions.length).toBeGreaterThan(0);
   });
 

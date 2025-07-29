@@ -102,7 +102,13 @@ export class ComprehensiveFilterValidator extends FilterValidator {
    */
   private getAllFilterNames(): string[] {
     // Core PIXI filters
-    const coreFilters = ['blur', 'alpha', 'colorMatrix', 'displacement', 'noise'];
+    const coreFilters = [
+      'blur',
+      'alpha',
+      'colorMatrix',
+      'displacement',
+      'noise',
+    ];
 
     // Effect preset filters
     const effectPresetFilters = this.effectPresets.getPresetNames();
@@ -112,7 +118,11 @@ export class ComprehensiveFilterValidator extends FilterValidator {
 
     // Combine and deduplicate
     const allFilters = [
-      ...new Set([...coreFilters, ...effectPresetFilters, ...advancedPresetFilters]),
+      ...new Set([
+        ...coreFilters,
+        ...effectPresetFilters,
+        ...advancedPresetFilters,
+      ]),
     ];
 
     return allFilters.sort();
@@ -124,7 +134,10 @@ export class ComprehensiveFilterValidator extends FilterValidator {
   async validateAllFilters(): Promise<FilterValidationResults> {
     const startTime = performance.now();
 
-    debugLogger.info('Starting comprehensive filter validation', 'FILTER_VALIDATOR');
+    debugLogger.info(
+      'Starting comprehensive filter validation',
+      'FILTER_VALIDATOR'
+    );
 
     // Initialize app if needed
     await this.initializeApp();
@@ -166,10 +179,16 @@ export class ComprehensiveFilterValidator extends FilterValidator {
 
     // Determine overall success
     const validationPassed = validation.successRate > 0.95;
-    const performancePassed = performanceResults.filter((p) => p.maintains60fps).length / performanceResults.length > 0.9;
-    const compatibilityPassed = compatibility.filter((c) => c.compatible).length / compatibility.length > 0.9;
+    const performancePassed =
+      performanceResults.filter((p) => p.maintains60fps).length /
+        performanceResults.length >
+      0.9;
+    const compatibilityPassed =
+      compatibility.filter((c) => c.compatible).length / compatibility.length >
+      0.9;
 
-    const allTestsPassed = validationPassed && performancePassed && compatibilityPassed;
+    const allTestsPassed =
+      validationPassed && performancePassed && compatibilityPassed;
 
     const totalTime = performance.now() - startTime;
 
@@ -223,26 +242,31 @@ export class ComprehensiveFilterValidator extends FilterValidator {
 
     // Measure performance over 60 frames
     const frameTimes: number[] = [];
-    const memoryStart = (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0;
+    const memoryStart =
+      (performance as { memory?: { usedJSHeapSize?: number } }).memory
+        ?.usedJSHeapSize || 0;
 
     for (let i = 0; i < 60; i++) {
       const frameStart = performance.now();
-      
+
       // Force render
       this.app!.renderer.render(this.app!.stage);
-      
+
       const frameEnd = performance.now();
       frameTimes.push(frameEnd - frameStart);
-      
+
       // Small delay to simulate frame rate
       await new Promise((resolve) => setTimeout(resolve, 16));
     }
 
-    const memoryEnd = (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0;
+    const memoryEnd =
+      (performance as { memory?: { usedJSHeapSize?: number } }).memory
+        ?.usedJSHeapSize || 0;
     const memoryUsage = (memoryEnd - memoryStart) / 1024 / 1024; // Convert to MB
 
     // Calculate metrics
-    const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+    const avgFrameTime =
+      frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
     const maxFrameTime = Math.max(...frameTimes);
     const minFrameTime = Math.min(...frameTimes);
     const fps = 1000 / avgFrameTime;
@@ -266,7 +290,9 @@ export class ComprehensiveFilterValidator extends FilterValidator {
   /**
    * Test filter compatibility across browsers
    */
-  async testFilterCompatibility(filterName: string): Promise<BrowserCompatibility[]> {
+  async testFilterCompatibility(
+    filterName: string
+  ): Promise<BrowserCompatibility[]> {
     // In a real implementation, this would use browser detection
     // For now, we'll simulate based on known compatibility
     const browsers = ['chrome', 'firefox', 'safari', 'edge'];
@@ -275,7 +301,7 @@ export class ComprehensiveFilterValidator extends FilterValidator {
     for (const browser of browsers) {
       try {
         await this.createFilterByName(filterName);
-        
+
         // Simulate compatibility testing
         const compatible = this.checkBrowserSupport(filterName, browser);
         const performance = compatible ? 'excellent' : 'failed';
@@ -285,7 +311,9 @@ export class ComprehensiveFilterValidator extends FilterValidator {
           browser,
           compatible,
           performance,
-          errors: compatible ? [] : [`Filter ${filterName} not supported in ${browser}`],
+          errors: compatible
+            ? []
+            : [`Filter ${filterName} not supported in ${browser}`],
         });
       } catch (error) {
         results.push({
@@ -362,7 +390,8 @@ export class ComprehensiveFilterValidator extends FilterValidator {
       // Add more known incompatibilities
     };
 
-    const incompatibleBrowsers = incompatibilities[filterName as keyof typeof incompatibilities] || [];
+    const incompatibleBrowsers =
+      incompatibilities[filterName as keyof typeof incompatibilities] || [];
     return !incompatibleBrowsers.includes(browser);
   }
 
@@ -380,16 +409,24 @@ export class ComprehensiveFilterValidator extends FilterValidator {
 
     // Basic validation summary
     lines.push('📋 Basic Validation:');
-    lines.push(`   Success Rate: ${(results.validation.successRate * 100).toFixed(1)}%`);
+    lines.push(
+      `   Success Rate: ${(results.validation.successRate * 100).toFixed(1)}%`
+    );
     lines.push(`   Filters Tested: ${results.validation.filters.length}`);
     lines.push('');
 
     // Performance summary
     lines.push('⚡ Performance Summary:');
-    const maintaining60fps = results.performance.filter((p) => p.maintains60fps).length;
-    lines.push(`   Maintaining 60fps: ${maintaining60fps}/${results.performance.length}`);
-    
-    const avgFps = results.performance.reduce((sum, p) => sum + p.fps, 0) / results.performance.length;
+    const maintaining60fps = results.performance.filter(
+      (p) => p.maintains60fps
+    ).length;
+    lines.push(
+      `   Maintaining 60fps: ${maintaining60fps}/${results.performance.length}`
+    );
+
+    const avgFps =
+      results.performance.reduce((sum, p) => sum + p.fps, 0) /
+      results.performance.length;
     lines.push(`   Average FPS: ${avgFps.toFixed(1)}`);
     lines.push('');
 
