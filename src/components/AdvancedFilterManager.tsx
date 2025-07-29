@@ -197,7 +197,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       green: '0',
       blue: '0',
       alpha: '0',
-      // AdvancedBloomFilter properties  
+      // AdvancedBloomFilter properties
       bloomScale: '0',
       blur: '0',
       pixelSizeX: '0.1',
@@ -252,7 +252,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       red: '0.05',
       green: '0.05',
       blue: '0.05',
-      alpha: '0.05',
+      alpha: '0.001',
       intensity: '0.05',
       // AdvancedBloomFilter properties
       bloomScale: '0.1',
@@ -283,7 +283,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       glow: { intensity: 0.8, color: '#ffffff', distance: 10 },
       pixelate: { size: 4 },
       colorMatrix: { brightness: 1, contrast: 1, saturation: 1 },
-      alpha: { alpha: 0.8 },
+      alpha: { alpha: 1.0 },
       vintage: { intensity: 0.7, sepia: 0.5 },
       blackAndWhite: { intensity: 1 },
       displacement: { scale: 20, intensity: 0.5 },

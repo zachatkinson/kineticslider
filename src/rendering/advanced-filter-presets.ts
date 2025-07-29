@@ -1511,21 +1511,42 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Use custom settings if provided, otherwise fall back to intensity presets
     if (options.customSettings) {
       const filter = new AdvancedBloomFilter({
-        bloomScale: typeof options.customSettings.bloomScale === 'number' ? options.customSettings.bloomScale : 1.0,
-        blur: typeof options.customSettings.blur === 'number' ? options.customSettings.blur : 2.0,
-        brightness: typeof options.customSettings.brightness === 'number' ? options.customSettings.brightness : 1.0,
-        threshold: typeof options.customSettings.threshold === 'number' ? options.customSettings.threshold : 0.5,
-        quality: typeof options.customSettings.quality === 'number' ? options.customSettings.quality : 4,
-        pixelSize: { 
-          x: typeof options.customSettings.pixelSizeX === 'number' ? options.customSettings.pixelSizeX : 1.0,
-          y: typeof options.customSettings.pixelSizeY === 'number' ? options.customSettings.pixelSizeY : 1.0,
+        bloomScale:
+          typeof options.customSettings.bloomScale === 'number'
+            ? options.customSettings.bloomScale
+            : 1.0,
+        blur:
+          typeof options.customSettings.blur === 'number'
+            ? options.customSettings.blur
+            : 2.0,
+        brightness:
+          typeof options.customSettings.brightness === 'number'
+            ? options.customSettings.brightness
+            : 1.0,
+        threshold:
+          typeof options.customSettings.threshold === 'number'
+            ? options.customSettings.threshold
+            : 0.5,
+        quality:
+          typeof options.customSettings.quality === 'number'
+            ? options.customSettings.quality
+            : 4,
+        pixelSize: {
+          x:
+            typeof options.customSettings.pixelSizeX === 'number'
+              ? options.customSettings.pixelSizeX
+              : 1.0,
+          y:
+            typeof options.customSettings.pixelSizeY === 'number'
+              ? options.customSettings.pixelSizeY
+              : 1.0,
         },
       });
-      
+
       const filterChain = new FilterChain();
       return this.createEffectResult(filterChain, [filter], options);
     }
-    
+
     // Fallback to preset-based settings
     const intensityMap = {
       subtle: { bloomScale: 0.8, threshold: 0.7, brightness: 1.0, blur: 1 },

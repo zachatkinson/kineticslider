@@ -1108,6 +1108,40 @@ export class EffectPresets {
   private createAlphaEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use custom settings if provided, otherwise fall back to intensity presets
+    if (
+      options.customSettings &&
+      typeof options.customSettings.alpha === 'number'
+    ) {
+      const alphaFilter = new AlphaFilter({
+        alpha: options.customSettings.alpha,
+      });
+      const filterChain = new FilterChain({ name: 'alphaEffect' });
+      filterChain.addFilter(alphaFilter, {
+        id: 'alpha',
+      });
+      
+      const timeline = gsap.timeline();
+      const filters = [alphaFilter];
+
+      return {
+        filterChain,
+        filters,
+        timeline,
+        cleanup: (): void => {
+          timeline.kill();
+          filterChain.dispose();
+        },
+        applyTo: (target): void => {
+          filterChain.applyTo(target);
+        },
+        removeFrom: (target): void => {
+          filterChain.removeFrom(target);
+        },
+      };
+    }
+
+    // Fallback to preset-based settings
     const intensityMap = {
       subtle: 0.85,
       moderate: 0.7,
