@@ -1,6 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-refresh/only-export-components */
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -193,9 +190,7 @@ function KineticSliderDemo(): JSX.Element {
         await sliderEngine.current.previousSlide();
       } catch (error) {
         // Navigation errors are expected when slider is not ready
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('Navigation failed:', error);
-        }
+        debugLogger.warn('Navigation failed:', error);
       }
     }
   }, []);
@@ -206,9 +201,7 @@ function KineticSliderDemo(): JSX.Element {
         await sliderEngine.current.nextSlide();
       } catch (error) {
         // Navigation errors are expected when slider is not ready
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('Navigation failed:', error);
-        }
+        debugLogger.warn('Navigation failed:', error);
       }
     }
   }, []);
@@ -225,9 +218,7 @@ function KineticSliderDemo(): JSX.Element {
         await sliderEngine.current.goToSlide(0);
       } catch (error) {
         // Navigation errors are expected when slider is not ready
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('Navigation failed:', error);
-        }
+        debugLogger.warn('Navigation failed:', error);
       }
     }
   }, []);
@@ -238,76 +229,11 @@ function KineticSliderDemo(): JSX.Element {
         await sliderEngine.current.goToSlide(4);
       } catch (error) {
         // Navigation errors are expected when slider is not ready
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('Navigation failed:', error);
-        }
+        debugLogger.warn('Navigation failed:', error);
       }
     }
   }, []);
 
-  // Filter handlers
-  const _handleApplyFilter = useCallback(async (filterName: string) => {
-    if (sliderEngine.current) {
-      try {
-        // Apply filter through the slider API
-        await sliderEngine.current.applyFilter(filterName);
-        setState((prev) => ({
-          ...prev,
-          announcements: `Applied ${filterName} filter`,
-        }));
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Filter application failed:', filterName, error);
-        }
-        setState((prev) => ({
-          ...prev,
-          announcements: `Filter ${filterName} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        }));
-      }
-    } else {
-      setState((prev) => ({
-        ...prev,
-        announcements: `Slider engine not available for ${filterName} filter`,
-      }));
-    }
-  }, []);
-
-  // Filter stacking handler
-  const _handleApplyFilterStack = useCallback(async (filterNames: string[]) => {
-    if (sliderEngine.current) {
-      try {
-        await sliderEngine.current.applyFilters(filterNames);
-        setState((prev) => ({
-          ...prev,
-          announcements: `Applied filter stack: ${filterNames.join(' + ')}`,
-        }));
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Filter stack application failed:', filterNames, error);
-        }
-        setState((prev) => ({
-          ...prev,
-          announcements: `Filter stack failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        }));
-      }
-    }
-  }, []);
-
-  const _handleClearFilters = useCallback(async () => {
-    if (sliderEngine.current) {
-      try {
-        await sliderEngine.current.clearFilters();
-        setState((prev) => ({
-          ...prev,
-          announcements: 'Cleared all filters',
-        }));
-      } catch {
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Clear filters not available yet');
-        }
-      }
-    }
-  }, []);
 
   // UI Panel handlers with backdrop blur and drop shadow control
   const [infoPanelBlurEnabled, setInfoPanelBlurEnabled] = useState(true);
@@ -370,7 +296,7 @@ function KineticSliderDemo(): JSX.Element {
                 (renderer as ISliderRenderer).applyFilter(panel, dropShadowFilter);
               }
             } catch (filterError) {
-              console.warn('Could not apply drop shadow to info panel:', filterError);
+              debugLogger.warn('Could not apply drop shadow to info panel:', filterError);
             }
           }
 
@@ -393,7 +319,7 @@ function KineticSliderDemo(): JSX.Element {
                 (renderer as ISliderRenderer).applyFilter(panel, glowFilter);
               }
             } catch (filterError) {
-              console.warn('Could not apply glow to info panel:', filterError);
+              debugLogger.warn('Could not apply glow to info panel:', filterError);
             }
           }
 
@@ -415,7 +341,7 @@ function KineticSliderDemo(): JSX.Element {
                 (renderer as ISliderRenderer).applyFilter(panel, bevelFilter);
               }
             } catch (filterError) {
-              console.warn('Could not apply bevel to info panel:', filterError);
+              debugLogger.warn('Could not apply bevel to info panel:', filterError);
             }
           }
 
@@ -436,7 +362,7 @@ function KineticSliderDemo(): JSX.Element {
                 (renderer as ISliderRenderer).applyFilter(panel, outlineFilter);
               }
             } catch (filterError) {
-              console.warn('Could not apply outline to info panel:', filterError);
+              debugLogger.warn('Could not apply outline to info panel:', filterError);
             }
           }
 
@@ -451,7 +377,7 @@ function KineticSliderDemo(): JSX.Element {
           }));
         }
       } catch (error) {
-        console.error('Failed to create info panel:', error);
+        debugLogger.error('Failed to create info panel:', error);
       }
     }
   }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled, infoPanelOutlineEnabled]);
@@ -508,7 +434,7 @@ function KineticSliderDemo(): JSX.Element {
                 (renderer as ISliderRenderer).applyFilter(panel, dropShadowFilter);
               }
             } catch (filterError) {
-              console.warn('Could not apply drop shadow to control panel:', filterError);
+              debugLogger.warn('Could not apply drop shadow to control panel:', filterError);
             }
           }
 
@@ -531,7 +457,7 @@ function KineticSliderDemo(): JSX.Element {
                 (renderer as ISliderRenderer).applyFilter(panel, glowFilter);
               }
             } catch (filterError) {
-              console.warn('Could not apply glow to control panel:', filterError);
+              debugLogger.warn('Could not apply glow to control panel:', filterError);
             }
           }
 
@@ -553,7 +479,7 @@ function KineticSliderDemo(): JSX.Element {
                 (renderer as ISliderRenderer).applyFilter(panel, bevelFilter);
               }
             } catch (filterError) {
-              console.warn('Could not apply bevel to control panel:', filterError);
+              debugLogger.warn('Could not apply bevel to control panel:', filterError);
             }
           }
 
@@ -574,7 +500,7 @@ function KineticSliderDemo(): JSX.Element {
                 (renderer as ISliderRenderer).applyFilter(panel, outlineFilter);
               }
             } catch (filterError) {
-              console.warn('Could not apply outline to control panel:', filterError);
+              debugLogger.warn('Could not apply outline to control panel:', filterError);
             }
           }
 
@@ -589,7 +515,7 @@ function KineticSliderDemo(): JSX.Element {
           }));
         }
       } catch (error) {
-        console.error('Failed to create control panel:', error);
+        debugLogger.error('Failed to create control panel:', error);
       }
     }
   }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled, controlPanelOutlineEnabled]);
@@ -614,7 +540,7 @@ function KineticSliderDemo(): JSX.Element {
           }));
         }
       } catch (error) {
-        console.error('Failed to clear UI panels:', error);
+        debugLogger.error('Failed to clear UI panels:', error);
       }
     }
   }, []);
@@ -1303,5 +1229,5 @@ window.addEventListener('error', () => {
 (window as { gc?: () => void }).gc =
   (window as { gc?: () => void }).gc ||
   ((): void => {
-    // Simulate garbage collection without logging
+    // Simulate garbage collection
   });
