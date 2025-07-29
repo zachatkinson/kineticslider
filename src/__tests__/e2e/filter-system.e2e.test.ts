@@ -10,7 +10,8 @@
  * @version 3.0.0 - Completely rewritten for AdvancedFilterManager UI
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
 // Comprehensive filter name mapping based on actual presets
@@ -71,6 +72,18 @@ const filterNameMap: Record<string, string> = {
   backdropblur: 'backdropBlur',
   reflection: 'reflection',
 };
+
+// Helper to count enabled filters in AdvancedFilterManager
+async function countEnabledFilters(page: Page): Promise<number> {
+  const enabledFilterCheckboxes = page.locator('[data-testid="filter-controls"] input[type="checkbox"]:checked');
+  return await enabledFilterCheckboxes.count();
+}
+
+// Helper to verify at least one filter is enabled
+async function expectFilterEnabled(page: Page) {
+  const enabledCount = await countEnabledFilters(page);
+  expect(enabledCount).toBeGreaterThan(0);
+}
 
 // Helper functions for AdvancedFilterManager UI
 async function addAndEnableFilter(page: Page, filterName: string) {

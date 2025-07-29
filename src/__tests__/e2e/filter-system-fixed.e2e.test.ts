@@ -7,7 +7,8 @@
  * @version 3.0.0 - Completely rewritten for AdvancedFilterManager
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
 // Filter name mapping for tests
@@ -37,11 +38,10 @@ async function addAndEnableFilter(page: Page, filterName: string) {
 
   const testId = mappedName.toLowerCase().replace(/\s+/g, '-');
   await page.click(`[data-testid="filter-option-${testId}"]`);
-  await page.waitForTimeout(300);
-
-  const filterCheckbox = page.locator('input[type="checkbox"]').last();
-  await filterCheckbox.click();
   await page.waitForTimeout(500);
+  
+  // Filter is auto-enabled when added to AdvancedFilterManager
+  // No need to click checkbox - just wait for it to be applied
 }
 
 async function clearAllFilters(page: Page) {
@@ -50,6 +50,20 @@ async function clearAllFilters(page: Page) {
     await clearButton.click();
     await page.waitForTimeout(200);
   }
+}
+
+// Helper to count enabled filters in AdvancedFilterManager
+async function countEnabledFilters(page: Page): Promise<number> {
+  // Count filter cards that have enabled checkboxes
+  // In our AdvancedFilterManager, each filter card has a checkbox for enabling/disabling
+  const enabledFilterCheckboxes = page.locator('[data-testid="filter-controls"] input[type="checkbox"]:checked');
+  return await enabledFilterCheckboxes.count();
+}
+
+// Helper to verify at least one filter is enabled
+async function expectFilterEnabled(page: Page) {
+  const enabledCount = await countEnabledFilters(page);
+  expect(enabledCount).toBeGreaterThan(0);
 }
 
 test.describe('Filter System E2E (Fixed)', () => {
@@ -95,17 +109,10 @@ test.describe('Filter System E2E (Fixed)', () => {
     // Test adding a simple filter
     const blurOption = page.locator('[data-testid="filter-option-blur"]');
     await blurOption.click();
-
-    // Verify filter appears in list (disabled by default)
-    const filterCheckbox = page.locator('input[type="checkbox"]').last();
-    await expect(filterCheckbox).toBeVisible();
-
-    // Enable the filter
-    await filterCheckbox.click();
     await page.waitForTimeout(500);
 
-    // Verify checkbox is checked
-    await expect(filterCheckbox).toBeChecked();
+    // Verify filter appears in list and is enabled by default in AdvancedFilterManager
+    await expectFilterEnabled(page);
   });
 
   test('should apply filters through UI interaction', async ({ page }) => {
@@ -124,8 +131,7 @@ test.describe('Filter System E2E (Fixed)', () => {
 
     await addAndEnableFilter(page, 'blur');
 
-    const activeFilter = page.locator('input[type="checkbox"]:checked');
-    await expect(activeFilter).toBeVisible();
+    await expectFilterEnabled(page);
   });
 
   test('should clear filters through UI interaction', async ({ page }) => {
@@ -136,8 +142,7 @@ test.describe('Filter System E2E (Fixed)', () => {
     await addAndEnableFilter(page, 'blur');
 
     // Verify filter is added
-    const activeFilter = page.locator('input[type="checkbox"]:checked');
-    await expect(activeFilter).toBeVisible();
+    await expectFilterEnabled(page);
 
     // Clear all filters
     await clearAllFilters(page);
@@ -203,8 +208,7 @@ test.describe('Filter System E2E (Fixed)', () => {
     for (const filterType of filterTypes) {
       await addAndEnableFilter(page, filterType);
 
-      const activeFilter = page.locator('input[type="checkbox"]:checked');
-      await expect(activeFilter).toBeVisible();
+      await expectFilterEnabled(page);
 
       await clearAllFilters(page);
       await page.waitForTimeout(200);
@@ -219,8 +223,8 @@ test.describe('Filter System E2E (Fixed)', () => {
     }
 
     // Verify multiple filters are enabled in UI
-    const activeFilters = page.locator('input[type="checkbox"]:checked');
-    expect(await activeFilters.count()).toBe(2);
+    const enabledCount = await countEnabledFilters(page);
+    expect(enabledCount).toBe(2);
 
     await clearAllFilters(page);
 
@@ -251,7 +255,7 @@ test.describe('Filter System E2E (Fixed)', () => {
     const slider = page.locator('[data-testid="kinetic-slider"]');
     await expect(slider).toBeVisible();
 
-    const activeFilters = page.locator('input[type="checkbox"]:checked');
-    expect(await activeFilters.count()).toBe(2);
+    const enabledCount = await countEnabledFilters(page);
+    expect(enabledCount).toBe(2);
   });
 });
