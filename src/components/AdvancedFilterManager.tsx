@@ -63,14 +63,17 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
 
       // Always apply the current enabled filter stack (clears and reapplies)
       const filterNames = enabledFilters.map((f) => f.name);
-      
+
       if (enabledFilters.length > 0) {
         // Create settings object with custom parameters for each filter
-        const filterSettings: Record<string, Record<string, number | string | boolean>> = {};
+        const filterSettings: Record<
+          string,
+          Record<string, number | string | boolean>
+        > = {};
         enabledFilters.forEach((filter) => {
           filterSettings[filter.name] = filter.settings;
         });
-        
+
         await sliderEngine.applyFilters(filterNames, filterSettings);
         onFilterApplied(filterNames);
       } else {
@@ -119,7 +122,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
 
     setActiveFilters((prev) => [...prev, newFilter]);
     setShowDropdown(false);
-    
+
     // Note: handleApplyFilters will be called by useEffect when activeFilters changes
   }, []);
 
@@ -142,15 +145,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
   );
 
   // Toggle filter enabled state
-  const toggleFilterEnabled = useCallback(
-    (filterId: string) => {
-      setActiveFilters((prev) =>
-        prev.map((f) => (f.id === filterId ? { ...f, enabled: !f.enabled } : f))
-      );
-      // Note: handleApplyFilters will be called by useEffect when activeFilters changes
-    },
-    []
-  );
+  const toggleFilterEnabled = useCallback((filterId: string) => {
+    setActiveFilters((prev) =>
+      prev.map((f) => (f.id === filterId ? { ...f, enabled: !f.enabled } : f))
+    );
+    // Note: handleApplyFilters will be called by useEffect when activeFilters changes
+  }, []);
 
   // Update filter settings
   const updateFilterSettings = useCallback(
@@ -203,7 +203,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       distance: '0',
       quality: '1',
     };
-    return Object.prototype.hasOwnProperty.call(minValues, key) ? minValues[key as keyof typeof minValues] : '0';
+    return Object.prototype.hasOwnProperty.call(minValues, key)
+      ? minValues[key as keyof typeof minValues]
+      : '0';
   }
 
   function getPropertyMax(key: string): string {
@@ -223,7 +225,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       distance: '50',
       quality: '10',
     };
-    return Object.prototype.hasOwnProperty.call(maxValues, key) ? maxValues[key as keyof typeof maxValues] : '100';
+    return Object.prototype.hasOwnProperty.call(maxValues, key)
+      ? maxValues[key as keyof typeof maxValues]
+      : '100';
   }
 
   function getPropertyStep(key: string): string {
@@ -243,7 +247,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       distance: '1',
       quality: '1',
     };
-    return Object.prototype.hasOwnProperty.call(stepValues, key) ? stepValues[key as keyof typeof stepValues] : '0.1';
+    return Object.prototype.hasOwnProperty.call(stepValues, key)
+      ? stepValues[key as keyof typeof stepValues]
+      : '0.1';
   }
 
   // Get default settings for a filter
@@ -263,20 +269,23 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       vintage: { intensity: 0.7, sepia: 0.5 },
       blackAndWhite: { intensity: 1 },
       displacement: { scale: 20, intensity: 0.5 },
-      adjustment: { 
-        gamma: 1, 
-        saturation: 1, 
-        contrast: 1, 
-        brightness: 1, 
-        red: 1, 
-        green: 1, 
-        blue: 1, 
-        alpha: 1 
+      adjustment: {
+        gamma: 1,
+        saturation: 1,
+        contrast: 1,
+        brightness: 1,
+        red: 1,
+        green: 1,
+        blue: 1,
+        alpha: 1,
       },
     };
 
     const validFilters = Object.keys(commonSettings);
-    if (validFilters.includes(filterName) && Object.prototype.hasOwnProperty.call(commonSettings, filterName)) {
+    if (
+      validFilters.includes(filterName) &&
+      Object.prototype.hasOwnProperty.call(commonSettings, filterName)
+    ) {
       return commonSettings[filterName as keyof typeof commonSettings];
     }
     return { intensity: 0.5 };
@@ -306,21 +315,78 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
               {key.charAt(0).toUpperCase() + key.slice(1)}
             </label>
             {typeof value === 'number' ? (
-              <input
-                type="range"
-                min={getPropertyMin(key)}
-                max={getPropertyMax(key)}
-                step={getPropertyStep(key)}
-                value={value}
-                onChange={(e) => {
-                  const updates = createSafeUpdate(
-                    key,
-                    parseFloat(e.target.value)
-                  );
-                  updateFilterSettings(filter.id, updates);
-                }}
-                style={{ width: '100%' }}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="range"
+                  min={getPropertyMin(key)}
+                  max={getPropertyMax(key)}
+                  step={getPropertyStep(key)}
+                  value={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(
+                      key,
+                      parseFloat(e.target.value)
+                    );
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{ flex: '1' }}
+                />
+                <input
+                  type="number"
+                  min={getPropertyMin(key)}
+                  max={getPropertyMax(key)}
+                  step={getPropertyStep(key)}
+                  value={value}
+                  onChange={(e) => {
+                    const numValue = parseFloat(e.target.value);
+                    if (!isNaN(numValue)) {
+                      // Clamp the value within bounds
+                      const minVal = parseFloat(getPropertyMin(key));
+                      const maxVal = parseFloat(getPropertyMax(key));
+                      const clampedValue = Math.max(minVal, Math.min(maxVal, numValue));
+                      
+                      const updates = createSafeUpdate(key, clampedValue);
+                      updateFilterSettings(filter.id, updates);
+                    }
+                  }}
+                  style={{
+                    width: '70px',
+                    padding: '0.2rem',
+                    borderRadius: '3px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.8rem',
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    const defaultSettings = getDefaultSettings(filter.name);
+                    const defaultValue = Object.prototype.hasOwnProperty.call(defaultSettings, key) 
+                      ? defaultSettings[key as keyof typeof defaultSettings]
+                      : (typeof value === 'number' ? 1.0 : value);
+                    
+                    if (typeof defaultValue === 'number') {
+                      const updates = createSafeUpdate(key, defaultValue);
+                      updateFilterSettings(filter.id, updates);
+                    }
+                  }}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    padding: '0',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '3px',
+                    background: '#f9fafb',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title={`Reset ${key} to default`}
+                >
+                  ↻
+                </button>
+              </div>
             ) : typeof value === 'boolean' ? (
               <input
                 type="checkbox"
@@ -346,9 +412,6 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                 }}
               />
             )}
-            <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
-              {value}
-            </span>
           </div>
         ))}
       </div>
