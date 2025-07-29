@@ -1392,6 +1392,24 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdjustmentEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use custom settings if provided, otherwise fall back to intensity presets
+    if (options.customSettings) {
+      const filter = new AdjustmentFilter({
+        brightness: typeof options.customSettings.brightness === 'number' ? options.customSettings.brightness : 1.0,
+        contrast: typeof options.customSettings.contrast === 'number' ? options.customSettings.contrast : 1.0,
+        saturation: typeof options.customSettings.saturation === 'number' ? options.customSettings.saturation : 1.0,
+        gamma: typeof options.customSettings.gamma === 'number' ? options.customSettings.gamma : 1.0,
+        red: typeof options.customSettings.red === 'number' ? options.customSettings.red : 1.0,
+        green: typeof options.customSettings.green === 'number' ? options.customSettings.green : 1.0,
+        blue: typeof options.customSettings.blue === 'number' ? options.customSettings.blue : 1.0,
+        alpha: typeof options.customSettings.alpha === 'number' ? options.customSettings.alpha : 1.0,
+      });
+      
+      const filterChain = new FilterChain();
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+    
+    // Fallback to preset-based settings
     const intensityMap = {
       subtle: { brightness: 1.1, contrast: 1.05, saturation: 0.95 },
       moderate: { brightness: 1.2, contrast: 1.1, saturation: 0.9 },

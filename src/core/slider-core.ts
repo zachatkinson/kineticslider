@@ -473,7 +473,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   /**
    * Apply a filter effect to current slide
    */
-  async applyFilter(filterName: string, addToStack = false): Promise<void> {
+  async applyFilter(filterName: string, addToStack = false, customSettings?: Record<string, number | string | boolean>): Promise<void> {
     if (!this.renderer) {
       throw new Error('Renderer not available for filter effects');
     }
@@ -500,10 +500,18 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         `Creating filter effect: ${filterName}`,
         'slider-core:applyFilter'
       );
-      const filterEffect = this.effectPresets.createEffect(filterName, {
-        intensity: 'moderate',
+      
+      // Use custom settings if provided, otherwise use defaults
+      const options = customSettings ? {
+        intensity: 'moderate' as const,
         duration: 0.5,
-      });
+        customSettings,
+      } : {
+        intensity: 'moderate' as const,
+        duration: 0.5,
+      };
+      
+      const filterEffect = this.effectPresets.createEffect(filterName, options);
 
       if (filterEffect && filterEffect.filters.length > 0) {
         debugLogger.info(
@@ -546,7 +554,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   /**
    * Apply multiple filters to current slide (filter stacking)
    */
-  async applyFilters(filterNames: string[]): Promise<void> {
+  async applyFilters(filterNames: string[], filterSettings?: Record<string, Record<string, number | string | boolean>>): Promise<void> {
     if (!filterNames || filterNames.length === 0) {
       return;
     }
@@ -557,7 +565,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
       // Apply each filter to the stack
       for (const filterName of filterNames) {
-        await this.applyFilter(filterName, true); // addToStack = true
+        const customSettings = filterSettings && Object.prototype.hasOwnProperty.call(filterSettings, filterName) 
+          ? filterSettings[filterName as keyof typeof filterSettings] 
+          : undefined;
+        await this.applyFilter(filterName, true, customSettings); // addToStack = true
       }
 
       debugLogger.info(

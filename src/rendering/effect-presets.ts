@@ -60,6 +60,8 @@ export interface PresetOptions {
   autoCleanup?: boolean;
   /** Custom parameters for fine-tuning */
   customParams?: Record<string, unknown>;
+  /** Custom settings from UI components */
+  customSettings?: Record<string, number | string | boolean>;
 }
 
 /**
@@ -397,6 +399,7 @@ export class EffectPresets {
       ease: options?.ease ?? EASING.EASE_OUT,
       autoCleanup: options?.autoCleanup ?? true,
       customParams: options?.customParams ?? {},
+      customSettings: options?.customSettings ?? {},
     };
   }
 

@@ -61,14 +61,23 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     try {
       const enabledFilters = activeFilters.filter((f) => f.enabled);
 
-      // Only apply enabled filters, don't clear when none are enabled
+      // Always apply the current enabled filter stack (clears and reapplies)
+      const filterNames = enabledFilters.map((f) => f.name);
+      
       if (enabledFilters.length > 0) {
-        const filterNames = enabledFilters.map((f) => f.name);
-        await sliderEngine.applyFilters(filterNames);
+        // Create settings object with custom parameters for each filter
+        const filterSettings: Record<string, Record<string, number | string | boolean>> = {};
+        enabledFilters.forEach((filter) => {
+          filterSettings[filter.name] = filter.settings;
+        });
+        
+        await sliderEngine.applyFilters(filterNames, filterSettings);
         onFilterApplied(filterNames);
+      } else {
+        // If no filters are enabled, clear all filters from the visual
+        await sliderEngine.clearFilters();
+        onFilterApplied([]);
       }
-      // Don't clear filters just because none are enabled
-      // The user may want to keep disabled filters in the list
     } catch (error) {
       onError(
         error instanceof Error ? error.message : 'Filter application failed'
@@ -86,7 +95,16 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     setAvailableFilters(available);
   }, [activeFilters, getAllAvailableFilters]);
 
-  // Add a new filter (disabled by default to prevent immediate application)
+  // Apply filters whenever activeFilters changes (handles enable/disable/settings changes)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleApplyFilters();
+    }, 50); // Small debounce to prevent excessive calls
+
+    return (): void => clearTimeout(timeoutId);
+  }, [activeFilters, handleApplyFilters]);
+
+  // Add a new filter (enabled by default for immediate visual feedback)
   const addFilter = useCallback((filterName: string) => {
     const displayName =
       filterName.charAt(0).toUpperCase() + filterName.slice(1);
@@ -95,12 +113,14 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       name: filterName,
       displayName,
       category: 'effect', // Could be enhanced to detect actual category
-      enabled: false, // Start disabled to prevent hang on heavy filters
+      enabled: true, // Auto-enable when selected from dropdown
       settings: getDefaultSettings(filterName),
     };
 
     setActiveFilters((prev) => [...prev, newFilter]);
     setShowDropdown(false);
+    
+    // Note: handleApplyFilters will be called by useEffect when activeFilters changes
   }, []);
 
   // Remove a filter
@@ -127,10 +147,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       setActiveFilters((prev) =>
         prev.map((f) => (f.id === filterId ? { ...f, enabled: !f.enabled } : f))
       );
-      // Apply filters after state update
-      setTimeout(() => handleApplyFilters(), 0);
+      // Note: handleApplyFilters will be called by useEffect when activeFilters changes
     },
-    [handleApplyFilters]
+    []
   );
 
   // Update filter settings
@@ -143,10 +162,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
             : f
         )
       );
-      // Apply filters after settings update (with small debounce)
-      setTimeout(() => handleApplyFilters(), 100);
+      // Note: handleApplyFilters will be called by useEffect when activeFilters changes
     },
-    [handleApplyFilters]
+    []
   );
 
   // Safe property setter helper
@@ -167,6 +185,67 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     return update;
   };
 
+  // Helper functions for property ranges
+  function getPropertyMin(key: string): string {
+    const minValues: Record<string, string> = {
+      // AdjustmentFilter properties
+      gamma: '0.1',
+      saturation: '0',
+      contrast: '0',
+      brightness: '0',
+      red: '0',
+      green: '0',
+      blue: '0',
+      alpha: '0',
+      // Common properties
+      intensity: '0',
+      size: '1',
+      distance: '0',
+      quality: '1',
+    };
+    return Object.prototype.hasOwnProperty.call(minValues, key) ? minValues[key as keyof typeof minValues] : '0';
+  }
+
+  function getPropertyMax(key: string): string {
+    const maxValues: Record<string, string> = {
+      // AdjustmentFilter properties
+      gamma: '3',
+      saturation: '3',
+      contrast: '3',
+      brightness: '3',
+      red: '3',
+      green: '3',
+      blue: '3',
+      alpha: '1',
+      // Common properties
+      intensity: '1',
+      size: '20',
+      distance: '50',
+      quality: '10',
+    };
+    return Object.prototype.hasOwnProperty.call(maxValues, key) ? maxValues[key as keyof typeof maxValues] : '100';
+  }
+
+  function getPropertyStep(key: string): string {
+    const stepValues: Record<string, string> = {
+      // Fine control for adjustment properties
+      gamma: '0.05',
+      saturation: '0.05',
+      contrast: '0.05',
+      brightness: '0.05',
+      red: '0.05',
+      green: '0.05',
+      blue: '0.05',
+      alpha: '0.05',
+      intensity: '0.05',
+      // Coarser control for size/distance
+      size: '1',
+      distance: '1',
+      quality: '1',
+    };
+    return Object.prototype.hasOwnProperty.call(stepValues, key) ? stepValues[key as keyof typeof stepValues] : '0.1';
+  }
+
   // Get default settings for a filter
   function getDefaultSettings(
     filterName: string
@@ -184,10 +263,20 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       vintage: { intensity: 0.7, sepia: 0.5 },
       blackAndWhite: { intensity: 1 },
       displacement: { scale: 20, intensity: 0.5 },
+      adjustment: { 
+        gamma: 1, 
+        saturation: 1, 
+        contrast: 1, 
+        brightness: 1, 
+        red: 1, 
+        green: 1, 
+        blue: 1, 
+        alpha: 1 
+      },
     };
 
     const validFilters = Object.keys(commonSettings);
-    if (validFilters.includes(filterName)) {
+    if (validFilters.includes(filterName) && Object.prototype.hasOwnProperty.call(commonSettings, filterName)) {
       return commonSettings[filterName as keyof typeof commonSettings];
     }
     return { intensity: 0.5 };
@@ -219,15 +308,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
             {typeof value === 'number' ? (
               <input
                 type="range"
-                min="0"
-                max={
-                  key === 'intensity' || key === 'alpha'
-                    ? '1'
-                    : key === 'size'
-                      ? '20'
-                      : '100'
-                }
-                step={key === 'intensity' || key === 'alpha' ? '0.1' : '1'}
+                min={getPropertyMin(key)}
+                max={getPropertyMax(key)}
+                step={getPropertyStep(key)}
                 value={value}
                 onChange={(e) => {
                   const updates = createSafeUpdate(
