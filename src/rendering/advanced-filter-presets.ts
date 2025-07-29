@@ -1395,20 +1395,44 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Use custom settings if provided, otherwise fall back to intensity presets
     if (options.customSettings) {
       const filter = new AdjustmentFilter({
-        brightness: typeof options.customSettings.brightness === 'number' ? options.customSettings.brightness : 1.0,
-        contrast: typeof options.customSettings.contrast === 'number' ? options.customSettings.contrast : 1.0,
-        saturation: typeof options.customSettings.saturation === 'number' ? options.customSettings.saturation : 1.0,
-        gamma: typeof options.customSettings.gamma === 'number' ? options.customSettings.gamma : 1.0,
-        red: typeof options.customSettings.red === 'number' ? options.customSettings.red : 1.0,
-        green: typeof options.customSettings.green === 'number' ? options.customSettings.green : 1.0,
-        blue: typeof options.customSettings.blue === 'number' ? options.customSettings.blue : 1.0,
-        alpha: typeof options.customSettings.alpha === 'number' ? options.customSettings.alpha : 1.0,
+        brightness:
+          typeof options.customSettings.brightness === 'number'
+            ? options.customSettings.brightness
+            : 1.0,
+        contrast:
+          typeof options.customSettings.contrast === 'number'
+            ? options.customSettings.contrast
+            : 1.0,
+        saturation:
+          typeof options.customSettings.saturation === 'number'
+            ? options.customSettings.saturation
+            : 1.0,
+        gamma:
+          typeof options.customSettings.gamma === 'number'
+            ? options.customSettings.gamma
+            : 1.0,
+        red:
+          typeof options.customSettings.red === 'number'
+            ? options.customSettings.red
+            : 1.0,
+        green:
+          typeof options.customSettings.green === 'number'
+            ? options.customSettings.green
+            : 1.0,
+        blue:
+          typeof options.customSettings.blue === 'number'
+            ? options.customSettings.blue
+            : 1.0,
+        alpha:
+          typeof options.customSettings.alpha === 'number'
+            ? options.customSettings.alpha
+            : 1.0,
       });
-      
+
       const filterChain = new FilterChain();
       return this.createEffectResult(filterChain, [filter], options);
     }
-    
+
     // Fallback to preset-based settings
     const intensityMap = {
       subtle: { brightness: 1.1, contrast: 1.05, saturation: 0.95 },
@@ -1484,6 +1508,25 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdvancedBloomEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use custom settings if provided, otherwise fall back to intensity presets
+    if (options.customSettings) {
+      const filter = new AdvancedBloomFilter({
+        bloomScale: typeof options.customSettings.bloomScale === 'number' ? options.customSettings.bloomScale : 1.0,
+        blur: typeof options.customSettings.blur === 'number' ? options.customSettings.blur : 2.0,
+        brightness: typeof options.customSettings.brightness === 'number' ? options.customSettings.brightness : 1.0,
+        threshold: typeof options.customSettings.threshold === 'number' ? options.customSettings.threshold : 0.5,
+        quality: typeof options.customSettings.quality === 'number' ? options.customSettings.quality : 4,
+        pixelSize: { 
+          x: typeof options.customSettings.pixelSizeX === 'number' ? options.customSettings.pixelSizeX : 1.0,
+          y: typeof options.customSettings.pixelSizeY === 'number' ? options.customSettings.pixelSizeY : 1.0,
+        },
+      });
+      
+      const filterChain = new FilterChain();
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+    
+    // Fallback to preset-based settings
     const intensityMap = {
       subtle: { bloomScale: 0.8, threshold: 0.7, brightness: 1.0, blur: 1 },
       moderate: { bloomScale: 1.0, threshold: 0.5, brightness: 1.1, blur: 2 },

@@ -197,6 +197,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       green: '0',
       blue: '0',
       alpha: '0',
+      // AdvancedBloomFilter properties  
+      bloomScale: '0',
+      blur: '0',
+      pixelSizeX: '0.1',
+      pixelSizeY: '0.1',
+      threshold: '0',
       // Common properties
       intensity: '0',
       size: '1',
@@ -219,6 +225,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       green: '3',
       blue: '3',
       alpha: '1',
+      // AdvancedBloomFilter properties
+      bloomScale: '5',
+      blur: '10',
+      pixelSizeX: '10',
+      pixelSizeY: '10',
+      threshold: '1',
       // Common properties
       intensity: '1',
       size: '20',
@@ -242,6 +254,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       blue: '0.05',
       alpha: '0.05',
       intensity: '0.05',
+      // AdvancedBloomFilter properties
+      bloomScale: '0.1',
+      blur: '0.1',
+      pixelSizeX: '0.1',
+      pixelSizeY: '0.1',
+      threshold: '0.05',
       // Coarser control for size/distance
       size: '1',
       distance: '1',
@@ -279,6 +297,15 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         blue: 1,
         alpha: 1,
       },
+      advancedBloom: {
+        bloomScale: 1,
+        blur: 2,
+        brightness: 1,
+        pixelSizeX: 1,
+        pixelSizeY: 1,
+        quality: 4,
+        threshold: 0.5,
+      },
     };
 
     const validFilters = Object.keys(commonSettings);
@@ -315,7 +342,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
               {key.charAt(0).toUpperCase() + key.slice(1)}
             </label>
             {typeof value === 'number' ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
                 <input
                   type="range"
                   min={getPropertyMin(key)}
@@ -343,8 +372,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       // Clamp the value within bounds
                       const minVal = parseFloat(getPropertyMin(key));
                       const maxVal = parseFloat(getPropertyMax(key));
-                      const clampedValue = Math.max(minVal, Math.min(maxVal, numValue));
-                      
+                      const clampedValue = Math.max(
+                        minVal,
+                        Math.min(maxVal, numValue)
+                      );
+
                       const updates = createSafeUpdate(key, clampedValue);
                       updateFilterSettings(filter.id, updates);
                     }
@@ -360,10 +392,15 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                 <button
                   onClick={() => {
                     const defaultSettings = getDefaultSettings(filter.name);
-                    const defaultValue = Object.prototype.hasOwnProperty.call(defaultSettings, key) 
+                    const defaultValue = Object.prototype.hasOwnProperty.call(
+                      defaultSettings,
+                      key
+                    )
                       ? defaultSettings[key as keyof typeof defaultSettings]
-                      : (typeof value === 'number' ? 1.0 : value);
-                    
+                      : typeof value === 'number'
+                        ? 1.0
+                        : value;
+
                     if (typeof defaultValue === 'number') {
                       const updates = createSafeUpdate(key, defaultValue);
                       updateFilterSettings(filter.id, updates);
