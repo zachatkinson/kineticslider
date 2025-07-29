@@ -152,7 +152,8 @@ describe('EffectPresets', () => {
     it('should get presets by category', () => {
       const blurPresets = effectPresets.getPresetsByCategory('blur');
 
-      expect(blurPresets).toHaveLength(2);
+      expect(blurPresets).toHaveLength(3);
+      expect(blurPresets.map((p) => p.name)).toContain('blur');
       expect(blurPresets.map((p) => p.name)).toContain('softBlur');
       expect(blurPresets.map((p) => p.name)).toContain('motionBlur');
     });

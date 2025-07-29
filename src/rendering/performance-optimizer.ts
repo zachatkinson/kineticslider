@@ -859,7 +859,7 @@ export class PerformanceOptimizer {
         try {
           listener(performanceEvent);
         } catch {
-          // console.error('Error in performance event listener:', error);
+          // Error in performance event listener - handled silently
         }
       });
     }

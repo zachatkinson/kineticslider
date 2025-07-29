@@ -523,7 +523,7 @@ export class PerformanceMonitor implements IPerformanceMonitor {
       try {
         callback(metric, value);
       } catch {
-        // Silently handle callback errors
+        // Error in performance monitor callback - handled silently
       }
     });
   }
@@ -536,7 +536,7 @@ export class PerformanceMonitor implements IPerformanceMonitor {
       try {
         callback(metric, value);
       } catch {
-        // Silently handle callback errors
+        // Error in performance monitor callback - handled silently
       }
     });
   }

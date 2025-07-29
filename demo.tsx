@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-refresh/only-export-components */
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -13,6 +16,7 @@ import {
 } from './src/config';
 import { debugLogger } from './src/utils/debug-logger';
 import type { ISliderRenderer, UIPanelConfig } from './src/core/types';
+import { AdvancedFilterManager } from './src/components/AdvancedFilterManager';
 import * as PIXI from 'pixi.js';
 
 // Note: This is a demo file combining multiple components for convenience.
@@ -242,7 +246,7 @@ function KineticSliderDemo(): JSX.Element {
   }, []);
 
   // Filter handlers
-  const handleApplyFilter = useCallback(async (filterName: string) => {
+  const _handleApplyFilter = useCallback(async (filterName: string) => {
     if (sliderEngine.current) {
       try {
         // Apply filter through the slider API
@@ -268,7 +272,28 @@ function KineticSliderDemo(): JSX.Element {
     }
   }, []);
 
-  const handleClearFilters = useCallback(async () => {
+  // Filter stacking handler
+  const _handleApplyFilterStack = useCallback(async (filterNames: string[]) => {
+    if (sliderEngine.current) {
+      try {
+        await sliderEngine.current.applyFilters(filterNames);
+        setState((prev) => ({
+          ...prev,
+          announcements: `Applied filter stack: ${filterNames.join(' + ')}`,
+        }));
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Filter stack application failed:', filterNames, error);
+        }
+        setState((prev) => ({
+          ...prev,
+          announcements: `Filter stack failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        }));
+      }
+    }
+  }, []);
+
+  const _handleClearFilters = useCallback(async () => {
     if (sliderEngine.current) {
       try {
         await sliderEngine.current.clearFilters();
@@ -987,506 +1012,18 @@ function KineticSliderDemo(): JSX.Element {
           </button>
         </div>
 
-        {/* Filter Controls */}
-        <div
-          data-testid="filter-controls"
-          style={{
-            marginTop: '2rem',
-            padding: '1rem',
-            background: '#f8fafc',
-            borderRadius: '8px',
-            borderLeft: '4px solid #8b5cf6',
-          }}
-        >
-          <h3>Filter Effects</h3>
-          <p>Apply visual filters to the slider images:</p>
-
-          <div
-            style={{
-              display: 'flex',
-              gap: '0.5rem',
-              marginTop: '1rem',
-              flexWrap: 'wrap',
-            }}
-          >
-            <button
-              onClick={() => handleApplyFilter('softBlur')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Blur
-            </button>
-            <button
-              onClick={() => handleApplyFilter('blackAndWhite')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Grayscale
-            </button>
-            <button
-              onClick={() => handleApplyFilter('vintage')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Old Film
-            </button>
-            <button
-              onClick={() => handleApplyFilter('displacement')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Displacement
-            </button>
-            <button
-              onClick={() => handleApplyFilter('adjustment')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Adjustment
-            </button>
-            <button
-              onClick={() => handleApplyFilter('advancedBloom')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Advanced Bloom
-            </button>
-            <button
-              onClick={() => handleApplyFilter('bloom')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#06b6d4',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Bloom
-            </button>
-            <button
-              onClick={() => handleApplyFilter('ascii')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              ASCII
-            </button>
-            <button
-              onClick={() => handleApplyFilter('kawaseBlur')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Kawase Blur
-            </button>
-            <button
-              onClick={() => handleApplyFilter('radialBlur')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#06b6d4',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Radial Blur
-            </button>
-            <button
-              onClick={() => handleApplyFilter('bulgePinch')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#e11d48',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Bulge Pinch
-            </button>
-            <button
-              onClick={() => handleApplyFilter('glitch')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#dc2626',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Glitch
-            </button>
-            <button
-              onClick={() => handleApplyFilter('rgbSplit')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#ec4899',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              RGB Split
-            </button>
-            <button
-              onClick={() => handleApplyFilter('godray')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#f59e0b',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Godray
-            </button>
-            <button
-              onClick={() => handleApplyFilter('colorGradient')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#7c3aed',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Color Gradient
-            </button>
-            <button
-              onClick={() => handleApplyFilter('colorMap')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Color Map
-            </button>
-            <button
-              onClick={() => handleApplyFilter('colorOverlay')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#06b6d4',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Color Overlay
-            </button>
-            <button
-              onClick={() => handleApplyFilter('colorReplace')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#f59e0b',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Color Replace
-            </button>
-            <button
-              onClick={() => handleApplyFilter('hslAdjustment')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              HSL Adjust
-            </button>
-            <button
-              onClick={() => handleApplyFilter('motionBlur')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#7c3aed',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Motion Blur
-            </button>
-            <button
-              onClick={() => handleApplyFilter('multiColorReplace')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Multi Color Replace
-            </button>
-            <button
-              onClick={() => handleApplyFilter('convolution')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#84cc16',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Convolution
-            </button>
-            <button
-              onClick={() => handleApplyFilter('crosshatch')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#a855f7',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Cross Hatch
-            </button>
-            <button
-              onClick={() => handleApplyFilter('emboss')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#a855f7',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Emboss
-            </button>
-            <button
-              onClick={() => handleApplyFilter('crt')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              CRT Monitor
-            </button>
-            <button
-              onClick={() => handleApplyFilter('dot')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#f59e0b',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Dot Screen
-            </button>
-            <button
-              onClick={() => handleApplyFilter('pixelate')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#e11d48',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Pixelate
-            </button>
-            <button
-              onClick={() => handleApplyFilter('reflection')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#0891b2',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Reflection
-            </button>
-            <button
-              onClick={() => handleApplyFilter('shockwave')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#dc2626',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Shockwave
-            </button>
-            <button
-              onClick={() => handleApplyFilter('simpleLightmap')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#fbbf24',
-                color: 'black',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Simple Lightmap
-            </button>
-            <button
-              onClick={() => handleApplyFilter('simplexNoise')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Simplex Noise
-            </button>
-            <button
-              onClick={() => handleApplyFilter('tiltShift')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#06b6d4',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Tilt Shift
-            </button>
-            <button
-              onClick={() => handleApplyFilter('twist')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Twist
-            </button>
-            <button
-              onClick={handleClearFilters}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              Clear Filters
-            </button>
-          </div>
-        </div>
+        {/* Advanced Filter Manager */}
+        <AdvancedFilterManager
+          sliderEngine={sliderEngine.current}
+          onFilterApplied={(filterNames) => setState(prev => ({
+            ...prev,
+            announcements: `Applied filters: ${filterNames.join(', ')}`
+          }))}
+          onError={(error) => setState(prev => ({
+            ...prev,
+            announcements: `Filter error: ${error}`
+          }))}
+        />
 
         {/* UI Panel Controls */}
         <div

@@ -518,10 +518,14 @@ export class DisplacementEffects {
 
     // Mouse move handler
     const handleMouseMove = (event: MouseEvent): void => {
+      // Use PIXI's bounds for coordinate conversion
       const bounds = container.getBounds();
+      const relativeX = event.clientX - bounds.x;
+      const relativeY = event.clientY - bounds.y;
+      
       this.state.targetMousePosition = {
-        x: (event.clientX - bounds.x) / bounds.width,
-        y: (event.clientY - bounds.y) / bounds.height,
+        x: Math.max(0, Math.min(1, relativeX / bounds.width)),
+        y: Math.max(0, Math.min(1, relativeY / bounds.height)),
       };
     };
 

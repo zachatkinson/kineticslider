@@ -58,6 +58,7 @@ import {
   SimplexNoiseFilter,
   TiltShiftFilter,
   TwistFilter,
+  ZoomBlurFilter,
 } from 'pixi-filters';
 
 /**
@@ -326,6 +327,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['whirlpool effect', 'spiral distortion', 'dynamic warping'],
       create: (options) => this.createTwistEffect(options),
+    });
+
+    this.registerAdvancedPreset({
+      name: 'zoomBlur',
+      category: 'blur-advanced' as AdvancedEffectCategory,
+      description: 'Radial zoom blur effect from center point',
+      performanceImpact: 4,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['speed effects', 'zoom transitions', 'motion blur', 'impact effects'],
+      create: (options) => this.createZoomBlurEffect(options),
     });
 
     this.registerAdvancedPreset({
@@ -1237,7 +1248,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       filter.time = 0; // Reset time
       lastTime = Date.now();
 
-      const animate = () => {
+      const animate = (): void => {
         const now = Date.now();
         const delta = (now - lastTime) / 1000; // Convert to seconds
         lastTime = now;
@@ -2392,4 +2403,72 @@ export class AdvancedFilterPresets extends EffectPresets {
       },
     };
   }
+
+  /**
+   * Create ZoomBlur effect for radial motion blur/speed effect
+   */
+  private createZoomBlurEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    // Configure zoom blur parameters based on intensity
+    const intensityMap = {
+      subtle: { strength: 0.1, radius: 100, innerRadius: 0 },
+      moderate: { strength: 0.15, radius: 200, innerRadius: 0 },
+      strong: { strength: 0.2, radius: 300, innerRadius: 0 },
+      intense: { strength: 0.3, radius: -1, innerRadius: 0 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create ZoomBlurFilter with pixel coordinates like TwistFilter
+    const filter = new ZoomBlurFilter({
+      strength: settings.strength,
+      center: { x: 400, y: 300 }, // Use pixel coordinates like TwistFilter
+      innerRadius: settings.innerRadius,
+      radius: settings.radius,
+    });
+    
+    debugLogger.info(
+      `ZoomBlurFilter created - strength: ${settings.strength}, center: {x:400, y:300}, radius: ${settings.radius}, innerRadius: ${settings.innerRadius}`,
+      'FILTER_PRESETS'
+    );
+
+    const filterChain = new FilterChain({ name: 'zoom-blur-effect' });
+    
+    filterChain.addFilter(filter, {
+      id: 'zoomBlur',
+      animated: true,
+      animationProperties: {
+        strength: settings.strength,
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const originalResult = this.createEffectResult(filterChain, [filter], options);
+    
+    // Override applyTo to set proper center
+    return {
+      ...originalResult,
+      applyTo: async (target: Sprite | Container): Promise<void> => {
+        // Update center to sprite's actual center
+        const app = target.parent?.parent;
+        
+        // Calculate center position for zoom blur
+        if (app && (app as unknown as { screen?: { width: number; height: number } }).screen) {
+          const screen = (app as unknown as { screen: { width: number; height: number } }).screen;
+          
+          // Use screen center - filters use pixel coordinates
+          const centerXPixel = screen.width / 2;
+          const centerYPixel = screen.height / 2;
+          
+          // Set center to pixel coordinates 
+          filter.center = { x: centerXPixel, y: centerYPixel };
+        }
+        
+        // Call original applyTo
+        await originalResult.applyTo(target);
+      },
+    };
+  }
+
 }

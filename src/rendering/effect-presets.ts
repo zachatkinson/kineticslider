@@ -10,6 +10,7 @@
 
 import { gsap } from 'gsap';
 import {
+  AlphaFilter,
   BlurFilter,
   ColorMatrixFilter,
   DisplacementFilter,
@@ -234,6 +235,36 @@ export class EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['transitions', 'movement indication', 'speed effects'],
       create: (options) => this.createMotionBlurEffect(options),
+    });
+
+    this.registerPreset({
+      name: 'blur',
+      category: 'blur',
+      description: 'Standard blur filter with configurable strength',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['background blur', 'focus effects', 'depth blur'],
+      create: (options) => this.createBlurEffect(options),
+    });
+
+    this.registerPreset({
+      name: 'alpha',
+      category: 'color',
+      description: 'Alpha transparency effect for fade effects',
+      performanceImpact: 1,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['fade effects', 'transparency', 'alpha compositing'],
+      create: (options) => this.createAlphaEffect(options),
+    });
+
+    this.registerPreset({
+      name: 'colorMatrix',
+      category: 'color',
+      description: 'Advanced color manipulation using matrix transformations',
+      performanceImpact: 2,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['color grading', 'artistic effects', 'mood enhancement'],
+      create: (options) => this.createColorMatrixEffect(options),
     });
 
     // Glow Effects
@@ -750,31 +781,52 @@ export class EffectPresets {
       throw new Error('Displacement texture required for displacement effect');
     }
 
-    const intensity = this.getIntensityMultiplier(options.intensity);
+    // Create displacement sprite for the filter
     const displacementSprite = new Sprite(this.displacementTexture);
 
-    // Setup displacement sprite properly
-    displacementSprite.scale.x = intensity * 50;
-    displacementSprite.scale.y = intensity * 50;
+    // Setup displacement sprite with different scales based on intensity
+    const scaleMap = {
+      subtle: { scale: 10, spriteScale: 1 },
+      moderate: { scale: 20, spriteScale: 1.5 },
+      strong: { scale: 40, spriteScale: 2 },
+      intense: { scale: 80, spriteScale: 3 },
+    };
+    
+    const settings = scaleMap[options.intensity];
+    
+    // Configure displacement sprite
+    displacementSprite.scale.set(settings.spriteScale);
     displacementSprite.anchor.set(0.5);
-
+    
+    // Create displacement filter with proper scale
     const displacementFilter = new DisplacementFilter({
       sprite: displacementSprite,
-      scale: intensity * 20,
+      scale: settings.scale,
     });
 
     const filterChain = new FilterChain({ name: 'displacement' });
     filterChain.addFilter(displacementFilter, {
       id: 'displacement',
       animationProperties: {
-        scale: intensity * 20,
+        scale: settings.scale,
       },
       duration: options.duration,
       ease: options.ease,
     });
 
-    const timeline = gsap.timeline();
+    // Animate the displacement sprite for dynamic effect
+    const timeline = gsap.timeline({ repeat: -1 });
+    timeline.to(displacementSprite, {
+      x: 100,
+      y: 100,
+      rotation: Math.PI * 2,
+      duration: 10,
+      ease: 'none',
+    });
+
     const filters = [displacementFilter];
+
+    // Displacement sprite is used by the filter directly
 
     return {
       filterChain,
@@ -783,8 +835,11 @@ export class EffectPresets {
       cleanup: (): void => {
         timeline.kill();
         filterChain.dispose();
+        // Note: displacement sprite cleanup is handled by the filter
       },
       applyTo: (target): void => {
+        // The displacement sprite will be managed by the filter itself
+        // PIXI handles adding it to the appropriate container
         filterChain.applyTo(target);
       },
       removeFrom: (target): void => {
@@ -1026,6 +1081,152 @@ export class EffectPresets {
 
     const timeline = gsap.timeline();
     const filters = [colorFilter, noiseFilter];
+
+    return {
+      filterChain,
+      filters,
+      timeline,
+      cleanup: (): void => {
+        timeline.kill();
+        filterChain.dispose();
+      },
+      applyTo: (target): void => {
+        filterChain.applyTo(target);
+      },
+      removeFrom: (target): void => {
+        filterChain.removeFrom(target);
+      },
+    };
+  }
+
+  /**
+   * Create alpha transparency effect
+   */
+  private createAlphaEffect(options: Required<PresetOptions>): EffectPresetResult {
+    const intensityMap = {
+      subtle: 0.85,
+      moderate: 0.7,
+      strong: 0.5,
+      intense: 0.3,
+    };
+    const alpha = intensityMap[options.intensity];
+
+    const alphaFilter = new AlphaFilter({ alpha });
+    const filterChain = new FilterChain({ name: 'alphaEffect' });
+
+    filterChain.addFilter(alphaFilter, {
+      id: 'alpha',
+      animationProperties: { alpha },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const timeline = gsap.timeline();
+    const filters = [alphaFilter];
+
+    return {
+      filterChain,
+      filters,
+      timeline,
+      cleanup: (): void => {
+        timeline.kill();
+        filterChain.dispose();
+      },
+      applyTo: (target): void => {
+        filterChain.applyTo(target);
+      },
+      removeFrom: (target): void => {
+        filterChain.removeFrom(target);
+      },
+    };
+  }
+
+  /**
+   * Create standard blur effect
+   */
+  private createBlurEffect(options: Required<PresetOptions>): EffectPresetResult {
+    const intensityMap = {
+      subtle: 2,
+      moderate: 4,
+      strong: 8,
+      intense: 16,
+    };
+    const blur = intensityMap[options.intensity];
+
+    const blurFilter = new BlurFilter(blur);
+    const filterChain = new FilterChain({ name: 'blurEffect' });
+
+    filterChain.addFilter(blurFilter, {
+      id: 'blur',
+      animationProperties: { strength: blur },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const timeline = gsap.timeline();
+    const filters = [blurFilter];
+
+    return {
+      filterChain,
+      filters,
+      timeline,
+      cleanup: (): void => {
+        timeline.kill();
+        filterChain.dispose();
+      },
+      applyTo: (target): void => {
+        filterChain.applyTo(target);
+      },
+      removeFrom: (target): void => {
+        filterChain.removeFrom(target);
+      },
+    };
+  }
+
+  /**
+   * Create color matrix effect with various color transformations
+   */
+  private createColorMatrixEffect(options: Required<PresetOptions>): EffectPresetResult {
+    const colorMatrixFilter = new ColorMatrixFilter();
+
+    // Different color matrix effects based on intensity
+    const effects = {
+      subtle: (): void => {
+        colorMatrixFilter.sepia(false);
+        colorMatrixFilter.saturate(1.2, false);
+        colorMatrixFilter.brightness(1.1, false);
+      },
+      moderate: (): void => {
+        colorMatrixFilter.vintage(false);
+        colorMatrixFilter.contrast(1.2, false);
+        colorMatrixFilter.saturate(1.4, false);
+      },
+      strong: (): void => {
+        colorMatrixFilter.polaroid(false);
+        colorMatrixFilter.contrast(1.4, false);
+        colorMatrixFilter.brightness(1.2, false);
+      },
+      intense: (): void => {
+        colorMatrixFilter.kodachrome(false);
+        colorMatrixFilter.contrast(1.6, false);
+        colorMatrixFilter.saturate(1.8, false);
+      },
+    };
+
+    // Apply the effect based on intensity
+    effects[options.intensity]();
+
+    const filterChain = new FilterChain({ name: 'colorMatrixEffect' });
+
+    filterChain.addFilter(colorMatrixFilter, {
+      id: 'colorMatrix',
+      animationProperties: { alpha: 1 },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    const timeline = gsap.timeline();
+    const filters = [colorMatrixFilter];
 
     return {
       filterChain,

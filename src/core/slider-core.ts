@@ -473,14 +473,16 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   /**
    * Apply a filter effect to current slide
    */
-  async applyFilter(filterName: string): Promise<void> {
+  async applyFilter(filterName: string, addToStack = false): Promise<void> {
     if (!this.renderer) {
       throw new Error('Renderer not available for filter effects');
     }
 
     try {
-      // Clear any existing filter first
-      await this.clearFilters();
+      // Clear existing filters only if not adding to stack
+      if (!addToStack) {
+        await this.clearFilters();
+      }
 
       // Get current sprite
       const sprites = this.renderer.getSprites();
@@ -537,6 +539,33 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       }
     } catch (error) {
       this.handleError(error, 'applyFilter');
+      throw error;
+    }
+  }
+
+  /**
+   * Apply multiple filters to current slide (filter stacking)
+   */
+  async applyFilters(filterNames: string[]): Promise<void> {
+    if (!filterNames || filterNames.length === 0) {
+      return;
+    }
+
+    try {
+      // Clear existing filters first
+      await this.clearFilters();
+
+      // Apply each filter to the stack
+      for (const filterName of filterNames) {
+        await this.applyFilter(filterName, true); // addToStack = true
+      }
+
+      debugLogger.info(
+        `Applied ${filterNames.length} filters: ${filterNames.join(', ')}`,
+        'slider-core:applyFilters'
+      );
+    } catch (error) {
+      this.handleError(error, 'applyFilters');
       throw error;
     }
   }

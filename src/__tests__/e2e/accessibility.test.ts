@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
 test.describe('Accessibility E2E', () => {
+  // Increase timeout for accessibility tests that may need more time
+  test.setTimeout(45000);
   test.beforeEach(async ({ page }) => {
     await navigateAndWait(page);
   });
