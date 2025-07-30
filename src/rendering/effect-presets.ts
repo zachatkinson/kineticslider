@@ -29,6 +29,7 @@ import {
 } from './displacement-effects';
 // import type { AnimationConfig } from '../core/types';
 import { ANIMATION_DURATION, EASING } from '../core/constants';
+import { debugLogger } from '../utils/debug-logger';
 
 /**
  * Preset intensity levels
@@ -61,7 +62,7 @@ export interface PresetOptions {
   /** Custom parameters for fine-tuning */
   customParams?: Record<string, unknown>;
   /** Custom settings from UI components */
-  customSettings?: Record<string, number | string | boolean>;
+  customSettings?: Record<string, number | string | boolean | object>;
 }
 
 /**
@@ -312,13 +313,13 @@ export class EffectPresets {
     });
 
     this.registerPreset({
-      name: 'blackAndWhite',
+      name: 'grayscale',
       category: 'color',
-      description: 'Classic black and white with contrast adjustment',
+      description: 'Classic grayscale conversion with contrast adjustment',
       performanceImpact: 1,
       compatibility: ['chrome', 'firefox', 'safari', 'edge'],
       useCases: ['artistic effects', 'focus enhancement', 'minimal themes'],
-      create: (options) => this.createBlackAndWhiteEffect(options),
+      create: (options) => this.createGrayscaleEffect(options),
     });
 
     // Distortion Effects
@@ -740,13 +741,13 @@ export class EffectPresets {
   /**
    * Create grayscale effect
    */
-  private createBlackAndWhiteEffect(
+  private createGrayscaleEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
     // Create grayscale using proper GrayscaleFilter from pixi-filters
     const grayscaleFilter = new GrayscaleFilter();
 
-    const filterChain = new FilterChain({ name: 'blackAndWhite' });
+    const filterChain = new FilterChain({ name: 'grayscale' });
     filterChain.addFilter(grayscaleFilter, {
       id: 'grayscale',
       animationProperties: { alpha: 1 },
@@ -1186,6 +1187,68 @@ export class EffectPresets {
   private createBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      debugLogger.info(
+        'Using custom settings for blur filter',
+        'EFFECT_PRESETS'
+      );
+
+      // Create blur filter with custom settings
+      const blurFilter = new BlurFilter();
+
+      // Apply custom settings - BlurFilter uses blurX, blurY, and quality
+      blurFilter.blurX =
+        typeof options.customSettings.blurX === 'number'
+          ? options.customSettings.blurX
+          : 4;
+      blurFilter.blurY =
+        typeof options.customSettings.blurY === 'number'
+          ? options.customSettings.blurY
+          : 4;
+      blurFilter.quality =
+        typeof options.customSettings.quality === 'number'
+          ? options.customSettings.quality
+          : 4;
+
+      const filterChain = new FilterChain({ name: 'blurEffect' });
+
+      filterChain.addFilter(blurFilter, {
+        id: 'blur',
+        animationProperties: {
+          blurX: blurFilter.blurX,
+          blurY: blurFilter.blurY,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      debugLogger.info(
+        `Blur filter applied - blurX: ${blurFilter.blurX}, blurY: ${blurFilter.blurY}, quality: ${blurFilter.quality}`,
+        'EFFECT_PRESETS'
+      );
+
+      const timeline = gsap.timeline();
+      const filters = [blurFilter];
+
+      return {
+        filterChain,
+        filters,
+        timeline,
+        cleanup: (): void => {
+          timeline.kill();
+          filterChain.dispose();
+        },
+        applyTo: (target): void => {
+          filterChain.applyTo(target);
+        },
+        removeFrom: (target): void => {
+          filterChain.removeFrom(target);
+        },
+      };
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: 2,
       moderate: 4,

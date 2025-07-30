@@ -76,10 +76,14 @@ const filterNameMap: Record<string, string> = {
 // Helper to count enabled filters in AdvancedFilterManager
 async function countEnabledFilters(page: Page): Promise<number> {
   // Wait for the filter controls to be present
-  await page.waitForSelector('[data-testid="filter-controls"]', { timeout: 5000 });
-  
+  await page.waitForSelector('[data-testid="filter-controls"]', {
+    timeout: 5000,
+  });
+
   // Count all checked checkboxes within the filter controls
-  const enabledFilterCheckboxes = page.locator('[data-testid="filter-controls"] input[type="checkbox"]:checked');
+  const enabledFilterCheckboxes = page.locator(
+    '[data-testid="filter-controls"] input[type="checkbox"]:checked'
+  );
   return await enabledFilterCheckboxes.count();
 }
 
@@ -109,7 +113,7 @@ async function addAndEnableFilter(page: Page, filterName: string) {
       // Wait for button to be stable before clicking
       await addButton.waitFor({ state: 'attached', timeout: 2000 });
       await page.waitForTimeout(100); // Small delay for stability
-      
+
       await addButton.click({ force: true, timeout: 3000 });
       await page.waitForTimeout(500); // More time for dropdown to appear
 
@@ -141,17 +145,19 @@ async function addAndEnableFilter(page: Page, filterName: string) {
 
   // Wait for the filter to be added to the UI first
   await page.waitForTimeout(500);
-  
+
   // Find the newly added filter's checkbox and ensure it's already enabled
   // (filters are auto-enabled when added from dropdown)
-  const allCheckboxes = page.locator('[data-testid="filter-controls"] input[type="checkbox"]');
+  const allCheckboxes = page.locator(
+    '[data-testid="filter-controls"] input[type="checkbox"]'
+  );
   const checkboxCount = await allCheckboxes.count();
-  
+
   if (checkboxCount > 0) {
     // Get the last checkbox (newly added filter)
     const lastCheckbox = allCheckboxes.last();
     await expect(lastCheckbox).toBeVisible();
-    
+
     // Check if it's already enabled (should be auto-enabled)
     const isChecked = await lastCheckbox.isChecked();
     if (!isChecked) {
@@ -159,26 +165,28 @@ async function addAndEnableFilter(page: Page, filterName: string) {
       await lastCheckbox.click();
     }
   }
-  
+
   await page.waitForTimeout(300);
 }
 
 async function clearAllFilters(page: Page) {
   const clearButton = page.locator('[data-testid="clear-filters-button"]');
-  
+
   try {
     // Wait for the button to be visible with a reasonable timeout
     await clearButton.waitFor({ state: 'visible', timeout: 3000 });
-    
+
     // Wait for the button to be stable and clickable
     await clearButton.waitFor({ state: 'attached', timeout: 1000 });
-    
+
     // Click the button with force to avoid stability issues
     await clearButton.click({ force: true });
     await page.waitForTimeout(1000); // Give more time for cleanup
   } catch {
     // If button doesn't exist or isn't visible, likely no filters to clear
-    console.log('Clear button not found or not visible, assuming no filters to clear');
+    console.log(
+      'Clear button not found or not visible, assuming no filters to clear'
+    );
   }
 }
 
@@ -225,7 +233,9 @@ test.describe('Filter System E2E', () => {
 
     // Get all filter options from dropdown using correct selector
     const filterOptions = await page
-      .locator('[data-testid="filter-dropdown"] [data-testid^="filter-option-"]')
+      .locator(
+        '[data-testid="filter-dropdown"] [data-testid^="filter-option-"]'
+      )
       .all();
     expect(filterOptions.length).toBeGreaterThan(30);
 

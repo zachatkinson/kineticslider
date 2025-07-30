@@ -12,6 +12,15 @@ import { Filter, Sprite, Container, Assets, Texture } from 'pixi.js';
 import { FilterChain } from './filter-chain';
 import { FilterManager } from './filter-manager';
 import { debugLogger } from '../utils/debug-logger';
+
+interface CustomTextureData {
+  canvas: HTMLCanvasElement;
+  width: number;
+  height: number;
+  dataUrl: string;
+  fileName: string;
+  isCustomTexture: true;
+}
 import {
   EffectPresets,
   type PresetOptions,
@@ -1613,6 +1622,48 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createBloomEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first, then fall back to intensity-based defaults
+    if (options.customSettings) {
+      debugLogger.info(
+        'Using custom settings for bloom filter',
+        'FILTER_PRESETS'
+      );
+
+      const filter = new BloomFilter();
+
+      // Apply custom settings - BloomFilter uses strengthX and strengthY properties
+      filter.strengthX =
+        typeof options.customSettings.strengthX === 'number'
+          ? options.customSettings.strengthX
+          : 2;
+      filter.strengthY =
+        typeof options.customSettings.strengthY === 'number'
+          ? options.customSettings.strengthY
+          : 2;
+
+      const filterChain = new FilterChain({ name: 'bloom-effect' });
+
+      // Add filter with custom settings support
+      filterChain.addFilter(filter, {
+        id: 'bloom',
+        animated: true,
+        animationProperties: {
+          strengthX: filter.strengthX,
+          strengthY: filter.strengthY,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      debugLogger.info(
+        `Bloom filter applied - strengthX: ${filter.strengthX}, strengthY: ${filter.strengthY}`,
+        'FILTER_PRESETS'
+      );
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { strength: 0.5 },
       moderate: { strength: 1.0 },
@@ -1621,9 +1672,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
-    // Use the simpler constructor approach for BloomFilter
     const filter = new BloomFilter();
-    // Set properties directly
     filter.strength = settings.strength;
 
     const filterChain = new FilterChain({ name: 'bloom-effect' });
@@ -1767,6 +1816,70 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createBevelEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      debugLogger.info(
+        'Using custom settings for bevel filter',
+        'FILTER_PRESETS'
+      );
+
+      // Convert hex color strings to numbers for PIXI.js
+      let lightColorValue = 0xffffff;
+      if (typeof options.customSettings.lightColor === 'string') {
+        const hexColor = options.customSettings.lightColor.replace('#', '');
+        lightColorValue = parseInt(hexColor, 16);
+      }
+
+      let shadowColorValue = 0x000000;
+      if (typeof options.customSettings.shadowColor === 'string') {
+        const hexColor = options.customSettings.shadowColor.replace('#', '');
+        shadowColorValue = parseInt(hexColor, 16);
+      }
+
+      const filter = new BevelFilter({
+        rotation:
+          typeof options.customSettings.rotation === 'number'
+            ? options.customSettings.rotation
+            : 45,
+        thickness:
+          typeof options.customSettings.thickness === 'number'
+            ? options.customSettings.thickness
+            : 2,
+        lightColor: lightColorValue,
+        lightAlpha:
+          typeof options.customSettings.lightAlpha === 'number'
+            ? options.customSettings.lightAlpha
+            : 0.7,
+        shadowColor: shadowColorValue,
+        shadowAlpha:
+          typeof options.customSettings.shadowAlpha === 'number'
+            ? options.customSettings.shadowAlpha
+            : 0.7,
+      });
+
+      const filterChain = new FilterChain({ name: 'bevel-effect' });
+      filterChain.addFilter(filter, {
+        id: 'bevel',
+        animated: true,
+        animationProperties: {
+          rotation: filter.rotation,
+          thickness: filter.thickness,
+          lightAlpha: filter.lightAlpha,
+          shadowAlpha: filter.shadowAlpha,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      debugLogger.info(
+        `Bevel filter applied - rotation: ${filter.rotation}, thickness: ${filter.thickness}, lightAlpha: ${filter.lightAlpha}, shadowAlpha: ${filter.shadowAlpha}`,
+        'FILTER_PRESETS'
+      );
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { thickness: 2, lightAlpha: 0.7, shadowAlpha: 0.7 },
       moderate: { thickness: 4, lightAlpha: 0.8, shadowAlpha: 0.8 },
@@ -1776,7 +1889,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     const settings = intensityMap[options.intensity];
 
     const filter = new BevelFilter({
-      rotation: 45, // Light angle in degrees
+      rotation: 45,
       thickness: settings.thickness,
       lightColor: 0xffffff,
       lightAlpha: settings.lightAlpha,
@@ -1806,6 +1919,56 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createBulgePinchEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first, then fall back to intensity-based defaults
+    if (options.customSettings) {
+      debugLogger.info(
+        'Using custom settings for bulgePinch filter',
+        'FILTER_PRESETS'
+      );
+
+      const filter = new BulgePinchFilter();
+
+      // Apply custom settings with proper defaults
+      filter.center = [
+        typeof options.customSettings.centerX === 'number'
+          ? options.customSettings.centerX
+          : 0.5,
+        typeof options.customSettings.centerY === 'number'
+          ? options.customSettings.centerY
+          : 0.5,
+      ];
+      filter.radius =
+        typeof options.customSettings.radius === 'number'
+          ? options.customSettings.radius
+          : 100;
+      filter.strength =
+        typeof options.customSettings.strength === 'number'
+          ? options.customSettings.strength
+          : 1;
+
+      const filterChain = new FilterChain({ name: 'bulge-pinch-effect' });
+
+      // Add filter with custom settings support
+      filterChain.addFilter(filter, {
+        id: 'bulgePinch',
+        animated: true,
+        animationProperties: {
+          strength: filter.strength,
+          radius: filter.radius,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      debugLogger.info(
+        `BulgePinch filter applied - centerX: ${filter.center.x}, centerY: ${filter.center.y}, radius: ${filter.radius}, strength: ${filter.strength}`,
+        'FILTER_PRESETS'
+      );
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { strength: 0.5, centerX: 0.5, centerY: 0.5, radius: 200 },
       moderate: { strength: 1.0, centerX: 0.5, centerY: 0.5, radius: 250 },
@@ -1814,9 +1977,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
-    // Use the simpler constructor approach for BulgePinchFilter
     const filter = new BulgePinchFilter();
-    // Set properties directly
     filter.center = [settings.centerX, settings.centerY];
     filter.radius = settings.radius;
     filter.strength = settings.strength;
@@ -1842,6 +2003,92 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createColorGradientEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      debugLogger.info(
+        'Using custom settings for colorGradient filter',
+        'FILTER_PRESETS'
+      );
+
+      const filter = new ColorGradientFilter();
+
+      // Extract custom settings with defaults
+      const type =
+        typeof options.customSettings.type === 'number'
+          ? options.customSettings.type
+          : 0;
+      const angle =
+        typeof options.customSettings.angle === 'number'
+          ? options.customSettings.angle
+          : 0;
+      const alpha =
+        typeof options.customSettings.alpha === 'number'
+          ? options.customSettings.alpha
+          : 0.5;
+      const startOffset =
+        typeof options.customSettings.startOffset === 'number'
+          ? options.customSettings.startOffset
+          : 0;
+      const endOffset =
+        typeof options.customSettings.endOffset === 'number'
+          ? options.customSettings.endOffset
+          : 1;
+      const startAlpha =
+        typeof options.customSettings.startAlpha === 'number'
+          ? options.customSettings.startAlpha
+          : 1;
+      const endAlpha =
+        typeof options.customSettings.endAlpha === 'number'
+          ? options.customSettings.endAlpha
+          : 1;
+
+      // Handle color conversion from hex to number
+      let startColor = 0xff0000; // Default red
+      let endColor = 0x0000ff; // Default blue
+
+      if (typeof options.customSettings.startColor === 'string') {
+        startColor = parseInt(
+          options.customSettings.startColor.replace('#', '0x')
+        );
+      }
+      if (typeof options.customSettings.endColor === 'string') {
+        endColor = parseInt(options.customSettings.endColor.replace('#', '0x'));
+      }
+
+      // Set filter properties
+      filter.type = type; // 0 = linear, 1 = radial
+      if (type === 0) {
+        // Linear gradient
+        filter.angle = (angle * Math.PI) / 180; // Convert degrees to radians
+      }
+      filter.alpha = alpha;
+
+      // Configure gradient stops
+      filter.stops = [
+        { offset: startOffset, color: startColor, alpha: startAlpha },
+        { offset: endOffset, color: endColor, alpha: endAlpha },
+      ];
+
+      debugLogger.info(
+        `ColorGradient filter applied - type: ${type}, angle: ${angle}°, alpha: ${alpha}, colors: ${options.customSettings.startColor} to ${options.customSettings.endColor}`,
+        'FILTER_PRESETS'
+      );
+
+      const filterChain = new FilterChain({ name: 'color-gradient-effect' });
+      filterChain.addFilter(filter, {
+        id: 'colorGradient',
+        animated: true,
+        animationProperties: {
+          alpha: alpha,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { alpha: 0.3 },
       moderate: { alpha: 0.5 },
@@ -1877,6 +2124,98 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createColorMapEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      debugLogger.info(
+        'Using custom settings for colorMap filter',
+        'FILTER_PRESETS'
+      );
+
+      const mix =
+        typeof options.customSettings.mix === 'number'
+          ? options.customSettings.mix
+          : 0.5;
+      const nearest =
+        typeof options.customSettings.nearest === 'boolean'
+          ? options.customSettings.nearest
+          : false;
+      const colorMapPreset =
+        typeof options.customSettings.colorMapPreset === 'string'
+          ? options.customSettings.colorMapPreset
+          : 'vintage';
+      const customColorMap = options.customSettings.customColorMap; // Custom texture if provided
+
+      // Create colormap texture based on settings
+      let colorMapTexture: Texture;
+
+      if (
+        customColorMap &&
+        customColorMap !== '' &&
+        typeof customColorMap === 'object' &&
+        customColorMap !== null &&
+        'isCustomTexture' in customColorMap
+      ) {
+        // Check if this is our custom texture data object
+        const textureData = customColorMap as CustomTextureData;
+        if (textureData.isCustomTexture && textureData.canvas) {
+          try {
+            // Convert canvas to PIXI.js Texture
+            colorMapTexture = Texture.from(textureData.canvas);
+            debugLogger.info(
+              `Using custom uploaded colormap texture: ${textureData.fileName} (${textureData.width}x${textureData.height})`,
+              'FILTER_PRESETS'
+            );
+          } catch (error) {
+            debugLogger.warn(
+              'Failed to create texture from uploaded image, falling back to preset',
+              'FILTER_PRESETS',
+              error
+            );
+            colorMapTexture = this.createPresetColorMapTexture(colorMapPreset);
+          }
+        } else {
+          // Object doesn't have the expected custom texture structure, fallback to preset
+          debugLogger.warn(
+            'Custom colormap object is not in expected format, falling back to preset',
+            'FILTER_PRESETS'
+          );
+          colorMapTexture = this.createPresetColorMapTexture(colorMapPreset);
+        }
+      } else {
+        // Generate preset colormap texture
+        colorMapTexture = this.createPresetColorMapTexture(colorMapPreset);
+        debugLogger.info(
+          `Using preset colormap: ${colorMapPreset}`,
+          'FILTER_PRESETS'
+        );
+      }
+
+      const filter = new ColorMapFilter({
+        colorMap: colorMapTexture,
+        mix: mix,
+        nearest: nearest,
+      });
+
+      debugLogger.info(
+        `ColorMap filter applied - mix: ${mix}, nearest: ${nearest}, preset: ${colorMapPreset}`,
+        'FILTER_PRESETS'
+      );
+
+      const filterChain = new FilterChain({ name: 'color-map-effect' });
+      filterChain.addFilter(filter, {
+        id: 'colorMap',
+        animated: true,
+        animationProperties: {
+          mix: mix,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { mix: 0.3 },
       moderate: { mix: 0.6 },
@@ -1885,7 +2224,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
-    // Create a simple canvas texture as initial colorMap (1x1 gradient)
+    // Create a simple canvas texture as initial colorMap (RGB gradient)
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 256;
     const ctx = canvas.getContext('2d');
@@ -1934,6 +2273,124 @@ export class AdvancedFilterPresets extends EffectPresets {
     });
 
     return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  /**
+   * Create preset colormap textures
+   */
+  private createPresetColorMapTexture(preset: string): Texture {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      // Fallback to simple RGB gradient
+      return this.createFallbackColorMapTexture();
+    }
+
+    switch (preset) {
+      case 'vintage': {
+        // Warm sepia-toned colormap
+        const vintageGradient = ctx.createLinearGradient(0, 0, 256, 0);
+        vintageGradient.addColorStop(0, '#8B4513'); // Dark brown
+        vintageGradient.addColorStop(0.3, '#D2691E'); // Chocolate
+        vintageGradient.addColorStop(0.6, '#F4A460'); // Sandy brown
+        vintageGradient.addColorStop(1, '#FFF8DC'); // Cornsilk
+        ctx.fillStyle = vintageGradient;
+        ctx.fillRect(0, 0, 256, 256);
+        break;
+      }
+
+      case 'neon': {
+        // Vibrant neon colors
+        const neonGradient = ctx.createLinearGradient(0, 0, 256, 0);
+        neonGradient.addColorStop(0, '#FF00FF'); // Magenta
+        neonGradient.addColorStop(0.25, '#00FFFF'); // Cyan
+        neonGradient.addColorStop(0.5, '#00FF00'); // Green
+        neonGradient.addColorStop(0.75, '#FFFF00'); // Yellow
+        neonGradient.addColorStop(1, '#FF0080'); // Hot pink
+        ctx.fillStyle = neonGradient;
+        ctx.fillRect(0, 0, 256, 256);
+        break;
+      }
+
+      case 'thermal': {
+        // Heat map colors (black to red to yellow to white)
+        const thermalGradient = ctx.createLinearGradient(0, 0, 256, 0);
+        thermalGradient.addColorStop(0, '#000000'); // Black
+        thermalGradient.addColorStop(0.25, '#800080'); // Purple
+        thermalGradient.addColorStop(0.5, '#FF0000'); // Red
+        thermalGradient.addColorStop(0.75, '#FFFF00'); // Yellow
+        thermalGradient.addColorStop(1, '#FFFFFF'); // White
+        ctx.fillStyle = thermalGradient;
+        ctx.fillRect(0, 0, 256, 256);
+        break;
+      }
+
+      case 'rainbow': {
+        // Full spectrum rainbow
+        const rainbowGradient = ctx.createLinearGradient(0, 0, 256, 0);
+        rainbowGradient.addColorStop(0, '#FF0000'); // Red
+        rainbowGradient.addColorStop(0.17, '#FF8000'); // Orange
+        rainbowGradient.addColorStop(0.33, '#FFFF00'); // Yellow
+        rainbowGradient.addColorStop(0.5, '#00FF00'); // Green
+        rainbowGradient.addColorStop(0.67, '#0000FF'); // Blue
+        rainbowGradient.addColorStop(0.83, '#8000FF'); // Indigo
+        rainbowGradient.addColorStop(1, '#FF00FF'); // Violet
+        ctx.fillStyle = rainbowGradient;
+        ctx.fillRect(0, 0, 256, 256);
+        break;
+      }
+
+      case 'monochrome': {
+        // Simple black to white gradient
+        const monoGradient = ctx.createLinearGradient(0, 0, 256, 0);
+        monoGradient.addColorStop(0, '#000000'); // Black
+        monoGradient.addColorStop(1, '#FFFFFF'); // White
+        ctx.fillStyle = monoGradient;
+        ctx.fillRect(0, 0, 256, 256);
+        break;
+      }
+
+      case 'sepia': {
+        // Classic sepia tone
+        const sepiaGradient = ctx.createLinearGradient(0, 0, 256, 0);
+        sepiaGradient.addColorStop(0, '#704214'); // Dark sepia
+        sepiaGradient.addColorStop(0.5, '#C19A6B'); // Medium sepia
+        sepiaGradient.addColorStop(1, '#F5DEB3'); // Light sepia
+        ctx.fillStyle = sepiaGradient;
+        ctx.fillRect(0, 0, 256, 256);
+        break;
+      }
+
+      default: {
+        // Default RGB gradient
+        const defaultGradient = ctx.createLinearGradient(0, 0, 256, 0);
+        defaultGradient.addColorStop(0, '#FF0000'); // Red
+        defaultGradient.addColorStop(0.5, '#00FF00'); // Green
+        defaultGradient.addColorStop(1, '#0000FF'); // Blue
+        ctx.fillStyle = defaultGradient;
+        ctx.fillRect(0, 0, 256, 256);
+        break;
+      }
+    }
+
+    return Texture.from(canvas);
+  }
+
+  /**
+   * Create fallback colormap texture when context is unavailable
+   */
+  private createFallbackColorMapTexture(): Texture {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 256;
+    // Create a simple solid color as absolute fallback
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#888888';
+      ctx.fillRect(0, 0, 256, 256);
+    }
+    return Texture.from(canvas);
   }
 
   /**
@@ -2118,6 +2575,85 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createBackdropBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      debugLogger.info(
+        'Using custom settings for backdropBlur filter',
+        'FILTER_PRESETS'
+      );
+
+      const filter = new BackdropBlurFilter({
+        strength:
+          typeof options.customSettings.strength === 'number'
+            ? options.customSettings.strength
+            : 8,
+        quality:
+          typeof options.customSettings.quality === 'number'
+            ? options.customSettings.quality
+            : 4,
+        resolution:
+          typeof options.customSettings.resolution === 'number'
+            ? options.customSettings.resolution
+            : 1,
+        kernelSize: 5,
+      });
+
+      // Set blurX and blurY properties after filter creation since they inherit from BlurFilter
+      if (typeof options.customSettings.blurX === 'number') {
+        filter.blurX = options.customSettings.blurX;
+      }
+      if (typeof options.customSettings.blurY === 'number') {
+        filter.blurY = options.customSettings.blurY;
+      }
+
+      const filterChain = new FilterChain({ name: 'backdrop-blur-effect' });
+      filterChain.addFilter(filter, {
+        id: 'backdropBlur',
+        animated: true,
+        animationProperties: {
+          strength: filter.strength,
+          blurX: filter.blurX,
+          blurY: filter.blurY,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      debugLogger.info(
+        `BackdropBlur filter applied - strength: ${filter.strength}, blurX: ${filter.blurX}, blurY: ${filter.blurY}, quality: ${filter.quality}, resolution: ${filter.resolution}`,
+        'FILTER_PRESETS'
+      );
+
+      const originalResult = this.createEffectResult(
+        filterChain,
+        [filter],
+        options
+      );
+
+      return {
+        ...originalResult,
+        applyTo: async (target: Sprite | Container): Promise<void> => {
+          const filterManager = FilterManager.getInstance();
+          // Use FilterManager with replace mode for backdrop blur
+          const result = await filterManager.applyFilter(
+            target,
+            filter,
+            'backdropBlur',
+            {
+              replace: true, // Replace other backdrop blur filters, but don't clear all filters
+            }
+          );
+          if (result.success) {
+            debugLogger.debug(
+              'Backdrop blur filter successfully applied',
+              'FILTER_PRESETS'
+            );
+          }
+        },
+      };
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { strength: 4, quality: 3 },
       moderate: { strength: 8, quality: 4 },
@@ -2126,7 +2662,6 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
-    // Create BackdropBlur filter with proper configuration
     const filter = new BackdropBlurFilter({
       strength: settings.strength,
       quality: settings.quality,

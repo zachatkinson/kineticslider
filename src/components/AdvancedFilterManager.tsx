@@ -21,6 +21,16 @@ import React, {
 import { EffectPresets } from '../rendering/effect-presets';
 import { AdvancedFilterPresets } from '../rendering/advanced-filter-presets';
 import type { SliderCore } from '../core/slider-core';
+import { debugLogger } from '../utils/debug-logger';
+
+interface CustomTextureData {
+  canvas: HTMLCanvasElement;
+  width: number;
+  height: number;
+  dataUrl: string;
+  fileName: string;
+  isCustomTexture: true;
+}
 
 interface FilterInstance {
   id: string;
@@ -28,7 +38,7 @@ interface FilterInstance {
   displayName: string;
   category: string;
   enabled: boolean;
-  settings: Record<string, number | string | boolean>;
+  settings: Record<string, number | string | boolean | object>;
 }
 
 interface AdvancedFilterManagerProps {
@@ -106,7 +116,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         if (state.enabled.length > 0) {
           const filterSettings: Record<
             string,
-            Record<string, number | string | boolean>
+            Record<string, number | string | boolean | object>
           > = {};
           state.enabled.forEach((filter) => {
             filterSettings[filter.name] = filter.settings;
@@ -135,12 +145,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
   );
 
   // Effect with stable dependencies and proper cleanup
-  useEffect(() => {
+  useEffect((): (() => void) => {
     const timeoutId = setTimeout(() => {
       applyFiltersStable(filterState);
     }, 100); // Increased debounce for better stability
 
-    return () => clearTimeout(timeoutId);
+    return (): void => clearTimeout(timeoutId);
   }, [filterState, applyFiltersStable]);
 
   // Add a new filter (enabled by default for immediate visual feedback)
@@ -188,7 +198,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
 
   // Update filter settings
   const updateFilterSettings = useCallback(
-    (filterId: string, settings: Record<string, number | string | boolean>) => {
+    (
+      filterId: string,
+      settings: Record<string, number | string | boolean | object>
+    ) => {
       setActiveFilters((prev) =>
         prev.map((f) =>
           f.id === filterId
@@ -204,9 +217,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
   // Safe property setter helper
   const createSafeUpdate = (
     key: string,
-    value: number | string | boolean
-  ): Record<string, number | string | boolean> => {
-    const update: Record<string, number | string | boolean> = {};
+    value: number | string | boolean | object
+  ): Record<string, number | string | boolean | object> => {
+    const update: Record<string, number | string | boolean | object> = {};
     // Validate key is a safe property name and use a safe approach
     if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)) {
       Object.defineProperty(update, key, {
@@ -217,6 +230,112 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       });
     }
     return update;
+  };
+
+  // Helper function to handle file upload and texture creation
+  const handleFileUpload = async (
+    file: File,
+    filterId: string,
+    key: string
+  ): Promise<void> => {
+    try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please select an image file (PNG, JPG, WebP)');
+      }
+
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        throw new Error('File size must be less than 2MB');
+      }
+
+      // Create a file reader to convert file to data URL
+      const reader = new FileReader();
+
+      reader.onload = (e): void => {
+        const dataUrl = e.target?.result as string;
+        if (dataUrl) {
+          // Create an image element to load the file
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+
+          img.onload = (): void => {
+            try {
+              // Create a canvas to process the image
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+
+              if (!ctx) {
+                throw new Error('Could not create canvas context');
+              }
+
+              // Resize image if needed (max 512x512 for performance)
+              const maxSize = 512;
+              let { width, height } = img;
+
+              if (width > maxSize || height > maxSize) {
+                const scale = Math.min(maxSize / width, maxSize / height);
+                width *= scale;
+                height *= scale;
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+
+              // Draw the image to canvas
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // Create texture data that can be passed to the filter
+              const textureData = {
+                canvas: canvas,
+                width: width,
+                height: height,
+                dataUrl: dataUrl,
+                fileName: file.name,
+                isCustomTexture: true,
+              };
+
+              // Update the filter settings with the texture data
+              const updates = createSafeUpdate(key, textureData);
+              updateFilterSettings(filterId, updates);
+
+              // Log success for debugging
+              debugLogger.info(
+                `Custom colormap texture created successfully: ${file.name}`,
+                'AdvancedFilterManager'
+              );
+            } catch (error) {
+              debugLogger.error(
+                'Error processing image',
+                'AdvancedFilterManager',
+                error
+              );
+              // Could show user feedback here
+            }
+          };
+
+          img.onerror = (): void => {
+            debugLogger.error(
+              'Error loading image file',
+              'AdvancedFilterManager'
+            );
+            // Could show user feedback here
+          };
+
+          img.src = dataUrl;
+        }
+      };
+
+      reader.onerror = (): void => {
+        debugLogger.error('Error reading file', 'AdvancedFilterManager');
+        // Could show user feedback here
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      debugLogger.error('File upload error', 'AdvancedFilterManager', error);
+      // Could show user feedback here
+    }
   };
 
   // Helper functions for property ranges
@@ -242,6 +361,35 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       size: '1',
       distance: '0',
       quality: '1',
+      // BackdropBlur properties
+      blurX: '0',
+      blurY: '0',
+      resolution: '0.1',
+      // BevelFilter properties
+      rotation: '0',
+      thickness: '0',
+      lightAlpha: '0',
+      shadowAlpha: '0',
+      // BloomFilter properties
+      strengthX: '0',
+      strengthY: '0',
+      // BlurFilter properties (note: blurX/blurY/quality already defined for BackdropBlur)
+      // BulgePinchFilter properties
+      centerX: '0',
+      centerY: '0',
+      radius: '10',
+      // Strength property (used by multiple filters, default for general use)
+      strength: '-1', // Can be negative for pinch effect, positive for others
+      // ColorGradientFilter properties
+      type: '0', // Gradient type (0 = linear, 1 = radial)
+      angle: '0', // Angle in degrees
+      startOffset: '0', // Start position
+      endOffset: '0', // End position
+      startAlpha: '0', // Start color alpha
+      endAlpha: '0', // End color alpha
+      // ColorMapFilter properties
+      mix: '0', // Blend amount minimum
+      nearest: 'false', // Boolean as string for consistency
     };
     return Object.prototype.hasOwnProperty.call(minValues, key)
       ? minValues[key as keyof typeof minValues]
@@ -270,6 +418,34 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       size: '20',
       distance: '50',
       quality: '10',
+      // BackdropBlur properties
+      blurX: '20',
+      blurY: '20',
+      resolution: '2',
+      // BevelFilter properties
+      rotation: '360',
+      thickness: '10',
+      lightAlpha: '1',
+      shadowAlpha: '1',
+      // BloomFilter properties
+      strengthX: '10',
+      strengthY: '10',
+      // BulgePinchFilter properties
+      centerX: '1',
+      centerY: '1',
+      radius: '500',
+      // Strength property (used by multiple filters, default for general use)
+      strength: '20', // Max strength for general use
+      // ColorGradientFilter properties
+      type: '1', // Gradient type (0 = linear, 1 = radial)
+      angle: '360', // Angle in degrees (full circle)
+      startOffset: '1', // Start position (can be anywhere 0-1)
+      endOffset: '1', // End position (can be anywhere 0-1)
+      startAlpha: '1', // Start color alpha (full opacity)
+      endAlpha: '1', // End color alpha (full opacity)
+      // ColorMapFilter properties
+      mix: '1', // Blend amount maximum (full effect)
+      nearest: 'true', // Boolean as string for consistency
     };
     return Object.prototype.hasOwnProperty.call(maxValues, key)
       ? maxValues[key as keyof typeof maxValues]
@@ -298,6 +474,34 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       size: '1',
       distance: '1',
       quality: '1',
+      // BackdropBlur properties
+      blurX: '1',
+      blurY: '1',
+      resolution: '0.1',
+      // BevelFilter properties
+      rotation: '1',
+      thickness: '0.5',
+      lightAlpha: '0.05',
+      shadowAlpha: '0.05',
+      // BloomFilter properties
+      strengthX: '0.1',
+      strengthY: '0.1',
+      // BulgePinchFilter properties
+      centerX: '0.01',
+      centerY: '0.01',
+      radius: '5',
+      // Strength property (used by multiple filters, default for general use)
+      strength: '0.1', // Step for strength adjustments
+      // ColorGradientFilter properties
+      type: '1', // Step for gradient type (integer values)
+      angle: '5', // Step for angle in degrees
+      startOffset: '0.01', // Step for offset positions
+      endOffset: '0.01', // Step for offset positions
+      startAlpha: '0.05', // Step for color alpha
+      endAlpha: '0.05', // Step for color alpha
+      // ColorMapFilter properties
+      mix: '0.05', // Step for blend amount
+      nearest: '1', // Step for boolean (not used but required)
     };
     return Object.prototype.hasOwnProperty.call(stepValues, key)
       ? stepValues[key as keyof typeof stepValues]
@@ -307,19 +511,18 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
   // Get default settings for a filter
   function getDefaultSettings(
     filterName: string
-  ): Record<string, number | string | boolean> {
+  ): Record<string, number | string | boolean | object> {
     // Common filter settings - could be enhanced with filter-specific defaults
     const commonSettings: Record<
       string,
-      Record<string, number | string | boolean>
+      Record<string, number | string | boolean | object>
     > = {
-      blur: { intensity: 0.5, quality: 1 },
       glow: { intensity: 0.8, color: '#ffffff', distance: 10 },
       pixelate: { size: 4 },
       colorMatrix: { brightness: 1, contrast: 1, saturation: 1 },
       alpha: { alpha: 1.0 },
       vintage: { intensity: 0.7, sepia: 0.5 },
-      blackAndWhite: { intensity: 1 },
+      grayscale: { intensity: 1 },
       displacement: { scale: 20, intensity: 0.5 },
       adjustment: {
         gamma: 1,
@@ -344,6 +547,53 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         size: 12, // Match moderate intensity default that was working
         replaceColor: false,
         color: '#ffffff',
+      },
+      backdropBlur: {
+        strength: 8, // Overall blur amount (maps to blur property)
+        blurX: 8, // Horizontal blur strength
+        blurY: 8, // Vertical blur strength
+        quality: 4, // Quality/performance balance
+        resolution: 1, // Filter resolution multiplier
+      },
+      bevel: {
+        rotation: 45, // Angle of light in degrees
+        thickness: 2, // Thickness of the bevel
+        lightColor: '#ffffff', // Color of light (top/left)
+        lightAlpha: 0.7, // Opacity of light
+        shadowColor: '#000000', // Color of shadow (bottom/right)
+        shadowAlpha: 0.7, // Opacity of shadow
+      },
+      bloom: {
+        strengthX: 2, // Horizontal blur strength
+        strengthY: 2, // Vertical blur strength
+      },
+      blur: {
+        blurX: 4, // Horizontal blur amount
+        blurY: 4, // Vertical blur amount
+        quality: 4, // Blur quality level
+      },
+      bulgePinch: {
+        centerX: 0.5, // X-axis center coordinate (normalized 0-1)
+        centerY: 0.5, // Y-axis center coordinate (normalized 0-1)
+        radius: 100, // Radius of the effect area
+        strength: 1, // Bulge/pinch intensity (-1 to 1)
+      },
+      colorGradient: {
+        type: 0, // Gradient type (0 = linear, 1 = radial)
+        angle: 0, // Angle in degrees for linear gradients
+        alpha: 0.5, // Overall alpha of the gradient
+        startColor: '#ff0000', // Start color (red)
+        endColor: '#0000ff', // End color (blue)
+        startOffset: 0, // Start position (0-1)
+        endOffset: 1, // End position (0-1)
+        startAlpha: 1, // Alpha for start color (0-1)
+        endAlpha: 1, // Alpha for end color (0-1)
+      },
+      colorMap: {
+        mix: 0.5, // Blend amount between original and color-mapped (0-1)
+        nearest: false, // Use nearest neighbor sampling (vs linear)
+        colorMapPreset: 'vintage', // Built-in preset selection
+        customColorMap: '', // Custom uploaded texture (empty string when none)
       },
     };
 
@@ -378,7 +628,42 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                 marginBottom: '0.2rem',
               }}
             >
-              {key.charAt(0).toUpperCase() + key.slice(1)}
+              {((): string => {
+                // Provide user-friendly labels for certain properties
+                const labelMap: Record<string, string> = {
+                  strengthX: 'Horizontal Strength',
+                  strengthY: 'Vertical Strength',
+                  lightColor: 'Light Color',
+                  shadowColor: 'Shadow Color',
+                  lightAlpha: 'Light Opacity',
+                  shadowAlpha: 'Shadow Opacity',
+                  replaceColor: 'Replace Color',
+                  blurX: 'Horizontal Blur',
+                  blurY: 'Vertical Blur',
+                  quality: 'Blur Quality',
+                  centerX: 'Center X Position',
+                  centerY: 'Center Y Position',
+                  radius: 'Effect Radius',
+                  // ColorGradientFilter labels
+                  type: 'Gradient Type',
+                  angle: 'Gradient Angle',
+                  alpha: 'Overall Opacity',
+                  startColor: 'Start Color',
+                  endColor: 'End Color',
+                  startOffset: 'Start Position',
+                  endOffset: 'End Position',
+                  startAlpha: 'Start Color Opacity',
+                  endAlpha: 'End Color Opacity',
+                  // ColorMapFilter labels
+                  mix: 'Effect Strength',
+                  nearest: 'Sampling Method',
+                  colorMapPreset: 'Colormap Preset',
+                  customColorMap: 'Custom Colormap',
+                };
+                return Object.prototype.hasOwnProperty.call(labelMap, key)
+                  ? labelMap[key as keyof typeof labelMap]
+                  : key.charAt(0).toUpperCase() + key.slice(1);
+              })()}
             </label>
             {key === 'replaceColor' && typeof value === 'boolean' ? (
               // Special handling for replaceColor as radio buttons
@@ -424,7 +709,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   </span>
                 </label>
               </div>
-            ) : key === 'color' && typeof value === 'string' ? (
+            ) : (key === 'color' ||
+                key === 'lightColor' ||
+                key === 'shadowColor' ||
+                key === 'startColor' ||
+                key === 'endColor') &&
+              typeof value === 'string' ? (
               // Special handling for color property
               <div>
                 <div
@@ -524,6 +814,264 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     (Color ignored when "Replace Color" is No)
                   </div>
                 )}
+              </div>
+            ) : key === 'type' && typeof value === 'number' ? (
+              // Special handling for gradient type as dropdown
+              <div>
+                <select
+                  value={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(
+                      key,
+                      parseInt(e.target.value)
+                    );
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.2rem',
+                    borderRadius: '3px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  <option value={0}>Linear</option>
+                  <option value={1}>Radial</option>
+                </select>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    marginTop: '0.2rem',
+                  }}
+                >
+                  Linear: straight line gradient, Radial: circular gradient
+                </div>
+              </div>
+            ) : key === 'colorMapPreset' && typeof value === 'string' ? (
+              // Special handling for colormap preset selection
+              <div>
+                <select
+                  value={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(key, e.target.value);
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.2rem',
+                    borderRadius: '3px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  <option value="vintage">Vintage Film</option>
+                  <option value="neon">Neon Dreams</option>
+                  <option value="thermal">Thermal Vision</option>
+                  <option value="rainbow">Rainbow Spectrum</option>
+                  <option value="monochrome">Monochrome</option>
+                  <option value="sepia">Sepia Tone</option>
+                </select>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    marginTop: '0.2rem',
+                  }}
+                >
+                  Built-in color mapping presets for different visual styles
+                </div>
+              </div>
+            ) : key === 'customColorMap' ? (
+              // Special handling for custom colormap upload
+              <div>
+                <div
+                  style={{
+                    border: '2px dashed #d1d5db',
+                    borderRadius: '6px',
+                    padding: '1rem',
+                    textAlign: 'center',
+                    backgroundColor: '#f9fafb',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    marginBottom: '0.5rem',
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.style.borderColor = '#10b981';
+                    e.currentTarget.style.backgroundColor = '#ecfdf5';
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                    e.currentTarget.style.backgroundColor = '#f9fafb';
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                    e.currentTarget.style.backgroundColor = '#f9fafb';
+
+                    const files = Array.from(e.dataTransfer.files);
+                    const imageFile = files.find((file) =>
+                      file.type.startsWith('image/')
+                    );
+                    if (imageFile) {
+                      handleFileUpload(imageFile, filter.id, key);
+                    }
+                  }}
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e): void => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (file) {
+                        handleFileUpload(file, filter.id, key);
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
+                    📁
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '0.9rem',
+                      fontWeight: 'medium',
+                      marginBottom: '0.25rem',
+                    }}
+                  >
+                    Drop colormap image here
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                    or click to browse (PNG, JPG, WebP)
+                  </div>
+                </div>
+                {value &&
+                  typeof value === 'object' &&
+                  value !== null &&
+                  'isCustomTexture' in value &&
+                  (value as CustomTextureData).isCustomTexture && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.5rem',
+                        backgroundColor: '#f3f4f6',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          backgroundColor: '#e5e7eb',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1.2rem',
+                          backgroundImage: (value as CustomTextureData).dataUrl
+                            ? `url(${(value as CustomTextureData).dataUrl})`
+                            : undefined,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }}
+                      >
+                        {!(value as CustomTextureData).dataUrl && '🎨'}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'medium' }}>
+                          {(value as CustomTextureData).fileName ||
+                            'Custom colormap loaded'}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>
+                          {(value as CustomTextureData).width}×
+                          {(value as CustomTextureData).height}px
+                        </div>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const updates = createSafeUpdate(key, '');
+                          updateFilterSettings(filter.id, updates);
+                        }}
+                        style={{
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          width: '20px',
+                          height: '20px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        title="Remove custom colormap"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  Upload a custom colormap texture. Ideal size: 256x256px or
+                  smaller.
+                </div>
+              </div>
+            ) : key === 'nearest' && typeof value === 'boolean' ? (
+              // Special handling for nearest neighbor sampling
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-nearest`}
+                    checked={!value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, false);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>Linear (smooth)</span>
+                </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-nearest`}
+                    checked={value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, true);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>
+                    Nearest (pixelated)
+                  </span>
+                </label>
               </div>
             ) : typeof value === 'number' ? (
               <div

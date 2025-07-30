@@ -476,7 +476,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   async applyFilter(
     filterName: string,
     addToStack = false,
-    customSettings?: Record<string, number | string | boolean>
+    customSettings?: Record<string, number | string | boolean | object>
   ): Promise<void> {
     if (!this.renderer) {
       throw new Error('Renderer not available for filter effects');
@@ -556,7 +556,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
    */
   async applyFilters(
     filterNames: string[],
-    filterSettings?: Record<string, Record<string, number | string | boolean>>
+    filterSettings?: Record<
+      string,
+      Record<string, number | string | boolean | object>
+    >
   ): Promise<void> {
     if (!filterNames || filterNames.length === 0) {
       return;

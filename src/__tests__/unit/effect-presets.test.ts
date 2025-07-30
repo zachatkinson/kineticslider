@@ -87,7 +87,7 @@ describe('EffectPresets', () => {
       expect(presetNames).toContain('neonGlow');
       expect(presetNames).toContain('vintage');
       expect(presetNames).toContain('cyberpunk');
-      expect(presetNames).toContain('blackAndWhite');
+      expect(presetNames).toContain('grayscale');
       expect(presetNames).toContain('displacement');
       expect(presetNames).toContain('wave');
       expect(presetNames).toContain('mouseFollowDisplacement');
@@ -286,8 +286,8 @@ describe('EffectPresets', () => {
         result.cleanup();
       });
 
-      it('should create black and white effect', () => {
-        const result = effectPresets.createEffect('blackAndWhite');
+      it('should create grayscale effect', () => {
+        const result = effectPresets.createEffect('grayscale');
 
         expect(result.filterChain).toBeDefined();
         expect(result.filters).toHaveLength(1);
