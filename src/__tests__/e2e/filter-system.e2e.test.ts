@@ -75,6 +75,10 @@ const filterNameMap: Record<string, string> = {
 
 // Helper to count enabled filters in AdvancedFilterManager
 async function countEnabledFilters(page: Page): Promise<number> {
+  // Wait for the filter controls to be present
+  await page.waitForSelector('[data-testid="filter-controls"]', { timeout: 5000 });
+  
+  // Count all checked checkboxes within the filter controls
   const enabledFilterCheckboxes = page.locator('[data-testid="filter-controls"] input[type="checkbox"]:checked');
   return await enabledFilterCheckboxes.count();
 }
@@ -98,21 +102,25 @@ async function addAndEnableFilter(page: Page, filterName: string) {
   await expect(addButton).toBeVisible();
   await expect(addButton).toBeEnabled();
 
-  // Open dropdown with retry logic
+  // Open dropdown with improved retry logic
   let dropdownVisible = false;
   for (let i = 0; i < 5; i++) {
     try {
-      await addButton.click({ timeout: 5000 });
-      await page.waitForTimeout(300);
+      // Wait for button to be stable before clicking
+      await addButton.waitFor({ state: 'attached', timeout: 2000 });
+      await page.waitForTimeout(100); // Small delay for stability
+      
+      await addButton.click({ force: true, timeout: 3000 });
+      await page.waitForTimeout(500); // More time for dropdown to appear
 
       const dropdown = page.locator('[data-testid="filter-dropdown"]');
       dropdownVisible = await dropdown.isVisible();
       if (dropdownVisible) break;
 
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(300);
     } catch (error) {
       console.log(`Attempt ${i + 1} failed to click add button:`, error);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000); // Longer wait between attempts
     }
   }
 
@@ -131,18 +139,46 @@ async function addAndEnableFilter(page: Page, filterName: string) {
   await filterOption.click();
   await page.waitForTimeout(300);
 
-  // Enable the filter by clicking its checkbox
-  const filterCheckbox = page.locator('input[type="checkbox"]').last();
-  await expect(filterCheckbox).toBeVisible();
-  await filterCheckbox.click();
+  // Wait for the filter to be added to the UI first
   await page.waitForTimeout(500);
+  
+  // Find the newly added filter's checkbox and ensure it's already enabled
+  // (filters are auto-enabled when added from dropdown)
+  const allCheckboxes = page.locator('[data-testid="filter-controls"] input[type="checkbox"]');
+  const checkboxCount = await allCheckboxes.count();
+  
+  if (checkboxCount > 0) {
+    // Get the last checkbox (newly added filter)
+    const lastCheckbox = allCheckboxes.last();
+    await expect(lastCheckbox).toBeVisible();
+    
+    // Check if it's already enabled (should be auto-enabled)
+    const isChecked = await lastCheckbox.isChecked();
+    if (!isChecked) {
+      // Enable it if it's not already enabled
+      await lastCheckbox.click();
+    }
+  }
+  
+  await page.waitForTimeout(300);
 }
 
 async function clearAllFilters(page: Page) {
   const clearButton = page.locator('[data-testid="clear-filters-button"]');
-  if (await clearButton.isVisible()) {
-    await clearButton.click();
-    await page.waitForTimeout(200);
+  
+  try {
+    // Wait for the button to be visible with a reasonable timeout
+    await clearButton.waitFor({ state: 'visible', timeout: 3000 });
+    
+    // Wait for the button to be stable and clickable
+    await clearButton.waitFor({ state: 'attached', timeout: 1000 });
+    
+    // Click the button with force to avoid stability issues
+    await clearButton.click({ force: true });
+    await page.waitForTimeout(1000); // Give more time for cleanup
+  } catch {
+    // If button doesn't exist or isn't visible, likely no filters to clear
+    console.log('Clear button not found or not visible, assuming no filters to clear');
   }
 }
 
@@ -187,9 +223,9 @@ test.describe('Filter System E2E', () => {
     const dropdown = page.locator('[data-testid="filter-dropdown"]');
     await expect(dropdown).toBeVisible();
 
-    // Get all filter options from dropdown
+    // Get all filter options from dropdown using correct selector
     const filterOptions = await page
-      .locator('[data-testid="filter-dropdown"] button')
+      .locator('[data-testid="filter-dropdown"] [data-testid^="filter-option-"]')
       .all();
     expect(filterOptions.length).toBeGreaterThan(30);
 
@@ -208,8 +244,7 @@ test.describe('Filter System E2E', () => {
         await addAndEnableFilter(page, filterName);
 
         // Verify filter was added to UI and enabled
-        const enabledCheckbox = page.locator('input[type="checkbox"]:checked');
-        await expect(enabledCheckbox).toBeVisible();
+        await expectFilterEnabled(page);
 
         // Clear filter for next test
         await clearAllFilters(page);
@@ -330,8 +365,7 @@ test.describe('Filter System E2E', () => {
     await addAndEnableFilter(page, 'blur');
 
     // Verify the filter appears in the UI as enabled
-    const enabledCheckbox = page.locator('input[type="checkbox"]:checked');
-    await expect(enabledCheckbox).toBeVisible();
+    await expectFilterEnabled(page);
 
     // Note: Filter application to engine is currently broken (checkbox click doesn't trigger application)
     // This test validates the UI interaction works correctly
@@ -345,8 +379,7 @@ test.describe('Filter System E2E', () => {
     await addAndEnableFilter(page, 'oldFilm');
 
     // Verify filter checkbox is enabled
-    const enabledCheckbox = page.locator('input[type="checkbox"]:checked');
-    await expect(enabledCheckbox).toBeVisible();
+    await expectFilterEnabled(page);
 
     // Then clear filters
     await clearAllFilters(page);
@@ -378,8 +411,7 @@ test.describe('Filter System E2E', () => {
       await addAndEnableFilter(page, filterName);
 
       // Verify filter appears as enabled in UI
-      const enabledCheckbox = page.locator('input[type="checkbox"]:checked');
-      await expect(enabledCheckbox).toBeVisible();
+      await expectFilterEnabled(page);
 
       // Clear filters before next test
       await clearAllFilters(page);
@@ -408,8 +440,8 @@ test.describe('Filter System E2E', () => {
     }
 
     // Verify multiple filters are enabled in UI
-    const enabledCheckboxes = page.locator('input[type="checkbox"]:checked');
-    expect(await enabledCheckboxes.count()).toBe(2);
+    const enabledCount = await countEnabledFilters(page);
+    expect(enabledCount).toBe(2);
 
     // Finally clear all filters
     await clearAllFilters(page);

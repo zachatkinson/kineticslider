@@ -39,7 +39,7 @@ async function addAndEnableFilter(page: Page, filterName: string) {
   const testId = mappedName.toLowerCase().replace(/\s+/g, '-');
   await page.click(`[data-testid="filter-option-${testId}"]`);
   await page.waitForTimeout(500);
-  
+
   // Filter is auto-enabled when added to AdvancedFilterManager
   // No need to click checkbox - just wait for it to be applied
 }
@@ -56,7 +56,9 @@ async function clearAllFilters(page: Page) {
 async function countEnabledFilters(page: Page): Promise<number> {
   // Count filter cards that have enabled checkboxes
   // In our AdvancedFilterManager, each filter card has a checkbox for enabling/disabling
-  const enabledFilterCheckboxes = page.locator('[data-testid="filter-controls"] input[type="checkbox"]:checked');
+  const enabledFilterCheckboxes = page.locator(
+    '[data-testid="filter-controls"] input[type="checkbox"]:checked'
+  );
   return await enabledFilterCheckboxes.count();
 }
 
