@@ -322,6 +322,16 @@ export class EffectPresets {
       create: (options) => this.createGrayscaleEffect(options),
     });
 
+    this.registerPreset({
+      name: 'colorMatrix',
+      category: 'color',
+      description: 'Comprehensive color transformation with preset effects',
+      performanceImpact: 1,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['color effects', 'vintage looks', 'creative filters'],
+      create: (options) => this.createColorMatrixEffect(options),
+    });
+
     // Distortion Effects
     this.registerPreset({
       name: 'displacement',
@@ -369,15 +379,6 @@ export class EffectPresets {
     });
 
     // Composite Effects
-    this.registerPreset({
-      name: 'cinematicTransition',
-      category: 'composite',
-      description: 'Cinematic transition with multiple effects',
-      performanceImpact: 5,
-      compatibility: ['chrome', 'firefox', 'safari'],
-      useCases: ['slide transitions', 'scene changes', 'dramatic reveals'],
-      create: (options) => this.createCinematicTransitionEffect(options),
-    });
 
     this.registerPreset({
       name: 'glitchEffect',
@@ -993,60 +994,6 @@ export class EffectPresets {
   }
 
   /**
-   * Create cinematic transition effect
-   */
-  private createCinematicTransitionEffect(
-    options: Required<PresetOptions>
-  ): EffectPresetResult {
-    const intensity = this.getIntensityMultiplier(options.intensity);
-
-    const blurFilter = new BlurFilter({ strength: 0, quality: 4 });
-    const colorFilter = new ColorMatrixFilter();
-
-    colorFilter.brightness(1 + intensity * 0.2, false);
-    colorFilter.contrast(1 + intensity * 0.3, false);
-
-    const filterChain = new FilterChain({
-      name: 'cinematicTransition',
-      mode: 'sequential',
-      staggerDelay: 0.2,
-    });
-
-    filterChain.addFilter(blurFilter, {
-      id: 'cinematicBlur',
-      animationProperties: { strength: intensity * 15 },
-      duration: options.duration * 0.6,
-      ease: EASING.EASE_IN_OUT,
-    });
-
-    filterChain.addFilter(colorFilter, {
-      id: 'cinematicColor',
-      animationProperties: { alpha: 1 },
-      duration: options.duration * 0.8,
-      ease: options.ease,
-    });
-
-    const timeline = gsap.timeline();
-    const filters = [blurFilter, colorFilter];
-
-    return {
-      filterChain,
-      filters,
-      timeline,
-      cleanup: (): void => {
-        timeline.kill();
-        filterChain.dispose();
-      },
-      applyTo: (target): void => {
-        filterChain.applyTo(target);
-      },
-      removeFrom: (target): void => {
-        filterChain.removeFrom(target);
-      },
-    };
-  }
-
-  /**
    * Create glitch effect
    */
   private createGlitchEffect(
@@ -1295,7 +1242,124 @@ export class EffectPresets {
   ): EffectPresetResult {
     const colorMatrixFilter = new ColorMatrixFilter();
 
-    // Different color matrix effects based on intensity
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      // Apply matrix type preset first (with multiply=false to set base transformation)
+      if (settings.matrixType && settings.matrixType !== 'none') {
+        const matrixType = settings.matrixType as string;
+
+        // Apply the preset transformation first to establish the base effect
+        switch (matrixType) {
+          case 'blackAndWhite':
+            colorMatrixFilter.blackAndWhite(false);
+            break;
+          case 'browni':
+            colorMatrixFilter.browni(false);
+            break;
+          case 'desaturate':
+            colorMatrixFilter.desaturate();
+            break;
+          case 'grayscale':
+            colorMatrixFilter.grayscale(1, false);
+            break;
+          case 'hue': {
+            // Use hue value from settings or default
+            const hueRotation =
+              typeof settings.hue === 'number' ? settings.hue : 0;
+            colorMatrixFilter.hue(hueRotation, false);
+            break;
+          }
+          case 'kodachrome':
+            colorMatrixFilter.kodachrome(false);
+            break;
+          case 'lsd':
+            colorMatrixFilter.lsd(false);
+            break;
+          case 'negative':
+            colorMatrixFilter.negative(false);
+            break;
+          case 'night':
+            colorMatrixFilter.night(0.5, false);
+            break;
+          case 'polaroid':
+            colorMatrixFilter.polaroid(false);
+            break;
+          case 'predator':
+            colorMatrixFilter.predator(0.5, false);
+            break;
+          case 'sepia':
+            colorMatrixFilter.sepia(false);
+            break;
+          case 'technicolor':
+            colorMatrixFilter.technicolor(false);
+            break;
+          case 'vintage':
+            colorMatrixFilter.vintage(false);
+            break;
+          case 'toBGR':
+            colorMatrixFilter.toBGR(false);
+            break;
+        }
+      }
+
+      // Apply fine-tuning adjustments on top of preset (with multiply=true to combine)
+      if (
+        typeof settings.brightness === 'number' &&
+        settings.brightness !== 1
+      ) {
+        colorMatrixFilter.brightness(settings.brightness, true);
+      }
+      if (typeof settings.contrast === 'number' && settings.contrast !== 1) {
+        colorMatrixFilter.contrast(settings.contrast, true);
+      }
+      if (
+        typeof settings.saturation === 'number' &&
+        settings.saturation !== 1
+      ) {
+        colorMatrixFilter.saturate(settings.saturation, true);
+      }
+      if (
+        typeof settings.hue === 'number' &&
+        settings.hue !== 0 &&
+        settings.matrixType !== 'hue'
+      ) {
+        // Apply hue adjustment only if not already applied via matrixType
+        colorMatrixFilter.hue(settings.hue, true);
+      }
+
+      const filterChain = new FilterChain({ name: 'colorMatrix' });
+      filterChain.addFilter(colorMatrixFilter, {
+        id: 'colorMatrix',
+        animationProperties: {
+          alpha: 1, // Only animate alpha, not matrix-specific properties
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      const timeline = gsap.timeline();
+      const filters = [colorMatrixFilter];
+
+      return {
+        filterChain,
+        filters,
+        timeline,
+        cleanup: (): void => {
+          timeline.kill();
+          filterChain.dispose();
+        },
+        applyTo: (target): void => {
+          filterChain.applyTo(target);
+        },
+        removeFrom: (target): void => {
+          filterChain.removeFrom(target);
+        },
+      };
+    }
+
+    // Fallback to intensity-based presets
     const effects = {
       subtle: (): void => {
         colorMatrixFilter.sepia(false);

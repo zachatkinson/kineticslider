@@ -31,7 +31,6 @@ const filterNameMap: Record<string, string> = {
   wave: 'wave',
   mousefollowdisplacement: 'mouseFollowDisplacement',
   idlefloat: 'idleFloat',
-  cinematictransition: 'cinematicTransition',
   glitcheffect: 'glitchEffect',
 
   // AdvancedFilterPresets filters

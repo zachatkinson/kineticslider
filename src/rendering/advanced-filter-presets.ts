@@ -2437,6 +2437,43 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createColorOverlayEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use custom settings if provided, otherwise fall back to intensity presets
+    if (options.customSettings) {
+      // Handle color conversion from hex to number
+      let color = 0x4488ff; // Default blue
+      if (typeof options.customSettings.color === 'string') {
+        const hexColor = options.customSettings.color.replace('#', '');
+        color = parseInt(hexColor, 16);
+      }
+
+      // Get alpha value
+      const alpha =
+        typeof options.customSettings.alpha === 'number'
+          ? Math.max(0, Math.min(1, options.customSettings.alpha))
+          : 0.5;
+
+      debugLogger.info(
+        `ColorOverlay filter applied with custom settings - color: ${options.customSettings.color}, alpha: ${alpha}`,
+        'FILTER_PRESETS'
+      );
+
+      const filter = new ColorOverlayFilter(color, alpha);
+
+      const filterChain = new FilterChain({ name: 'color-overlay-effect' });
+      filterChain.addFilter(filter, {
+        id: 'colorOverlay',
+        animated: true,
+        animationProperties: {
+          alpha: alpha,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { alpha: 0.2 },
       moderate: { alpha: 0.4 },
@@ -2476,6 +2513,53 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createColorReplaceEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use custom settings if provided, otherwise fall back to intensity presets
+    if (options.customSettings) {
+      // Handle color conversion from hex to number
+      let originalColor = 0xd9b94a; // Default golden/beige
+      if (typeof options.customSettings.originalColor === 'string') {
+        const hexColor = options.customSettings.originalColor.replace('#', '');
+        originalColor = parseInt(hexColor, 16);
+      }
+
+      let targetColor = 0x00ff00; // Default lime green
+      if (typeof options.customSettings.targetColor === 'string') {
+        const hexColor = options.customSettings.targetColor.replace('#', '');
+        targetColor = parseInt(hexColor, 16);
+      }
+
+      // Get tolerance value
+      const tolerance =
+        typeof options.customSettings.tolerance === 'number'
+          ? Math.max(0, Math.min(1, options.customSettings.tolerance))
+          : 0.3;
+
+      debugLogger.info(
+        `ColorReplace filter applied with custom settings - original: ${options.customSettings.originalColor}, target: ${options.customSettings.targetColor}, tolerance: ${tolerance}`,
+        'FILTER_PRESETS'
+      );
+
+      const filter = new ColorReplaceFilter({
+        originalColor,
+        targetColor,
+        tolerance,
+      });
+
+      const filterChain = new FilterChain({ name: 'color-replace-effect' });
+      filterChain.addFilter(filter, {
+        id: 'colorReplace',
+        animated: true,
+        animationProperties: {
+          tolerance: tolerance,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { tolerance: 0.1 },
       moderate: { tolerance: 0.3 },
@@ -2518,7 +2602,97 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createConvolutionEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    // Different convolution matrices for different intensities
+    // Use custom settings if provided, otherwise fall back to intensity presets
+    if (options.customSettings) {
+      // Named matrix presets
+      const matrixPresets = {
+        sharpen: {
+          matrix: [0, -0.5, 0, -0.5, 3, -0.5, 0, -0.5, 0],
+          width: 3,
+          height: 3,
+        },
+        edge: {
+          matrix: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
+          width: 3,
+          height: 3,
+        },
+        emboss: {
+          matrix: [-2, -1, 0, -1, 1, 1, 0, 1, 2],
+          width: 3,
+          height: 3,
+        },
+        strongSharpen: {
+          matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0],
+          width: 3,
+          height: 3,
+        },
+      };
+
+      let matrix: number[];
+      let width: number;
+      let height: number;
+
+      // Check if using a preset matrix type
+      const matrixType = options.customSettings.matrixType as string;
+      if (
+        matrixType &&
+        matrixType !== 'custom' &&
+        matrixPresets[matrixType as keyof typeof matrixPresets]
+      ) {
+        const preset = matrixPresets[matrixType as keyof typeof matrixPresets];
+        matrix = preset.matrix;
+        // Always respect the slider values for width/height, even with presets
+        width =
+          typeof options.customSettings.width === 'number'
+            ? options.customSettings.width
+            : preset.width;
+        height =
+          typeof options.customSettings.height === 'number'
+            ? options.customSettings.height
+            : preset.height;
+      } else {
+        // Use custom matrix if provided
+        if (typeof options.customSettings.customMatrix === 'string') {
+          const matrixString = options.customSettings.customMatrix;
+          matrix = matrixString
+            .split(',')
+            .map((n) => parseFloat(n.trim()))
+            .filter((n) => !isNaN(n));
+        } else {
+          // Default to sharpen if no valid matrix
+          matrix = [0, -0.5, 0, -0.5, 3, -0.5, 0, -0.5, 0];
+        }
+
+        width =
+          typeof options.customSettings.width === 'number'
+            ? options.customSettings.width
+            : 3;
+        height =
+          typeof options.customSettings.height === 'number'
+            ? options.customSettings.height
+            : 3;
+      }
+
+      debugLogger.info(
+        `Convolution filter applied with custom settings - matrix: ${matrix}, width: ${width}, height: ${height}`,
+        'FILTER_PRESETS'
+      );
+
+      const filter = new ConvolutionFilter(matrix, width, height);
+
+      const filterChain = new FilterChain({ name: 'convolution-effect' });
+      filterChain.addFilter(filter, {
+        id: 'convolution',
+        animated: true,
+        animationProperties: {},
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const matrices = {
       subtle: {
         // Sharpen (subtle)

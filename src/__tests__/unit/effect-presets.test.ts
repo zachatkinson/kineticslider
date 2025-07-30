@@ -92,7 +92,6 @@ describe('EffectPresets', () => {
       expect(presetNames).toContain('wave');
       expect(presetNames).toContain('mouseFollowDisplacement');
       expect(presetNames).toContain('idleFloat');
-      expect(presetNames).toContain('cinematicTransition');
       expect(presetNames).toContain('glitchEffect');
     });
   });
@@ -357,15 +356,6 @@ describe('EffectPresets', () => {
     });
 
     describe('Composite effects', () => {
-      it('should create cinematic transition effect', () => {
-        const result = effectPresets.createEffect('cinematicTransition');
-
-        expect(result.filterChain).toBeDefined();
-        expect(result.filters).toHaveLength(2); // blur + color
-
-        result.cleanup();
-      });
-
       it('should create glitch effect', () => {
         const result = effectPresets.createEffect('glitchEffect');
 

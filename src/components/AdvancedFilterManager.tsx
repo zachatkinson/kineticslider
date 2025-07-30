@@ -390,6 +390,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       // ColorMapFilter properties
       mix: '0', // Blend amount minimum
       nearest: 'false', // Boolean as string for consistency
+      // ColorMatrixFilter properties
+      hue: '0', // Hue rotation in degrees
+      // ColorReplaceFilter properties
+      tolerance: '0', // Color matching tolerance minimum
+      // ConvolutionFilter properties
+      width: '1', // Matrix width minimum
+      height: '1', // Matrix height minimum
     };
     return Object.prototype.hasOwnProperty.call(minValues, key)
       ? minValues[key as keyof typeof minValues]
@@ -446,6 +453,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       // ColorMapFilter properties
       mix: '1', // Blend amount maximum (full effect)
       nearest: 'true', // Boolean as string for consistency
+      // ColorMatrixFilter properties
+      hue: '360', // Full hue rotation
+      // ColorReplaceFilter properties
+      tolerance: '1', // Color matching tolerance maximum
+      // ConvolutionFilter properties
+      width: '5', // Matrix width maximum (practical limit)
+      height: '5', // Matrix height maximum (practical limit)
     };
     return Object.prototype.hasOwnProperty.call(maxValues, key)
       ? maxValues[key as keyof typeof maxValues]
@@ -502,6 +516,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       // ColorMapFilter properties
       mix: '0.05', // Step for blend amount
       nearest: '1', // Step for boolean (not used but required)
+      // ColorMatrixFilter properties
+      hue: '5', // Step for hue rotation
+      // ColorReplaceFilter properties
+      tolerance: '0.01', // Step for color matching tolerance
+      // ConvolutionFilter properties
+      width: '1', // Step for matrix width
+      height: '1', // Step for matrix height
     };
     return Object.prototype.hasOwnProperty.call(stepValues, key)
       ? stepValues[key as keyof typeof stepValues]
@@ -519,7 +540,14 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     > = {
       glow: { intensity: 0.8, color: '#ffffff', distance: 10 },
       pixelate: { size: 4 },
-      colorMatrix: { brightness: 1, contrast: 1, saturation: 1 },
+      colorMatrix: {
+        matrixType: 'none', // Default to no preset
+        brightness: 1,
+        contrast: 1,
+        saturation: 1,
+        hue: 0,
+        multiply: true, // Allow chaining effects
+      },
       alpha: { alpha: 1.0 },
       vintage: { intensity: 0.7, sepia: 0.5 },
       grayscale: { intensity: 1 },
@@ -595,6 +623,21 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         colorMapPreset: 'vintage', // Built-in preset selection
         customColorMap: '', // Custom uploaded texture (empty string when none)
       },
+      colorOverlay: {
+        color: '#4488ff', // Overlay color (default blue)
+        alpha: 0.5, // Opacity of the overlay (0-1)
+      },
+      colorReplace: {
+        originalColor: '#d9b94a', // Color to replace (default golden/beige)
+        targetColor: '#00ff00', // Replacement color (default lime green)
+        tolerance: 0.3, // Color matching tolerance (0-1)
+      },
+      convolution: {
+        matrixType: 'sharpen', // Preset matrix type (sharpen, edge, emboss, etc.)
+        customMatrix: '0,-0.5,0,-0.5,3,-0.5,0,-0.5,0', // Custom 3x3 matrix as comma-separated string
+        width: 3, // Matrix width (typically 3)
+        height: 3, // Matrix height (typically 3)
+      },
     };
 
     const validFilters = Object.keys(commonSettings);
@@ -659,6 +702,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   nearest: 'Sampling Method',
                   colorMapPreset: 'Colormap Preset',
                   customColorMap: 'Custom Colormap',
+                  // ColorMatrixFilter labels
+                  matrixType: 'Matrix Type',
+                  multiply: 'Chain Effects',
+                  // ConvolutionFilter labels
+                  customMatrix: 'Custom Matrix',
+                  width: 'Matrix Width',
+                  height: 'Matrix Height',
                 };
                 return Object.prototype.hasOwnProperty.call(labelMap, key)
                   ? labelMap[key as keyof typeof labelMap]
@@ -713,7 +763,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                 key === 'lightColor' ||
                 key === 'shadowColor' ||
                 key === 'startColor' ||
-                key === 'endColor') &&
+                key === 'endColor' ||
+                key === 'originalColor' ||
+                key === 'targetColor') &&
               typeof value === 'string' ? (
               // Special handling for color property
               <div>
@@ -882,6 +934,96 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   }}
                 >
                   Built-in color mapping presets for different visual styles
+                </div>
+              </div>
+            ) : key === 'matrixType' &&
+              typeof value === 'string' &&
+              filter.name === 'colorMatrix' ? (
+              // Special handling for color matrix type selection
+              <div>
+                <select
+                  value={value}
+                  onChange={(e) => {
+                    // When matrix type changes, we need to force an update
+                    // The filter itself will apply the preset based on matrixType
+                    const newMatrixType = e.target.value;
+                    const updates = createSafeUpdate(key, newMatrixType);
+
+                    // Update settings and force re-application
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.2rem',
+                    borderRadius: '3px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  <option value="none">None (Manual)</option>
+                  <option value="blackAndWhite">Black & White</option>
+                  <option value="browni">Browni</option>
+                  <option value="desaturate">Desaturate</option>
+                  <option value="grayscale">Grayscale</option>
+                  <option value="hue">Hue Rotation</option>
+                  <option value="kodachrome">Kodachrome</option>
+                  <option value="lsd">LSD</option>
+                  <option value="negative">Negative</option>
+                  <option value="night">Night Vision</option>
+                  <option value="polaroid">Polaroid</option>
+                  <option value="predator">Predator</option>
+                  <option value="sepia">Sepia</option>
+                  <option value="technicolor">Technicolor</option>
+                  <option value="vintage">Vintage</option>
+                  <option value="toBGR">To BGR</option>
+                </select>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    marginTop: '0.2rem',
+                  }}
+                >
+                  Select a preset color transformation or use None for manual
+                  control
+                </div>
+              </div>
+            ) : key === 'matrixType' &&
+              typeof value === 'string' &&
+              filter.name === 'convolution' ? (
+              // Special handling for convolution matrix type selection
+              <div>
+                <select
+                  value={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(key, e.target.value);
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.2rem',
+                    borderRadius: '3px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  <option value="sharpen">Sharpen</option>
+                  <option value="edge">Edge Detection</option>
+                  <option value="emboss">Emboss</option>
+                  <option value="strongSharpen">Strong Sharpen</option>
+                  <option value="custom">Custom Matrix</option>
+                </select>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    marginTop: '0.2rem',
+                  }}
+                >
+                  Select a convolution effect or use Custom Matrix for manual
+                  control
                 </div>
               </div>
             ) : key === 'customColorMap' ? (
@@ -1071,6 +1213,46 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   <span style={{ fontSize: '0.8rem' }}>
                     Nearest (pixelated)
                   </span>
+                </label>
+              </div>
+            ) : key === 'multiply' && typeof value === 'boolean' ? (
+              // Special handling for multiply boolean in ColorMatrix
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-multiply`}
+                    checked={!value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, false);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>Replace</span>
+                </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-multiply`}
+                    checked={value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, true);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>Multiply (Chain)</span>
                 </label>
               </div>
             ) : typeof value === 'number' ? (

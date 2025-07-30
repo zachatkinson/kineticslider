@@ -262,7 +262,6 @@ class EffectPresets {
 - `idleFloat` - Gentle floating animation
 
 **Composite Effects:**
-- `cinematicTransition` - Cinematic transition with multiple effects
 - `glitchEffect` - Digital glitch with distortion and color shifts
 
 #### PresetOptions
