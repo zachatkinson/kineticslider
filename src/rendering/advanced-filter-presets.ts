@@ -4078,6 +4078,83 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createSimpleLightmapEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      // Create default lightmap texture as fallback
+      const createDefaultLightmap = (): Texture => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+          gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+          gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, 512, 512);
+        }
+        return Texture.from(canvas);
+      };
+
+      // Use default lightmap initially (will be replaced if custom lightmap loads)
+      const lightmapTexture = createDefaultLightmap();
+
+      // Parse color from hex string if needed
+      const color =
+        typeof settings.color === 'string'
+          ? parseInt(settings.color.replace('#', ''), 16)
+          : typeof settings.color === 'number'
+            ? settings.color
+            : 0x666666;
+
+      // Create the filter
+      const filter = new SimpleLightmapFilter(lightmapTexture, color);
+      filter.alpha = typeof settings.alpha === 'number' ? settings.alpha : 1;
+
+      // Attempt to load custom lightmap if provided, otherwise use default from public folder
+      const loadLightmap = async (): Promise<void> => {
+        try {
+          let lightmapPath = '/images/lightmap.png'; // Default lightmap
+
+          // Use custom lightmap if provided
+          if (
+            typeof settings.customLightmapTexture === 'string' &&
+            settings.customLightmapTexture
+          ) {
+            lightmapPath = settings.customLightmapTexture;
+          }
+
+          const loadedTexture = await Assets.load(lightmapPath);
+          filter.lightMap = loadedTexture;
+          debugLogger.info(
+            `SimpleLightmapFilter lightmap loaded: ${lightmapPath}`,
+            'FILTER_PRESETS'
+          );
+        } catch (error) {
+          debugLogger.warn(
+            'Failed to load lightmap texture, using procedural fallback',
+            'FILTER_PRESETS',
+            error
+          );
+          // Keep using the default procedural lightmap
+        }
+      };
+
+      // Load lightmap asynchronously
+      loadLightmap();
+
+      const filterChain = new FilterChain({ name: 'simple-lightmap-effect' });
+      filterChain.addFilter(filter, {
+        id: 'simpleLightmap',
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { alpha: 0.7, color: 0x444444 },
       moderate: { alpha: 0.8, color: 0x666666 },
@@ -4171,6 +4248,101 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createSimplexNoiseEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      // Create the filter with custom settings
+      const filter = new SimplexNoiseFilter({
+        strength:
+          typeof settings.strength === 'number' ? settings.strength : 0.5,
+        noiseScale:
+          typeof settings.noiseScale === 'number' ? settings.noiseScale : 10,
+        offsetX: typeof settings.offsetX === 'number' ? settings.offsetX : 0,
+        offsetY: typeof settings.offsetY === 'number' ? settings.offsetY : 0,
+        offsetZ: typeof settings.offsetZ === 'number' ? settings.offsetZ : 0,
+        step: typeof settings.step === 'number' ? settings.step : -1,
+      });
+
+      const filterChain = new FilterChain({ name: 'simplex-noise-effect' });
+
+      // Handle animation based on animated setting
+      const isAnimated =
+        typeof settings.animated === 'boolean' ? settings.animated : false;
+
+      if (isAnimated) {
+        // Store base offset values for animation
+        const baseOffsetX =
+          typeof settings.offsetX === 'number' ? settings.offsetX : 0;
+        const baseOffsetY =
+          typeof settings.offsetY === 'number' ? settings.offsetY : 0;
+        const baseOffsetZ =
+          typeof settings.offsetZ === 'number' ? settings.offsetZ : 0;
+
+        let animationActive = false;
+        let animationFrameId: number | null = null;
+        let time = 0;
+
+        const startAnimation = (): void => {
+          if (animationActive) return;
+          animationActive = true;
+
+          const animate = (): void => {
+            if (!animationActive) return;
+
+            time += 0.01; // Slow animation speed for subtle movement
+
+            // Animate offsets around the base values for flowing noise pattern
+            filter.offsetX = baseOffsetX + Math.sin(time) * 0.5;
+            filter.offsetY = baseOffsetY + Math.cos(time * 0.7) * 0.3;
+            filter.offsetZ = baseOffsetZ + time * 0.1; // Depth animation for 3D noise variation
+
+            animationFrameId = requestAnimationFrame(animate);
+          };
+
+          animationFrameId = requestAnimationFrame(animate);
+        };
+
+        // Start the animation
+        startAnimation();
+
+        // Store animation frame ID for cleanup
+        (
+          filter as SimplexNoiseFilter & { _animationFrameId?: number | null }
+        )._animationFrameId = animationFrameId;
+      }
+
+      filterChain.addFilter(filter, {
+        id: 'simplexNoise',
+        animated: isAnimated,
+      });
+
+      const originalResult = this.createEffectResult(
+        filterChain,
+        [filter],
+        options
+      );
+
+      return {
+        ...originalResult,
+        cleanup: (): void => {
+          // Clear the animation frame if it exists
+          const filterWithAnimation = filter as SimplexNoiseFilter & {
+            _animationFrameId?: number | null;
+          };
+          if (
+            filterWithAnimation._animationFrameId !== null &&
+            filterWithAnimation._animationFrameId !== undefined
+          ) {
+            cancelAnimationFrame(filterWithAnimation._animationFrameId);
+            filterWithAnimation._animationFrameId = null;
+          }
+          originalResult.cleanup();
+        },
+      };
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { strength: 0.3, noiseScale: 8 },
       moderate: { strength: 0.5, noiseScale: 10 },
@@ -4256,8 +4428,48 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createTiltShiftEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    // Use proper PIXI.js TiltShiftFilter values based on API defaults
-    // Default blur: 100, gradientBlur: 600 - these create the wide focus area
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      // Convert pixel coordinates to normalized coordinates (0-1 range)
+      const normalizeX = (x: number): number => x / 1200; // Stage width is 1200
+      const normalizeY = (y: number): number => y / 400; // Stage height is 400
+
+      const filter = new TiltShiftFilter({
+        blur: typeof settings.blur === 'number' ? settings.blur : 100,
+        gradientBlur:
+          typeof settings.gradientBlur === 'number'
+            ? settings.gradientBlur
+            : 600,
+        start: {
+          x:
+            typeof settings.startX === 'number'
+              ? normalizeX(settings.startX)
+              : 0,
+          y:
+            typeof settings.startY === 'number'
+              ? normalizeY(settings.startY)
+              : 0.375, // 150/400
+        },
+        end: {
+          x: typeof settings.endX === 'number' ? normalizeX(settings.endX) : 1,
+          y:
+            typeof settings.endY === 'number'
+              ? normalizeY(settings.endY)
+              : 0.625, // 250/400
+        },
+      });
+
+      const filterChain = new FilterChain({ name: 'tilt-shift-effect' });
+      filterChain.addFilter(filter, {
+        id: 'tiltShift',
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { blur: 50, gradientBlur: 300, focusHeight: 0.4 },
       moderate: { blur: 75, gradientBlur: 450, focusHeight: 0.3 },
@@ -4357,7 +4569,93 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createTwistEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    // Configure twist parameters based on intensity
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      const filter = new TwistFilter({
+        angle: typeof settings.angle === 'number' ? settings.angle : 0,
+        radius: typeof settings.radius === 'number' ? settings.radius : 200,
+        offset: {
+          x: typeof settings.offsetX === 'number' ? settings.offsetX : 600, // Center at 1200/2
+          y: typeof settings.offsetY === 'number' ? settings.offsetY : 200, // Center at 400/2
+        },
+      });
+
+      const filterChain = new FilterChain({ name: 'twist-effect' });
+
+      // Handle animation based on animated setting
+      const isAnimated =
+        typeof settings.animated === 'boolean' ? settings.animated : false;
+
+      if (isAnimated) {
+        // Store base angle for animation
+        const baseAngle =
+          typeof settings.angle === 'number' ? settings.angle : 0;
+
+        let animationActive = false;
+        let animationFrameId: number | null = null;
+        let time = 0;
+
+        const startAnimation = (): void => {
+          if (animationActive) return;
+          animationActive = true;
+
+          const animate = (): void => {
+            if (!animationActive) return;
+
+            time += 0.02; // Animation speed
+
+            // Animate twist angle around the base value
+            filter.angle =
+              baseAngle + Math.sin(time) * (Math.abs(baseAngle) + 2);
+
+            animationFrameId = requestAnimationFrame(animate);
+          };
+
+          animationFrameId = requestAnimationFrame(animate);
+        };
+
+        // Start the animation
+        startAnimation();
+
+        // Store animation frame ID for cleanup
+        (
+          filter as TwistFilter & { _animationFrameId?: number | null }
+        )._animationFrameId = animationFrameId;
+      }
+
+      filterChain.addFilter(filter, {
+        id: 'twist',
+        animated: isAnimated,
+      });
+
+      const originalResult = this.createEffectResult(
+        filterChain,
+        [filter],
+        options
+      );
+
+      return {
+        ...originalResult,
+        cleanup: (): void => {
+          // Clear the animation frame if it exists
+          const filterWithAnimation = filter as TwistFilter & {
+            _animationFrameId?: number | null;
+          };
+          if (
+            filterWithAnimation._animationFrameId !== null &&
+            filterWithAnimation._animationFrameId !== undefined
+          ) {
+            cancelAnimationFrame(filterWithAnimation._animationFrameId);
+            filterWithAnimation._animationFrameId = null;
+          }
+          originalResult.cleanup();
+        },
+      };
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { angle: 2, radius: 150, speed: 0.01 },
       moderate: { angle: 4, radius: 200, speed: 0.015 },
@@ -4366,11 +4664,10 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
-    // Create TwistFilter with center offset - using pixel coordinates for proper centering
-    // TwistFilter expects actual pixel coordinates, so we need to center it properly
+    // Create TwistFilter with center offset - using pixel coordinates (updated for 1200x400 stage)
     const filter = new TwistFilter({
       angle: settings.angle,
-      offset: { x: 400, y: 300 }, // Center based on typical slider dimensions (800x600)
+      offset: { x: 600, y: 200 }, // Center based on actual stage dimensions (1200x400)
       radius: settings.radius,
     });
 
@@ -4442,6 +4739,37 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createZoomBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use custom settings if provided, otherwise fall back to intensity presets
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      // Create ZoomBlurFilter with custom settings
+      const filter = new ZoomBlurFilter({
+        strength:
+          typeof settings.strength === 'number' ? settings.strength : 0.1,
+        center: {
+          x: typeof settings.centerX === 'number' ? settings.centerX : 600,
+          y: typeof settings.centerY === 'number' ? settings.centerY : 200,
+        },
+        innerRadius:
+          typeof settings.innerRadius === 'number' ? settings.innerRadius : 150,
+        radius: typeof settings.radius === 'number' ? settings.radius : 150,
+      });
+
+      debugLogger.info(
+        `ZoomBlurFilter created with custom settings - strength: ${filter.strength}, center: {x:${filter.center.x}, y:${filter.center.y}}, radius: ${filter.radius}, innerRadius: ${filter.innerRadius}`,
+        'FILTER_PRESETS'
+      );
+
+      const filterChain = new FilterChain({ name: 'zoom-blur-effect' });
+      filterChain.addFilter(filter, {
+        id: 'zoomBlur',
+        animated: false, // No default animation for custom settings
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
     // Configure zoom blur parameters based on intensity
     const intensityMap = {
       subtle: { strength: 0.1, radius: 100, innerRadius: 0 },

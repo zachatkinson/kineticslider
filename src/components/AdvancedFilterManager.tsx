@@ -514,6 +514,74 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       }
     }
 
+    // Special handling for simple lightmap filter properties
+    if (filterName === 'simpleLightmap') {
+      const simpleLightmapMinValues: Record<string, string> = {
+        alpha: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(simpleLightmapMinValues, key)) {
+        return simpleLightmapMinValues[
+          key as keyof typeof simpleLightmapMinValues
+        ];
+      }
+    }
+
+    // Special handling for simplex noise filter properties
+    if (filterName === 'simplexNoise') {
+      const simplexNoiseMinValues: Record<string, string> = {
+        strength: '0',
+        noiseScale: '0',
+        offsetX: '0',
+        offsetY: '0',
+        offsetZ: '0',
+        step: '-1',
+      };
+      if (Object.prototype.hasOwnProperty.call(simplexNoiseMinValues, key)) {
+        return simplexNoiseMinValues[key as keyof typeof simplexNoiseMinValues];
+      }
+    }
+
+    // Special handling for tilt shift filter properties
+    if (filterName === 'tiltShift') {
+      const tiltShiftMinValues: Record<string, string> = {
+        blur: '0',
+        gradientBlur: '0',
+        startX: '0',
+        startY: '0',
+        endX: '0',
+        endY: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(tiltShiftMinValues, key)) {
+        return tiltShiftMinValues[key as keyof typeof tiltShiftMinValues];
+      }
+    }
+
+    // Special handling for twist filter properties
+    if (filterName === 'twist') {
+      const twistMinValues: Record<string, string> = {
+        angle: '-10',
+        radius: '0',
+        offsetX: '0',
+        offsetY: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(twistMinValues, key)) {
+        return twistMinValues[key as keyof typeof twistMinValues];
+      }
+    }
+    // Special handling for zoomBlur filter properties
+    if (filterName === 'zoomBlur') {
+      const zoomBlurMinValues: Record<string, string> = {
+        strength: '0.01',
+        centerX: '0',
+        centerY: '0',
+        innerRadius: '0',
+        radius: '-1',
+      };
+      if (Object.prototype.hasOwnProperty.call(zoomBlurMinValues, key)) {
+        return zoomBlurMinValues[key as keyof typeof zoomBlurMinValues];
+      }
+    }
+
     const minValues: Record<string, string> = {
       // AdjustmentFilter properties
       gamma: '0.1',
@@ -783,6 +851,74 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       };
       if (Object.prototype.hasOwnProperty.call(shockwaveMaxValues, key)) {
         return shockwaveMaxValues[key as keyof typeof shockwaveMaxValues];
+      }
+    }
+
+    // Special handling for simple lightmap filter properties
+    if (filterName === 'simpleLightmap') {
+      const simpleLightmapMaxValues: Record<string, string> = {
+        alpha: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(simpleLightmapMaxValues, key)) {
+        return simpleLightmapMaxValues[
+          key as keyof typeof simpleLightmapMaxValues
+        ];
+      }
+    }
+
+    // Special handling for simplex noise filter properties
+    if (filterName === 'simplexNoise') {
+      const simplexNoiseMaxValues: Record<string, string> = {
+        strength: '1',
+        noiseScale: '50',
+        offsetX: '5',
+        offsetY: '5',
+        offsetZ: '5',
+        step: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(simplexNoiseMaxValues, key)) {
+        return simplexNoiseMaxValues[key as keyof typeof simplexNoiseMaxValues];
+      }
+    }
+
+    // Special handling for tilt shift filter properties
+    if (filterName === 'tiltShift') {
+      const tiltShiftMaxValues: Record<string, string> = {
+        blur: '200',
+        gradientBlur: '1000',
+        startX: '1200', // Stage width
+        startY: '400', // Stage height
+        endX: '1200', // Stage width
+        endY: '400', // Stage height
+      };
+      if (Object.prototype.hasOwnProperty.call(tiltShiftMaxValues, key)) {
+        return tiltShiftMaxValues[key as keyof typeof tiltShiftMaxValues];
+      }
+    }
+
+    // Special handling for twist filter properties
+    if (filterName === 'twist') {
+      const twistMaxValues: Record<string, string> = {
+        angle: '10',
+        radius: '1200', // Stage width
+        offsetX: '1200', // Stage width
+        offsetY: '400', // Stage height
+      };
+      if (Object.prototype.hasOwnProperty.call(twistMaxValues, key)) {
+        return twistMaxValues[key as keyof typeof twistMaxValues];
+      }
+    }
+    // Special handling for zoomBlur filter properties
+    if (filterName === 'zoomBlur') {
+      const zoomBlurMaxValues: Record<string, string> = {
+        strength: '0.5',
+        centerX: '1200', // Stage width
+        centerY: '400', // Stage height
+        innerRadius: '300', // Stage height minus 100 (400-100)
+        radius: '300', // Stage height minus 100 (400-100)
+      };
+      if (Object.prototype.hasOwnProperty.call(zoomBlurMaxValues, key)) {
+        return zoomBlurMaxValues[key as keyof typeof zoomBlurMaxValues];
       }
     }
 
@@ -1057,6 +1193,76 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       }
     }
 
+    // Special handling for simple lightmap filter properties
+    if (filterName === 'simpleLightmap') {
+      const simpleLightmapStepValues: Record<string, string> = {
+        alpha: '0.01', // Fine control for alpha
+      };
+      if (Object.prototype.hasOwnProperty.call(simpleLightmapStepValues, key)) {
+        return simpleLightmapStepValues[
+          key as keyof typeof simpleLightmapStepValues
+        ];
+      }
+    }
+
+    // Special handling for simplex noise filter properties
+    if (filterName === 'simplexNoise') {
+      const simplexNoiseStepValues: Record<string, string> = {
+        strength: '0.001', // 3 decimal places for strength
+        noiseScale: '1', // Integer steps for noise scale
+        offsetX: '0.001', // 3 decimal places for offset X
+        offsetY: '0.001', // 3 decimal places for offset Y
+        offsetZ: '0.001', // 3 decimal places for offset Z
+        step: '0.001', // 3 decimal places for step
+      };
+      if (Object.prototype.hasOwnProperty.call(simplexNoiseStepValues, key)) {
+        return simplexNoiseStepValues[
+          key as keyof typeof simplexNoiseStepValues
+        ];
+      }
+    }
+
+    // Special handling for tilt shift filter properties
+    if (filterName === 'tiltShift') {
+      const tiltShiftStepValues: Record<string, string> = {
+        blur: '0.0001', // 4 decimal places for blur
+        gradientBlur: '1', // Integer steps for gradient blur
+        startX: '1', // Pixel-based control for start X position
+        startY: '1', // Pixel-based control for start Y position
+        endX: '1', // Pixel-based control for end X position
+        endY: '1', // Pixel-based control for end Y position
+      };
+      if (Object.prototype.hasOwnProperty.call(tiltShiftStepValues, key)) {
+        return tiltShiftStepValues[key as keyof typeof tiltShiftStepValues];
+      }
+    }
+
+    // Special handling for twist filter properties
+    if (filterName === 'twist') {
+      const twistStepValues: Record<string, string> = {
+        angle: '0.1', // Smooth control for twist angle
+        radius: '1', // Pixel-based control for radius
+        offsetX: '1', // Pixel-based control for center X position
+        offsetY: '1', // Pixel-based control for center Y position
+      };
+      if (Object.prototype.hasOwnProperty.call(twistStepValues, key)) {
+        return twistStepValues[key as keyof typeof twistStepValues];
+      }
+    }
+    // Special handling for zoomBlur filter properties
+    if (filterName === 'zoomBlur') {
+      const zoomBlurStepValues: Record<string, string> = {
+        strength: '0.01', // Fine control for strength (matches min value)
+        centerX: '1', // Pixel-based control for center X position
+        centerY: '1', // Pixel-based control for center Y position
+        innerRadius: '1', // Pixel-based control for inner radius
+        radius: '1', // Pixel-based control for radius
+      };
+      if (Object.prototype.hasOwnProperty.call(zoomBlurStepValues, key)) {
+        return zoomBlurStepValues[key as keyof typeof zoomBlurStepValues];
+      }
+    }
+
     const stepValues: Record<string, string> = {
       // Fine control for adjustment properties
       gamma: '0.05',
@@ -1199,7 +1405,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         blueY: 0, // Blue channel Y offset (-20 to 20)
       },
       shockwave: {
-        animated: false, // Enable time-based animation
+        animated: true, // Enable time-based animation (default to animated)
         speed: 500, // Shockwave speed (500-2000) pixel-per-second
         amplitude: 30, // Wave amplitude (1-100)
         wavelength: 160, // Wave length (2-400)
@@ -1208,6 +1414,42 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         centerX: 600, // Center X position in pixels (0 to display width) - centered at 1200/2
         centerY: 200, // Center Y position in pixels (0 to display height) - centered at 400/2
         time: 0, // Animation time offset
+      },
+      simpleLightmap: {
+        color: '#666666', // Ambient color (hex color for color picker)
+        alpha: 1, // Alpha value (0-1)
+        customLightmapTexture: '', // Custom uploaded lightmap texture (empty string when using default)
+      },
+      simplexNoise: {
+        animated: false, // Enable time-based animation
+        strength: 0.5, // Noise intensity (0-1 with 3 decimal places)
+        noiseScale: 10, // Noise map scale (0-50)
+        offsetX: 0.0, // Horizontal noise offset (0-5 with 3 decimal places)
+        offsetY: 0.0, // Vertical noise offset (0-5 with 3 decimal places)
+        offsetZ: 0.0, // Depth noise offset (0-5 with 3 decimal places)
+        step: -1.0, // Threshold for blocky noise effect (-1 to 1 with 3 decimal places)
+      },
+      tiltShift: {
+        blur: 100.0, // Blur intensity (0-200 with 4 decimal places)
+        gradientBlur: 600, // Gradient blur amount for smooth transitions (0-1000)
+        startX: 0, // Starting X position of focus area (0 to stage width)
+        endX: 1200, // Ending X position of focus area (0 to stage width) - full width
+        startY: 150, // Starting Y position of focus area (0 to stage height) - centered at 400/2 - 50
+        endY: 250, // Ending Y position of focus area (0 to stage height) - centered at 400/2 + 50
+      },
+      twist: {
+        animated: true, // Enable time-based animation by default
+        angle: 0, // Twist angle in radians (-10 to 10)
+        radius: 200, // Radius of twist effect (0 to stage width)
+        offsetX: 600, // Center X position in pixels (0 to stage width) - centered at 1200/2
+        offsetY: 200, // Center Y position in pixels (0 to stage height) - centered at 400/2
+      },
+      zoomBlur: {
+        strength: 0.1, // Blur strength (0.01-0.5)
+        centerX: 600, // Center X position in pixels (0 to stage width) - centered at 1200/2
+        centerY: 200, // Center Y position in pixels (0 to stage height) - centered at 400/2
+        innerRadius: 150, // Inner radius (0 to stage height minus 100) - 400-100=300, default 150
+        radius: 150, // Radius (-1 to stage height minus 100) - 400-100=300, default 150
       },
       colorMatrix: {
         matrixType: 'none', // Default to no preset
@@ -1670,6 +1912,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   nearest: 'Sampling Method',
                   colorMapPreset: 'Colormap Preset',
                   customColorMap: 'Custom Colormap',
+                  // SimpleLightmapFilter labels
+                  customLightmapTexture: 'Custom Lightmap Texture',
                   // ColorMatrixFilter labels
                   matrixType: 'Matrix Type',
                   multiply: 'Chain Effects',
@@ -2029,6 +2273,94 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
             ) : key === 'customColorMap' ? (
               // Special handling for custom colormap upload
               <div>
+                {/* Preview section */}
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    padding: '0.5rem',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '4px',
+                    backgroundColor: '#f9fafb',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      marginBottom: '0.3rem',
+                      color: '#374151',
+                    }}
+                  >
+                    Current Colormap:
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    {value &&
+                    typeof value === 'object' &&
+                    value !== null &&
+                    'isCustomTexture' in value &&
+                    (value as CustomTextureData).isCustomTexture ? (
+                      <img
+                        src={(value as CustomTextureData).dataUrl}
+                        alt="Custom Colormap Preview"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          objectFit: 'cover',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '3px',
+                          backgroundColor: '#fff',
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src="/images/colormap.png"
+                        alt="Default Colormap Preview"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          objectFit: 'cover',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '3px',
+                          backgroundColor: '#fff',
+                        }}
+                      />
+                    )}
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                      {value &&
+                      typeof value === 'object' &&
+                      value !== null &&
+                      'isCustomTexture' in value &&
+                      (value as CustomTextureData).isCustomTexture ? (
+                        <div>
+                          <div>✅ Custom colormap active</div>
+                          <div style={{ marginTop: '2px' }}>
+                            {(value as CustomTextureData).fileName || 'Loaded'}
+                          </div>
+                          <div
+                            style={{ fontSize: '0.65rem', color: '#9ca3af' }}
+                          >
+                            {(value as CustomTextureData).width}×
+                            {(value as CustomTextureData).height}px
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div>🔄 Using built-in colormap</div>
+                          <div style={{ marginTop: '2px' }}>
+                            Upload custom colormap below
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div
                   style={{
                     border: '2px dashed #d1d5db',
@@ -2176,6 +2508,65 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
             ) : key === 'customDisplacementTexture' ? (
               // Special handling for custom displacement texture upload
               <div>
+                {/* Preview section */}
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    padding: '0.5rem',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '4px',
+                    backgroundColor: '#f9fafb',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      marginBottom: '0.3rem',
+                      color: '#374151',
+                    }}
+                  >
+                    Current Displacement Texture:
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <img
+                      src={typeof value === 'string' ? value || '/images/effects/cursor-displace.png' : '/images/effects/cursor-displace.png'}
+                      alt="Displacement Texture Preview"
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        objectFit: 'cover',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '3px',
+                        backgroundColor: '#fff',
+                      }}
+                    />
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                      {value ? (
+                        <div>
+                          <div>✅ Custom displacement active</div>
+                          <div style={{ marginTop: '2px' }}>
+                            Click below to change
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div>🔄 Using default displacement</div>
+                          <div style={{ marginTop: '2px' }}>
+                            Upload custom texture below
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div
                   style={{
                     border: '2px dashed #d1d5db',
@@ -2198,37 +2589,186 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     input.click();
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: '1rem',
-                      marginBottom: '0.5rem',
-                      color: '#4b5563',
-                    }}
-                  >
-                    📁 Click to upload displacement texture
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '0.8rem',
-                      color: '#6b7280',
-                    }}
-                  >
-                    {typeof value === 'string' && value
-                      ? 'Custom texture loaded'
-                      : 'Using default displacement texture'}
-                  </div>
+                  📁 Click to upload displacement texture
+                  {value && (
+                    <div
+                      style={{
+                        fontSize: '0.8rem',
+                        color: '#666',
+                        marginTop: '0.3rem',
+                      }}
+                    >
+                      Replace current displacement texture
+                    </div>
+                  )}
                 </div>
+
+                {/* Clear button for custom textures */}
+                {value && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const updates = createSafeUpdate(key, '');
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                    style={{
+                      marginTop: '0.5rem',
+                      fontSize: '0.75rem',
+                      padding: '0.25rem 0.5rem',
+                      backgroundColor: '#fee2e2',
+                      color: '#dc2626',
+                      border: '1px solid #fecaca',
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    🗑️ Reset to default displacement
+                  </button>
+                )}
+
                 <div
                   style={{
-                    fontSize: '0.7rem',
-                    color: '#9ca3af',
-                    fontStyle: 'italic',
+                    fontSize: '0.75rem',
+                    color: '#666',
                     marginTop: '0.5rem',
                   }}
                 >
                   Upload a custom displacement texture. Ideal size: 512x512px or
                   smaller. Black areas = no displacement, white areas = max
                   displacement.
+                </div>
+              </div>
+            ) : key === 'customLightmapTexture' ? (
+              // Special handling for custom lightmap texture upload
+              <div>
+                {/* Preview section */}
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    padding: '0.5rem',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '4px',
+                    backgroundColor: '#f9fafb',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      marginBottom: '0.3rem',
+                      color: '#374151',
+                    }}
+                  >
+                    Current Lightmap:
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <img
+                      src={typeof value === 'string' ? value || '/images/lightmap.png' : '/images/lightmap.png'}
+                      alt="Lightmap Preview"
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        objectFit: 'cover',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '3px',
+                        backgroundColor: '#fff',
+                      }}
+                    />
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                      {value ? (
+                        <div>
+                          <div>✅ Custom lightmap active</div>
+                          <div style={{ marginTop: '2px' }}>
+                            Click below to change
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div>🔄 Using default lightmap</div>
+                          <div style={{ marginTop: '2px' }}>
+                            Upload custom lightmap below
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    border: '2px dashed #d1d5db',
+                    borderRadius: '4px',
+                    padding: '1rem',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    background: '#fafafa',
+                  }}
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e): void => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (file) {
+                        handleFileUpload(file, filter.id, key);
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  📄 Click to upload custom lightmap texture
+                  {value && (
+                    <div
+                      style={{
+                        fontSize: '0.8rem',
+                        color: '#666',
+                        marginTop: '0.3rem',
+                      }}
+                    >
+                      Replace current lightmap
+                    </div>
+                  )}
+                </div>
+
+                {/* Clear button for custom textures */}
+                {value && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const updates = createSafeUpdate(key, '');
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                    style={{
+                      marginTop: '0.5rem',
+                      fontSize: '0.75rem',
+                      padding: '0.25rem 0.5rem',
+                      backgroundColor: '#fee2e2',
+                      color: '#dc2626',
+                      border: '1px solid #fecaca',
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    🗑️ Reset to default lightmap
+                  </button>
+                )}
+
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: '#666',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  Upload a custom lightmap texture. Ideal size: 512x512px or
+                  smaller. White areas = full lighting, black areas = no light.
+                  Leave empty to use default lightmap.
                 </div>
               </div>
             ) : key === 'fillMode' && typeof value === 'number' ? (
@@ -2390,45 +2930,24 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                 </label>
               </div>
             ) : key === 'animated' && typeof value === 'boolean' ? (
-              // Special handling for animated boolean in GlitchFilter
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
+              // Checkbox for animated boolean
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(key, e.target.checked);
+                    updateFilterSettings(filter.id, updates);
                   }}
-                >
-                  <input
-                    type="radio"
-                    name={`${filter.id}-animated`}
-                    checked={!value}
-                    onChange={() => {
-                      const updates = createSafeUpdate(key, false);
-                      updateFilterSettings(filter.id, updates);
-                    }}
-                  />
-                  <span style={{ fontSize: '0.8rem' }}>Static</span>
-                </label>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name={`${filter.id}-animated`}
-                    checked={value}
-                    onChange={() => {
-                      const updates = createSafeUpdate(key, true);
-                      updateFilterSettings(filter.id, updates);
-                    }}
-                  />
-                  <span style={{ fontSize: '0.8rem' }}>Animated</span>
-                </label>
-              </div>
+                />
+                <span style={{ fontSize: '0.8rem' }}>Animated</span>
+              </label>
             ) : key === 'knockout' && typeof value === 'boolean' ? (
               // Special handling for knockout boolean in GlowFilter
               <div style={{ display: 'flex', gap: '1rem' }}>
