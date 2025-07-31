@@ -21,11 +21,7 @@ import {
 } from 'pixi.js';
 import { GlowFilter, GrayscaleFilter, OldFilmFilter } from 'pixi-filters';
 import { FilterChain } from './filter-chain';
-import {
-  DisplacementEffects,
-  MouseFollowOptions,
-  IdleEffectOptions,
-} from './displacement-effects';
+import { DisplacementEffects } from './displacement-effects';
 // import type { AnimationConfig } from '../core/types';
 import { ANIMATION_DURATION, EASING } from '../core/constants';
 import { debugLogger } from '../utils/debug-logger';
@@ -340,31 +336,6 @@ export class EffectPresets {
       compatibility: ['chrome', 'firefox', 'safari'],
       useCases: ['fluid transitions', 'organic movement', 'background effects'],
       create: (options) => this.createWaveEffect(options),
-    });
-
-    // Displacement Effects
-    this.registerPreset({
-      name: 'mouseFollowDisplacement',
-      category: 'displacement',
-      description: 'Displacement effect that follows mouse movement',
-      performanceImpact: 4,
-      compatibility: ['chrome', 'firefox', 'safari'],
-      useCases: [
-        'interactive elements',
-        'immersive experiences',
-        'portfolio showcases',
-      ],
-      create: (options) => this.createMouseFollowDisplacementEffect(options),
-    });
-
-    this.registerPreset({
-      name: 'idleFloat',
-      category: 'displacement',
-      description: 'Gentle floating displacement animation',
-      performanceImpact: 3,
-      compatibility: ['chrome', 'firefox', 'safari'],
-      useCases: ['idle animations', 'ambient effects', 'organic movement'],
-      create: (options) => this.createIdleFloatEffect(options),
     });
 
     // Composite Effects
@@ -830,101 +801,6 @@ export class EffectPresets {
       },
       removeFrom: (target): void => {
         filterChain.removeFrom(target);
-      },
-    };
-  }
-
-  /**
-   * Create mouse follow displacement effect
-   */
-  private createMouseFollowDisplacementEffect(
-    options: Required<PresetOptions>
-  ): EffectPresetResult {
-    if (!this.displacementTexture) {
-      throw new Error(
-        'Displacement texture required for mouse follow displacement'
-      );
-    }
-
-    const intensity = this.getIntensityMultiplier(options.intensity);
-    const displacementEffects = new DisplacementEffects(
-      this.displacementTexture
-    );
-
-    const mouseFollowOptions: MouseFollowOptions = {
-      intensity: intensity,
-      radius: (options.customParams.radius as number) || 150,
-      smoothing: (options.customParams.smoothing as boolean) ?? true,
-      duration: options.duration,
-      ease: options.ease,
-    };
-
-    const timeline = gsap.timeline();
-    const filters: Filter[] = [];
-
-    return {
-      displacementEffects,
-      filters,
-      timeline,
-      cleanup: (): void => {
-        timeline.kill();
-        displacementEffects.dispose();
-      },
-      applyTo: (target): void => {
-        if (target instanceof Sprite) {
-          displacementEffects.createMouseFollowEffect(
-            target,
-            mouseFollowOptions
-          );
-        }
-      },
-      removeFrom: (_target): void => {
-        displacementEffects.stopAllEffects();
-      },
-    };
-  }
-
-  /**
-   * Create idle float effect
-   */
-  private createIdleFloatEffect(
-    options: Required<PresetOptions>
-  ): EffectPresetResult {
-    if (!this.displacementTexture) {
-      throw new Error('Displacement texture required for idle float effect');
-    }
-
-    const intensity = this.getIntensityMultiplier(options.intensity);
-    const displacementEffects = new DisplacementEffects(
-      this.displacementTexture
-    );
-
-    const idleOptions: IdleEffectOptions = {
-      type: 'float',
-      intensity: intensity,
-      duration: options.duration * 2,
-      loop: true,
-      ease: options.ease,
-    };
-
-    const timeline = gsap.timeline();
-    const filters: Filter[] = [];
-
-    return {
-      displacementEffects,
-      filters,
-      timeline,
-      cleanup: (): void => {
-        timeline.kill();
-        displacementEffects.dispose();
-      },
-      applyTo: (target): void => {
-        if (target instanceof Sprite) {
-          displacementEffects.createIdleEffect(target, idleOptions);
-        }
-      },
-      removeFrom: (_target): void => {
-        displacementEffects.stopAllEffects();
       },
     };
   }

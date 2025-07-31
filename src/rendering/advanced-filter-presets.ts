@@ -866,24 +866,96 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdvancedGlowEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { subtle: 5, moderate: 10, strong: 15, intense: 25 };
-    const distance = intensityMap[options.intensity];
+    let settings;
+
+    // Check for custom settings first
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      // Parse color if provided as string
+      let colorValue = 0xffffff;
+      if (typeof options.customSettings.color === 'string') {
+        const parsed = parseInt(
+          options.customSettings.color.replace('#', ''),
+          16
+        );
+        if (!isNaN(parsed)) {
+          colorValue = parsed;
+        }
+      } else if (typeof options.customSettings.color === 'number') {
+        colorValue = options.customSettings.color;
+      }
+
+      settings = {
+        distance:
+          typeof options.customSettings.distance === 'number'
+            ? options.customSettings.distance
+            : 15,
+        outerStrength:
+          typeof options.customSettings.outerStrength === 'number'
+            ? options.customSettings.outerStrength
+            : 2,
+        innerStrength:
+          typeof options.customSettings.innerStrength === 'number'
+            ? options.customSettings.innerStrength
+            : 0,
+        color: colorValue,
+        alpha:
+          typeof options.customSettings.alpha === 'number'
+            ? options.customSettings.alpha
+            : 1,
+        knockout:
+          typeof options.customSettings.knockout === 'boolean'
+            ? options.customSettings.knockout
+            : false,
+        quality:
+          typeof options.customSettings.quality === 'number'
+            ? options.customSettings.quality
+            : 0.1,
+      };
+    } else {
+      // Use intensity-based presets as fallback
+      const intensityMap = {
+        subtle: { distance: 5, outerStrength: 1.5, innerStrength: 0 },
+        moderate: { distance: 10, outerStrength: 2, innerStrength: 0 },
+        strong: { distance: 15, outerStrength: 2.5, innerStrength: 0.5 },
+        intense: { distance: 25, outerStrength: 3, innerStrength: 1 },
+      };
+      const intensitySettings = intensityMap[options.intensity];
+      settings = {
+        ...intensitySettings,
+        color: 0xffffff,
+        alpha: 1,
+        knockout: false,
+        quality: 0.1,
+      };
+    }
 
     const filter = new GlowFilter({
-      distance,
-      outerStrength: 2,
-      innerStrength: 0, // Default is 0
-      color: 0xffffff,
-      alpha: 1, // Default alpha
-      knockout: false, // Default knockout
-      quality: 0.1, // Use API default
+      distance: settings.distance,
+      outerStrength: settings.outerStrength,
+      innerStrength: settings.innerStrength,
+      color: settings.color,
+      alpha: settings.alpha,
+      knockout: settings.knockout,
+      quality: settings.quality,
     });
+
+    debugLogger.info(
+      `Glow filter created - distance: ${settings.distance}, outerStrength: ${settings.outerStrength}, innerStrength: ${settings.innerStrength}, knockout: ${settings.knockout}`,
+      'FILTER_PRESETS'
+    );
 
     const filterChain = new FilterChain({ name: 'glow-effect' });
     filterChain.addFilter(filter, {
       id: 'glow',
       animated: true,
-      animationProperties: { distance, outerStrength: 2 },
+      animationProperties: {
+        distance: settings.distance,
+        outerStrength: settings.outerStrength,
+        innerStrength: settings.innerStrength,
+      },
       duration: options.duration,
       ease: options.ease,
     });
@@ -1305,34 +1377,241 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createOldFilmEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = {
-      subtle: 0.3,
-      moderate: 0.5,
-      strong: 0.7,
-      intense: 1.0,
-    };
-    const intensity = intensityMap[options.intensity];
+    interface OldFilmSettings {
+      animated: boolean;
+      sepia: number;
+      noise: number;
+      noiseSize: number;
+      scratch: number;
+      scratchDensity: number;
+      scratchWidth: number;
+      vignetting: number;
+      vignettingAlpha: number;
+      vignettingBlur: number;
+      flickerFrequency?: number;
+      noiseVariation?: number;
+      scratchVariation?: number;
+      seedChangeRate?: number;
+      seed?: number;
+    }
+    
+    let settings: OldFilmSettings;
+    let animationInterval: NodeJS.Timeout | null = null;
 
-    const filter = new OldFilmFilter();
-    filter.sepia = 0.5 * intensity;
-    filter.noise = 0.3 * intensity;
-    filter.scratch = 0.5 * intensity;
-    filter.scratchDensity = 0.3 * intensity;
-    filter.vignetting = 0.3 * intensity;
+    // Check for custom settings first
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      const isAnimated = options.customSettings.animated === true;
 
-    const filterChain = new FilterChain({ name: 'oldfilm-effect' });
-    filterChain.addFilter(filter, {
-      id: 'oldfilm',
-      animated: true,
-      animationProperties: {
+      if (isAnimated) {
+        // Animated mode - allow for random flickering effects
+        settings = {
+          animated: true,
+          sepia:
+            typeof options.customSettings.sepia === 'number'
+              ? options.customSettings.sepia
+              : 0.35,
+          noise:
+            typeof options.customSettings.noise === 'number'
+              ? options.customSettings.noise
+              : 0.15,
+          noiseSize:
+            typeof options.customSettings.noiseSize === 'number'
+              ? options.customSettings.noiseSize
+              : 1,
+          scratch:
+            typeof options.customSettings.scratch === 'number'
+              ? options.customSettings.scratch
+              : 0.35,
+          scratchDensity:
+            typeof options.customSettings.scratchDensity === 'number'
+              ? options.customSettings.scratchDensity
+              : 0.15,
+          scratchWidth:
+            typeof options.customSettings.scratchWidth === 'number'
+              ? options.customSettings.scratchWidth
+              : 1,
+          vignetting:
+            typeof options.customSettings.vignetting === 'number'
+              ? options.customSettings.vignetting
+              : 0.15,
+          vignettingAlpha:
+            typeof options.customSettings.vignettingAlpha === 'number'
+              ? options.customSettings.vignettingAlpha
+              : 1.0,
+          vignettingBlur:
+            typeof options.customSettings.vignettingBlur === 'number'
+              ? options.customSettings.vignettingBlur
+              : 0.3,
+          // Animation-specific settings
+          flickerFrequency:
+            typeof options.customSettings.flickerFrequency === 'number'
+              ? options.customSettings.flickerFrequency
+              : 0.1,
+          noiseVariation:
+            typeof options.customSettings.noiseVariation === 'number'
+              ? options.customSettings.noiseVariation
+              : 0.1,
+          scratchVariation:
+            typeof options.customSettings.scratchVariation === 'number'
+              ? options.customSettings.scratchVariation
+              : 0.2,
+          seedChangeRate:
+            typeof options.customSettings.seedChangeRate === 'number'
+              ? options.customSettings.seedChangeRate
+              : 24.0, // 24 fps for smooth animation
+        };
+      } else {
+        // Static mode - fixed values without animation
+        settings = {
+          animated: false,
+          sepia:
+            typeof options.customSettings.sepia === 'number'
+              ? options.customSettings.sepia
+              : 0.35,
+          noise:
+            typeof options.customSettings.noise === 'number'
+              ? options.customSettings.noise
+              : 0.15,
+          noiseSize:
+            typeof options.customSettings.noiseSize === 'number'
+              ? options.customSettings.noiseSize
+              : 1,
+          scratch:
+            typeof options.customSettings.scratch === 'number'
+              ? options.customSettings.scratch
+              : 0.35,
+          scratchDensity:
+            typeof options.customSettings.scratchDensity === 'number'
+              ? options.customSettings.scratchDensity
+              : 0.15,
+          scratchWidth:
+            typeof options.customSettings.scratchWidth === 'number'
+              ? options.customSettings.scratchWidth
+              : 1,
+          vignetting:
+            typeof options.customSettings.vignetting === 'number'
+              ? options.customSettings.vignetting
+              : 0.15,
+          vignettingAlpha:
+            typeof options.customSettings.vignettingAlpha === 'number'
+              ? options.customSettings.vignettingAlpha
+              : 1.0,
+          vignettingBlur:
+            typeof options.customSettings.vignettingBlur === 'number'
+              ? options.customSettings.vignettingBlur
+              : 0.3,
+          seed:
+            typeof options.customSettings.seed === 'number'
+              ? options.customSettings.seed
+              : Math.random(),
+        };
+      }
+    } else {
+      // Fallback to intensity-based settings (default to animated)
+      const intensityMap = {
+        subtle: 0.3,
+        moderate: 0.5,
+        strong: 0.7,
+        intense: 1.0,
+      };
+      const intensity = intensityMap[options.intensity];
+      settings = {
+        animated: true,
         sepia: 0.5 * intensity,
         noise: 0.3 * intensity,
-      },
-      duration: options.duration,
-      ease: options.ease,
-    });
+        noiseSize: 1,
+        scratch: 0.5 * intensity,
+        scratchDensity: 0.3 * intensity,
+        scratchWidth: 1,
+        vignetting: 0.3 * intensity,
+        vignettingAlpha: 1.0,
+        vignettingBlur: 0.3,
+        flickerFrequency: 0.1,
+        noiseVariation: 0.1 * intensity,
+        scratchVariation: 0.2 * intensity,
+        seedChangeRate: 24.0, // 24 fps for smooth animation
+      };
+    }
 
-    return this.createEffectResult(filterChain, [filter], options);
+    const filter = new OldFilmFilter();
+    filter.sepia = settings.sepia;
+    filter.noise = settings.noise;
+    filter.noiseSize = settings.noiseSize;
+    filter.scratch = settings.scratch;
+    filter.scratchDensity = settings.scratchDensity;
+    filter.scratchWidth = settings.scratchWidth;
+    filter.vignetting = settings.vignetting;
+    filter.vignettingAlpha = settings.vignettingAlpha;
+    filter.vignettingBlur = settings.vignettingBlur;
+
+    if (!settings.animated && 'seed' in settings) {
+      // Static mode - set fixed seed
+      filter.seed = settings.seed as number;
+    }
+
+    const filterChain = new FilterChain({ name: 'oldfilm-effect' });
+
+    if (settings.animated) {
+      // Animated mode - setup continuous animation
+      filterChain.addFilter(filter, {
+        id: 'oldfilm',
+        animated: true,
+        animationProperties: {
+          sepia: settings.sepia,
+          noise: settings.noise,
+          scratch: settings.scratch,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      // Create continuous flickering animation
+      const animateFilm = (): void => {
+        if (filter && settings.animated) {
+          // Randomize seed for grain variation
+          filter.seed = Math.random();
+
+          // Vary noise and scratch within ranges
+          const noiseBase = settings.noise;
+          const scratchBase = settings.scratch;
+          const noiseVar = settings.noiseVariation || 0.1;
+          const scratchVar = settings.scratchVariation || 0.2;
+
+          filter.noise = Math.max(
+            0,
+            noiseBase + (Math.random() - 0.5) * noiseVar
+          );
+          filter.scratch = Math.max(
+            0,
+            scratchBase + (Math.random() - 0.5) * scratchVar
+          );
+        }
+      };
+
+      // Start animation interval
+      const intervalMs = 1000 / (settings.seedChangeRate || 24.0);
+      animationInterval = setInterval(animateFilm, intervalMs);
+    } else {
+      // Static mode - no animation
+      filterChain.addFilter(filter, {
+        id: 'oldfilm',
+        animated: false,
+      });
+    }
+
+    return {
+      ...this.createEffectResult(filterChain, [filter], options),
+      cleanup: (): void => {
+        if (animationInterval) {
+          clearInterval(animationInterval);
+          animationInterval = null;
+        }
+        filterChain.dispose();
+      },
+    };
   }
 
   private createEmbossEffect(
@@ -1400,24 +1679,59 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createKawaseBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { subtle: 2, moderate: 4, strong: 8, intense: 16 };
-    const strength = intensityMap[options.intensity];
+    let settings;
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      settings = {
+        strength:
+          typeof options.customSettings.strength === 'number'
+            ? options.customSettings.strength
+            : 8,
+        quality:
+          typeof options.customSettings.quality === 'number'
+            ? options.customSettings.quality
+            : 3,
+        pixelSizeX:
+          typeof options.customSettings.pixelSizeX === 'number'
+            ? options.customSettings.pixelSizeX
+            : 1,
+        pixelSizeY:
+          typeof options.customSettings.pixelSizeY === 'number'
+            ? options.customSettings.pixelSizeY
+            : 1,
+        clamp:
+          typeof options.customSettings.clamp === 'boolean'
+            ? options.customSettings.clamp
+            : false,
+      };
+    } else {
+      const intensityMap = { subtle: 2, moderate: 4, strong: 8, intense: 16 };
+      settings = {
+        strength: intensityMap[options.intensity],
+        quality: 3,
+        pixelSizeX: 1,
+        pixelSizeY: 1,
+        clamp: false,
+      };
+    }
 
     const filter = new KawaseBlurFilter({
-      clamp: false, // Default clamp
-      pixelSize: { x: 1, y: 1 }, // Default pixel size
-      quality: 3, // Default quality (integer > 1)
-      strength, // Blur amount scaled by intensity
+      clamp: settings.clamp,
+      pixelSize: { x: settings.pixelSizeX, y: settings.pixelSizeY },
+      quality: settings.quality,
+      strength: settings.strength,
     });
 
     // Set additional properties after creation (these are documented but not in constructor options)
-    filter.pixelSizeX = 1; // Default X pixel size
-    filter.pixelSizeY = 1; // Default Y pixel size
+    filter.pixelSizeX = settings.pixelSizeX;
+    filter.pixelSizeY = settings.pixelSizeY;
     const filterChain = new FilterChain({ name: 'kawase-blur-effect' });
     filterChain.addFilter(filter, {
       id: 'kawase-blur',
       animated: true,
-      animationProperties: { strength },
+      animationProperties: { strength: settings.strength },
       duration: options.duration,
       ease: options.ease,
     });
@@ -1452,23 +1766,54 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdvancedMotionBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = {
-      subtle: { x: 10, y: 0 },
-      moderate: { x: 20, y: 0 },
-      strong: { x: 40, y: 0 },
-      intense: { x: 80, y: 0 },
-    };
-    const velocity = intensityMap[options.intensity];
+    let settings;
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      settings = {
+        velocityX:
+          typeof options.customSettings.velocityX === 'number'
+            ? options.customSettings.velocityX
+            : 20,
+        velocityY:
+          typeof options.customSettings.velocityY === 'number'
+            ? options.customSettings.velocityY
+            : 0,
+        kernelSize:
+          typeof options.customSettings.kernelSize === 'number'
+            ? options.customSettings.kernelSize
+            : 5,
+        offset:
+          typeof options.customSettings.offset === 'number'
+            ? options.customSettings.offset
+            : 0,
+      };
+    } else {
+      const intensityMap = {
+        subtle: { x: 10, y: 0 },
+        moderate: { x: 20, y: 0 },
+        strong: { x: 40, y: 0 },
+        intense: { x: 80, y: 0 },
+      };
+      const velocity = intensityMap[options.intensity];
+      settings = {
+        velocityX: velocity.x,
+        velocityY: velocity.y,
+        kernelSize: 5,
+        offset: 0,
+      };
+    }
 
     const filter = new MotionBlurFilter({
-      velocity, // Use PointData object format {x, y}
-      kernelSize: 5, // Use correct default value (5 instead of 15)
-      offset: 0,
+      velocity: { x: settings.velocityX, y: settings.velocityY }, // Use PointData object format {x, y}
+      kernelSize: settings.kernelSize, // Use correct default value (5 instead of 15)
+      offset: settings.offset,
     });
 
     // Set velocityX and velocityY properties after creation (documented properties)
-    filter.velocityX = velocity.x;
-    filter.velocityY = velocity.y;
+    filter.velocityX = settings.velocityX;
+    filter.velocityY = settings.velocityY;
 
     const filterChain = new FilterChain({ name: 'motion-blur-effect' });
     filterChain.addFilter(filter, {
@@ -1521,35 +1866,97 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createMultiColorReplaceEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    // Define color replacement pairs based on intensity
-    // Your colors: D9B94A (golden), C34672 (rose), 8FE2EA (cyan)
-    // Replaced with vibrant neons: electric lime, hot pink, electric blue
-    const colorReplacements = {
-      subtle: [
-        [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
-      ],
-      moderate: [
-        [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
-        [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
-      ],
-      strong: [
-        [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
-        [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
-        [0x8fe2ea, 0x0080ff] as [number, number], // Cyan to Electric Blue
-      ],
-      intense: [
-        [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
-        [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
-        [0x8fe2ea, 0x0080ff] as [number, number], // Cyan to Electric Blue
-        [0xffffff, 0xff00ff] as [number, number], // White to Magenta (bonus replacement)
-      ],
-    };
+    let replacements: Array<[number, number]>;
+    let epsilon: number;
 
-    const replacements = colorReplacements[options.intensity];
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      // Build replacements from custom settings
+      replacements = [];
+
+      // Support up to 5 color replacements
+      for (let i = 1; i <= 5; i++) {
+        const originalKey = `originalColor${i}`;
+        const targetKey = `targetColor${i}`;
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            options.customSettings,
+            originalKey
+          ) &&
+          Object.prototype.hasOwnProperty.call(
+            options.customSettings,
+            targetKey
+          ) &&
+          options.customSettings[
+            originalKey as keyof typeof options.customSettings
+          ] &&
+          options.customSettings[
+            targetKey as keyof typeof options.customSettings
+          ]
+        ) {
+          const original = parseInt(
+            String(
+              options.customSettings[
+                originalKey as keyof typeof options.customSettings
+              ]
+            ).replace('#', ''),
+            16
+          );
+          const target = parseInt(
+            String(
+              options.customSettings[
+                targetKey as keyof typeof options.customSettings
+              ]
+            ).replace('#', ''),
+            16
+          );
+          replacements.push([original, target]);
+        }
+      }
+
+      // Use custom epsilon or default
+      epsilon =
+        typeof options.customSettings.epsilon === 'number'
+          ? options.customSettings.epsilon
+          : 0.05;
+
+      // If no replacements defined, add a default one
+      if (replacements.length === 0) {
+        replacements.push([0xffffff, 0x000000]); // White to black as default
+      }
+    } else {
+      // Use intensity presets
+      const colorReplacements = {
+        subtle: [
+          [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
+        ],
+        moderate: [
+          [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
+          [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
+        ],
+        strong: [
+          [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
+          [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
+          [0x8fe2ea, 0x0080ff] as [number, number], // Cyan to Electric Blue
+        ],
+        intense: [
+          [0xd9b94a, 0x00ff41] as [number, number], // Golden to Electric Lime
+          [0xc34672, 0xff1493] as [number, number], // Rose to Hot Pink
+          [0x8fe2ea, 0x0080ff] as [number, number], // Cyan to Electric Blue
+          [0xffffff, 0xff00ff] as [number, number], // White to Magenta (bonus replacement)
+        ],
+      };
+
+      replacements = colorReplacements[options.intensity];
+      epsilon = 0.05;
+    }
 
     const filter = new MultiColorReplaceFilter(
       replacements, // Array of [originalColor, targetColor] pairs
-      0.05 // tolerance for color matching
+      epsilon // tolerance for color matching
     );
 
     const filterChain = new FilterChain({ name: 'multi-color-replace-effect' });
@@ -1694,6 +2101,45 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createOutlineEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      // Handle color conversion from string to number
+      let colorValue = 0xffffff; // default white
+      if (typeof settings.color === 'string') {
+        // Convert from '#ffffff' to 0xffffff
+        colorValue = parseInt(settings.color.replace('#', ''), 16);
+      } else if (typeof settings.color === 'number') {
+        colorValue = settings.color;
+      }
+
+      const filter = new OutlineFilter({
+        thickness:
+          typeof settings.thickness === 'number' ? settings.thickness : 2,
+        color: colorValue,
+        alpha: typeof settings.alpha === 'number' ? settings.alpha : 1,
+        quality: typeof settings.quality === 'number' ? settings.quality : 0.1,
+        knockout:
+          typeof settings.knockout === 'boolean' ? settings.knockout : false,
+      });
+
+      const filterChain = new FilterChain({ name: 'outline-effect' });
+      filterChain.addFilter(filter, {
+        id: 'outline',
+        animated: true,
+        animationProperties: {
+          thickness: filter.thickness,
+          alpha: filter.alpha,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = { subtle: 1, moderate: 2, strong: 4, intense: 8 };
     const thickness = intensityMap[options.intensity];
 
@@ -1718,51 +2164,136 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createGodrayEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = {
-      subtle: 0.3,
-      moderate: 0.5,
-      strong: 0.7,
-      intense: 1.0,
-    };
-    const intensity = intensityMap[options.intensity];
+    let settings;
+    let animationInterval: NodeJS.Timeout | null = null;
+
+    // Check for custom settings first
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      settings = {
+        alpha:
+          typeof options.customSettings.alpha === 'number'
+            ? options.customSettings.alpha
+            : 1,
+        angle:
+          typeof options.customSettings.angle === 'number'
+            ? options.customSettings.angle
+            : 30,
+        centerX:
+          typeof options.customSettings.centerX === 'number'
+            ? options.customSettings.centerX
+            : 0.5,
+        centerY:
+          typeof options.customSettings.centerY === 'number'
+            ? options.customSettings.centerY
+            : 0,
+        gain:
+          typeof options.customSettings.gain === 'number'
+            ? options.customSettings.gain
+            : 0.5,
+        lacunarity:
+          typeof options.customSettings.lacunarity === 'number'
+            ? options.customSettings.lacunarity
+            : 2.5,
+        parallel:
+          typeof options.customSettings.parallel === 'boolean'
+            ? options.customSettings.parallel
+            : true,
+        time:
+          typeof options.customSettings.time === 'number'
+            ? options.customSettings.time
+            : 0,
+        animated:
+          typeof options.customSettings.animated === 'boolean'
+            ? options.customSettings.animated
+            : true,
+      };
+    } else {
+      // Use intensity-based presets as fallback
+      const intensityMap = {
+        subtle: { gain: 0.3, lacunarity: 2.0 },
+        moderate: { gain: 0.5, lacunarity: 2.5 },
+        strong: { gain: 0.7, lacunarity: 3.0 },
+        intense: { gain: 1.0, lacunarity: 3.5 },
+      };
+      const intensitySettings = intensityMap[options.intensity];
+      settings = {
+        alpha: 1,
+        angle: 30,
+        centerX: 0.5,
+        centerY: 0,
+        gain: intensitySettings.gain,
+        lacunarity: intensitySettings.lacunarity,
+        parallel: true,
+        time: 0,
+        animated: true,
+      };
+    }
 
     const filter = new GodrayFilter({
-      alpha: 1, // Default alpha
-      angle: 30, // Default angle
-      center: { x: 0, y: 0 }, // Default center point (controls centerX/centerY)
-      gain: 0.5 * intensity, // Effect intensity scaled by user preference
-      lacunarity: 2.5, // Default lacunarity
-      parallel: true, // Default parallel rays
-      time: 0, // Default time
+      alpha: settings.alpha,
+      angle: settings.angle,
+      center: { x: settings.centerX, y: settings.centerY },
+      gain: settings.gain,
+      lacunarity: settings.lacunarity,
+      parallel: settings.parallel,
+      time: settings.time,
     });
+
+    debugLogger.info(
+      `Godray filter created - gain: ${settings.gain}, angle: ${settings.angle}, parallel: ${settings.parallel}, animated: ${settings.animated}`,
+      'FILTER_PRESETS'
+    );
 
     const filterChain = new FilterChain({ name: 'godray-effect' });
 
-    // Create continuous animation for god rays using setInterval
-    const startTime = Date.now();
-    const animationInterval = setInterval(() => {
-      const elapsed = (Date.now() - startTime) / 1000;
-      (filter as GodrayFilter).time = elapsed * 2; // Slow, smooth movement
-    }, 16); // ~60fps
+    // Create continuous animation only if animated is true
+    if (settings.animated) {
+      const startTime = Date.now();
+      animationInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        (filter as GodrayFilter).time = elapsed * 2; // Slow, smooth movement
+      }, 16); // ~60fps
+    }
 
     filterChain.addFilter(filter, {
       id: 'godray',
-      animated: true,
-      animationProperties: {
-        gain: 0.5 * intensity,
-        time: 10,
-      },
+      animated: settings.animated,
+      animationProperties: settings.animated
+        ? {
+            gain: settings.gain,
+            time: 10,
+          }
+        : {},
       duration: options.duration,
       ease: options.ease,
     });
 
-    // Store the interval for potential cleanup (though this is a simple demo)
-    // In a production app, you'd want to clear this when the filter is removed
-    (
-      filter as GodrayFilter & { _animationInterval?: NodeJS.Timeout }
-    )._animationInterval = animationInterval;
+    // Store the interval for cleanup
+    if (animationInterval) {
+      (
+        filter as GodrayFilter & { _animationInterval?: NodeJS.Timeout }
+      )._animationInterval = animationInterval;
+    }
 
-    return this.createEffectResult(filterChain, [filter], options);
+    // Override cleanup to handle interval
+    const originalResult = this.createEffectResult(
+      filterChain,
+      [filter],
+      options
+    );
+    const originalCleanup = originalResult.cleanup;
+
+    originalResult.cleanup = (): void => {
+      if (animationInterval) {
+        clearInterval(animationInterval);
+      }
+      originalCleanup();
+    };
+
+    return originalResult;
   }
 
   private createAdjustmentEffect(
@@ -2645,21 +3176,65 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createHslAdjustmentEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = {
-      subtle: { hue: 15, saturation: 0.2, lightness: 0.1 },
-      moderate: { hue: 30, saturation: 0.4, lightness: 0.2 },
-      strong: { hue: 60, saturation: 0.6, lightness: 0.3 },
-      intense: { hue: 90, saturation: 0.8, lightness: 0.4 },
-    };
-    const settings = intensityMap[options.intensity];
+    let settings;
+
+    // Check for custom settings first
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      settings = {
+        alpha:
+          typeof options.customSettings.alpha === 'number'
+            ? options.customSettings.alpha
+            : 1,
+        colorize:
+          typeof options.customSettings.colorize === 'boolean'
+            ? options.customSettings.colorize
+            : false,
+        hue:
+          typeof options.customSettings.hue === 'number'
+            ? options.customSettings.hue
+            : 0,
+        lightness:
+          typeof options.customSettings.lightness === 'number'
+            ? options.customSettings.lightness
+            : 0,
+        saturation:
+          typeof options.customSettings.saturation === 'number'
+            ? options.customSettings.saturation
+            : 0,
+      };
+    } else {
+      // Use intensity-based presets as fallback
+      const intensityMap = {
+        subtle: { hue: 15, saturation: 0.2, lightness: 0.1 },
+        moderate: { hue: 30, saturation: 0.4, lightness: 0.2 },
+        strong: { hue: 60, saturation: 0.6, lightness: 0.3 },
+        intense: { hue: 90, saturation: 0.8, lightness: 0.4 },
+      };
+      const intensitySettings = intensityMap[options.intensity];
+      settings = {
+        alpha: 1,
+        colorize: false,
+        hue: intensitySettings.hue,
+        lightness: intensitySettings.lightness,
+        saturation: intensitySettings.saturation,
+      };
+    }
 
     const filter = new HslAdjustmentFilter({
-      alpha: 1, // Default alpha
-      colorize: false, // Default colorize
+      alpha: settings.alpha,
+      colorize: settings.colorize,
       hue: settings.hue, // Hue adjustment in degrees (-180 to 180)
       lightness: settings.lightness, // Lightness adjustment (-1 to 1)
       saturation: settings.saturation, // Saturation adjustment (-1 to 1)
     });
+
+    debugLogger.info(
+      `HSL Adjustment filter created - hue: ${settings.hue}, saturation: ${settings.saturation}, lightness: ${settings.lightness}, colorize: ${settings.colorize}`,
+      'FILTER_PRESETS'
+    );
 
     const filterChain = new FilterChain({ name: 'hsl-adjustment-effect' });
     filterChain.addFilter(filter, {

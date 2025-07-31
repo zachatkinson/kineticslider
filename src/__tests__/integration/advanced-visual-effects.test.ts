@@ -271,17 +271,10 @@ describe('Advanced Visual Effects Integration', () => {
       await performanceOptimizer.initialize();
       performanceOptimizer.startMonitoring();
 
-      // Create interactive effects
-      const interactivePreset = effectPresets.createEffect(
-        'mouseFollowDisplacement',
-        {
-          intensity: 'strong',
-          customParams: {
-            radius: 200,
-            smoothing: true,
-          },
-        }
-      );
+      // Create displacement effects (using wave instead of removed mouseFollowDisplacement)
+      const interactivePreset = effectPresets.createEffect('wave', {
+        intensity: 'strong',
+      });
 
       interactivePreset.applyTo(sprite);
 

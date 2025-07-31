@@ -28,8 +28,6 @@ const filterNameMap: Record<string, string> = {
   blackandwhite: 'blackAndWhite',
   displacement: 'displacement',
   wave: 'wave',
-  mousefollowdisplacement: 'mouseFollowDisplacement',
-  idlefloat: 'idleFloat',
 
   // AdvancedFilterPresets filters
   crt: 'crt',

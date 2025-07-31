@@ -234,18 +234,21 @@ function KineticSliderDemo(): JSX.Element {
     }
   }, []);
 
-
   // UI Panel handlers with backdrop blur and drop shadow control
   const [infoPanelBlurEnabled, setInfoPanelBlurEnabled] = useState(true);
   const [controlPanelBlurEnabled, setControlPanelBlurEnabled] = useState(true);
-  const [infoPanelDropShadowEnabled, setInfoPanelDropShadowEnabled] = useState(false);
-  const [controlPanelDropShadowEnabled, setControlPanelDropShadowEnabled] = useState(false);
+  const [infoPanelDropShadowEnabled, setInfoPanelDropShadowEnabled] =
+    useState(false);
+  const [controlPanelDropShadowEnabled, setControlPanelDropShadowEnabled] =
+    useState(false);
   const [infoPanelGlowEnabled, setInfoPanelGlowEnabled] = useState(false);
   const [controlPanelGlowEnabled, setControlPanelGlowEnabled] = useState(false);
   const [infoPanelBevelEnabled, setInfoPanelBevelEnabled] = useState(false);
-  const [controlPanelBevelEnabled, setControlPanelBevelEnabled] = useState(false);
+  const [controlPanelBevelEnabled, setControlPanelBevelEnabled] =
+    useState(false);
   const [infoPanelOutlineEnabled, setInfoPanelOutlineEnabled] = useState(false);
-  const [controlPanelOutlineEnabled, setControlPanelOutlineEnabled] = useState(false);
+  const [controlPanelOutlineEnabled, setControlPanelOutlineEnabled] =
+    useState(false);
   const [infoPanelVisible, setInfoPanelVisible] = useState(false);
   const [controlPanelVisible, setControlPanelVisible] = useState(false);
 
@@ -256,10 +259,18 @@ function KineticSliderDemo(): JSX.Element {
         if (renderer && 'createUIPanel' in renderer) {
           // Remove existing panel first
           if ('removeUIPanel' in renderer) {
-            (renderer as ISliderRenderer & { removeUIPanel: (id: string) => void }).removeUIPanel('info-panel');
+            (
+              renderer as ISliderRenderer & {
+                removeUIPanel: (id: string) => void;
+              }
+            ).removeUIPanel('info-panel');
           }
-          
-          const panel = await (renderer as ISliderRenderer & { createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite> }).createUIPanel({
+
+          const panel = await (
+            renderer as ISliderRenderer & {
+              createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite>;
+            }
+          ).createUIPanel({
             id: 'info-panel',
             position: 'center',
             size: { width: 300, height: 120 },
@@ -292,11 +303,17 @@ function KineticSliderDemo(): JSX.Element {
                   quality: 4,
                   shadowOnly: false,
                 });
-                
-                (renderer as ISliderRenderer).applyFilter(panel, dropShadowFilter);
+
+                (renderer as ISliderRenderer).applyFilter(
+                  panel,
+                  dropShadowFilter
+                );
               }
             } catch (filterError) {
-              debugLogger.warn('Could not apply drop shadow to info panel:', filterError);
+              debugLogger.warn(
+                'Could not apply drop shadow to info panel:',
+                filterError
+              );
             }
           }
 
@@ -315,11 +332,14 @@ function KineticSliderDemo(): JSX.Element {
                   knockout: false, // Default knockout
                   quality: 0.1, // Use API default
                 });
-                
+
                 (renderer as ISliderRenderer).applyFilter(panel, glowFilter);
               }
             } catch (filterError) {
-              debugLogger.warn('Could not apply glow to info panel:', filterError);
+              debugLogger.warn(
+                'Could not apply glow to info panel:',
+                filterError
+              );
             }
           }
 
@@ -337,11 +357,14 @@ function KineticSliderDemo(): JSX.Element {
                   shadowColor: 0x000000,
                   shadowAlpha: 0.8,
                 });
-                
+
                 (renderer as ISliderRenderer).applyFilter(panel, bevelFilter);
               }
             } catch (filterError) {
-              debugLogger.warn('Could not apply bevel to info panel:', filterError);
+              debugLogger.warn(
+                'Could not apply bevel to info panel:',
+                filterError
+              );
             }
           }
 
@@ -358,19 +381,30 @@ function KineticSliderDemo(): JSX.Element {
                   knockout: false, // Show content with outline
                   quality: 0.1, // Default quality
                 });
-                
+
                 (renderer as ISliderRenderer).applyFilter(panel, outlineFilter);
               }
             } catch (filterError) {
-              debugLogger.warn('Could not apply outline to info panel:', filterError);
+              debugLogger.warn(
+                'Could not apply outline to info panel:',
+                filterError
+              );
             }
           }
 
-          const blurText = infoPanelBlurEnabled ? 'with backdrop blur' : 'without backdrop blur';
-          const shadowText = infoPanelDropShadowEnabled ? 'with drop shadow' : 'without drop shadow';
+          const blurText = infoPanelBlurEnabled
+            ? 'with backdrop blur'
+            : 'without backdrop blur';
+          const shadowText = infoPanelDropShadowEnabled
+            ? 'with drop shadow'
+            : 'without drop shadow';
           const glowText = infoPanelGlowEnabled ? 'with glow' : 'without glow';
-          const bevelText = infoPanelBevelEnabled ? 'with bevel' : 'without bevel';
-          const outlineText = infoPanelOutlineEnabled ? 'with outline' : 'without outline';
+          const bevelText = infoPanelBevelEnabled
+            ? 'with bevel'
+            : 'without bevel';
+          const outlineText = infoPanelOutlineEnabled
+            ? 'with outline'
+            : 'without outline';
           setState((prev) => ({
             ...prev,
             announcements: `Info panel ${blurText}, ${shadowText}, ${glowText}, ${bevelText}, and ${outlineText} shown`,
@@ -380,7 +414,15 @@ function KineticSliderDemo(): JSX.Element {
         debugLogger.error('Failed to create info panel:', error);
       }
     }
-  }, [state.currentIndex, state.totalSlides, infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled, infoPanelOutlineEnabled]);
+  }, [
+    state.currentIndex,
+    state.totalSlides,
+    infoPanelBlurEnabled,
+    infoPanelDropShadowEnabled,
+    infoPanelGlowEnabled,
+    infoPanelBevelEnabled,
+    infoPanelOutlineEnabled,
+  ]);
 
   const handleShowInfoPanel = useCallback(async () => {
     await createInfoPanel();
@@ -394,10 +436,18 @@ function KineticSliderDemo(): JSX.Element {
         if (renderer && 'createUIPanel' in renderer) {
           // Remove existing panel first
           if ('removeUIPanel' in renderer) {
-            (renderer as ISliderRenderer & { removeUIPanel: (id: string) => void }).removeUIPanel('control-panel');
+            (
+              renderer as ISliderRenderer & {
+                removeUIPanel: (id: string) => void;
+              }
+            ).removeUIPanel('control-panel');
           }
-          
-          const panel = await (renderer as ISliderRenderer & { createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite> }).createUIPanel({
+
+          const panel = await (
+            renderer as ISliderRenderer & {
+              createUIPanel: (config: UIPanelConfig) => Promise<PIXI.Sprite>;
+            }
+          ).createUIPanel({
             id: 'control-panel',
             position: 'bottom-right',
             size: { width: 200, height: 80 },
@@ -430,11 +480,17 @@ function KineticSliderDemo(): JSX.Element {
                   quality: 4,
                   shadowOnly: false,
                 });
-                
-                (renderer as ISliderRenderer).applyFilter(panel, dropShadowFilter);
+
+                (renderer as ISliderRenderer).applyFilter(
+                  panel,
+                  dropShadowFilter
+                );
               }
             } catch (filterError) {
-              debugLogger.warn('Could not apply drop shadow to control panel:', filterError);
+              debugLogger.warn(
+                'Could not apply drop shadow to control panel:',
+                filterError
+              );
             }
           }
 
@@ -453,11 +509,14 @@ function KineticSliderDemo(): JSX.Element {
                   knockout: false, // Default knockout
                   quality: 0.1, // Use API default
                 });
-                
+
                 (renderer as ISliderRenderer).applyFilter(panel, glowFilter);
               }
             } catch (filterError) {
-              debugLogger.warn('Could not apply glow to control panel:', filterError);
+              debugLogger.warn(
+                'Could not apply glow to control panel:',
+                filterError
+              );
             }
           }
 
@@ -475,11 +534,14 @@ function KineticSliderDemo(): JSX.Element {
                   shadowColor: 0x000000,
                   shadowAlpha: 0.7,
                 });
-                
+
                 (renderer as ISliderRenderer).applyFilter(panel, bevelFilter);
               }
             } catch (filterError) {
-              debugLogger.warn('Could not apply bevel to control panel:', filterError);
+              debugLogger.warn(
+                'Could not apply bevel to control panel:',
+                filterError
+              );
             }
           }
 
@@ -496,19 +558,32 @@ function KineticSliderDemo(): JSX.Element {
                   knockout: false, // Show content with outline
                   quality: 0.1, // Default quality
                 });
-                
+
                 (renderer as ISliderRenderer).applyFilter(panel, outlineFilter);
               }
             } catch (filterError) {
-              debugLogger.warn('Could not apply outline to control panel:', filterError);
+              debugLogger.warn(
+                'Could not apply outline to control panel:',
+                filterError
+              );
             }
           }
 
-          const blurText = controlPanelBlurEnabled ? 'with backdrop blur' : 'without backdrop blur';
-          const shadowText = controlPanelDropShadowEnabled ? 'with drop shadow' : 'without drop shadow';
-          const glowText = controlPanelGlowEnabled ? 'with glow' : 'without glow';
-          const bevelText = controlPanelBevelEnabled ? 'with bevel' : 'without bevel';
-          const outlineText = controlPanelOutlineEnabled ? 'with outline' : 'without outline';
+          const blurText = controlPanelBlurEnabled
+            ? 'with backdrop blur'
+            : 'without backdrop blur';
+          const shadowText = controlPanelDropShadowEnabled
+            ? 'with drop shadow'
+            : 'without drop shadow';
+          const glowText = controlPanelGlowEnabled
+            ? 'with glow'
+            : 'without glow';
+          const bevelText = controlPanelBevelEnabled
+            ? 'with bevel'
+            : 'without bevel';
+          const outlineText = controlPanelOutlineEnabled
+            ? 'with outline'
+            : 'without outline';
           setState((prev) => ({
             ...prev,
             announcements: `Control panel ${blurText}, ${shadowText}, ${glowText}, ${bevelText}, and ${outlineText} shown`,
@@ -518,8 +593,13 @@ function KineticSliderDemo(): JSX.Element {
         debugLogger.error('Failed to create control panel:', error);
       }
     }
-  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled, controlPanelOutlineEnabled]);
-
+  }, [
+    controlPanelBlurEnabled,
+    controlPanelDropShadowEnabled,
+    controlPanelGlowEnabled,
+    controlPanelBevelEnabled,
+    controlPanelOutlineEnabled,
+  ]);
 
   const handleShowControlPanel = useCallback(async () => {
     await createControlPanel();
@@ -531,7 +611,9 @@ function KineticSliderDemo(): JSX.Element {
       try {
         const renderer = sliderEngine.current.getRenderer();
         if (renderer && 'clearUIPanels' in renderer) {
-          (renderer as ISliderRenderer & { clearUIPanels: () => void }).clearUIPanels();
+          (
+            renderer as ISliderRenderer & { clearUIPanels: () => void }
+          ).clearUIPanels();
           setInfoPanelVisible(false);
           setControlPanelVisible(false);
           setState((prev) => ({
@@ -550,13 +632,29 @@ function KineticSliderDemo(): JSX.Element {
     if (infoPanelVisible) {
       createInfoPanel();
     }
-  }, [infoPanelBlurEnabled, infoPanelDropShadowEnabled, infoPanelGlowEnabled, infoPanelBevelEnabled, infoPanelOutlineEnabled, createInfoPanel, infoPanelVisible]);
+  }, [
+    infoPanelBlurEnabled,
+    infoPanelDropShadowEnabled,
+    infoPanelGlowEnabled,
+    infoPanelBevelEnabled,
+    infoPanelOutlineEnabled,
+    createInfoPanel,
+    infoPanelVisible,
+  ]);
 
   useEffect(() => {
     if (controlPanelVisible) {
       createControlPanel();
     }
-  }, [controlPanelBlurEnabled, controlPanelDropShadowEnabled, controlPanelGlowEnabled, controlPanelBevelEnabled, controlPanelOutlineEnabled, createControlPanel, controlPanelVisible]);
+  }, [
+    controlPanelBlurEnabled,
+    controlPanelDropShadowEnabled,
+    controlPanelGlowEnabled,
+    controlPanelBevelEnabled,
+    controlPanelOutlineEnabled,
+    createControlPanel,
+    controlPanelVisible,
+  ]);
 
   // Keyboard navigation is now handled by KeyboardNavigator class
 
@@ -941,14 +1039,18 @@ function KineticSliderDemo(): JSX.Element {
         {/* Advanced Filter Manager */}
         <AdvancedFilterManager
           sliderEngine={sliderEngine.current}
-          onFilterApplied={(filterNames) => setState(prev => ({
-            ...prev,
-            announcements: `Applied filters: ${filterNames.join(', ')}`
-          }))}
-          onError={(error) => setState(prev => ({
-            ...prev,
-            announcements: `Filter error: ${error}`
-          }))}
+          onFilterApplied={(filterNames) =>
+            setState((prev) => ({
+              ...prev,
+              announcements: `Applied filters: ${filterNames.join(', ')}`,
+            }))
+          }
+          onError={(error) =>
+            setState((prev) => ({
+              ...prev,
+              announcements: `Filter error: ${error}`,
+            }))
+          }
         />
 
         {/* UI Panel Controls */}
@@ -962,7 +1064,10 @@ function KineticSliderDemo(): JSX.Element {
           }}
         >
           <h3>UI Panel Demonstrations</h3>
-          <p>Test backdrop blur effects with layered UI panels (backdrop blur works by blurring content behind these panels):</p>
+          <p>
+            Test backdrop blur effects with layered UI panels (backdrop blur
+            works by blurring content behind these panels):
+          </p>
 
           <div
             style={{
@@ -1015,7 +1120,9 @@ function KineticSliderDemo(): JSX.Element {
               Show Control Panel
             </button>
             <button
-              onClick={() => setControlPanelBlurEnabled(!controlPanelBlurEnabled)}
+              onClick={() =>
+                setControlPanelBlurEnabled(!controlPanelBlurEnabled)
+              }
               style={{
                 padding: '0.5rem 1rem',
                 background: controlPanelBlurEnabled ? '#047857' : '#6b7280',
@@ -1029,7 +1136,9 @@ function KineticSliderDemo(): JSX.Element {
               Control Blur: {controlPanelBlurEnabled ? 'ON' : 'OFF'}
             </button>
             <button
-              onClick={() => setInfoPanelDropShadowEnabled(!infoPanelDropShadowEnabled)}
+              onClick={() =>
+                setInfoPanelDropShadowEnabled(!infoPanelDropShadowEnabled)
+              }
               style={{
                 padding: '0.5rem 1rem',
                 background: infoPanelDropShadowEnabled ? '#047857' : '#6b7280',
@@ -1043,10 +1152,14 @@ function KineticSliderDemo(): JSX.Element {
               Info Shadow: {infoPanelDropShadowEnabled ? 'ON' : 'OFF'}
             </button>
             <button
-              onClick={() => setControlPanelDropShadowEnabled(!controlPanelDropShadowEnabled)}
+              onClick={() =>
+                setControlPanelDropShadowEnabled(!controlPanelDropShadowEnabled)
+              }
               style={{
                 padding: '0.5rem 1rem',
-                background: controlPanelDropShadowEnabled ? '#047857' : '#6b7280',
+                background: controlPanelDropShadowEnabled
+                  ? '#047857'
+                  : '#6b7280',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
@@ -1071,7 +1184,9 @@ function KineticSliderDemo(): JSX.Element {
               Info Glow: {infoPanelGlowEnabled ? 'ON' : 'OFF'}
             </button>
             <button
-              onClick={() => setControlPanelGlowEnabled(!controlPanelGlowEnabled)}
+              onClick={() =>
+                setControlPanelGlowEnabled(!controlPanelGlowEnabled)
+              }
               style={{
                 padding: '0.5rem 1rem',
                 background: controlPanelGlowEnabled ? '#047857' : '#6b7280',
@@ -1099,7 +1214,9 @@ function KineticSliderDemo(): JSX.Element {
               Info Bevel: {infoPanelBevelEnabled ? 'ON' : 'OFF'}
             </button>
             <button
-              onClick={() => setControlPanelBevelEnabled(!controlPanelBevelEnabled)}
+              onClick={() =>
+                setControlPanelBevelEnabled(!controlPanelBevelEnabled)
+              }
               style={{
                 padding: '0.5rem 1rem',
                 background: controlPanelBevelEnabled ? '#047857' : '#6b7280',
@@ -1113,7 +1230,9 @@ function KineticSliderDemo(): JSX.Element {
               Control Bevel: {controlPanelBevelEnabled ? 'ON' : 'OFF'}
             </button>
             <button
-              onClick={() => setInfoPanelOutlineEnabled(!infoPanelOutlineEnabled)}
+              onClick={() =>
+                setInfoPanelOutlineEnabled(!infoPanelOutlineEnabled)
+              }
               style={{
                 padding: '0.5rem 1rem',
                 background: infoPanelOutlineEnabled ? '#047857' : '#6b7280',
@@ -1127,7 +1246,9 @@ function KineticSliderDemo(): JSX.Element {
               Info Outline: {infoPanelOutlineEnabled ? 'ON' : 'OFF'}
             </button>
             <button
-              onClick={() => setControlPanelOutlineEnabled(!controlPanelOutlineEnabled)}
+              onClick={() =>
+                setControlPanelOutlineEnabled(!controlPanelOutlineEnabled)
+              }
               style={{
                 padding: '0.5rem 1rem',
                 background: controlPanelOutlineEnabled ? '#047857' : '#6b7280',

@@ -89,8 +89,6 @@ describe('EffectPresets', () => {
       expect(presetNames).toContain('grayscale');
       expect(presetNames).toContain('displacement');
       expect(presetNames).toContain('wave');
-      expect(presetNames).toContain('mouseFollowDisplacement');
-      expect(presetNames).toContain('idleFloat');
     });
   });
 
@@ -313,37 +311,6 @@ describe('EffectPresets', () => {
         }).toThrow('Displacement texture required');
       });
     });
-
-    describe('Displacement effects', () => {
-      it('should create mouse follow displacement effect', () => {
-        effectPresets.setDisplacementTexture(texture);
-
-        const result = effectPresets.createEffect('mouseFollowDisplacement');
-
-        expect(result.displacementEffects).toBeDefined();
-        expect(result.filters).toHaveLength(0);
-
-        result.cleanup();
-      });
-
-      it('should create idle float effect', () => {
-        effectPresets.setDisplacementTexture(texture);
-
-        const result = effectPresets.createEffect('idleFloat');
-
-        expect(result.displacementEffects).toBeDefined();
-        expect(result.filters).toHaveLength(0);
-
-        result.cleanup();
-      });
-
-      it('should throw error without displacement texture', () => {
-        expect(() => {
-          effectPresets.createEffect('mouseFollowDisplacement');
-        }).toThrow('Displacement texture required');
-      });
-    });
-
   });
 
   describe('getPerformanceImpact', () => {
@@ -463,24 +430,6 @@ describe('EffectPresets', () => {
       });
 
       expect(result.filters).toBeDefined();
-
-      result.cleanup();
-    });
-  });
-
-  describe('Custom parameters', () => {
-    it('should handle custom parameters', () => {
-      // Set displacement texture first
-      effectPresets.setDisplacementTexture(texture);
-
-      const result = effectPresets.createEffect('mouseFollowDisplacement', {
-        customParams: {
-          radius: 300,
-          smoothing: false,
-        },
-      });
-
-      expect(result.displacementEffects).toBeDefined();
 
       result.cleanup();
     });
