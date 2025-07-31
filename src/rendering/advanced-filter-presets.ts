@@ -8,7 +8,14 @@
  */
 
 import { gsap } from 'gsap';
-import { Filter, Sprite, Container, Assets, Texture } from 'pixi.js';
+import {
+  Filter,
+  Sprite,
+  Container,
+  Assets,
+  Texture,
+  DisplacementFilter,
+} from 'pixi.js';
 import { FilterChain } from './filter-chain';
 import { FilterManager } from './filter-manager';
 import { debugLogger } from '../utils/debug-logger';
@@ -280,6 +287,16 @@ export class AdvancedFilterPresets extends EffectPresets {
     });
 
     // Advanced Distortion Effects
+    this.registerAdvancedPreset({
+      name: 'displacement',
+      category: 'distortion-advanced' as AdvancedEffectCategory,
+      description:
+        'Displacement distortion with customizable scale and texture',
+      performanceImpact: 4,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['water effects', 'heat distortion', 'magical warping'],
+      create: (options) => this.createAdvancedDisplacementEffect(options),
+    });
     this.registerAdvancedPreset({
       name: 'shockwave',
       category: 'distortion-advanced' as AdvancedEffectCategory,
@@ -706,13 +723,36 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createDotEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = {
-      subtle: { scale: 2, angle: 5, grayscale: false },
-      moderate: { scale: 4, angle: 15, grayscale: false },
-      strong: { scale: 6, angle: 30, grayscale: true },
-      intense: { scale: 8, angle: 45, grayscale: true },
-    };
-    const settings = intensityMap[options.intensity];
+    // Check for custom settings first
+    let settings;
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      settings = {
+        scale:
+          typeof options.customSettings.scale === 'number'
+            ? options.customSettings.scale
+            : 4,
+        angle:
+          typeof options.customSettings.angle === 'number'
+            ? options.customSettings.angle
+            : 15,
+        grayscale:
+          typeof options.customSettings.grayscale === 'boolean'
+            ? options.customSettings.grayscale
+            : false,
+      };
+    } else {
+      // Use intensity-based presets as fallback
+      const intensityMap = {
+        subtle: { scale: 2, angle: 5, grayscale: false },
+        moderate: { scale: 4, angle: 15, grayscale: false },
+        strong: { scale: 6, angle: 30, grayscale: true },
+        intense: { scale: 8, angle: 45, grayscale: true },
+      };
+      settings = intensityMap[options.intensity];
+    }
 
     const filter = new DotFilter({
       scale: settings.scale,
@@ -737,25 +777,74 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createDropShadowEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = {
-      subtle: { offsetX: 2, offsetY: 2, blur: 1, alpha: 0.3 },
-      moderate: { offsetX: 4, offsetY: 4, blur: 2, alpha: 0.5 },
-      strong: { offsetX: 6, offsetY: 6, blur: 3, alpha: 0.7 },
-      intense: { offsetX: 8, offsetY: 8, blur: 4, alpha: 0.9 },
-    };
-    const settings = intensityMap[options.intensity];
+    // Check for custom settings first
+    let settings;
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      // Parse color from hex string to number if provided
+      let colorValue = 0x000000;
+      if (typeof options.customSettings.color === 'string') {
+        const hexColor = options.customSettings.color.replace('#', '');
+        colorValue = parseInt(hexColor, 16);
+      }
+
+      settings = {
+        offsetX:
+          typeof options.customSettings.offsetX === 'number'
+            ? options.customSettings.offsetX
+            : 4,
+        offsetY:
+          typeof options.customSettings.offsetY === 'number'
+            ? options.customSettings.offsetY
+            : 4,
+        blur:
+          typeof options.customSettings.blur === 'number'
+            ? options.customSettings.blur
+            : 2,
+        alpha:
+          typeof options.customSettings.alpha === 'number'
+            ? options.customSettings.alpha
+            : 0.5,
+        color: colorValue,
+        quality:
+          typeof options.customSettings.quality === 'number'
+            ? options.customSettings.quality
+            : 4,
+        shadowOnly:
+          typeof options.customSettings.shadowOnly === 'boolean'
+            ? options.customSettings.shadowOnly
+            : false,
+      };
+    } else {
+      // Use intensity-based presets as fallback
+      const intensityMap = {
+        subtle: { offsetX: 2, offsetY: 2, blur: 1, alpha: 0.3 },
+        moderate: { offsetX: 4, offsetY: 4, blur: 2, alpha: 0.5 },
+        strong: { offsetX: 6, offsetY: 6, blur: 3, alpha: 0.7 },
+        intense: { offsetX: 8, offsetY: 8, blur: 4, alpha: 0.9 },
+      };
+      const intensitySettings = intensityMap[options.intensity];
+      settings = {
+        ...intensitySettings,
+        color: 0x000000,
+        quality: 4,
+        shadowOnly: false,
+      };
+    }
 
     const filter = new DropShadowFilter({
       offset: { x: settings.offsetX, y: settings.offsetY },
       blur: settings.blur,
       alpha: settings.alpha,
-      color: 0x000000,
-      quality: 4,
-      shadowOnly: false, // Show both panel and shadow
+      color: settings.color,
+      quality: settings.quality,
+      shadowOnly: settings.shadowOnly,
     });
 
     debugLogger.info(
-      `DropShadow filter created - offsetX: ${settings.offsetX}, offsetY: ${settings.offsetY}, blur: ${settings.blur}, alpha: ${settings.alpha}, shadowOnly: false`,
+      `DropShadow filter created - offsetX: ${settings.offsetX}, offsetY: ${settings.offsetY}, blur: ${settings.blur}, alpha: ${settings.alpha}, shadowOnly: ${settings.shadowOnly}`,
       'FILTER_PRESETS'
     );
 
@@ -805,6 +894,60 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createCRTEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      const filter = new CRTFilter({
+        curvature:
+          typeof options.customSettings.curvature === 'number'
+            ? options.customSettings.curvature
+            : 1.0,
+        lineContrast:
+          typeof options.customSettings.lineContrast === 'number'
+            ? options.customSettings.lineContrast
+            : 0.25,
+        lineWidth:
+          typeof options.customSettings.lineWidth === 'number'
+            ? options.customSettings.lineWidth
+            : 1.0,
+        noise:
+          typeof options.customSettings.noise === 'number'
+            ? options.customSettings.noise
+            : 0.3,
+        vignetting:
+          typeof options.customSettings.vignetting === 'number'
+            ? options.customSettings.vignetting
+            : 0.3,
+        verticalLine:
+          typeof options.customSettings.verticalLine === 'boolean'
+            ? options.customSettings.verticalLine
+            : false,
+        vignettingAlpha: 1,
+        vignettingBlur: 0.3,
+        time: 0.3,
+      });
+
+      const filterChain = new FilterChain({ name: 'crt-effect' });
+      filterChain.addFilter(filter, {
+        id: 'crt',
+        animated: true,
+        animationProperties: {
+          curvature: filter.curvature,
+          lineContrast: filter.lineContrast,
+          lineWidth: filter.lineWidth,
+          noise: filter.noise,
+          vignetting: filter.vignetting,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to preset-based settings
     const intensityMap = {
       subtle: {
         curvature: 0.5,
@@ -893,27 +1036,126 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdvancedGlitchEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { subtle: 5, moderate: 10, strong: 20, intense: 50 };
-    const slices = intensityMap[options.intensity];
+    // Check for custom settings first
+    let settings;
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      settings = {
+        animated:
+          typeof options.customSettings.animated === 'boolean'
+            ? options.customSettings.animated
+            : true,
+        // Static mode properties
+        slices:
+          typeof options.customSettings.slices === 'number'
+            ? options.customSettings.slices
+            : 10,
+        offset:
+          typeof options.customSettings.offset === 'number'
+            ? options.customSettings.offset
+            : 15,
+        direction:
+          typeof options.customSettings.direction === 'number'
+            ? options.customSettings.direction
+            : 0,
+        seed:
+          typeof options.customSettings.seed === 'number'
+            ? options.customSettings.seed
+            : Math.random(),
+        fillMode:
+          typeof options.customSettings.fillMode === 'number'
+            ? options.customSettings.fillMode
+            : 0,
+        // Animation mode properties
+        burstFrequency:
+          typeof options.customSettings.burstFrequency === 'number'
+            ? options.customSettings.burstFrequency
+            : 4.5,
+        burstDuration:
+          typeof options.customSettings.burstDuration === 'number'
+            ? options.customSettings.burstDuration
+            : 0.7,
+        intensityMin:
+          typeof options.customSettings.intensityMin === 'number'
+            ? options.customSettings.intensityMin
+            : 0.3,
+        intensityMax:
+          typeof options.customSettings.intensityMax === 'number'
+            ? options.customSettings.intensityMax
+            : 2.0,
+        residualChance:
+          typeof options.customSettings.residualChance === 'number'
+            ? options.customSettings.residualChance
+            : 7.5,
+        staticChance:
+          typeof options.customSettings.staticChance === 'number'
+            ? options.customSettings.staticChance
+            : 0.2,
+      };
+    } else {
+      // Use intensity-based presets as fallback
+      const intensityMap = { subtle: 5, moderate: 10, strong: 20, intense: 50 };
+      const slices = intensityMap[options.intensity];
+      settings = {
+        animated: true,
+        slices,
+        offset: 15,
+        direction: 0,
+        seed: Math.random(),
+        fillMode: 0,
+        burstFrequency: 4.5,
+        burstDuration: 0.7,
+        intensityMin: 0.3,
+        intensityMax: 2.0,
+        residualChance: 7.5,
+        staticChance: 0.2,
+      };
+    }
 
     const filter = new GlitchFilter({
-      slices,
-      offset: 15,
-      direction: 0,
-      fillMode: 0,
-      seed: Math.random(),
+      slices: settings.slices,
+      offset: settings.offset,
+      direction: settings.direction,
+      fillMode: settings.fillMode,
+      seed: settings.seed,
     });
 
     const filterChain = new FilterChain({ name: 'glitch-effect' });
 
-    // Create random glitch bursts like satellite/space camera feed
-    let nextGlitchTime = Date.now() + (Math.random() * 7500 + 1500); // First glitch in 1.5-9 seconds
+    // Handle static vs animated mode
+    if (!settings.animated) {
+      // Static mode - just add the filter with fixed settings
+      filterChain.addFilter(filter, {
+        id: 'glitch',
+        animated: false,
+        animationProperties: {},
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      debugLogger.info(
+        `Static glitch filter created - slices: ${settings.slices}, offset: ${settings.offset}, direction: ${settings.direction}`,
+        'FILTER_PRESETS'
+      );
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Animated mode - create random glitch bursts like satellite/space camera feed
+    const burstFrequencyMs = settings.burstFrequency * 1000;
+    const burstDurationMs = settings.burstDuration * 1000;
+
+    let nextGlitchTime =
+      Date.now() +
+      (Math.random() * (burstFrequencyMs * 0.5) + burstFrequencyMs * 0.5); // First glitch
     let isGlitching = false;
     let glitchEndTime = 0;
     let glitchIntensity = 1; // Current burst intensity multiplier
     let hasResidualGlitch = false;
     let residualOffset = 0;
-    let residualSlices = slices;
+    let residualSlices = settings.slices;
 
     filterChain.addFilter(filter, {
       id: 'glitch',
@@ -927,28 +1169,35 @@ export class AdvancedFilterPresets extends EffectPresets {
         // Check if it's time to start a new glitch burst
         if (!isGlitching && now >= nextGlitchTime) {
           isGlitching = true;
-          // Random glitch duration: 0.2-1.2 seconds
-          glitchEndTime = now + (Math.random() * 1000 + 200);
-          // Random intensity: 0.3 (mild) to 2.0 (severe)
-          glitchIntensity = Math.random() * 1.7 + 0.3;
-          // Schedule next glitch burst: 1.5-9 seconds later
-          nextGlitchTime = glitchEndTime + (Math.random() * 7500 + 1500);
+          // Use custom burst duration
+          glitchEndTime =
+            now +
+            (Math.random() * (burstDurationMs * 0.5) + burstDurationMs * 0.5);
+          // Use custom intensity range
+          const intensityRange = settings.intensityMax - settings.intensityMin;
+          glitchIntensity =
+            Math.random() * intensityRange + settings.intensityMin;
+          // Schedule next glitch burst using custom frequency
+          const nextBurstDelay =
+            Math.random() * (burstFrequencyMs * 0.5) + burstFrequencyMs * 0.5;
+          nextGlitchTime = glitchEndTime + nextBurstDelay;
         }
 
         // Check if current glitch burst should end
         if (isGlitching && now >= glitchEndTime) {
           isGlitching = false;
 
-          // 5-10% chance the signal doesn't fully recover
-          if (Math.random() < 0.075) {
-            // 7.5% chance
+          // Use custom residual chance
+          if (Math.random() < settings.residualChance / 100) {
             hasResidualGlitch = true;
             residualOffset = Math.random() * 8 + 2; // Small persistent offset
-            residualSlices = Math.floor(slices * (0.8 + Math.random() * 0.4)); // Slightly off slice count
+            residualSlices = Math.floor(
+              settings.slices * (0.8 + Math.random() * 0.4)
+            ); // Slightly off slice count
           } else {
             hasResidualGlitch = false;
             residualOffset = 0;
-            residualSlices = slices;
+            residualSlices = settings.slices;
           }
         }
 
@@ -969,7 +1218,7 @@ export class AdvancedFilterPresets extends EffectPresets {
           (filter as GlitchFilter).direction = 0;
 
           // Slice flickering scaled by intensity
-          const baseSlices = slices;
+          const baseSlices = settings.slices;
           const intenseBurst =
             Math.sin(burstElapsed * 20) * Math.cos(burstElapsed * 15);
           const randomBurst =
@@ -1020,11 +1269,10 @@ export class AdvancedFilterPresets extends EffectPresets {
             // Clean signal like normal camera feed
             (filter as GlitchFilter).offset = 0;
             (filter as GlitchFilter).direction = 0;
-            (filter as GlitchFilter).slices = slices; // Normal slice count
+            (filter as GlitchFilter).slices = settings.slices; // Normal slice count
 
-            // Occasional very minor static during quiet periods
-            if (Math.random() < 0.002) {
-              // Very rare (0.2% chance)
+            // Occasional very minor static during quiet periods - use custom static chance
+            if (Math.random() < settings.staticChance / 100) {
               (filter as GlitchFilter).offset = Math.random() * 3 + 1; // Tiny static
             }
           }
@@ -1090,8 +1338,21 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createEmbossEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    const intensityMap = { subtle: 3, moderate: 5, strong: 8, intense: 12 };
-    const strength = intensityMap[options.intensity];
+    // Check for custom settings first
+    let strength;
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      strength =
+        typeof options.customSettings.strength === 'number'
+          ? options.customSettings.strength
+          : 5;
+    } else {
+      // Use intensity-based presets as fallback
+      const intensityMap = { subtle: 3, moderate: 5, strong: 8, intense: 12 };
+      strength = intensityMap[options.intensity];
+    }
 
     const filter = new EmbossFilter();
     filter.strength = strength;
@@ -1309,38 +1570,23 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createCrosshatchEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    // CrossHatchFilter in PIXI v8 doesn't have many configurable properties
-    // We'll use a combination approach with alpha/blend modes for intensity
+    // CrossHatchFilter is a simple artistic effect with no configurable properties
+    // It just applies the cross-hatching style transformation
     const filter = new CrossHatchFilter();
-
-    // Intensity affects the overall visibility of the effect
-    const intensityMap = {
-      subtle: { alpha: 0.3 },
-      moderate: { alpha: 0.5 },
-      strong: { alpha: 0.7 },
-      intense: { alpha: 1.0 },
-    };
-    const settings = intensityMap[options.intensity];
 
     const filterChain = new FilterChain({ name: 'crosshatch-effect' });
     filterChain.addFilter(filter, {
       id: 'crosshatch',
       animated: true,
       animationProperties: {
-        // While CrossHatch itself doesn't have many properties,
-        // we can animate the overall filter alpha for a fade-in effect
-        alpha: settings.alpha,
+        alpha: 1, // Full effect, no intensity variation needed
       },
       duration: options.duration,
       ease: options.ease,
-      onUpdate: (_progress) => {
-        // CrossHatch filter doesn't have direct alpha property
-        // The alpha is handled by the filter chain animation
-      },
     });
 
     debugLogger.info(
-      `CrossHatch effect created with intensity: ${options.intensity}`,
+      'CrossHatch effect applied - artistic sketch rendering',
       'FILTER_PRESETS'
     );
 
@@ -3426,5 +3672,114 @@ export class AdvancedFilterPresets extends EffectPresets {
         await originalResult.applyTo(target);
       },
     };
+  }
+
+  /**
+   * Create advanced displacement effect with custom settings support
+   */
+  private createAdvancedDisplacementEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    // Use the displacement texture from the base class (set via setDisplacementTexture)
+    let displacementTexture: Texture | null = null;
+
+    // Check if custom displacement texture is provided
+    if (
+      options.customSettings?.customDisplacementTexture &&
+      typeof options.customSettings.customDisplacementTexture === 'object'
+    ) {
+      const textureData = options.customSettings
+        .customDisplacementTexture as CustomTextureData;
+      if (textureData && textureData.canvas) {
+        // Create texture from custom canvas
+        displacementTexture = Texture.from(textureData.canvas);
+      }
+    }
+
+    // Fallback to default displacement texture from base class
+    if (!displacementTexture) {
+      // Check if base class has displacement texture
+      const baseTexture = (
+        this as unknown as { displacementTexture: Texture | null }
+      ).displacementTexture;
+      if (baseTexture) {
+        displacementTexture = baseTexture;
+      } else {
+        throw new Error(
+          'Displacement texture required for displacement effect. Set texture via setDisplacementTexture().'
+        );
+      }
+    }
+
+    // Create displacement sprite (displacementTexture is guaranteed to be non-null at this point)
+    const displacementSprite = new Sprite(displacementTexture!);
+    displacementSprite.anchor.set(0.5);
+
+    // Check for custom settings first
+    if (
+      options.customSettings &&
+      Object.keys(options.customSettings).length > 0
+    ) {
+      // Create filter with custom settings
+      const filter = new DisplacementFilter({
+        sprite: displacementSprite,
+        scale: {
+          x:
+            typeof options.customSettings.scaleX === 'number'
+              ? options.customSettings.scaleX
+              : 20,
+          y:
+            typeof options.customSettings.scaleY === 'number'
+              ? options.customSettings.scaleY
+              : 20,
+        },
+      });
+
+      const filterChain = new FilterChain({ name: 'displacement-effect' });
+      filterChain.addFilter(filter, {
+        id: 'displacement',
+        animated: true,
+        animationProperties: {
+          'scale.x': filter.scale.x,
+          'scale.y': filter.scale.y,
+        },
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to preset-based settings
+    const intensityMap = {
+      subtle: { scaleX: 10, scaleY: 10 },
+      moderate: { scaleX: 20, scaleY: 20 },
+      strong: { scaleX: 40, scaleY: 40 },
+      intense: { scaleX: 80, scaleY: 80 },
+    };
+    const settings = intensityMap[options.intensity];
+
+    // Create filter with preset settings
+    const filter = new DisplacementFilter({
+      sprite: displacementSprite,
+      scale: {
+        x: settings.scaleX,
+        y: settings.scaleY,
+      },
+    });
+
+    const filterChain = new FilterChain({ name: 'displacement-effect' });
+    filterChain.addFilter(filter, {
+      id: 'displacement',
+      animated: true,
+      animationProperties: {
+        'scale.x': settings.scaleX,
+        'scale.y': settings.scaleY,
+      },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
   }
 }

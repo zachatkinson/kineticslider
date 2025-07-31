@@ -86,13 +86,11 @@ describe('EffectPresets', () => {
       expect(presetNames).toContain('softGlow');
       expect(presetNames).toContain('neonGlow');
       expect(presetNames).toContain('vintage');
-      expect(presetNames).toContain('cyberpunk');
       expect(presetNames).toContain('grayscale');
       expect(presetNames).toContain('displacement');
       expect(presetNames).toContain('wave');
       expect(presetNames).toContain('mouseFollowDisplacement');
       expect(presetNames).toContain('idleFloat');
-      expect(presetNames).toContain('glitchEffect');
     });
   });
 
@@ -276,15 +274,6 @@ describe('EffectPresets', () => {
         result.cleanup();
       });
 
-      it('should create cyberpunk effect', () => {
-        const result = effectPresets.createEffect('cyberpunk');
-
-        expect(result.filterChain).toBeDefined();
-        expect(result.filters).toHaveLength(1);
-
-        result.cleanup();
-      });
-
       it('should create grayscale effect', () => {
         const result = effectPresets.createEffect('grayscale');
 
@@ -355,16 +344,6 @@ describe('EffectPresets', () => {
       });
     });
 
-    describe('Composite effects', () => {
-      it('should create glitch effect', () => {
-        const result = effectPresets.createEffect('glitchEffect');
-
-        expect(result.filterChain).toBeDefined();
-        expect(result.filters).toHaveLength(2); // color + noise
-
-        result.cleanup();
-      });
-    });
   });
 
   describe('getPerformanceImpact', () => {

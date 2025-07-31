@@ -25,13 +25,11 @@ const filterNameMap: Record<string, string> = {
   softglow: 'softGlow',
   neonglow: 'neonGlow',
   vintage: 'vintage',
-  cyberpunk: 'cyberpunk',
   blackandwhite: 'blackAndWhite',
   displacement: 'displacement',
   wave: 'wave',
   mousefollowdisplacement: 'mouseFollowDisplacement',
   idlefloat: 'idleFloat',
-  glitcheffect: 'glitchEffect',
 
   // AdvancedFilterPresets filters
   crt: 'crt',

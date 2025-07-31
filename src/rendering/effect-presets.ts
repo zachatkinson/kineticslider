@@ -14,7 +14,6 @@ import {
   BlurFilter,
   ColorMatrixFilter,
   DisplacementFilter,
-  NoiseFilter,
   Filter,
   Sprite,
   Container,
@@ -303,16 +302,6 @@ export class EffectPresets {
     });
 
     this.registerPreset({
-      name: 'cyberpunk',
-      category: 'color',
-      description: 'Cyberpunk color palette with neon highlights',
-      performanceImpact: 3,
-      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
-      useCases: ['futuristic themes', 'tech interfaces', 'gaming'],
-      create: (options) => this.createCyberpunkEffect(options),
-    });
-
-    this.registerPreset({
       name: 'grayscale',
       category: 'color',
       description: 'Classic grayscale conversion with contrast adjustment',
@@ -379,16 +368,6 @@ export class EffectPresets {
     });
 
     // Composite Effects
-
-    this.registerPreset({
-      name: 'glitchEffect',
-      category: 'composite',
-      description: 'Digital glitch effect with distortion and color shifts',
-      performanceImpact: 4,
-      compatibility: ['chrome', 'firefox', 'safari'],
-      useCases: ['error states', 'cyberpunk themes', 'digital art'],
-      create: (options) => this.createGlitchEffect(options),
-    });
   }
 
   /**
@@ -697,49 +676,6 @@ export class EffectPresets {
   }
 
   /**
-   * Create cyberpunk effect
-   */
-  private createCyberpunkEffect(
-    options: Required<PresetOptions>
-  ): EffectPresetResult {
-    const intensity = this.getIntensityMultiplier(options.intensity);
-    const colorFilter = new ColorMatrixFilter();
-
-    // Cyberpunk color palette
-    colorFilter.brightness(1 + intensity * 0.2, false);
-    colorFilter.contrast(1 + intensity * 0.3, false);
-    colorFilter.saturate(1 + intensity * 0.5, false);
-    colorFilter.hue(300 + intensity * 40, false);
-
-    const filterChain = new FilterChain({ name: 'cyberpunk' });
-    filterChain.addFilter(colorFilter, {
-      id: 'cyberpunkColor',
-      animationProperties: { alpha: 1 },
-      duration: options.duration,
-      ease: options.ease,
-    });
-
-    const timeline = gsap.timeline();
-    const filters = [colorFilter];
-
-    return {
-      filterChain,
-      filters,
-      timeline,
-      cleanup: (): void => {
-        timeline.kill();
-        filterChain.dispose();
-      },
-      applyTo: (target): void => {
-        filterChain.applyTo(target);
-      },
-      removeFrom: (target): void => {
-        filterChain.removeFrom(target);
-      },
-    };
-  }
-
-  /**
    * Create grayscale effect
    */
   private createGrayscaleEffect(
@@ -994,63 +930,6 @@ export class EffectPresets {
   }
 
   /**
-   * Create glitch effect
-   */
-  private createGlitchEffect(
-    options: Required<PresetOptions>
-  ): EffectPresetResult {
-    const intensity = this.getIntensityMultiplier(options.intensity);
-
-    const colorFilter = new ColorMatrixFilter();
-    const noiseFilter = new NoiseFilter({
-      noise: intensity * 0.3,
-      seed: Math.random(),
-    });
-
-    // Glitch color shift
-    colorFilter.hue(intensity * 180, true);
-    colorFilter.contrast(1 + intensity * 0.5, true);
-
-    const filterChain = new FilterChain({
-      name: 'glitchEffect',
-      mode: 'parallel',
-    });
-
-    filterChain.addFilter(colorFilter, {
-      id: 'glitchColor',
-      animationProperties: { alpha: 1 },
-      duration: options.duration * 0.3,
-      ease: 'steps(10)',
-    });
-
-    filterChain.addFilter(noiseFilter, {
-      id: 'glitchNoise',
-      animationProperties: { noise: intensity * 0.3 },
-      duration: options.duration * 0.5,
-      ease: 'steps(5)',
-    });
-
-    const timeline = gsap.timeline();
-    const filters = [colorFilter, noiseFilter];
-
-    return {
-      filterChain,
-      filters,
-      timeline,
-      cleanup: (): void => {
-        timeline.kill();
-        filterChain.dispose();
-      },
-      applyTo: (target): void => {
-        filterChain.applyTo(target);
-      },
-      removeFrom: (target): void => {
-        filterChain.removeFrom(target);
-      },
-    };
-  }
-
-  /**
    * Create alpha transparency effect
    */
   private createAlphaEffect(
@@ -1300,6 +1179,11 @@ export class EffectPresets {
             break;
           case 'toBGR':
             colorMatrixFilter.toBGR(false);
+            break;
+          case 'cyberpunk':
+            // Base cyberpunk transformation: enhanced saturation + purple/magenta hue shift
+            colorMatrixFilter.saturate(1.5, false); // 50% saturation boost
+            colorMatrixFilter.hue(300, false); // Purple/magenta hue shift
             break;
         }
       }

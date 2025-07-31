@@ -222,13 +222,6 @@ export const FilterShowcase: React.FC<FilterShowcaseProps> = ({
         enabled: false,
       },
       {
-        name: 'cyberpunk',
-        category: 'Color Effects',
-        description: 'Cyberpunk color palette',
-        intensity: 'moderate',
-        enabled: false,
-      },
-      {
         name: 'blackAndWhite',
         category: 'Color Effects',
         description: 'Black and white conversion',

@@ -378,11 +378,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       centerX: '0',
       centerY: '0',
       radius: '10',
-      // Strength property (used by multiple filters, default for general use)
-      strength: '-1', // Can be negative for pinch effect, positive for others
+      // BulgePinchFilter properties
+      bulgePinchStrength: '-1', // Can be negative for pinch effect, positive for others
       // ColorGradientFilter properties
       type: '0', // Gradient type (0 = linear, 1 = radial)
-      angle: '0', // Angle in degrees
+      gradientAngle: '0', // Angle in degrees
       startOffset: '0', // Start position
       endOffset: '0', // End position
       startAlpha: '0', // Start color alpha
@@ -397,6 +397,35 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       // ConvolutionFilter properties
       width: '1', // Matrix width minimum
       height: '1', // Matrix height minimum
+      // DotFilter properties
+      scale: '0.1', // Dot size minimum
+      angle: '0', // Rotation angle minimum
+      // DropShadowFilter properties
+      offsetX: '-20', // Horizontal shadow offset minimum
+      offsetY: '-20', // Vertical shadow offset minimum
+      // EmbossFilter properties
+      strength: '0', // Emboss effect strength minimum
+      // GlitchFilter properties
+      slices: '0', // Glitch slices minimum
+      offset: '0', // Displacement minimum
+      direction: '0', // Angle minimum
+      seed: '0', // Seed minimum
+      fillMode: '0', // Fill mode minimum
+      burstFrequency: '1', // Burst frequency minimum (seconds)
+      burstDuration: '0.1', // Burst duration minimum (seconds)
+      intensityMin: '0.1', // Animation intensity minimum
+      intensityMax: '1', // Animation intensity max minimum
+      residualChance: '0', // Residual chance minimum (%)
+      staticChance: '0', // Static chance minimum (%)
+      // CRTFilter properties
+      curvature: '0', // Screen curvature minimum
+      lineContrast: '0', // Scan line contrast minimum
+      lineWidth: '0.1', // Scan line width minimum
+      noise: '0', // Noise amount minimum
+      vignetting: '0', // Vignette strength minimum
+      // DisplacementFilter properties
+      scaleX: '0', // Horizontal displacement minimum
+      scaleY: '0', // Vertical displacement minimum
     };
     return Object.prototype.hasOwnProperty.call(minValues, key)
       ? minValues[key as keyof typeof minValues]
@@ -441,11 +470,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       centerX: '1',
       centerY: '1',
       radius: '500',
-      // Strength property (used by multiple filters, default for general use)
-      strength: '20', // Max strength for general use
+      // BulgePinchFilter properties
+      bulgePinchStrength: '20', // Max strength for bulge/pinch
       // ColorGradientFilter properties
       type: '1', // Gradient type (0 = linear, 1 = radial)
-      angle: '360', // Angle in degrees (full circle)
+      gradientAngle: '360', // Angle in degrees (full circle)
       startOffset: '1', // Start position (can be anywhere 0-1)
       endOffset: '1', // End position (can be anywhere 0-1)
       startAlpha: '1', // Start color alpha (full opacity)
@@ -460,6 +489,35 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       // ConvolutionFilter properties
       width: '5', // Matrix width maximum (practical limit)
       height: '5', // Matrix height maximum (practical limit)
+      // CRTFilter properties
+      curvature: '5', // Screen curvature maximum
+      lineContrast: '1', // Scan line contrast maximum
+      lineWidth: '5', // Scan line width maximum
+      noise: '1', // Noise amount maximum
+      vignetting: '1', // Vignette strength maximum
+      // DisplacementFilter properties
+      scaleX: '100', // Horizontal displacement maximum
+      scaleY: '100', // Vertical displacement maximum
+      // DotFilter properties
+      scale: '1', // Dot size maximum
+      angle: '360', // Rotation angle maximum
+      // DropShadowFilter properties
+      offsetX: '20', // Horizontal shadow offset maximum
+      offsetY: '20', // Vertical shadow offset maximum
+      // EmbossFilter properties
+      strength: '20', // Emboss effect strength maximum
+      // GlitchFilter properties
+      slices: '50', // Glitch slices maximum
+      offset: '100', // Displacement maximum
+      direction: '360', // Angle maximum
+      seed: '1', // Seed maximum
+      fillMode: '3', // Fill mode maximum
+      burstFrequency: '15', // Burst frequency maximum (seconds)
+      burstDuration: '3', // Burst duration maximum (seconds)
+      intensityMin: '1', // Animation intensity min maximum
+      intensityMax: '5', // Animation intensity max maximum
+      residualChance: '50', // Residual chance maximum (%)
+      staticChance: '10', // Static chance maximum (%)
     };
     return Object.prototype.hasOwnProperty.call(maxValues, key)
       ? maxValues[key as keyof typeof maxValues]
@@ -504,11 +562,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       centerX: '0.01',
       centerY: '0.01',
       radius: '5',
-      // Strength property (used by multiple filters, default for general use)
-      strength: '0.1', // Step for strength adjustments
+      // BulgePinchFilter properties
+      bulgePinchStrength: '0.1', // Step for bulge/pinch strength
       // ColorGradientFilter properties
       type: '1', // Step for gradient type (integer values)
-      angle: '5', // Step for angle in degrees
+      gradientAngle: '5', // Step for angle in degrees
       startOffset: '0.01', // Step for offset positions
       endOffset: '0.01', // Step for offset positions
       startAlpha: '0.05', // Step for color alpha
@@ -523,6 +581,35 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       // ConvolutionFilter properties
       width: '1', // Step for matrix width
       height: '1', // Step for matrix height
+      // CRTFilter properties
+      curvature: '0.1', // Step for screen curvature
+      lineContrast: '0.05', // Step for scan line contrast
+      lineWidth: '0.1', // Step for scan line width
+      noise: '0.05', // Step for noise amount
+      vignetting: '0.05', // Step for vignette strength
+      // DisplacementFilter properties
+      scaleX: '1', // Step for horizontal displacement
+      scaleY: '1', // Step for vertical displacement
+      // DotFilter properties
+      scale: '0.01', // Step for dot size
+      angle: '1', // Step for rotation angle
+      // DropShadowFilter properties
+      offsetX: '1', // Step for horizontal shadow offset
+      offsetY: '1', // Step for vertical shadow offset
+      // EmbossFilter properties
+      strength: '0.5', // Step for emboss effect strength
+      // GlitchFilter properties
+      slices: '1', // Step for glitch slices
+      offset: '1', // Step for displacement
+      direction: '5', // Step for angle
+      seed: '0.01', // Step for seed
+      fillMode: '1', // Step for fill mode
+      burstFrequency: '0.1', // Step for burst frequency
+      burstDuration: '0.1', // Step for burst duration
+      intensityMin: '0.1', // Step for animation intensity min
+      intensityMax: '0.1', // Step for animation intensity max
+      residualChance: '1', // Step for residual chance
+      staticChance: '0.1', // Step for static chance
     };
     return Object.prototype.hasOwnProperty.call(stepValues, key)
       ? stepValues[key as keyof typeof stepValues]
@@ -551,7 +638,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       alpha: { alpha: 1.0 },
       vintage: { intensity: 0.7, sepia: 0.5 },
       grayscale: { intensity: 1 },
-      displacement: { scale: 20, intensity: 0.5 },
+      displacement: {
+        customDisplacementTexture: '', // Custom uploaded displacement texture
+        scaleX: 20, // Horizontal displacement strength (0-100)
+        scaleY: 20, // Vertical displacement strength (0-100)
+      },
       adjustment: {
         gamma: 1,
         saturation: 1,
@@ -604,11 +695,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         centerX: 0.5, // X-axis center coordinate (normalized 0-1)
         centerY: 0.5, // Y-axis center coordinate (normalized 0-1)
         radius: 100, // Radius of the effect area
-        strength: 1, // Bulge/pinch intensity (-1 to 1)
+        bulgePinchStrength: 1, // Bulge/pinch intensity (-1 to 1)
       },
       colorGradient: {
         type: 0, // Gradient type (0 = linear, 1 = radial)
-        angle: 0, // Angle in degrees for linear gradients
+        gradientAngle: 0, // Angle in degrees for linear gradients
         alpha: 0.5, // Overall alpha of the gradient
         startColor: '#ff0000', // Start color (red)
         endColor: '#0000ff', // End color (blue)
@@ -638,6 +729,47 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         width: 3, // Matrix width (typically 3)
         height: 3, // Matrix height (typically 3)
       },
+      dot: {
+        scale: 0.5, // Size of the dots (0.1-1.0)
+        angle: 15, // Rotation angle of dot pattern (0-360 degrees)
+        grayscale: false, // Apply grayscale effect (boolean)
+      },
+      dropShadow: {
+        offsetX: 4, // Horizontal shadow offset (-20 to 20)
+        offsetY: 4, // Vertical shadow offset (-20 to 20)
+        blur: 2, // Shadow blur amount (0-10)
+        alpha: 0.5, // Shadow opacity (0-1)
+        color: '#000000', // Shadow color
+        quality: 4, // Blur quality (1-10)
+        shadowOnly: false, // Show only shadow (boolean)
+      },
+      emboss: {
+        strength: 5, // Emboss effect strength (0-20)
+      },
+      glitch: {
+        animated: true, // Master switch for animated vs static glitch
+        // Static mode properties (used when animated = false)
+        slices: 10, // Number of glitch slices (0-50)
+        offset: 15, // Maximum displacement (0-100)
+        direction: 0, // Angle of slices (0-360 degrees)
+        seed: 0.5, // Randomization seed (0-1)
+        fillMode: 0, // How empty areas are filled (0-3)
+        // Animation mode properties (used when animated = true)
+        burstFrequency: 4.5, // Time between bursts in seconds (1-15)
+        burstDuration: 0.7, // Length of bursts in seconds (0.1-3)
+        intensityMin: 0.3, // Minimum animation intensity (0.1-1)
+        intensityMax: 2.0, // Maximum animation intensity (1-5)
+        residualChance: 7.5, // Chance signal doesn't recover (0-50%)
+        staticChance: 0.2, // Chance of minor static during quiet (0-10%)
+      },
+      crt: {
+        curvature: 1, // Screen curvature amount (0-5)
+        lineContrast: 0.25, // Contrast of scan lines (0-1)
+        lineWidth: 1, // Width of scan lines (0.1-5)
+        noise: 0.3, // Amount of noise/static (0-1)
+        verticalLine: false, // Enable vertical line distortion
+        vignetting: 0.3, // Vignette effect strength (0-1)
+      },
     };
 
     const validFilters = Object.keys(commonSettings);
@@ -647,11 +779,57 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     ) {
       return commonSettings[filterName as keyof typeof commonSettings];
     }
+
+    // Filters that don't need any property controls
+    const noPropertiesFilters = ['crosshatch'];
+    if (noPropertiesFilters.includes(filterName)) {
+      return {};
+    }
+
     return { intensity: 0.5 };
   }
 
   // Render filter settings panel
   const renderFilterSettings = (filter: FilterInstance): React.JSX.Element => {
+    // Filter properties based on glitch animation state
+    const shouldShowProperty = (
+      key: string,
+      filter: FilterInstance
+    ): boolean => {
+      if (filter.name !== 'glitch') return true;
+
+      const isAnimated = filter.settings.animated;
+      const staticModeProps = [
+        'slices',
+        'offset',
+        'direction',
+        'seed',
+        'fillMode',
+      ];
+      const animatedModeProps = [
+        'burstFrequency',
+        'burstDuration',
+        'intensityMin',
+        'intensityMax',
+        'residualChance',
+        'staticChance',
+      ];
+
+      // Always show animated toggle
+      if (key === 'animated') return true;
+
+      // Show appropriate properties based on mode
+      if (isAnimated) {
+        return animatedModeProps.includes(key);
+      } else {
+        return staticModeProps.includes(key);
+      }
+    };
+
+    const filteredSettings = Object.entries(filter.settings).filter(([key]) =>
+      shouldShowProperty(key, filter)
+    );
+
     return (
       <div
         style={{
@@ -661,7 +839,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
           borderRadius: '4px',
         }}
       >
-        {Object.entries(filter.settings).map(([key, value]) => (
+        {filteredSettings.map(([key, value]) => (
           <div key={key} style={{ marginBottom: '0.5rem' }}>
             <label
               style={{
@@ -709,6 +887,27 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   customMatrix: 'Custom Matrix',
                   width: 'Matrix Width',
                   height: 'Matrix Height',
+                  // DisplacementFilter labels
+                  scaleX: 'Horizontal Displacement',
+                  scaleY: 'Vertical Displacement',
+                  customDisplacementTexture: 'Custom Displacement Texture',
+                  // DropShadowFilter labels
+                  offsetX: 'Horizontal Offset',
+                  offsetY: 'Vertical Offset',
+                  shadowOnly: 'Shadow Only Mode',
+                  // GlitchFilter labels
+                  animated: 'Animation Mode',
+                  slices: 'Glitch Slices 🎲',
+                  offset: 'Displacement 🎲',
+                  direction: 'Slice Angle',
+                  seed: 'Random Seed 🎲',
+                  fillMode: 'Fill Mode',
+                  burstFrequency: 'Burst Frequency ⏱️',
+                  burstDuration: 'Burst Duration ⏱️',
+                  intensityMin: 'Min Intensity 🎲',
+                  intensityMax: 'Max Intensity 🎲',
+                  residualChance: 'Residual Glitch %',
+                  staticChance: 'Static Noise %',
                 };
                 return Object.prototype.hasOwnProperty.call(labelMap, key)
                   ? labelMap[key as keyof typeof labelMap]
@@ -963,6 +1162,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   <option value="none">None (Manual)</option>
                   <option value="blackAndWhite">Black & White</option>
                   <option value="browni">Browni</option>
+                  <option value="cyberpunk">Cyberpunk</option>
                   <option value="desaturate">Desaturate</option>
                   <option value="grayscale">Grayscale</option>
                   <option value="hue">Hue Rotation</option>
@@ -974,8 +1174,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   <option value="predator">Predator</option>
                   <option value="sepia">Sepia</option>
                   <option value="technicolor">Technicolor</option>
-                  <option value="vintage">Vintage</option>
                   <option value="toBGR">To BGR</option>
+                  <option value="vintage">Vintage</option>
                 </select>
                 <div
                   style={{
@@ -1173,6 +1373,100 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   smaller.
                 </div>
               </div>
+            ) : key === 'customDisplacementTexture' ? (
+              // Special handling for custom displacement texture upload
+              <div>
+                <div
+                  style={{
+                    border: '2px dashed #d1d5db',
+                    borderRadius: '4px',
+                    padding: '1rem',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    background: '#fafafa',
+                  }}
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e): void => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (file) {
+                        handleFileUpload(file, filter.id, key);
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '1rem',
+                      marginBottom: '0.5rem',
+                      color: '#4b5563',
+                    }}
+                  >
+                    📁 Click to upload displacement texture
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '0.8rem',
+                      color: '#6b7280',
+                    }}
+                  >
+                    {typeof value === 'string' && value
+                      ? 'Custom texture loaded'
+                      : 'Using default displacement texture'}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  Upload a custom displacement texture. Ideal size: 512x512px or
+                  smaller. Black areas = no displacement, white areas = max
+                  displacement.
+                </div>
+              </div>
+            ) : key === 'fillMode' && typeof value === 'number' ? (
+              // Special handling for glitch fillMode dropdown
+              <div>
+                <select
+                  value={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(
+                      key,
+                      parseInt(e.target.value)
+                    );
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.2rem',
+                    borderRadius: '3px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  <option value={0}>Original (0)</option>
+                  <option value={1}>Transparent (1)</option>
+                  <option value={2}>Nearest (2)</option>
+                  <option value={3}>Repeat (3)</option>
+                </select>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    marginTop: '0.2rem',
+                  }}
+                >
+                  How empty areas are filled when slices are displaced
+                </div>
+              </div>
             ) : key === 'nearest' && typeof value === 'boolean' ? (
               // Special handling for nearest neighbor sampling
               <div style={{ display: 'flex', gap: '1rem' }}>
@@ -1253,6 +1547,86 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     }}
                   />
                   <span style={{ fontSize: '0.8rem' }}>Multiply (Chain)</span>
+                </label>
+              </div>
+            ) : key === 'shadowOnly' && typeof value === 'boolean' ? (
+              // Special handling for shadowOnly boolean in DropShadow
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-shadowOnly`}
+                    checked={!value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, false);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>Object + Shadow</span>
+                </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-shadowOnly`}
+                    checked={value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, true);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>Shadow Only</span>
+                </label>
+              </div>
+            ) : key === 'animated' && typeof value === 'boolean' ? (
+              // Special handling for animated boolean in GlitchFilter
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-animated`}
+                    checked={!value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, false);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>Static Glitch</span>
+                </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`${filter.id}-animated`}
+                    checked={value}
+                    onChange={() => {
+                      const updates = createSafeUpdate(key, true);
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.8rem' }}>Animated Glitch</span>
                 </label>
               </div>
             ) : typeof value === 'number' ? (
