@@ -99,15 +99,26 @@ export interface AdvancedEffectPreset extends Omit<EffectPreset, 'category'> {
  * with the same configuration and management as basic effects.
  */
 export class AdvancedFilterPresets extends EffectPresets {
+  private advancedPresetNames: Set<string> = new Set();
+
   constructor() {
     super();
     this.registerAdvancedPresets();
   }
 
   /**
+   * Get only advanced preset names (not inherited composite effects)
+   */
+  getAdvancedPresetNames(): string[] {
+    return Array.from(this.advancedPresetNames).sort();
+  }
+
+  /**
    * Register advanced preset with extended category types
    */
   private registerAdvancedPreset(preset: AdvancedEffectPreset): void {
+    // Track advanced preset names
+    this.advancedPresetNames.add(preset.name);
     // Cast to base preset for registration
     super.registerPreset(preset as EffectPreset);
   }
@@ -1358,17 +1369,33 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createPixelateEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      const size = typeof settings.size === 'number' ? settings.size : 10;
+      const filter = new PixelateFilter();
+      filter.size = size;
+
+      const filterChain = new FilterChain({ name: 'pixelate-effect' });
+      filterChain.addFilter(filter, {
+        id: 'pixelate',
+        animated: false, // Don't animate pixelate properties as they may cause rendering issues
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = { subtle: 6, moderate: 13, strong: 19, intense: 32 };
     const size = intensityMap[options.intensity];
 
-    const filter = new PixelateFilter(size);
+    const filter = new PixelateFilter();
+    filter.size = size;
     const filterChain = new FilterChain({ name: 'pixelate-effect' });
     filterChain.addFilter(filter, {
       id: 'pixelate',
-      animated: true,
-      animationProperties: { size },
-      duration: options.duration,
-      ease: options.ease,
+      animated: false, // Don't animate pixelate properties as they may cause rendering issues
     });
 
     return this.createEffectResult(filterChain, [filter], options);
@@ -1394,7 +1421,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       seedChangeRate?: number;
       seed?: number;
     }
-    
+
     let settings: OldFilmSettings;
     let animationInterval: NodeJS.Timeout | null = null;
 
@@ -1650,6 +1677,35 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createRGBSplitEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      const filter = new RGBSplitFilter({
+        red: {
+          x: typeof settings.redX === 'number' ? settings.redX : -10,
+          y: typeof settings.redY === 'number' ? settings.redY : 0,
+        },
+        green: {
+          x: typeof settings.greenX === 'number' ? settings.greenX : 0,
+          y: typeof settings.greenY === 'number' ? settings.greenY : 10,
+        },
+        blue: {
+          x: typeof settings.blueX === 'number' ? settings.blueX : 0,
+          y: typeof settings.blueY === 'number' ? settings.blueY : 0,
+        },
+      });
+
+      const filterChain = new FilterChain({ name: 'rgbsplit-effect' });
+      filterChain.addFilter(filter, {
+        id: 'rgbsplit',
+        animated: false, // RGB split is typically static
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { redX: -3, greenY: 3, blueX: 3 },
       moderate: { redX: -5, greenY: 5, blueX: 5 },
@@ -1830,6 +1886,31 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createRadialBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      const filter = new RadialBlurFilter({
+        angle: typeof settings.angle === 'number' ? settings.angle : 10,
+        center: {
+          x: typeof settings.centerX === 'number' ? settings.centerX : 600,
+          y: typeof settings.centerY === 'number' ? settings.centerY : 200,
+        },
+        radius: typeof settings.radius === 'number' ? settings.radius : -1,
+        kernelSize:
+          typeof settings.kernelSize === 'number' ? settings.kernelSize : 7,
+      });
+
+      const filterChain = new FilterChain({ name: 'radial-blur-effect' });
+      filterChain.addFilter(filter, {
+        id: 'radial-blur',
+        animated: false, // Radial blur should be static like pixelate
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: { radius: -1, angle: 2, kernelSize: 5 },
       moderate: { radius: -1, angle: 4, kernelSize: 5 },
@@ -1840,7 +1921,7 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     const filter = new RadialBlurFilter({
       angle: settings.angle, // Non-zero angle for visible blur
-      center: { x: 0.5, y: 0.5 }, // Use PointData object format, centered in image
+      center: { x: 600, y: 200 }, // Use pixel coordinates, centered at 1200/2, 400/2
       radius: settings.radius,
       kernelSize: settings.kernelSize, // Larger kernel for more blur
     });
@@ -1848,13 +1929,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     const filterChain = new FilterChain({ name: 'radial-blur-effect' });
     filterChain.addFilter(filter, {
       id: 'radial-blur',
-      animated: true,
-      animationProperties: {
-        radius: settings.radius,
-        angle: settings.angle * 2, // Animate to double the angle for motion effect
-      },
-      duration: options.duration,
-      ease: options.ease,
+      animated: false, // Radial blur should be static like pixelate
     });
 
     return this.createEffectResult(filterChain, [filter], options);
@@ -2003,7 +2078,112 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createShockwaveEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
-    // Use proper amplitude values based on main branch implementation
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      const filter = new ShockwaveFilter({
+        center: {
+          x: typeof settings.centerX === 'number' ? settings.centerX : 600,
+          y: typeof settings.centerY === 'number' ? settings.centerY : 200,
+        },
+        amplitude:
+          typeof settings.amplitude === 'number' ? settings.amplitude : 30,
+        wavelength:
+          typeof settings.wavelength === 'number' ? settings.wavelength : 160,
+        brightness:
+          typeof settings.brightness === 'number' ? settings.brightness : 1,
+        speed: typeof settings.speed === 'number' ? settings.speed : 500,
+        radius: typeof settings.radius === 'number' ? settings.radius : -1,
+        time: typeof settings.time === 'number' ? settings.time : 0,
+      });
+
+      const filterChain = new FilterChain({ name: 'shockwave-effect' });
+
+      // Handle animation based on animated setting
+      const isAnimated =
+        typeof settings.animated === 'boolean' ? settings.animated : false;
+
+      if (isAnimated) {
+        // Use the same animation logic as the fallback implementation
+        let animationActive = false;
+        let animationFrameId: number | null = null;
+        let lastTime = Date.now();
+
+        const startAnimation = (): void => {
+          if (animationActive) return;
+          animationActive = true;
+          filter.time = 0; // Reset time
+          lastTime = Date.now();
+
+          const animate = (): void => {
+            const now = Date.now();
+            const delta = (now - lastTime) / 1000; // Convert to seconds
+            lastTime = now;
+
+            // Increment time for wave progression
+            filter.time += delta * 0.8; // Animation speed
+
+            // Reset wave after 3 seconds and pause
+            if (filter.time >= 3.0) {
+              animationActive = false;
+              // Pause for 1 second before next wave
+              setTimeout(() => {
+                if (animationFrameId !== null) {
+                  startAnimation();
+                }
+              }, 1000);
+              return;
+            }
+
+            if (animationActive) {
+              animationFrameId = requestAnimationFrame(animate);
+            }
+          };
+
+          animationFrameId = requestAnimationFrame(animate);
+        };
+
+        // Start the animation
+        startAnimation();
+
+        // Store animation frame ID for cleanup
+        (
+          filter as ShockwaveFilter & { _animationFrameId?: number | null }
+        )._animationFrameId = animationFrameId;
+      }
+
+      filterChain.addFilter(filter, {
+        id: 'shockwave',
+        animated: isAnimated,
+      });
+
+      const originalResult = this.createEffectResult(
+        filterChain,
+        [filter],
+        options
+      );
+
+      return {
+        ...originalResult,
+        cleanup: (): void => {
+          // Clear the animation frame if it exists
+          const filterWithAnimation = filter as ShockwaveFilter & {
+            _animationFrameId?: number | null;
+          };
+          if (
+            filterWithAnimation._animationFrameId !== null &&
+            filterWithAnimation._animationFrameId !== undefined
+          ) {
+            cancelAnimationFrame(filterWithAnimation._animationFrameId);
+            filterWithAnimation._animationFrameId = null;
+          }
+          originalResult.cleanup();
+        },
+      };
+    }
+
+    // Fallback to intensity-based settings with animation
     const intensityMap = { subtle: 30, moderate: 40, strong: 50, intense: 60 };
     const amplitude = intensityMap[options.intensity];
 
@@ -3721,6 +3901,90 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createReflectionEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Check for custom settings first
+    if (options.customSettings) {
+      const settings = options.customSettings;
+
+      const filter = new ReflectionFilter();
+
+      // Set properties with proper types and fallbacks
+      Object.assign(filter, {
+        alpha: [
+          typeof settings.alphaStart === 'number' ? settings.alphaStart : 1,
+          typeof settings.alphaEnd === 'number' ? settings.alphaEnd : 1,
+        ] as [number, number],
+        amplitude: [
+          typeof settings.amplitudeStart === 'number'
+            ? settings.amplitudeStart
+            : 0,
+          typeof settings.amplitudeEnd === 'number'
+            ? settings.amplitudeEnd
+            : 20,
+        ] as [number, number],
+        boundary:
+          typeof settings.boundary === 'number' ? settings.boundary : 0.5,
+        mirror: typeof settings.mirror === 'boolean' ? settings.mirror : true,
+        time: typeof settings.time === 'number' ? settings.time : 0,
+        waveLength: [
+          typeof settings.wavelengthStart === 'number'
+            ? settings.wavelengthStart
+            : 30,
+          typeof settings.wavelengthEnd === 'number'
+            ? settings.wavelengthEnd
+            : 100,
+        ] as [number, number],
+      });
+
+      const filterChain = new FilterChain({ name: 'reflection-effect' });
+
+      // Handle animation based on animated setting
+      const isAnimated =
+        typeof settings.animated === 'boolean' ? settings.animated : false;
+
+      if (isAnimated) {
+        // Create continuous animation for water ripple effect
+        const startTime = Date.now();
+        const animationInterval = setInterval(() => {
+          const elapsed = (Date.now() - startTime) / 1000;
+          filter.time = elapsed * 2; // Animate water ripples
+        }, 16); // ~60fps
+
+        // Store the interval for cleanup
+        (
+          filter as ReflectionFilter & { _animationInterval?: NodeJS.Timeout }
+        )._animationInterval = animationInterval;
+      }
+
+      filterChain.addFilter(filter, {
+        id: 'reflection',
+        animated: isAnimated,
+        animationProperties: isAnimated ? { time: 10 } : {},
+        duration: options.duration,
+        ease: options.ease,
+      });
+
+      const originalResult = this.createEffectResult(
+        filterChain,
+        [filter],
+        options
+      );
+
+      return {
+        ...originalResult,
+        cleanup: (): void => {
+          // Clear the animation interval if it exists
+          const filterWithInterval = filter as ReflectionFilter & {
+            _animationInterval?: NodeJS.Timeout;
+          };
+          if (filterWithInterval._animationInterval) {
+            clearInterval(filterWithInterval._animationInterval);
+          }
+          originalResult.cleanup();
+        },
+      };
+    }
+
+    // Fallback to intensity-based settings
     const intensityMap = {
       subtle: {
         amplitude: [0, 5],

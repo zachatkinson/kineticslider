@@ -18,7 +18,6 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
-import { EffectPresets } from '../rendering/effect-presets';
 import { AdvancedFilterPresets } from '../rendering/advanced-filter-presets';
 import type { SliderCore } from '../core/slider-core';
 import { debugLogger } from '../utils/debug-logger';
@@ -58,15 +57,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
   const [activeFilters, setActiveFilters] = useState<FilterInstance[]>([]);
   const [availableFilters, setAvailableFilters] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [effectPresets] = useState(() => new EffectPresets());
   const [advancedPresets] = useState(() => new AdvancedFilterPresets());
 
-  // Get all available filter names
+  // Get all available filter names (only advanced PIXI filters, not composite effects)
   const getAllAvailableFilters = useCallback((): string[] => {
-    const baseFilters = effectPresets.getPresetNames();
-    const advancedFilters = advancedPresets.getPresetNames();
-    return [...new Set([...baseFilters, ...advancedFilters])].sort();
-  }, [effectPresets, advancedPresets]);
+    const advancedFilters = advancedPresets.getAdvancedPresetNames();
+    return advancedFilters;
+  }, [advancedPresets]);
 
   // Update available filters (exclude active ones)
   useEffect(() => {
@@ -444,6 +441,79 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       }
     }
 
+    // Special handling for pixelate filter properties
+    if (filterName === 'pixelate') {
+      const pixelateMinValues: Record<string, string> = {
+        size: '4',
+      };
+      if (Object.prototype.hasOwnProperty.call(pixelateMinValues, key)) {
+        return pixelateMinValues[key as keyof typeof pixelateMinValues];
+      }
+    }
+
+    // Special handling for radial blur filter properties
+    if (filterName === 'radialBlur') {
+      const radialBlurMinValues: Record<string, string> = {
+        angle: '-180',
+        centerX: '0',
+        centerY: '0',
+        radius: '-1',
+        kernelSize: '5',
+      };
+      if (Object.prototype.hasOwnProperty.call(radialBlurMinValues, key)) {
+        return radialBlurMinValues[key as keyof typeof radialBlurMinValues];
+      }
+    }
+
+    // Special handling for reflection filter properties
+    if (filterName === 'reflection') {
+      const reflectionMinValues: Record<string, string> = {
+        boundary: '0',
+        amplitudeStart: '0',
+        amplitudeEnd: '0',
+        wavelengthStart: '10',
+        wavelengthEnd: '10',
+        alphaStart: '0',
+        alphaEnd: '0',
+        time: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(reflectionMinValues, key)) {
+        return reflectionMinValues[key as keyof typeof reflectionMinValues];
+      }
+    }
+
+    // Special handling for RGB split filter properties
+    if (filterName === 'rgbSplit') {
+      const rgbSplitMinValues: Record<string, string> = {
+        redX: '-20',
+        redY: '-20',
+        greenX: '-20',
+        greenY: '-20',
+        blueX: '-20',
+        blueY: '-20',
+      };
+      if (Object.prototype.hasOwnProperty.call(rgbSplitMinValues, key)) {
+        return rgbSplitMinValues[key as keyof typeof rgbSplitMinValues];
+      }
+    }
+
+    // Special handling for shockwave filter properties
+    if (filterName === 'shockwave') {
+      const shockwaveMinValues: Record<string, string> = {
+        speed: '500',
+        amplitude: '1',
+        wavelength: '2',
+        brightness: '0.2',
+        radius: '100',
+        centerX: '0',
+        centerY: '0',
+        time: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(shockwaveMinValues, key)) {
+        return shockwaveMinValues[key as keyof typeof shockwaveMinValues];
+      }
+    }
+
     const minValues: Record<string, string> = {
       // AdjustmentFilter properties
       gamma: '0.1',
@@ -640,6 +710,79 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       };
       if (Object.prototype.hasOwnProperty.call(outlineMaxValues, key)) {
         return outlineMaxValues[key as keyof typeof outlineMaxValues];
+      }
+    }
+
+    // Special handling for pixelate filter properties
+    if (filterName === 'pixelate') {
+      const pixelateMaxValues: Record<string, string> = {
+        size: '40',
+      };
+      if (Object.prototype.hasOwnProperty.call(pixelateMaxValues, key)) {
+        return pixelateMaxValues[key as keyof typeof pixelateMaxValues];
+      }
+    }
+
+    // Special handling for radial blur filter properties
+    if (filterName === 'radialBlur') {
+      const radialBlurMaxValues: Record<string, string> = {
+        angle: '180',
+        centerX: '1200',
+        centerY: '400',
+        radius: '1200',
+        kernelSize: '25',
+      };
+      if (Object.prototype.hasOwnProperty.call(radialBlurMaxValues, key)) {
+        return radialBlurMaxValues[key as keyof typeof radialBlurMaxValues];
+      }
+    }
+
+    // Special handling for reflection filter properties
+    if (filterName === 'reflection') {
+      const reflectionMaxValues: Record<string, string> = {
+        boundary: '1',
+        amplitudeStart: '50',
+        amplitudeEnd: '50',
+        wavelengthStart: '200',
+        wavelengthEnd: '200',
+        alphaStart: '1',
+        alphaEnd: '1',
+        time: '20',
+      };
+      if (Object.prototype.hasOwnProperty.call(reflectionMaxValues, key)) {
+        return reflectionMaxValues[key as keyof typeof reflectionMaxValues];
+      }
+    }
+
+    // Special handling for RGB split filter properties
+    if (filterName === 'rgbSplit') {
+      const rgbSplitMaxValues: Record<string, string> = {
+        redX: '20',
+        redY: '20',
+        greenX: '20',
+        greenY: '20',
+        blueX: '20',
+        blueY: '20',
+      };
+      if (Object.prototype.hasOwnProperty.call(rgbSplitMaxValues, key)) {
+        return rgbSplitMaxValues[key as keyof typeof rgbSplitMaxValues];
+      }
+    }
+
+    // Special handling for shockwave filter properties
+    if (filterName === 'shockwave') {
+      const shockwaveMaxValues: Record<string, string> = {
+        speed: '2000',
+        amplitude: '100',
+        wavelength: '400',
+        brightness: '2',
+        radius: '2000',
+        centerX: '1200',
+        centerY: '400',
+        time: '20',
+      };
+      if (Object.prototype.hasOwnProperty.call(shockwaveMaxValues, key)) {
+        return shockwaveMaxValues[key as keyof typeof shockwaveMaxValues];
       }
     }
 
@@ -841,6 +984,79 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       }
     }
 
+    // Special handling for pixelate filter properties
+    if (filterName === 'pixelate') {
+      const pixelateStepValues: Record<string, string> = {
+        size: '1', // Integer steps for pixel size
+      };
+      if (Object.prototype.hasOwnProperty.call(pixelateStepValues, key)) {
+        return pixelateStepValues[key as keyof typeof pixelateStepValues];
+      }
+    }
+
+    // Special handling for radial blur filter properties
+    if (filterName === 'radialBlur') {
+      const radialBlurStepValues: Record<string, string> = {
+        angle: '1', // Integer degrees for angle
+        centerX: '10', // Pixel-based control for center position
+        centerY: '10', // Pixel-based control for center position
+        radius: '10', // Pixel-based control for radius
+        kernelSize: '2', // Even integer steps for kernel size
+      };
+      if (Object.prototype.hasOwnProperty.call(radialBlurStepValues, key)) {
+        return radialBlurStepValues[key as keyof typeof radialBlurStepValues];
+      }
+    }
+
+    // Special handling for reflection filter properties
+    if (filterName === 'reflection') {
+      const reflectionStepValues: Record<string, string> = {
+        boundary: '0.01', // Fine control for boundary
+        amplitudeStart: '1', // Integer steps for amplitude
+        amplitudeEnd: '1', // Integer steps for amplitude
+        wavelengthStart: '1', // Integer steps for wavelength
+        wavelengthEnd: '1', // Integer steps for wavelength
+        alphaStart: '0.01', // Fine control for alpha
+        alphaEnd: '0.01', // Fine control for alpha
+        time: '0.1', // Fine control for time
+      };
+      if (Object.prototype.hasOwnProperty.call(reflectionStepValues, key)) {
+        return reflectionStepValues[key as keyof typeof reflectionStepValues];
+      }
+    }
+
+    // Special handling for RGB split filter properties
+    if (filterName === 'rgbSplit') {
+      const rgbSplitStepValues: Record<string, string> = {
+        redX: '0.5', // Fine control for RGB offsets
+        redY: '0.5', // Fine control for RGB offsets
+        greenX: '0.5', // Fine control for RGB offsets
+        greenY: '0.5', // Fine control for RGB offsets
+        blueX: '0.5', // Fine control for RGB offsets
+        blueY: '0.5', // Fine control for RGB offsets
+      };
+      if (Object.prototype.hasOwnProperty.call(rgbSplitStepValues, key)) {
+        return rgbSplitStepValues[key as keyof typeof rgbSplitStepValues];
+      }
+    }
+
+    // Special handling for shockwave filter properties
+    if (filterName === 'shockwave') {
+      const shockwaveStepValues: Record<string, string> = {
+        speed: '10', // Integer steps for speed
+        amplitude: '1', // Integer steps for amplitude
+        wavelength: '2', // Integer steps for wavelength
+        brightness: '0.01', // Fine control for brightness
+        radius: '10', // Integer steps for radius
+        centerX: '10', // Pixel-based control for center position
+        centerY: '10', // Pixel-based control for center position
+        time: '0.1', // Fine control for time
+      };
+      if (Object.prototype.hasOwnProperty.call(shockwaveStepValues, key)) {
+        return shockwaveStepValues[key as keyof typeof shockwaveStepValues];
+      }
+    }
+
     const stepValues: Record<string, string> = {
       // Fine control for adjustment properties
       gamma: '0.05',
@@ -952,7 +1168,47 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         knockout: false,
         quality: 0.1,
       },
-      pixelate: { size: 4 },
+      pixelate: {
+        size: 10, // Pixel block size (1-100)
+      },
+      radialBlur: {
+        angle: 10, // Blur angle in degrees (-180 to 180)
+        centerX: 600, // Center X position in pixels (0 to display width) - centered at 1200/2
+        centerY: 200, // Center Y position in pixels (0 to display height) - centered at 400/2
+        radius: -1, // Blur radius (-1 for automatic, or pixel value)
+        kernelSize: 7, // Blur quality/kernel size (5-25)
+      },
+      reflection: {
+        animated: false, // Enable time-based animation
+        mirror: true, // Mirror the reflection
+        boundary: 0.5, // Reflection boundary (0-1)
+        amplitudeStart: 0, // Start amplitude (0-50)
+        amplitudeEnd: 20, // End amplitude (0-50)
+        wavelengthStart: 30, // Start wavelength (10-200)
+        wavelengthEnd: 100, // End wavelength (10-200)
+        alphaStart: 1, // Start alpha (0-1)
+        alphaEnd: 1, // End alpha (0-1)
+        time: 0, // Animation time (0-20)
+      },
+      rgbSplit: {
+        redX: -10, // Red channel X offset (-20 to 20)
+        redY: 0, // Red channel Y offset (-20 to 20)
+        greenX: 0, // Green channel X offset (-20 to 20)
+        greenY: 10, // Green channel Y offset (-20 to 20)
+        blueX: 0, // Blue channel X offset (-20 to 20)
+        blueY: 0, // Blue channel Y offset (-20 to 20)
+      },
+      shockwave: {
+        animated: false, // Enable time-based animation
+        speed: 500, // Shockwave speed (500-2000) pixel-per-second
+        amplitude: 30, // Wave amplitude (1-100)
+        wavelength: 160, // Wave length (2-400)
+        brightness: 1, // Brightness multiplier (0.2-2)
+        radius: -1, // Shockwave radius (100-2000, -1 for infinite)
+        centerX: 600, // Center X position in pixels (0 to display width) - centered at 1200/2
+        centerY: 200, // Center Y position in pixels (0 to display height) - centered at 400/2
+        time: 0, // Animation time offset
+      },
       colorMatrix: {
         matrixType: 'none', // Default to no preset
         brightness: 1,
@@ -1246,6 +1502,49 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         return alwaysShowProps.includes(key);
       }
 
+      // Handle reflection filter conditional properties
+      if (filter.name === 'reflection') {
+        const isAnimated = filter.settings.animated;
+        // Always show these properties
+        const alwaysShowProps = [
+          'animated',
+          'mirror',
+          'boundary',
+          'amplitudeStart',
+          'amplitudeEnd',
+          'wavelengthStart',
+          'wavelengthEnd',
+          'alphaStart',
+          'alphaEnd',
+        ];
+        // Show time only when animated
+        if (key === 'time') {
+          return Boolean(isAnimated);
+        }
+        return alwaysShowProps.includes(key);
+      }
+
+      // Handle shockwave filter conditional properties
+      if (filter.name === 'shockwave') {
+        const isAnimated = filter.settings.animated;
+        // Always show these properties
+        const alwaysShowProps = [
+          'animated',
+          'speed',
+          'amplitude',
+          'wavelength',
+          'brightness',
+          'radius',
+          'centerX',
+          'centerY',
+        ];
+        // Show time only when animated
+        if (key === 'time') {
+          return Boolean(isAnimated);
+        }
+        return alwaysShowProps.includes(key);
+      }
+
       // Handle old film filter conditional properties
       if (filter.name === 'oldFilm') {
         const isAnimated = filter.settings.animated;
@@ -1339,8 +1638,33 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   endColor: 'End Color',
                   startOffset: 'Start Position',
                   endOffset: 'End Position',
-                  startAlpha: 'Start Color Opacity',
-                  endAlpha: 'End Color Opacity',
+                  // ReflectionFilter labels
+                  // animated: 'Animated', // Already defined for GlitchFilter
+                  mirror: 'Mirror Reflection',
+                  boundary: 'Reflection Boundary',
+                  amplitudeStart: 'Start Amplitude',
+                  amplitudeEnd: 'End Amplitude',
+                  wavelengthStart: 'Start Wavelength',
+                  wavelengthEnd: 'End Wavelength',
+                  alphaStart: 'Start Alpha',
+                  alphaEnd: 'End Alpha',
+                  // time: 'Animation Time', // Already defined for other filters
+                  // RGBSplitFilter labels
+                  redX: 'Red X Offset',
+                  redY: 'Red Y Offset',
+                  greenX: 'Green X Offset',
+                  greenY: 'Green Y Offset',
+                  blueX: 'Blue X Offset',
+                  blueY: 'Blue Y Offset',
+                  // ShockwaveFilter labels
+                  speed: 'Wave Speed',
+                  amplitude: 'Wave Amplitude',
+                  wavelength: 'Wave Length',
+                  brightness: 'Wave Brightness',
+                  // radius: 'Shockwave Radius', // Already defined as 'Effect Radius'
+                  // centerX: 'Center X Position', // Already defined
+                  // centerY: 'Center Y Position', // Already defined
+                  // time: 'Animation Time', // Already defined
                   // ColorMapFilter labels
                   mix: 'Effect Strength',
                   nearest: 'Sampling Method',
