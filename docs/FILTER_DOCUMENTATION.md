@@ -198,6 +198,36 @@ const zoomEffect = advancedPresets.createEffect('zoomBlur', {
 
 ---
 
+### TiltShift
+**Category**: Advanced Blur | **Performance**: ⭐⭐⭐ Good | **Compatibility**: ✅ All Browsers
+
+Selective focus blur effect creating miniature camera appearance with configurable focus area.
+
+```typescript
+// Basic usage
+const tiltShiftEffect = advancedPresets.createEffect('tiltShift', {
+  intensity: 'moderate'
+});
+
+// With custom settings
+const customTiltShift = advancedPresets.createEffect('tiltShift', {
+  customSettings: {
+    blur: 50.0,
+    gradientBlur: 400,
+    startX: 200,
+    endX: 1000,
+    startY: 100,
+    endY: 300
+  }
+});
+```
+
+**Animated Properties**: Not animated by default
+**Custom Settings**: Supports 4-decimal blur precision, pixel-perfect focus area positioning
+**Use Cases**: Miniature effects, selective focus, architectural photography simulation
+
+---
+
 ## Color Effects
 
 ### Vintage
@@ -257,6 +287,36 @@ const adjustEffect = advancedPresets.createEffect('adjustment', {
 ```
 
 **Use Cases**: Color correction, mood enhancement, visual tuning
+
+---
+
+### RGBSplit
+**Category**: Advanced Color | **Performance**: ⭐⭐⭐⭐ Very Good | **Compatibility**: ✅ All Browsers
+
+RGB channel separation effect creating chromatic aberration for digital glitch aesthetics.
+
+```typescript
+// Basic usage
+const rgbSplitEffect = advancedPresets.createEffect('rgbSplit', {
+  intensity: 'moderate'
+});
+
+// With custom settings
+const customRGBSplit = advancedPresets.createEffect('rgbSplit', {
+  customSettings: {
+    redX: 5,
+    redY: 0,
+    greenX: -3,
+    greenY: 2,
+    blueX: 0,
+    blueY: -4
+  }
+});
+```
+
+**Animated Properties**: Not animated by default
+**Custom Settings**: Supports precise -20 to +20 pixel offset control for each RGB channel
+**Use Cases**: Chromatic aberration, retro VHS effects, digital glitch aesthetics
 
 ---
 
@@ -473,6 +533,99 @@ const godrayEffect = advancedPresets.createEffect('godray', {
 ```
 
 **Use Cases**: Atmospheric lighting, divine effects, volumetric light
+
+---
+
+### Reflection
+**Category**: Advanced Special | **Performance**: ⭐⭐⭐ Good | **Compatibility**: ✅ All Browsers
+
+Water-like reflection effect with animated wave patterns and configurable properties.
+
+```typescript
+// Basic usage
+const reflectionEffect = advancedPresets.createEffect('reflection', {
+  intensity: 'moderate'
+});
+
+// With custom settings and animation
+const animatedReflection = advancedPresets.createEffect('reflection', {
+  customSettings: {
+    animated: true,
+    mirror: false,
+    boundary: 0.5,
+    amplitudeStart: 20,
+    amplitudeEnd: 30,
+    wavelengthStart: 50,
+    wavelengthEnd: 100,
+    alphaStart: 1.0,
+    alphaEnd: 0.5,
+    time: 0
+  }
+});
+```
+
+**Animated Properties**: Supports real-time wave animation with time progression
+**Custom Settings**: Full control over wave amplitude, wavelength, alpha, and mirror modes
+**Use Cases**: Water reflections, glass surfaces, liquid effects
+
+---
+
+### SimpleLightmap
+**Category**: Advanced Special | **Performance**: ⭐⭐⭐⭐ Very Good | **Compatibility**: ✅ All Browsers
+
+Dynamic lighting effects with customizable lightmap textures and ambient color control.
+
+```typescript
+// Basic usage
+const lightmapEffect = advancedPresets.createEffect('simpleLightmap', {
+  intensity: 'moderate'
+});
+
+// With custom settings and texture
+const customLightmap = advancedPresets.createEffect('simpleLightmap', {
+  customSettings: {
+    color: '#ff6600',
+    alpha: 0.8,
+    customLightmapTexture: '' // Empty for default, or upload custom texture
+  }
+});
+```
+
+**Animated Properties**: Not animated by default
+**Custom Settings**: Custom lightmap texture upload, hex color control, alpha transparency
+**Texture Preview**: Shows current lightmap with upload functionality
+**Use Cases**: Ambient lighting, mood lighting, architectural lighting effects
+
+---
+
+### SimplexNoise
+**Category**: Advanced Special | **Performance**: ⭐⭐⭐ Good | **Compatibility**: ✅ All Browsers
+
+Procedural simplex noise generation with 3-decimal precision and animated offset capability.
+
+```typescript
+// Basic usage
+const noiseEffect = advancedPresets.createEffect('simplexNoise', {
+  intensity: 'moderate'
+});
+
+// With custom settings and animation
+const animatedNoise = advancedPresets.createEffect('simplexNoise', {
+  customSettings: {
+    animated: true,
+    strength: 0.750,
+    noiseScale: 25,
+    offsetX: 2.500,
+    offsetY: 1.250,
+    offsetZ: 0.000,
+    step: 0.500
+  }
+});
+```
+
+**Animated Properties**: Supports real-time animated noise with offset progression
+**Custom Settings**: 3-decimal precision for strength and offsets, configurable noise scale
+**Use Cases**: Organic textures, animated backgrounds, procedural effects
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "kineticslider",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A high-performance, customizable slider component with kinetic scrolling and advanced effects",
   "type": "module",
   "main": "dist/index.js",

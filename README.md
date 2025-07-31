@@ -10,7 +10,7 @@ A high-performance, GPU-accelerated slider component built with GSAP and PIXI.js
 ## ✨ Features
 
 - **🚀 High Performance**: 60fps animations with GPU acceleration
-- **🎨 Advanced Visual Effects**: Displacement mapping, filter chains, and custom shaders
+- **🎨 37+ Advanced Visual Filters**: Comprehensive filter library including blur, glow, distortion, artistic, and special effects
 - **⚡ Physics-Based**: Kinetic scrolling with spring physics and momentum
 - **♿ Accessible**: Full WCAG 2.1 AA compliance with keyboard navigation
 - **📱 Responsive**: Adaptive design that works on all screen sizes
@@ -73,6 +73,66 @@ function MySlider() {
   );
 }
 ```
+
+## 🎨 Comprehensive Filter System
+
+KineticSlider includes 37+ professional-grade visual filters organized into six main categories:
+
+### Filter Categories
+
+**🌊 Core PIXI Filters**: Alpha, Blur, ColorMatrix, Displacement  
+**🌪️ Blur Effects**: Motion Blur, Kawase Blur, Radial Blur, Zoom Blur, Tilt Shift  
+**🎭 Color Effects**: Vintage, Cyberpunk, Black & White, RGB Split, HSL Adjustment  
+**🌀 Distortion Effects**: Wave, Twist, Bulge Pinch, Shockwave  
+**🎪 Artistic Effects**: Pixelate, ASCII, Dot Screen, CRT, Crosshatch  
+**✨ Special Effects**: Glow, Outline, Emboss, Reflection, Godray, Simplex Noise  
+
+### Filter Usage Examples
+
+```typescript
+import { EffectPresets, AdvancedFilterPresets } from 'kineticslider';
+
+const effectPresets = new EffectPresets();
+const advancedPresets = new AdvancedFilterPresets();
+
+// Apply filters with intensity levels (subtle, moderate, strong, intense)
+const blurEffect = effectPresets.createEffect('blur', {
+  intensity: 'moderate'
+});
+
+// Use advanced filters with custom settings
+const tiltShiftEffect = advancedPresets.createEffect('tiltShift', {
+  customSettings: {
+    blur: 50.0,        // 4-decimal precision
+    startX: 200,       // Pixel-perfect positioning
+    endX: 1000,
+    startY: 100,
+    endY: 300
+  }
+});
+
+// Create animated filters
+const reflectionEffect = advancedPresets.createEffect('reflection', {
+  customSettings: {
+    animated: true,    // Real-time wave animation
+    boundary: 0.5,
+    amplitudeStart: 20,
+    wavelengthStart: 50
+  }
+});
+
+// Apply filters to sprites or containers
+blurEffect.applyTo(sprite);
+tiltShiftEffect.applyTo(container);
+```
+
+### Performance & Compatibility
+
+- **60fps Performance**: Optimized for real-time rendering
+- **GPU Acceleration**: WebGL-powered visual effects
+- **Browser Support**: Chrome 88+, Firefox 85+, Safari 14+, Edge 88+
+- **Mobile Optimized**: Performance-tuned for mobile devices
+- **Memory Efficient**: Smart resource management and cleanup
 
 ## 📖 Documentation
 
@@ -267,7 +327,7 @@ KineticSlider is optimized for performance:
 - **60fps animations** on modern devices
 - **GPU acceleration** for visual effects
 - **Memory usage under 100MB** for typical use cases
-- **Bundle size under 150KB** (gzipped)
+- **Bundle size under 100KB** (gzipped)
 - **Load time under 2 seconds** on 3G networks
 
 ## 🤝 Contributing

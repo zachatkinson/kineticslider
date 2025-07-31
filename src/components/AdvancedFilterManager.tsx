@@ -2536,7 +2536,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     }}
                   >
                     <img
-                      src={typeof value === 'string' ? value || '/images/effects/cursor-displace.png' : '/images/effects/cursor-displace.png'}
+                      src={
+                        typeof value === 'string'
+                          ? value || '/images/effects/cursor-displace.png'
+                          : '/images/effects/cursor-displace.png'
+                      }
                       alt="Displacement Texture Preview"
                       style={{
                         width: '60px',
@@ -2669,7 +2673,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     }}
                   >
                     <img
-                      src={typeof value === 'string' ? value || '/images/lightmap.png' : '/images/lightmap.png'}
+                      src={
+                        typeof value === 'string'
+                          ? value || '/images/lightmap.png'
+                          : '/images/lightmap.png'
+                      }
                       alt="Lightmap Preview"
                       style={{
                         width: '60px',
