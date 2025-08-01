@@ -2141,6 +2141,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         return alwaysShowProps.includes(key);
       }
 
+
       // Show all properties for other filters
       return true;
     };
@@ -2612,16 +2613,17 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                         'm6',
                         'm7',
                         'm8',
-                      ].map((matrixKey, index) => (
+                      ].map((matrixKey) => (
                         <div key={matrixKey} style={{ textAlign: 'center' }}>
                           <div
                             style={{
                               fontSize: '0.7rem',
                               color: '#6b7280',
                               marginBottom: '0.2rem',
+                              fontWeight: '500',
                             }}
                           >
-                            {`[${Math.floor(index / 3)},${index % 3}]`}
+                            {matrixKey.toUpperCase()}
                           </div>
                           <input
                             type="range"
