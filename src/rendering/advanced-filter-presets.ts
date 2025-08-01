@@ -15,6 +15,7 @@ import {
   Assets,
   Texture,
   DisplacementFilter,
+  AlphaFilter,
 } from 'pixi.js';
 import { FilterChain } from './filter-chain';
 import { FilterManager } from './filter-manager';
@@ -127,6 +128,18 @@ export class AdvancedFilterPresets extends EffectPresets {
    * Register advanced filter presets from pixi-filters
    */
   private registerAdvancedPresets(): void {
+    // Basic Effects
+    
+    this.registerAdvancedPreset({
+      name: 'alpha',
+      category: 'color' as EffectCategory,
+      description: 'Alpha transparency control for fade and opacity effects',
+      performanceImpact: 1,
+      compatibility: ['chrome', 'firefox', 'safari', 'edge'],
+      useCases: ['fade effects', 'transparency control', 'opacity adjustment'],
+      create: (options) => this.createAdvancedAlphaEffect(options),
+    });
+
     // Retro Effects
 
     this.registerAdvancedPreset({
@@ -967,6 +980,54 @@ export class AdvancedFilterPresets extends EffectPresets {
         outerStrength: settings.outerStrength,
         innerStrength: settings.innerStrength,
       },
+      duration: options.duration,
+      ease: options.ease,
+    });
+
+    return this.createEffectResult(filterChain, [filter], options);
+  }
+
+  private createAdvancedAlphaEffect(
+    options: Required<PresetOptions>
+  ): EffectPresetResult {
+    // Check for custom settings first
+    if (
+      options.customSettings &&
+      typeof options.customSettings.alpha === 'number'
+    ) {
+      const filter = new AlphaFilter({
+        alpha: options.customSettings.alpha,
+      });
+
+      const filterChain = new FilterChain({
+        name: 'alphaAdvanced',
+      });
+
+      filterChain.addFilter(filter, {
+        id: 'alpha',
+      });
+
+      return this.createEffectResult(filterChain, [filter], options);
+    }
+
+    // Use intensity-based presets
+    const intensityMap = {
+      subtle: 0.85,
+      moderate: 0.7,
+      strong: 0.5,
+      intense: 0.3,
+    };
+
+    const alpha = intensityMap[options.intensity];
+    const filter = new AlphaFilter({ alpha });
+
+    const filterChain = new FilterChain({
+      name: 'alphaAdvanced',
+    });
+
+    filterChain.addFilter(filter, {
+      id: 'alpha',
+      animationProperties: { alpha },
       duration: options.duration,
       ease: options.ease,
     });
@@ -3652,17 +3713,18 @@ export class AdvancedFilterPresets extends EffectPresets {
             ? options.customSettings.height
             : preset.height;
       } else {
-        // Use custom matrix if provided
-        if (typeof options.customSettings.customMatrix === 'string') {
-          const matrixString = options.customSettings.customMatrix;
-          matrix = matrixString
-            .split(',')
-            .map((n) => parseFloat(n.trim()))
-            .filter((n) => !isNaN(n));
-        } else {
-          // Default to sharpen if no valid matrix
-          matrix = [0, -0.5, 0, -0.5, 3, -0.5, 0, -0.5, 0];
-        }
+        // Use individual matrix elements (m0-m8) for custom matrix
+        matrix = [
+          typeof options.customSettings.m0 === 'number' ? options.customSettings.m0 : 0,
+          typeof options.customSettings.m1 === 'number' ? options.customSettings.m1 : 0.5,
+          typeof options.customSettings.m2 === 'number' ? options.customSettings.m2 : 0,
+          typeof options.customSettings.m3 === 'number' ? options.customSettings.m3 : 0.5,
+          typeof options.customSettings.m4 === 'number' ? options.customSettings.m4 : 1,
+          typeof options.customSettings.m5 === 'number' ? options.customSettings.m5 : 0.5,
+          typeof options.customSettings.m6 === 'number' ? options.customSettings.m6 : 0,
+          typeof options.customSettings.m7 === 'number' ? options.customSettings.m7 : 0.5,
+          typeof options.customSettings.m8 === 'number' ? options.customSettings.m8 : 0,
+        ];
 
         width =
           typeof options.customSettings.width === 'number'
@@ -3757,29 +3819,27 @@ export class AdvancedFilterPresets extends EffectPresets {
         'FILTER_PRESETS'
       );
 
+      // Calculate strength from blurX and blurY (average for overall strength)
+      const blurX = typeof options.customSettings.blurX === 'number'
+        ? options.customSettings.blurX
+        : 8;
+      const blurY = typeof options.customSettings.blurY === 'number'
+        ? options.customSettings.blurY
+        : 8;
+      const strength = (blurX + blurY) / 2;
+      
       const filter = new BackdropBlurFilter({
-        strength:
-          typeof options.customSettings.strength === 'number'
-            ? options.customSettings.strength
-            : 8,
+        strength,
         quality:
           typeof options.customSettings.quality === 'number'
             ? options.customSettings.quality
             : 4,
-        resolution:
-          typeof options.customSettings.resolution === 'number'
-            ? options.customSettings.resolution
-            : 1,
         kernelSize: 5,
       });
-
-      // Set blurX and blurY properties after filter creation since they inherit from BlurFilter
-      if (typeof options.customSettings.blurX === 'number') {
-        filter.blurX = options.customSettings.blurX;
-      }
-      if (typeof options.customSettings.blurY === 'number') {
-        filter.blurY = options.customSettings.blurY;
-      }
+      
+      // Set blurX and blurY after creation
+      filter.blurX = blurX;
+      filter.blurY = blurY;
 
       const filterChain = new FilterChain({ name: 'backdrop-blur-effect' });
       filterChain.addFilter(filter, {
@@ -3795,7 +3855,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       });
 
       debugLogger.info(
-        `BackdropBlur filter applied - strength: ${filter.strength}, blurX: ${filter.blurX}, blurY: ${filter.blurY}, quality: ${filter.quality}, resolution: ${filter.resolution}`,
+        `BackdropBlur filter applied - blurX: ${filter.blurX}, blurY: ${filter.blurY}, quality: ${filter.quality}`,
         'FILTER_PRESETS'
       );
 

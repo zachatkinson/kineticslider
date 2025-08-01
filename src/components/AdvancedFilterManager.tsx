@@ -294,6 +294,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
 
               // Update the filter settings with the texture data
               const updates = createSafeUpdate(key, textureData);
+              
+              // If this is a colormap upload, also set the preset to "custom"
+              if (key === 'customColorMap') {
+                updates.colorMapPreset = 'custom';
+              }
+              
               updateFilterSettings(filterId, updates);
 
               // Log success for debugging
@@ -350,6 +356,96 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       };
       if (Object.prototype.hasOwnProperty.call(godrayMinValues, key)) {
         return godrayMinValues[key as keyof typeof godrayMinValues];
+      }
+    }
+
+    // Special handling for adjustment filter properties
+    if (filterName === 'adjustment') {
+      const adjustmentMinValues: Record<string, string> = {
+        gamma: '0',
+        saturation: '0',
+        contrast: '0',
+        brightness: '0',
+        red: '0',
+        green: '0',
+        blue: '0',
+        alpha: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(adjustmentMinValues, key)) {
+        return adjustmentMinValues[key as keyof typeof adjustmentMinValues];
+      }
+    }
+
+    // Special handling for advanced bloom filter properties
+    if (filterName === 'advancedBloom') {
+      const advancedBloomMinValues: Record<string, string> = {
+        threshold: '0.1',
+        bloomScale: '0.5',
+        brightness: '0.5',
+        blur: '0',
+        quality: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(advancedBloomMinValues, key)) {
+        return advancedBloomMinValues[key as keyof typeof advancedBloomMinValues];
+      }
+    }
+
+    // Special handling for alpha filter properties
+    if (filterName === 'alpha') {
+      const alphaMinValues: Record<string, string> = {
+        alpha: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(alphaMinValues, key)) {
+        return alphaMinValues[key as keyof typeof alphaMinValues];
+      }
+    }
+
+    // Special handling for ascii filter properties
+    if (filterName === 'ascii') {
+      const asciiMinValues: Record<string, string> = {
+        size: '2',
+      };
+      if (Object.prototype.hasOwnProperty.call(asciiMinValues, key)) {
+        return asciiMinValues[key as keyof typeof asciiMinValues];
+      }
+    }
+
+    // Special handling for backdrop blur filter properties
+    if (filterName === 'backdropBlur') {
+      const backdropBlurMinValues: Record<string, string> = {
+        blurX: '0',
+        blurY: '0',
+        quality: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(backdropBlurMinValues, key)) {
+        return backdropBlurMinValues[key as keyof typeof backdropBlurMinValues];
+      }
+    }
+
+    // Special handling for bulgePinch filter properties
+    if (filterName === 'bulgePinch') {
+      const bulgePinchMinValues: Record<string, string> = {
+        radius: '0',
+        strength: '-1',
+        centerX: '0',
+        centerY: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(bulgePinchMinValues, key)) {
+        return bulgePinchMinValues[key as keyof typeof bulgePinchMinValues];
+      }
+    }
+
+    // Special handling for convolution filter properties
+    if (filterName === 'convolution') {
+      const convolutionMinValues: Record<string, string> = {
+        width: '0',
+        height: '0',
+        m0: '0', m1: '0', m2: '0',
+        m3: '0', m4: '0', m5: '0', 
+        m6: '0', m7: '0', m8: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(convolutionMinValues, key)) {
+        return convolutionMinValues[key as keyof typeof convolutionMinValues];
       }
     }
 
@@ -622,8 +718,6 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       centerX: '0',
       centerY: '0',
       radius: '10',
-      // BulgePinchFilter properties
-      bulgePinchStrength: '-1', // Can be negative for pinch effect, positive for others
       // ColorGradientFilter properties
       type: '0', // Gradient type (0 = linear, 1 = radial)
       gradientAngle: '0', // Angle in degrees
@@ -638,9 +732,6 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       hue: '0', // Hue rotation in degrees
       // ColorReplaceFilter properties
       tolerance: '0', // Color matching tolerance minimum
-      // ConvolutionFilter properties
-      width: '1', // Matrix width minimum
-      height: '1', // Matrix height minimum
       // DotFilter properties
       scale: '0.1', // Dot size minimum
       angle: '0', // Rotation angle minimum
@@ -690,6 +781,96 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       };
       if (Object.prototype.hasOwnProperty.call(godrayMaxValues, key)) {
         return godrayMaxValues[key as keyof typeof godrayMaxValues];
+      }
+    }
+
+    // Special handling for adjustment filter properties
+    if (filterName === 'adjustment') {
+      const adjustmentMaxValues: Record<string, string> = {
+        gamma: '5',
+        saturation: '5',
+        contrast: '5',
+        brightness: '5',
+        red: '5',
+        green: '5',
+        blue: '5',
+        alpha: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(adjustmentMaxValues, key)) {
+        return adjustmentMaxValues[key as keyof typeof adjustmentMaxValues];
+      }
+    }
+
+    // Special handling for advanced bloom filter properties
+    if (filterName === 'advancedBloom') {
+      const advancedBloomMaxValues: Record<string, string> = {
+        threshold: '0.9',
+        bloomScale: '1.5',
+        brightness: '1.5',
+        blur: '20',
+        quality: '20',
+      };
+      if (Object.prototype.hasOwnProperty.call(advancedBloomMaxValues, key)) {
+        return advancedBloomMaxValues[key as keyof typeof advancedBloomMaxValues];
+      }
+    }
+
+    // Special handling for alpha filter properties
+    if (filterName === 'alpha') {
+      const alphaMaxValues: Record<string, string> = {
+        alpha: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(alphaMaxValues, key)) {
+        return alphaMaxValues[key as keyof typeof alphaMaxValues];
+      }
+    }
+
+    // Special handling for ascii filter properties
+    if (filterName === 'ascii') {
+      const asciiMaxValues: Record<string, string> = {
+        size: '20',
+      };
+      if (Object.prototype.hasOwnProperty.call(asciiMaxValues, key)) {
+        return asciiMaxValues[key as keyof typeof asciiMaxValues];
+      }
+    }
+
+    // Special handling for backdrop blur filter properties
+    if (filterName === 'backdropBlur') {
+      const backdropBlurMaxValues: Record<string, string> = {
+        blurX: '100',
+        blurY: '100',
+        quality: '10',
+      };
+      if (Object.prototype.hasOwnProperty.call(backdropBlurMaxValues, key)) {
+        return backdropBlurMaxValues[key as keyof typeof backdropBlurMaxValues];
+      }
+    }
+
+    // Special handling for bulgePinch filter properties
+    if (filterName === 'bulgePinch') {
+      const bulgePinchMaxValues: Record<string, string> = {
+        radius: '1000',
+        strength: '1',
+        centerX: '1',
+        centerY: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(bulgePinchMaxValues, key)) {
+        return bulgePinchMaxValues[key as keyof typeof bulgePinchMaxValues];
+      }
+    }
+
+    // Special handling for convolution filter properties
+    if (filterName === 'convolution') {
+      const convolutionMaxValues: Record<string, string> = {
+        width: '500',
+        height: '500',
+        m0: '1', m1: '1', m2: '1',
+        m3: '1', m4: '1', m5: '1',
+        m6: '1', m7: '1', m8: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(convolutionMaxValues, key)) {
+        return convolutionMaxValues[key as keyof typeof convolutionMaxValues];
       }
     }
 
@@ -961,8 +1142,6 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       centerX: '1',
       centerY: '1',
       radius: '500',
-      // BulgePinchFilter properties
-      bulgePinchStrength: '20', // Max strength for bulge/pinch
       // ColorGradientFilter properties
       type: '1', // Gradient type (0 = linear, 1 = radial)
       gradientAngle: '360', // Angle in degrees (full circle)
@@ -977,9 +1156,6 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       hue: '360', // Full hue rotation
       // ColorReplaceFilter properties
       tolerance: '1', // Color matching tolerance maximum
-      // ConvolutionFilter properties
-      width: '5', // Matrix width maximum (practical limit)
-      height: '5', // Matrix height maximum (practical limit)
       // CRTFilter properties
       curvature: '5', // Screen curvature maximum
       lineContrast: '1', // Scan line contrast maximum
@@ -1029,6 +1205,96 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       };
       if (Object.prototype.hasOwnProperty.call(godrayStepValues, key)) {
         return godrayStepValues[key as keyof typeof godrayStepValues];
+      }
+    }
+
+    // Special handling for adjustment filter properties
+    if (filterName === 'adjustment') {
+      const adjustmentStepValues: Record<string, string> = {
+        gamma: '0.0001',
+        saturation: '0.0001',
+        contrast: '0.0001',
+        brightness: '0.0001',
+        red: '0.0001',
+        green: '0.0001',
+        blue: '0.0001',
+        alpha: '0.001',
+      };
+      if (Object.prototype.hasOwnProperty.call(adjustmentStepValues, key)) {
+        return adjustmentStepValues[key as keyof typeof adjustmentStepValues];
+      }
+    }
+
+    // Special handling for advanced bloom filter properties
+    if (filterName === 'advancedBloom') {
+      const advancedBloomStepValues: Record<string, string> = {
+        threshold: '0.01',
+        bloomScale: '0.001',
+        brightness: '0.001',
+        blur: '0.1',
+        quality: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(advancedBloomStepValues, key)) {
+        return advancedBloomStepValues[key as keyof typeof advancedBloomStepValues];
+      }
+    }
+
+    // Special handling for alpha filter properties
+    if (filterName === 'alpha') {
+      const alphaStepValues: Record<string, string> = {
+        alpha: '0.001',
+      };
+      if (Object.prototype.hasOwnProperty.call(alphaStepValues, key)) {
+        return alphaStepValues[key as keyof typeof alphaStepValues];
+      }
+    }
+
+    // Special handling for ascii filter properties
+    if (filterName === 'ascii') {
+      const asciiStepValues: Record<string, string> = {
+        size: '0.001',
+      };
+      if (Object.prototype.hasOwnProperty.call(asciiStepValues, key)) {
+        return asciiStepValues[key as keyof typeof asciiStepValues];
+      }
+    }
+
+    // Special handling for backdrop blur filter properties
+    if (filterName === 'backdropBlur') {
+      const backdropBlurStepValues: Record<string, string> = {
+        blurX: '0.1',
+        blurY: '0.1',
+        quality: '0.001',
+      };
+      if (Object.prototype.hasOwnProperty.call(backdropBlurStepValues, key)) {
+        return backdropBlurStepValues[key as keyof typeof backdropBlurStepValues];
+      }
+    }
+
+    // Special handling for bulgePinch filter properties
+    if (filterName === 'bulgePinch') {
+      const bulgePinchStepValues: Record<string, string> = {
+        radius: '1',
+        strength: '0.001',
+        centerX: '0.001',
+        centerY: '0.001',
+      };
+      if (Object.prototype.hasOwnProperty.call(bulgePinchStepValues, key)) {
+        return bulgePinchStepValues[key as keyof typeof bulgePinchStepValues];
+      }
+    }
+
+    // Special handling for convolution filter properties
+    if (filterName === 'convolution') {
+      const convolutionStepValues: Record<string, string> = {
+        width: '1',
+        height: '1',
+        m0: '0.01', m1: '0.01', m2: '0.01',
+        m3: '0.01', m4: '0.01', m5: '0.01',
+        m6: '0.01', m7: '0.01', m8: '0.01',
+      };
+      if (Object.prototype.hasOwnProperty.call(convolutionStepValues, key)) {
+        return convolutionStepValues[key as keyof typeof convolutionStepValues];
       }
     }
 
@@ -1302,8 +1568,6 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       centerX: '0.01',
       centerY: '0.01',
       radius: '5',
-      // BulgePinchFilter properties
-      bulgePinchStrength: '0.1', // Step for bulge/pinch strength
       // ColorGradientFilter properties
       type: '1', // Step for gradient type (integer values)
       gradientAngle: '5', // Step for angle in degrees
@@ -1491,11 +1755,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         color: '#ffffff',
       },
       backdropBlur: {
-        strength: 8, // Overall blur amount (maps to blur property)
-        blurX: 8, // Horizontal blur strength
-        blurY: 8, // Vertical blur strength
-        quality: 4, // Quality/performance balance
-        resolution: 1, // Filter resolution multiplier
+        blurX: 8, // Horizontal blur amount (0-100)
+        blurY: 8, // Vertical blur amount (0-100)
+        quality: 4, // Quality/performance balance (1-10)
       },
       bevel: {
         rotation: 45, // Angle of light in degrees
@@ -1517,8 +1779,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       bulgePinch: {
         centerX: 0.5, // X-axis center coordinate (normalized 0-1)
         centerY: 0.5, // Y-axis center coordinate (normalized 0-1)
-        radius: 100, // Radius of the effect area
-        bulgePinchStrength: 1, // Bulge/pinch intensity (-1 to 1)
+        radius: 100, // Radius of the effect area (0-1000)
+        strength: 0.5, // Bulge/pinch intensity (-1 to 1, negative=pinch, positive=bulge)
       },
       colorGradient: {
         type: 0, // Gradient type (0 = linear, 1 = radial)
@@ -1534,7 +1796,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       colorMap: {
         mix: 0.5, // Blend amount between original and color-mapped (0-1)
         nearest: false, // Use nearest neighbor sampling (vs linear)
-        colorMapPreset: 'vintage', // Built-in preset selection
+        colorMapPreset: 'custom', // Default to custom - user can switch to presets
         customColorMap: '', // Custom uploaded texture (empty string when none)
       },
       colorOverlay: {
@@ -1547,8 +1809,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         tolerance: 0.3, // Color matching tolerance (0-1)
       },
       convolution: {
-        matrixType: 'sharpen', // Preset matrix type (sharpen, edge, emboss, etc.)
-        customMatrix: '0,-0.5,0,-0.5,3,-0.5,0,-0.5,0', // Custom 3x3 matrix as comma-separated string
+        matrixType: 'custom', // Default to custom matrix for immediate slider access
+        // 3x3 Matrix elements (0-1 range with 2 decimal precision)
+        m0: 0.0,  m1: 0.5,  m2: 0.0,   // Top row
+        m3: 0.5,  m4: 1.0,  m5: 0.5,   // Middle row  
+        m6: 0.0,  m7: 0.5,  m8: 0.0,   // Bottom row
         width: 3, // Matrix width (typically 3)
         height: 3, // Matrix height (typically 3)
       },
@@ -1829,6 +2094,21 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         }
       }
 
+      // Handle ASCII filter conditional properties
+      if (filter.name === 'ascii') {
+        const replaceColorEnabled = filter.settings.replaceColor;
+        
+        // Always show these properties
+        const alwaysShowProps = ['size', 'replaceColor'];
+        
+        // Show color only when replaceColor is enabled
+        if (key === 'color') {
+          return Boolean(replaceColorEnabled);
+        }
+        
+        return alwaysShowProps.includes(key);
+      }
+
       // Show all properties for other filters
       return true;
     };
@@ -1950,6 +2230,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   // HslAdjustmentFilter labels
                   colorize: 'Color Mode',
                   lightness: 'Lightness',
+                  // BulgePinchFilter labels
+                  strength: filter.name === 'bulgePinch' ? 'Strength (-1 pinch, +1 bulge)' : 'Strength',
                 };
                 return Object.prototype.hasOwnProperty.call(labelMap, key)
                   ? labelMap[key as keyof typeof labelMap]
@@ -1957,49 +2239,31 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
               })()}
             </label>
             {key === 'replaceColor' && typeof value === 'boolean' ? (
-              // Special handling for replaceColor as radio buttons
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
+              // Special handling for replaceColor as checkbox
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(key, e.target.checked);
+                    updateFilterSettings(filter.id, updates);
                   }}
-                >
-                  <input
-                    type="radio"
-                    name={`${filter.id}-replaceColor`}
-                    checked={!value}
-                    onChange={() => {
-                      const updates = createSafeUpdate(key, false);
-                      updateFilterSettings(filter.id, updates);
-                    }}
-                  />
-                  <span style={{ fontSize: '0.8rem' }}>
-                    No (original colors)
-                  </span>
-                </label>
-                <label
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
+                    width: '16px',
+                    height: '16px',
+                    accentColor: '#10b981',
+                    cursor: 'pointer',
                   }}
-                >
-                  <input
-                    type="radio"
-                    name={`${filter.id}-replaceColor`}
-                    checked={value}
-                    onChange={() => {
-                      const updates = createSafeUpdate(key, true);
-                      updateFilterSettings(filter.id, updates);
-                    }}
-                  />
-                  <span style={{ fontSize: '0.8rem' }}>
-                    Yes (replace with color)
-                  </span>
-                </label>
-              </div>
+                />
+                <span style={{ fontSize: '0.8rem' }}>Replace with color</span>
+              </label>
             ) : (key === 'color' ||
                 key === 'lightColor' ||
                 key === 'shadowColor' ||
@@ -2151,6 +2415,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   value={value}
                   onChange={(e) => {
                     const updates = createSafeUpdate(key, e.target.value);
+                    // If switching away from custom, clear the custom colormap
+                    if (value === 'custom' && e.target.value !== 'custom') {
+                      updates.customColorMap = '';
+                    }
                     updateFilterSettings(filter.id, updates);
                   }}
                   style={{
@@ -2161,6 +2429,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     fontSize: '0.8rem',
                   }}
                 >
+                  <option value="custom">Custom (Upload Image)</option>
                   <option value="vintage">Vintage Film</option>
                   <option value="neon">Neon Dreams</option>
                   <option value="thermal">Thermal Vision</option>
@@ -2176,7 +2445,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     marginTop: '0.2rem',
                   }}
                 >
-                  Built-in color mapping presets for different visual styles
+                  Select "Custom" to upload your own colormap, or choose a built-in preset
                 </div>
               </div>
             ) : key === 'matrixType' &&
@@ -2269,6 +2538,77 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   Select a convolution effect or use Custom Matrix for manual
                   control
                 </div>
+              </div>
+            ) : (key.startsWith('m') && key.length === 2 && filter.name === 'convolution' && typeof value === 'number') ? (
+              // Special handling for convolution matrix elements (m0-m8)
+              <div>
+                {/* Only render the matrix grid for m0, and only when custom matrix is selected */}
+                {key === 'm0' && filter.settings.matrixType === 'custom' && (
+                  <div>
+                    <div style={{ 
+                      fontSize: '0.8rem', 
+                      fontWeight: 'bold', 
+                      marginBottom: '0.5rem',
+                      color: '#374151'
+                    }}>
+                      3×3 Convolution Matrix
+                    </div>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: '1fr 1fr 1fr',
+                      gap: '0.5rem',
+                      marginBottom: '0.5rem'
+                    }}>
+                      {['m0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8'].map((matrixKey, index) => (
+                        <div key={matrixKey} style={{ textAlign: 'center' }}>
+                          <div style={{ 
+                            fontSize: '0.7rem', 
+                            color: '#6b7280',
+                            marginBottom: '0.2rem'
+                          }}>
+                            {`[${Math.floor(index/3)},${index%3}]`}
+                          </div>
+                          <input
+                            type="range"
+                            min={getPropertyMin(matrixKey, filter.name)}
+                            max={getPropertyMax(matrixKey, filter.name)}
+                            step={getPropertyStep(matrixKey, filter.name)}
+                            value={(() : number => {
+                              const val = filter.settings[matrixKey as keyof typeof filter.settings];
+                              return Number(val) || 0;
+                            })()}
+                            onChange={(e) => {
+                              const updates = createSafeUpdate(matrixKey, parseFloat(e.target.value));
+                              updateFilterSettings(filter.id, updates);
+                            }}
+                            style={{
+                              width: '100%',
+                              marginBottom: '0.2rem'
+                            }}
+                          />
+                          <div style={{ 
+                            fontSize: '0.7rem', 
+                            color: '#374151',
+                            fontWeight: 'medium'
+                          }}>
+                            {(() : string => {
+                              const val = filter.settings[matrixKey as keyof typeof filter.settings];
+                              return (Number(val) || 0).toFixed(2);
+                            })()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{
+                      fontSize: '0.7rem',
+                      color: '#9ca3af',
+                      fontStyle: 'italic',
+                      textAlign: 'center'
+                    }}>
+                      Each cell ranges from 0.00 to 1.00
+                    </div>
+                  </div>
+                )}
               </div>
             ) : key === 'customColorMap' ? (
               // Special handling for custom colormap upload
