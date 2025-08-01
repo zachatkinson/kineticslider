@@ -1434,9 +1434,20 @@ export class AdvancedFilterPresets extends EffectPresets {
     if (options.customSettings) {
       const settings = options.customSettings;
 
-      const size = typeof settings.size === 'number' ? settings.size : 10;
       const filter = new PixelateFilter();
-      filter.size = size;
+
+      // Support both individual sizeX/sizeY and combined size property
+      if (
+        typeof settings.sizeX === 'number' ||
+        typeof settings.sizeY === 'number'
+      ) {
+        filter.sizeX = typeof settings.sizeX === 'number' ? settings.sizeX : 10;
+        filter.sizeY = typeof settings.sizeY === 'number' ? settings.sizeY : 10;
+      } else if (typeof settings.size === 'number') {
+        filter.size = settings.size;
+      } else {
+        filter.size = 10; // Default
+      }
 
       const filterChain = new FilterChain({ name: 'pixelate-effect' });
       filterChain.addFilter(filter, {

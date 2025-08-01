@@ -457,6 +457,88 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       }
     }
 
+    // Special handling for crt filter properties
+    if (filterName === 'crt') {
+      const crtMinValues: Record<string, string> = {
+        curvature: '0',
+        lineWidth: '0',
+        lineContrast: '0',
+        noise: '0',
+        noiseSize: '1',
+        vignetting: '0',
+        vignettingAlpha: '0',
+        vignettingBlur: '0',
+        seed: '0',
+        time: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(crtMinValues, key)) {
+        return crtMinValues[key as keyof typeof crtMinValues];
+      }
+    }
+
+    // Special handling for displacement filter properties
+    if (filterName === 'displacement') {
+      const displacementMinValues: Record<string, string> = {
+        scaleX: '1',
+        scaleY: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(displacementMinValues, key)) {
+        return displacementMinValues[key as keyof typeof displacementMinValues];
+      }
+    }
+
+    // Special handling for dot filter properties
+    if (filterName === 'dot') {
+      const dotMinValues: Record<string, string> = {
+        angle: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(dotMinValues, key)) {
+        return dotMinValues[key as keyof typeof dotMinValues];
+      }
+    }
+
+    // Special handling for drop shadow filter properties
+    if (filterName === 'dropShadow') {
+      const dropShadowMinValues: Record<string, string> = {
+        offsetX: '-50',
+        offsetY: '-50',
+        blur: '0',
+        quality: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(dropShadowMinValues, key)) {
+        return dropShadowMinValues[key as keyof typeof dropShadowMinValues];
+      }
+    }
+
+    // Special handling for glow filter properties
+    if (filterName === 'glow') {
+      const glowMinValues: Record<string, string> = {
+        distance: '0',
+        innerStrength: '0',
+        outerStrength: '0',
+        quality: '0',
+        alpha: '0',
+      };
+      if (Object.prototype.hasOwnProperty.call(glowMinValues, key)) {
+        return glowMinValues[key as keyof typeof glowMinValues];
+      }
+    }
+
+    // Special handling for godray filter properties
+    if (filterName === 'godray') {
+      const godrayMinValues: Record<string, string> = {
+        gain: '0',
+        lacunarity: '0',
+        alpha: '0',
+        angle: '-60',
+        centerX: '-100',
+        centerY: '-100',
+      };
+      if (Object.prototype.hasOwnProperty.call(godrayMinValues, key)) {
+        return godrayMinValues[key as keyof typeof godrayMinValues];
+      }
+    }
+
     // Special handling for HSL adjustment filter properties
     if (filterName === 'hslAdjustment') {
       const hslMinValues: Record<string, string> = {
@@ -487,10 +569,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for motion blur filter properties
     if (filterName === 'motionBlur') {
       const motionBlurMinValues: Record<string, string> = {
-        velocityX: '-200',
-        velocityY: '-200',
+        velocityX: '-90',
+        velocityY: '-90',
         kernelSize: '3',
-        offset: '0',
+        offset: '-150',
         alpha: '0',
       };
       if (Object.prototype.hasOwnProperty.call(motionBlurMinValues, key)) {
@@ -515,7 +597,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         sepia: '0',
         noise: '0',
         noiseSize: '1',
-        scratch: '0',
+        scratch: '-1',
         scratchDensity: '0',
         scratchWidth: '1',
         vignetting: '0',
@@ -548,7 +630,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for pixelate filter properties
     if (filterName === 'pixelate') {
       const pixelateMinValues: Record<string, string> = {
-        size: '4',
+        sizeX: '4',
+        sizeY: '4',
       };
       if (Object.prototype.hasOwnProperty.call(pixelateMinValues, key)) {
         return pixelateMinValues[key as keyof typeof pixelateMinValues];
@@ -779,13 +862,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for godray filter properties
     if (filterName === 'godray') {
       const godrayMaxValues: Record<string, string> = {
-        angle: '180',
-        centerX: '1',
-        centerY: '1',
         gain: '1',
         lacunarity: '5',
-        time: '100',
         alpha: '1',
+        angle: '60',
+        centerX: '1602',
+        centerY: '-1000',
+        time: '100',
       };
       if (Object.prototype.hasOwnProperty.call(godrayMaxValues, key)) {
         return godrayMaxValues[key as keyof typeof godrayMaxValues];
@@ -890,6 +973,73 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       }
     }
 
+    // Special handling for crt filter properties
+    if (filterName === 'crt') {
+      const crtMaxValues: Record<string, string> = {
+        curvature: '10',
+        lineWidth: '5',
+        lineContrast: '1',
+        noise: '1',
+        noiseSize: '10',
+        vignetting: '1',
+        vignettingAlpha: '1',
+        vignettingBlur: '1',
+        seed: '1',
+        time: '20',
+      };
+      if (Object.prototype.hasOwnProperty.call(crtMaxValues, key)) {
+        return crtMaxValues[key as keyof typeof crtMaxValues];
+      }
+    }
+
+    // Special handling for displacement filter properties
+    if (filterName === 'displacement') {
+      const displacementMaxValues: Record<string, string> = {
+        scaleX: '200',
+        scaleY: '200',
+      };
+      if (Object.prototype.hasOwnProperty.call(displacementMaxValues, key)) {
+        return displacementMaxValues[key as keyof typeof displacementMaxValues];
+      }
+    }
+
+    // Special handling for dot filter properties
+    if (filterName === 'dot') {
+      const dotMaxValues: Record<string, string> = {
+        angle: '5',
+      };
+      if (Object.prototype.hasOwnProperty.call(dotMaxValues, key)) {
+        return dotMaxValues[key as keyof typeof dotMaxValues];
+      }
+    }
+
+    // Special handling for drop shadow filter properties
+    if (filterName === 'dropShadow') {
+      const dropShadowMaxValues: Record<string, string> = {
+        offsetX: '50',
+        offsetY: '50',
+        blur: '20',
+        quality: '20',
+      };
+      if (Object.prototype.hasOwnProperty.call(dropShadowMaxValues, key)) {
+        return dropShadowMaxValues[key as keyof typeof dropShadowMaxValues];
+      }
+    }
+
+    // Special handling for glow filter properties
+    if (filterName === 'glow') {
+      const glowMaxValues: Record<string, string> = {
+        distance: '20',
+        innerStrength: '20',
+        outerStrength: '20',
+        quality: '1',
+        alpha: '1',
+      };
+      if (Object.prototype.hasOwnProperty.call(glowMaxValues, key)) {
+        return glowMaxValues[key as keyof typeof glowMaxValues];
+      }
+    }
+
     // Special handling for HSL adjustment filter properties
     if (filterName === 'hslAdjustment') {
       const hslMaxValues: Record<string, string> = {
@@ -906,7 +1056,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for kawase blur filter properties
     if (filterName === 'kawaseBlur') {
       const kawaseMaxValues: Record<string, string> = {
-        strength: '50',
+        strength: '20',
         quality: '20',
         pixelSizeX: '10',
         pixelSizeY: '10',
@@ -920,10 +1070,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for motion blur filter properties
     if (filterName === 'motionBlur') {
       const motionBlurMaxValues: Record<string, string> = {
-        velocityX: '200',
-        velocityY: '200',
+        velocityX: '90',
+        velocityY: '90',
         kernelSize: '25',
-        offset: '10',
+        offset: '150',
         alpha: '1',
       };
       if (Object.prototype.hasOwnProperty.call(motionBlurMaxValues, key)) {
@@ -950,7 +1100,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         noiseSize: '10',
         scratch: '1',
         scratchDensity: '1',
-        scratchWidth: '10',
+        scratchWidth: '20',
         vignetting: '1',
         vignettingAlpha: '1',
         vignettingBlur: '1',
@@ -969,7 +1119,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for outline filter properties
     if (filterName === 'outline') {
       const outlineMaxValues: Record<string, string> = {
-        thickness: '20',
+        thickness: '10',
         alpha: '1',
         quality: '1',
       };
@@ -981,7 +1131,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for pixelate filter properties
     if (filterName === 'pixelate') {
       const pixelateMaxValues: Record<string, string> = {
-        size: '40',
+        sizeX: '40',
+        sizeY: '40',
       };
       if (Object.prototype.hasOwnProperty.call(pixelateMaxValues, key)) {
         return pixelateMaxValues[key as keyof typeof pixelateMaxValues];
@@ -1324,6 +1475,106 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       }
     }
 
+    // Special handling for crt filter properties
+    if (filterName === 'crt') {
+      const crtStepValues: Record<string, string> = {
+        curvature: '0.00001', // 5 decimal points
+        lineWidth: '0.00001', // 5 decimal points
+        lineContrast: '0.00001', // 5 decimal points
+        noise: '0.00001', // 5 decimal points
+        noiseSize: '0.00001', // 5 decimal points
+        vignetting: '0.00001', // 5 decimal points
+        vignettingAlpha: '0.01', // 2 decimal points
+        vignettingBlur: '0.00001', // 5 decimal points
+        seed: '0.0001', // 4 decimal points
+        time: '0.00001', // 5 decimal points
+      };
+      if (Object.prototype.hasOwnProperty.call(crtStepValues, key)) {
+        return crtStepValues[key as keyof typeof crtStepValues];
+      }
+    }
+
+    // Special handling for displacement filter properties
+    if (filterName === 'displacement') {
+      const displacementStepValues: Record<string, string> = {
+        scaleX: '0.001', // 3 decimal points
+        scaleY: '0.001', // 3 decimal points
+      };
+      if (Object.prototype.hasOwnProperty.call(displacementStepValues, key)) {
+        return displacementStepValues[
+          key as keyof typeof displacementStepValues
+        ];
+      }
+    }
+
+    // Special handling for dot filter properties
+    if (filterName === 'dot') {
+      const dotStepValues: Record<string, string> = {
+        angle: '0.001', // 3 decimal points
+      };
+      if (Object.prototype.hasOwnProperty.call(dotStepValues, key)) {
+        return dotStepValues[key as keyof typeof dotStepValues];
+      }
+    }
+
+    // Special handling for drop shadow filter properties
+    if (filterName === 'dropShadow') {
+      const dropShadowStepValues: Record<string, string> = {
+        offsetX: '0.1', // 1 decimal point
+        offsetY: '0.1', // 1 decimal point
+        blur: '0.1', // 1 decimal point
+        quality: '1', // Integer values
+      };
+      if (Object.prototype.hasOwnProperty.call(dropShadowStepValues, key)) {
+        return dropShadowStepValues[key as keyof typeof dropShadowStepValues];
+      }
+    }
+
+    // Special handling for glow filter properties
+    if (filterName === 'glow') {
+      const glowStepValues: Record<string, string> = {
+        distance: '0.01', // 2 decimal points
+        innerStrength: '0.01', // 2 decimal points
+        outerStrength: '0.01', // 2 decimal points
+        quality: '0.001', // 3 decimal points
+        alpha: '0.001', // 3 decimal points
+      };
+      if (Object.prototype.hasOwnProperty.call(glowStepValues, key)) {
+        return glowStepValues[key as keyof typeof glowStepValues];
+      }
+    }
+
+    // Special handling for godray filter properties
+    if (filterName === 'godray') {
+      const godrayStepValues: Record<string, string> = {
+        gain: '0.000001', // 6 decimal points
+        lacunarity: '0.000001', // 6 decimal points
+        alpha: '0.01', // 2 decimal points
+        angle: '0.01', // 2 decimal points
+        centerX: '0.001', // 3 decimal points
+        centerY: '0.001', // 3 decimal points
+      };
+      if (Object.prototype.hasOwnProperty.call(godrayStepValues, key)) {
+        return godrayStepValues[key as keyof typeof godrayStepValues];
+      }
+    }
+
+    // Special handling for oldFilm filter properties
+    if (filterName === 'oldFilm') {
+      const oldFilmStepValues: Record<string, string> = {
+        noiseSize: '0.0001', // 4 decimal points
+        scratch: '0.00001', // 5 decimal points
+        scratchDensity: '0.00001', // 5 decimal points
+        scratchWidth: '0.001', // 3 decimal points
+        vignetting: '0.00001', // 5 decimal points
+        vignettingAlpha: '0.00001', // 5 decimal points
+        vignettingBlur: '0.00001', // 5 decimal points
+      };
+      if (Object.prototype.hasOwnProperty.call(oldFilmStepValues, key)) {
+        return oldFilmStepValues[key as keyof typeof oldFilmStepValues];
+      }
+    }
+
     // Special handling for HSL adjustment filter properties
     if (filterName === 'hslAdjustment') {
       const hslStepValues: Record<string, string> = {
@@ -1340,7 +1591,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for kawase blur filter properties
     if (filterName === 'kawaseBlur') {
       const kawaseStepValues: Record<string, string> = {
-        strength: '0.5',
+        strength: '0.01',
         quality: '1',
         pixelSizeX: '0.1',
         pixelSizeY: '0.1',
@@ -1354,10 +1605,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for motion blur filter properties
     if (filterName === 'motionBlur') {
       const motionBlurStepValues: Record<string, string> = {
-        velocityX: '1',
-        velocityY: '1',
+        velocityX: '0.01',
+        velocityY: '0.01',
         kernelSize: '1',
-        offset: '0.1',
+        offset: '0.01',
         alpha: '0.01',
       };
       if (Object.prototype.hasOwnProperty.call(motionBlurStepValues, key)) {
@@ -1403,7 +1654,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for outline filter properties
     if (filterName === 'outline') {
       const outlineStepValues: Record<string, string> = {
-        thickness: '0.5',
+        thickness: '0.01',
         alpha: '0.01',
         quality: '0.01',
       };
@@ -1415,7 +1666,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
     // Special handling for pixelate filter properties
     if (filterName === 'pixelate') {
       const pixelateStepValues: Record<string, string> = {
-        size: '1', // Integer steps for pixel size
+        sizeX: '0.0001', // 4 decimal points
+        sizeY: '0.0001', // 4 decimal points
       };
       if (Object.prototype.hasOwnProperty.call(pixelateStepValues, key)) {
         return pixelateStepValues[key as keyof typeof pixelateStepValues];
@@ -1665,7 +1917,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         quality: 0.1,
       },
       pixelate: {
-        size: 10, // Pixel block size (1-100)
+        sizeX: 10, // Horizontal pixel block size (4-40)
+        sizeY: 10, // Vertical pixel block size (4-40)
       },
       radialBlur: {
         angle: 10, // Blur angle in degrees (-180 to 180)
@@ -1922,17 +2175,11 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         offset: 0, // Offset for the blur effect (0-10)
       },
       multiColorReplace: {
-        // Color replacement pairs (up to 5)
-        originalColor1: '#d9b94a', // First original color to replace
-        targetColor1: '#00ff41', // First target color
-        originalColor2: '#c34672', // Second original color
-        targetColor2: '#ff1493', // Second target color
-        originalColor3: '', // Third original color (optional)
-        targetColor3: '', // Third target color (optional)
-        originalColor4: '', // Fourth original color (optional)
-        targetColor4: '', // Fourth target color (optional)
-        originalColor5: '', // Fifth original color (optional)
-        targetColor5: '', // Fifth target color (optional)
+        // Dynamic color replacement pairs
+        colorPairs: [
+          { originalColor: '#d9b94a', targetColor: '#00ff41' },
+          { originalColor: '#c34672', targetColor: '#ff1493' },
+        ],
         epsilon: 0.05, // Global tolerance for color matching (0-1)
       },
       oldFilm: {
@@ -2141,14 +2388,347 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         return alwaysShowProps.includes(key);
       }
 
+      // Handle Convolution filter conditional properties
+      if (filter.name === 'convolution') {
+        const matrixType = filter.settings.matrixType;
+
+        // Hide all matrix elements (m0-m8) unless we're in custom mode
+        if (key.match(/^m[0-8]$/)) {
+          // Only show m0 when in custom mode (it will be labeled as "Custom Matrix")
+          if (key === 'm0' && matrixType === 'custom') {
+            return true;
+          }
+          // Hide all other matrix elements
+          return false;
+        }
+
+        // Show all other properties
+        return true;
+      }
 
       // Show all properties for other filters
       return true;
     };
 
-    const filteredSettings = Object.entries(filter.settings).filter(([key]) =>
-      shouldShowProperty(key, filter)
-    );
+    const filteredSettings = Object.entries(filter.settings)
+      .filter(([key]) => shouldShowProperty(key, filter))
+      .sort(([keyA], [keyB]) => {
+        // Special property ordering for godray filter
+        if (filter.name === 'godray') {
+          // Put 'animated' first
+          if (keyA === 'animated') return -1;
+          if (keyB === 'animated') return 1;
+
+          // Keep other properties in their original order
+          return 0;
+        }
+
+        // Keep original order for other filters
+        return 0;
+      });
+
+    // Special handling for multiColorReplace filter
+    if (filter.name === 'multiColorReplace') {
+      return (
+        <div
+          style={{
+            marginTop: '0.5rem',
+            padding: '0.5rem',
+            background: '#f9fafb',
+            borderRadius: '4px',
+          }}
+        >
+          {/* Color Pairs Section */}
+          <div style={{ marginBottom: '1rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.5rem',
+              }}
+            >
+              <label
+                style={{
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  color: '#374151',
+                }}
+              >
+                Color Replacement Pairs
+              </label>
+              <button
+                onClick={() => {
+                  const newColorPairs = [
+                    ...(filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>),
+                    { originalColor: '#000000', targetColor: '#ffffff' },
+                  ];
+                  const updates = { colorPairs: newColorPairs };
+                  updateFilterSettings(filter.id, updates);
+                }}
+                style={{
+                  background: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.25rem 0.5rem',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                }}
+              >
+                + Add Pair
+              </button>
+            </div>
+
+            {(filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>).map((pair, index: number) => (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginBottom: '0.5rem',
+                  padding: '0.5rem',
+                  background: 'white',
+                  borderRadius: '4px',
+                  border: '1px solid #e5e7eb',
+                }}
+              >
+                {/* Original Color */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: '0.7rem',
+                      color: '#6b7280',
+                      marginBottom: '0.2rem',
+                    }}
+                  >
+                    Original
+                  </label>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                    }}
+                  >
+                    <input
+                      type="color"
+                      value={pair.originalColor}
+                      onChange={(e) => {
+                        const colorPairs = filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>;
+                        const newColorPairs = colorPairs.map((p, i) => 
+                          i === index 
+                            ? { ...p, originalColor: e.target.value }
+                            : p
+                        );
+                        const updates = { colorPairs: newColorPairs };
+                        updateFilterSettings(filter.id, updates);
+                      }}
+                      style={{
+                        width: '40px',
+                        height: '30px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={pair.originalColor}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value.match(/^#[0-9A-Fa-f]{0,6}$/)) {
+                          const colorPairs = filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>;
+                          const newColorPairs = colorPairs.map((p, i) => 
+                            i === index 
+                              ? { ...p, originalColor: value }
+                              : p
+                          );
+                          const updates = { colorPairs: newColorPairs };
+                          updateFilterSettings(filter.id, updates);
+                        }
+                      }}
+                      style={{
+                        width: '70px',
+                        padding: '0.2rem',
+                        fontSize: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                      }}
+                      placeholder="#000000"
+                    />
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div
+                  style={{
+                    fontSize: '1.2rem',
+                    color: '#6b7280',
+                    margin: '0 0.5rem',
+                    alignSelf: 'center',
+                  }}
+                >
+                  →
+                </div>
+
+                {/* Target Color */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: '0.7rem',
+                      color: '#6b7280',
+                      marginBottom: '0.2rem',
+                    }}
+                  >
+                    Replace With
+                  </label>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                    }}
+                  >
+                    <input
+                      type="color"
+                      value={pair.targetColor}
+                      onChange={(e) => {
+                        const colorPairs = filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>;
+                        const newColorPairs = colorPairs.map((p, i) => 
+                          i === index 
+                            ? { ...p, targetColor: e.target.value }
+                            : p
+                        );
+                        const updates = { colorPairs: newColorPairs };
+                        updateFilterSettings(filter.id, updates);
+                      }}
+                      style={{
+                        width: '40px',
+                        height: '30px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={pair.targetColor}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value.match(/^#[0-9A-Fa-f]{0,6}$/)) {
+                          const colorPairs = filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>;
+                          const newColorPairs = colorPairs.map((p, i) => 
+                            i === index 
+                              ? { ...p, targetColor: value }
+                              : p
+                          );
+                          const updates = { colorPairs: newColorPairs };
+                          updateFilterSettings(filter.id, updates);
+                        }
+                      }}
+                      style={{
+                        width: '70px',
+                        padding: '0.2rem',
+                        fontSize: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                      }}
+                      placeholder="#ffffff"
+                    />
+                  </div>
+                </div>
+
+                {/* Spacer to push remove button to the right */}
+                <div style={{ flex: 1 }}></div>
+
+                {/* Remove Button */}
+                {(filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>).length > 1 && (
+                  <button
+                    onClick={() => {
+                      const newColorPairs = (filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>).filter(
+                        (_, i: number) => i !== index
+                      );
+                      const updates = { colorPairs: newColorPairs };
+                      updateFilterSettings(filter.id, updates);
+                    }}
+                    style={{
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '0.25rem',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    title="Remove this color pair"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Epsilon (Tolerance) Control */}
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '0.8rem',
+                color: '#6b7280',
+                marginBottom: '0.2rem',
+              }}
+            >
+              Color Matching Tolerance
+            </label>
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.001"
+                value={filter.settings.epsilon as number}
+                onChange={(e) => {
+                  const updates = { epsilon: parseFloat(e.target.value) };
+                  updateFilterSettings(filter.id, updates);
+                }}
+                style={{ flex: 1 }}
+              />
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#6b7280',
+                  minWidth: '3rem',
+                }}
+              >
+                {(filter.settings.epsilon as number).toFixed(3)}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div
@@ -2268,6 +2848,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     filter.name === 'bulgePinch'
                       ? 'Strength (-1 pinch, +1 bulge)'
                       : 'Strength',
+                  // ConvolutionFilter matrix element labels
+                  m0: filter.name === 'convolution' ? 'Custom Matrix' : 'M0',
                 };
                 return Object.prototype.hasOwnProperty.call(labelMap, key)
                   ? labelMap[key as keyof typeof labelMap]
@@ -3308,52 +3890,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                 </label>
               </div>
             ) : key === 'shadowOnly' && typeof value === 'boolean' ? (
-              // Special handling for shadowOnly boolean in DropShadow
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name={`${filter.id}-shadowOnly`}
-                    checked={!value}
-                    onChange={() => {
-                      const updates = createSafeUpdate(key, false);
-                      updateFilterSettings(filter.id, updates);
-                    }}
-                  />
-                  <span style={{ fontSize: '0.8rem' }}>Object + Shadow</span>
-                </label>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name={`${filter.id}-shadowOnly`}
-                    checked={value}
-                    onChange={() => {
-                      const updates = createSafeUpdate(key, true);
-                      updateFilterSettings(filter.id, updates);
-                    }}
-                  />
-                  <span style={{ fontSize: '0.8rem' }}>Shadow Only</span>
-                </label>
-              </div>
-            ) : key === 'animated' && typeof value === 'boolean' ? (
-              // Checkbox for animated boolean
+              // Special handling for shadowOnly as checkbox
               <label
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem',
+                  cursor: 'pointer',
                 }}
               >
                 <input
@@ -3362,6 +3905,40 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   onChange={(e) => {
                     const updates = createSafeUpdate(key, e.target.checked);
                     updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    accentColor: '#10b981',
+                    cursor: 'pointer',
+                  }}
+                />
+                <span style={{ fontSize: '0.8rem' }}>
+                  Show shadow only (hide object)
+                </span>
+              </label>
+            ) : key === 'animated' && typeof value === 'boolean' ? (
+              // Checkbox for animated boolean
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(key, e.target.checked);
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    accentColor: '#10b981',
+                    cursor: 'pointer',
                   }}
                 />
                 <span style={{ fontSize: '0.8rem' }}>Animated</span>
@@ -3446,9 +4023,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   <span style={{ fontSize: '0.8rem' }}>Parallel Rays</span>
                 </label>
               </div>
-            ) : (key === 'colorize' || key === 'clamp') &&
-              typeof value === 'boolean' ? (
-              // Special handling for boolean properties (colorize, clamp)
+            ) : key === 'colorize' && typeof value === 'boolean' ? (
+              // Special handling for colorize property (keep as radio buttons)
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <label
                   style={{
@@ -3466,13 +4042,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       updateFilterSettings(filter.id, updates);
                     }}
                   />
-                  <span style={{ fontSize: '0.8rem' }}>
-                    {key === 'colorize'
-                      ? 'Adjust Colors'
-                      : key === 'clamp'
-                        ? 'No Clamp'
-                        : 'Off'}
-                  </span>
+                  <span style={{ fontSize: '0.8rem' }}>Adjust Colors</span>
                 </label>
                 <label
                   style={{
@@ -3490,15 +4060,37 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       updateFilterSettings(filter.id, updates);
                     }}
                   />
-                  <span style={{ fontSize: '0.8rem' }}>
-                    {key === 'colorize'
-                      ? 'Colorize Mode'
-                      : key === 'clamp'
-                        ? 'Clamp Edges'
-                        : 'On'}
-                  </span>
+                  <span style={{ fontSize: '0.8rem' }}>Colorize Mode</span>
                 </label>
               </div>
+            ) : key === 'clamp' && typeof value === 'boolean' ? (
+              // Special handling for clamp property (convert to checkbox)
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(key, e.target.checked);
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    accentColor: '#10b981',
+                    cursor: 'pointer',
+                  }}
+                />
+                <span style={{ fontSize: '0.8rem', userSelect: 'none' }}>
+                  Clamp Edges
+                </span>
+              </label>
             ) : typeof value === 'number' ? (
               <div
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
@@ -3810,7 +4402,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       e.currentTarget.style.background = 'transparent';
                     }}
                   >
-                    {filterName.charAt(0).toUpperCase() + filterName.slice(1)}
+                    {filterName === 'crt'
+                      ? 'CRT'
+                      : filterName.charAt(0).toUpperCase() +
+                        filterName.slice(1)}
                   </button>
                 ))}
               </div>
