@@ -1928,7 +1928,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         kernelSize: 7, // Blur quality/kernel size (5-25)
       },
       reflection: {
-        animated: false, // Enable time-based animation
+        animated: true, // Enable time-based animation
         mirror: true, // Mirror the reflection
         boundary: 0.5, // Reflection boundary (0-1)
         amplitudeStart: 0, // Start amplitude (0-50)
@@ -1964,7 +1964,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         customLightmapTexture: '', // Custom uploaded lightmap texture (empty string when using default)
       },
       simplexNoise: {
-        animated: false, // Enable time-based animation
+        animated: true, // Enable time-based animation
         strength: 0.5, // Noise intensity (0-1 with 3 decimal places)
         noiseScale: 10, // Noise map scale (0-50)
         offsetX: 0.0, // Horizontal noise offset (0-5 with 3 decimal places)
@@ -2460,7 +2460,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
               <button
                 onClick={() => {
                   const newColorPairs = [
-                    ...(filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>),
+                    ...(filter.settings.colorPairs as Array<{
+                      originalColor: string;
+                      targetColor: string;
+                    }>),
                     { originalColor: '#000000', targetColor: '#ffffff' },
                   ];
                   const updates = { colorPairs: newColorPairs };
@@ -2480,7 +2483,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
               </button>
             </div>
 
-            {(filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>).map((pair, index: number) => (
+            {(
+              filter.settings.colorPairs as Array<{
+                originalColor: string;
+                targetColor: string;
+              }>
+            ).map((pair, index: number) => (
               <div
                 key={index}
                 style={{
@@ -2522,9 +2530,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       type="color"
                       value={pair.originalColor}
                       onChange={(e) => {
-                        const colorPairs = filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>;
-                        const newColorPairs = colorPairs.map((p, i) => 
-                          i === index 
+                        const colorPairs = filter.settings.colorPairs as Array<{
+                          originalColor: string;
+                          targetColor: string;
+                        }>;
+                        const newColorPairs = colorPairs.map((p, i) =>
+                          i === index
                             ? { ...p, originalColor: e.target.value }
                             : p
                         );
@@ -2545,11 +2556,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       onChange={(e) => {
                         const value = e.target.value;
                         if (value.match(/^#[0-9A-Fa-f]{0,6}$/)) {
-                          const colorPairs = filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>;
-                          const newColorPairs = colorPairs.map((p, i) => 
-                            i === index 
-                              ? { ...p, originalColor: value }
-                              : p
+                          const colorPairs = filter.settings
+                            .colorPairs as Array<{
+                            originalColor: string;
+                            targetColor: string;
+                          }>;
+                          const newColorPairs = colorPairs.map((p, i) =>
+                            i === index ? { ...p, originalColor: value } : p
                           );
                           const updates = { colorPairs: newColorPairs };
                           updateFilterSettings(filter.id, updates);
@@ -2607,9 +2620,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       type="color"
                       value={pair.targetColor}
                       onChange={(e) => {
-                        const colorPairs = filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>;
-                        const newColorPairs = colorPairs.map((p, i) => 
-                          i === index 
+                        const colorPairs = filter.settings.colorPairs as Array<{
+                          originalColor: string;
+                          targetColor: string;
+                        }>;
+                        const newColorPairs = colorPairs.map((p, i) =>
+                          i === index
                             ? { ...p, targetColor: e.target.value }
                             : p
                         );
@@ -2630,11 +2646,13 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       onChange={(e) => {
                         const value = e.target.value;
                         if (value.match(/^#[0-9A-Fa-f]{0,6}$/)) {
-                          const colorPairs = filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>;
-                          const newColorPairs = colorPairs.map((p, i) => 
-                            i === index 
-                              ? { ...p, targetColor: value }
-                              : p
+                          const colorPairs = filter.settings
+                            .colorPairs as Array<{
+                            originalColor: string;
+                            targetColor: string;
+                          }>;
+                          const newColorPairs = colorPairs.map((p, i) =>
+                            i === index ? { ...p, targetColor: value } : p
                           );
                           const updates = { colorPairs: newColorPairs };
                           updateFilterSettings(filter.id, updates);
@@ -2656,12 +2674,20 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                 <div style={{ flex: 1 }}></div>
 
                 {/* Remove Button */}
-                {(filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>).length > 1 && (
+                {(
+                  filter.settings.colorPairs as Array<{
+                    originalColor: string;
+                    targetColor: string;
+                  }>
+                ).length > 1 && (
                   <button
                     onClick={() => {
-                      const newColorPairs = (filter.settings.colorPairs as Array<{ originalColor: string; targetColor: string }>).filter(
-                        (_, i: number) => i !== index
-                      );
+                      const newColorPairs = (
+                        filter.settings.colorPairs as Array<{
+                          originalColor: string;
+                          targetColor: string;
+                        }>
+                      ).filter((_, i: number) => i !== index);
                       const updates = { colorPairs: newColorPairs };
                       updateFilterSettings(filter.id, updates);
                     }}
@@ -4179,14 +4205,38 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                 </button>
               </div>
             ) : typeof value === 'boolean' ? (
-              <input
-                type="checkbox"
-                checked={value}
-                onChange={(e) => {
-                  const updates = createSafeUpdate(key, e.target.checked);
-                  updateFilterSettings(filter.id, updates);
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
                 }}
-              />
+              >
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => {
+                    const updates = createSafeUpdate(key, e.target.checked);
+                    updateFilterSettings(filter.id, updates);
+                  }}
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    accentColor: '#10b981',
+                    cursor: 'pointer',
+                  }}
+                />
+                <span style={{ fontSize: '0.8rem', userSelect: 'none' }}>
+                  {key === 'mirror'
+                    ? 'Mirror Effect'
+                    : key === 'verticalLine'
+                      ? 'Vertical Lines'
+                      : key === 'grayscale'
+                        ? 'Grayscale'
+                        : key}
+                </span>
+              </label>
             ) : (
               <input
                 type="text"
