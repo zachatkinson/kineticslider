@@ -294,12 +294,12 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
 
               // Update the filter settings with the texture data
               const updates = createSafeUpdate(key, textureData);
-              
+
               // If this is a colormap upload, also set the preset to "custom"
               if (key === 'customColorMap') {
                 updates.colorMapPreset = 'custom';
               }
-              
+
               updateFilterSettings(filterId, updates);
 
               // Log success for debugging
@@ -386,7 +386,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         quality: '1',
       };
       if (Object.prototype.hasOwnProperty.call(advancedBloomMinValues, key)) {
-        return advancedBloomMinValues[key as keyof typeof advancedBloomMinValues];
+        return advancedBloomMinValues[
+          key as keyof typeof advancedBloomMinValues
+        ];
       }
     }
 
@@ -440,9 +442,15 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       const convolutionMinValues: Record<string, string> = {
         width: '0',
         height: '0',
-        m0: '0', m1: '0', m2: '0',
-        m3: '0', m4: '0', m5: '0', 
-        m6: '0', m7: '0', m8: '0',
+        m0: '0',
+        m1: '0',
+        m2: '0',
+        m3: '0',
+        m4: '0',
+        m5: '0',
+        m6: '0',
+        m7: '0',
+        m8: '0',
       };
       if (Object.prototype.hasOwnProperty.call(convolutionMinValues, key)) {
         return convolutionMinValues[key as keyof typeof convolutionMinValues];
@@ -811,7 +819,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         quality: '20',
       };
       if (Object.prototype.hasOwnProperty.call(advancedBloomMaxValues, key)) {
-        return advancedBloomMaxValues[key as keyof typeof advancedBloomMaxValues];
+        return advancedBloomMaxValues[
+          key as keyof typeof advancedBloomMaxValues
+        ];
       }
     }
 
@@ -865,9 +875,15 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       const convolutionMaxValues: Record<string, string> = {
         width: '500',
         height: '500',
-        m0: '1', m1: '1', m2: '1',
-        m3: '1', m4: '1', m5: '1',
-        m6: '1', m7: '1', m8: '1',
+        m0: '1',
+        m1: '1',
+        m2: '1',
+        m3: '1',
+        m4: '1',
+        m5: '1',
+        m6: '1',
+        m7: '1',
+        m8: '1',
       };
       if (Object.prototype.hasOwnProperty.call(convolutionMaxValues, key)) {
         return convolutionMaxValues[key as keyof typeof convolutionMaxValues];
@@ -1235,7 +1251,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         quality: '1',
       };
       if (Object.prototype.hasOwnProperty.call(advancedBloomStepValues, key)) {
-        return advancedBloomStepValues[key as keyof typeof advancedBloomStepValues];
+        return advancedBloomStepValues[
+          key as keyof typeof advancedBloomStepValues
+        ];
       }
     }
 
@@ -1267,7 +1285,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
         quality: '0.001',
       };
       if (Object.prototype.hasOwnProperty.call(backdropBlurStepValues, key)) {
-        return backdropBlurStepValues[key as keyof typeof backdropBlurStepValues];
+        return backdropBlurStepValues[
+          key as keyof typeof backdropBlurStepValues
+        ];
       }
     }
 
@@ -1289,9 +1309,15 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       const convolutionStepValues: Record<string, string> = {
         width: '1',
         height: '1',
-        m0: '0.01', m1: '0.01', m2: '0.01',
-        m3: '0.01', m4: '0.01', m5: '0.01',
-        m6: '0.01', m7: '0.01', m8: '0.01',
+        m0: '0.01',
+        m1: '0.01',
+        m2: '0.01',
+        m3: '0.01',
+        m4: '0.01',
+        m5: '0.01',
+        m6: '0.01',
+        m7: '0.01',
+        m8: '0.01',
       };
       if (Object.prototype.hasOwnProperty.call(convolutionStepValues, key)) {
         return convolutionStepValues[key as keyof typeof convolutionStepValues];
@@ -1811,9 +1837,15 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       convolution: {
         matrixType: 'custom', // Default to custom matrix for immediate slider access
         // 3x3 Matrix elements (0-1 range with 2 decimal precision)
-        m0: 0.0,  m1: 0.5,  m2: 0.0,   // Top row
-        m3: 0.5,  m4: 1.0,  m5: 0.5,   // Middle row  
-        m6: 0.0,  m7: 0.5,  m8: 0.0,   // Bottom row
+        m0: 0.0,
+        m1: 0.5,
+        m2: 0.0, // Top row
+        m3: 0.5,
+        m4: 1.0,
+        m5: 0.5, // Middle row
+        m6: 0.0,
+        m7: 0.5,
+        m8: 0.0, // Bottom row
         width: 3, // Matrix width (typically 3)
         height: 3, // Matrix height (typically 3)
       },
@@ -2097,15 +2129,15 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       // Handle ASCII filter conditional properties
       if (filter.name === 'ascii') {
         const replaceColorEnabled = filter.settings.replaceColor;
-        
+
         // Always show these properties
         const alwaysShowProps = ['size', 'replaceColor'];
-        
+
         // Show color only when replaceColor is enabled
         if (key === 'color') {
           return Boolean(replaceColorEnabled);
         }
-        
+
         return alwaysShowProps.includes(key);
       }
 
@@ -2231,7 +2263,10 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   colorize: 'Color Mode',
                   lightness: 'Lightness',
                   // BulgePinchFilter labels
-                  strength: filter.name === 'bulgePinch' ? 'Strength (-1 pinch, +1 bulge)' : 'Strength',
+                  strength:
+                    filter.name === 'bulgePinch'
+                      ? 'Strength (-1 pinch, +1 bulge)'
+                      : 'Strength',
                 };
                 return Object.prototype.hasOwnProperty.call(labelMap, key)
                   ? labelMap[key as keyof typeof labelMap]
@@ -2445,7 +2480,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                     marginTop: '0.2rem',
                   }}
                 >
-                  Select "Custom" to upload your own colormap, or choose a built-in preset
+                  Select "Custom" to upload your own colormap, or choose a
+                  built-in preset
                 </div>
               </div>
             ) : key === 'matrixType' &&
@@ -2539,72 +2575,104 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                   control
                 </div>
               </div>
-            ) : (key.startsWith('m') && key.length === 2 && filter.name === 'convolution' && typeof value === 'number') ? (
+            ) : key.startsWith('m') &&
+              key.length === 2 &&
+              filter.name === 'convolution' &&
+              typeof value === 'number' ? (
               // Special handling for convolution matrix elements (m0-m8)
               <div>
                 {/* Only render the matrix grid for m0, and only when custom matrix is selected */}
                 {key === 'm0' && filter.settings.matrixType === 'custom' && (
                   <div>
-                    <div style={{ 
-                      fontSize: '0.8rem', 
-                      fontWeight: 'bold', 
-                      marginBottom: '0.5rem',
-                      color: '#374151'
-                    }}>
+                    <div
+                      style={{
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        marginBottom: '0.5rem',
+                        color: '#374151',
+                      }}
+                    >
                       3×3 Convolution Matrix
                     </div>
-                    <div style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: '1fr 1fr 1fr',
-                      gap: '0.5rem',
-                      marginBottom: '0.5rem'
-                    }}>
-                      {['m0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8'].map((matrixKey, index) => (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr 1fr',
+                        gap: '0.5rem',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      {[
+                        'm0',
+                        'm1',
+                        'm2',
+                        'm3',
+                        'm4',
+                        'm5',
+                        'm6',
+                        'm7',
+                        'm8',
+                      ].map((matrixKey, index) => (
                         <div key={matrixKey} style={{ textAlign: 'center' }}>
-                          <div style={{ 
-                            fontSize: '0.7rem', 
-                            color: '#6b7280',
-                            marginBottom: '0.2rem'
-                          }}>
-                            {`[${Math.floor(index/3)},${index%3}]`}
+                          <div
+                            style={{
+                              fontSize: '0.7rem',
+                              color: '#6b7280',
+                              marginBottom: '0.2rem',
+                            }}
+                          >
+                            {`[${Math.floor(index / 3)},${index % 3}]`}
                           </div>
                           <input
                             type="range"
                             min={getPropertyMin(matrixKey, filter.name)}
                             max={getPropertyMax(matrixKey, filter.name)}
                             step={getPropertyStep(matrixKey, filter.name)}
-                            value={(() : number => {
-                              const val = filter.settings[matrixKey as keyof typeof filter.settings];
+                            value={((): number => {
+                              const val =
+                                filter.settings[
+                                  matrixKey as keyof typeof filter.settings
+                                ];
                               return Number(val) || 0;
                             })()}
                             onChange={(e) => {
-                              const updates = createSafeUpdate(matrixKey, parseFloat(e.target.value));
+                              const updates = createSafeUpdate(
+                                matrixKey,
+                                parseFloat(e.target.value)
+                              );
                               updateFilterSettings(filter.id, updates);
                             }}
                             style={{
                               width: '100%',
-                              marginBottom: '0.2rem'
+                              marginBottom: '0.2rem',
                             }}
                           />
-                          <div style={{ 
-                            fontSize: '0.7rem', 
-                            color: '#374151',
-                            fontWeight: 'medium'
-                          }}>
-                            {(() : string => {
-                              const val = filter.settings[matrixKey as keyof typeof filter.settings];
+                          <div
+                            style={{
+                              fontSize: '0.7rem',
+                              color: '#374151',
+                              fontWeight: 'medium',
+                            }}
+                          >
+                            {((): string => {
+                              const val =
+                                filter.settings[
+                                  matrixKey as keyof typeof filter.settings
+                                ];
                               return (Number(val) || 0).toFixed(2);
                             })()}
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div style={{
-                      fontSize: '0.7rem',
-                      color: '#9ca3af',
-                      fontStyle: 'italic',
-                      textAlign: 'center'
-                    }}>
+                    <div
+                      style={{
+                        fontSize: '0.7rem',
+                        color: '#9ca3af',
+                        fontStyle: 'italic',
+                        textAlign: 'center',
+                      }}
+                    >
                       Each cell ranges from 0.00 to 1.00
                     </div>
                   </div>

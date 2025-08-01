@@ -129,7 +129,7 @@ export class AdvancedFilterPresets extends EffectPresets {
    */
   private registerAdvancedPresets(): void {
     // Basic Effects
-    
+
     this.registerAdvancedPreset({
       name: 'alpha',
       category: 'color' as EffectCategory,
@@ -3715,15 +3715,33 @@ export class AdvancedFilterPresets extends EffectPresets {
       } else {
         // Use individual matrix elements (m0-m8) for custom matrix
         matrix = [
-          typeof options.customSettings.m0 === 'number' ? options.customSettings.m0 : 0,
-          typeof options.customSettings.m1 === 'number' ? options.customSettings.m1 : 0.5,
-          typeof options.customSettings.m2 === 'number' ? options.customSettings.m2 : 0,
-          typeof options.customSettings.m3 === 'number' ? options.customSettings.m3 : 0.5,
-          typeof options.customSettings.m4 === 'number' ? options.customSettings.m4 : 1,
-          typeof options.customSettings.m5 === 'number' ? options.customSettings.m5 : 0.5,
-          typeof options.customSettings.m6 === 'number' ? options.customSettings.m6 : 0,
-          typeof options.customSettings.m7 === 'number' ? options.customSettings.m7 : 0.5,
-          typeof options.customSettings.m8 === 'number' ? options.customSettings.m8 : 0,
+          typeof options.customSettings.m0 === 'number'
+            ? options.customSettings.m0
+            : 0,
+          typeof options.customSettings.m1 === 'number'
+            ? options.customSettings.m1
+            : 0.5,
+          typeof options.customSettings.m2 === 'number'
+            ? options.customSettings.m2
+            : 0,
+          typeof options.customSettings.m3 === 'number'
+            ? options.customSettings.m3
+            : 0.5,
+          typeof options.customSettings.m4 === 'number'
+            ? options.customSettings.m4
+            : 1,
+          typeof options.customSettings.m5 === 'number'
+            ? options.customSettings.m5
+            : 0.5,
+          typeof options.customSettings.m6 === 'number'
+            ? options.customSettings.m6
+            : 0,
+          typeof options.customSettings.m7 === 'number'
+            ? options.customSettings.m7
+            : 0.5,
+          typeof options.customSettings.m8 === 'number'
+            ? options.customSettings.m8
+            : 0,
         ];
 
         width =
@@ -3820,14 +3838,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       );
 
       // Calculate strength from blurX and blurY (average for overall strength)
-      const blurX = typeof options.customSettings.blurX === 'number'
-        ? options.customSettings.blurX
-        : 8;
-      const blurY = typeof options.customSettings.blurY === 'number'
-        ? options.customSettings.blurY
-        : 8;
+      const blurX =
+        typeof options.customSettings.blurX === 'number'
+          ? options.customSettings.blurX
+          : 8;
+      const blurY =
+        typeof options.customSettings.blurY === 'number'
+          ? options.customSettings.blurY
+          : 8;
       const strength = (blurX + blurY) / 2;
-      
+
       const filter = new BackdropBlurFilter({
         strength,
         quality:
@@ -3836,7 +3856,7 @@ export class AdvancedFilterPresets extends EffectPresets {
             : 4,
         kernelSize: 5,
       });
-      
+
       // Set blurX and blurY after creation
       filter.blurX = blurX;
       filter.blurY = blurY;
