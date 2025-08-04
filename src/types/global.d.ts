@@ -42,7 +42,7 @@ declare global {
     previousSlide?: () => Promise<void>;
     play?: () => void;
     pause?: () => void;
-    goToSlide?: (index: number) => Promise<void>;
+    goToSlide?: (index: number, animated?: boolean) => Promise<void>;
     togglePlayPause?: () => void;
     getTotalSlides?: () => number;
   }

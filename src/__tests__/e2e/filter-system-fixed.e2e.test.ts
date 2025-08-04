@@ -11,21 +11,28 @@ import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
-// Filter name mapping for tests
+// Filter name mapping for tests (only advanced filters)
 const filterNameMap: Record<string, string> = {
-  blur: 'blur',
-  softblur: 'softBlur',
   glow: 'glow',
-  softglow: 'softGlow',
-  neonglow: 'neonGlow',
   pixelate: 'pixelate',
-  colormatrix: 'colorMatrix',
   alpha: 'alpha',
-  vintage: 'vintage',
-  blackandwhite: 'blackAndWhite',
   outline: 'outline',
   oldfilm: 'oldFilm',
   'old film': 'oldFilm',
+  adjustment: 'adjustment',
+  crt: 'crt',
+  ascii: 'ascii',
+  dot: 'dot',
+  dropshadow: 'dropShadow',
+  kawaseblur: 'kawaseBlur',
+  motionblur: 'motionBlur',
+  multicolorreplace: 'multiColorReplace',
+  godray: 'godray',
+  bevel: 'bevel',
+  bulgepinch: 'bulgePinch',
+  convolution: 'convolution',
+  backdropblur: 'backdropBlur',
+  reflection: 'reflection',
 };
 
 // Helper functions for new AdvancedFilterManager UI
@@ -109,8 +116,8 @@ test.describe('Filter System E2E (Fixed)', () => {
     expect(filterOptions.length).toBeGreaterThan(30);
 
     // Test adding a simple filter
-    const blurOption = page.locator('[data-testid="filter-option-blur"]');
-    await blurOption.click();
+    const glowOption = page.locator('[data-testid="filter-option-glow"]');
+    await glowOption.click();
     await page.waitForTimeout(500);
 
     // Verify filter appears in list and is enabled by default in AdvancedFilterManager
@@ -131,7 +138,7 @@ test.describe('Filter System E2E (Fixed)', () => {
     const filterControls = page.locator('[data-testid="filter-controls"]');
     await expect(filterControls).toBeVisible();
 
-    await addAndEnableFilter(page, 'blur');
+    await addAndEnableFilter(page, 'glow');
 
     await expectFilterEnabled(page);
   });
@@ -141,7 +148,7 @@ test.describe('Filter System E2E (Fixed)', () => {
     await expect(slider).toBeVisible();
 
     // Add a filter first
-    await addAndEnableFilter(page, 'blur');
+    await addAndEnableFilter(page, 'glow');
 
     // Verify filter is added
     await expectFilterEnabled(page);
@@ -158,9 +165,9 @@ test.describe('Filter System E2E (Fixed)', () => {
     page,
   }) => {
     const combinations = [
-      ['blur', 'alpha'],
-      ['glow', 'vintage'],
-      ['pixelate', 'outline'],
+      ['glow', 'alpha'],
+      ['adjustment', 'pixelate'],
+      ['outline', 'alpha'],
     ];
 
     for (const combo of combinations) {
@@ -186,7 +193,7 @@ test.describe('Filter System E2E (Fixed)', () => {
     page,
   }) => {
     // Simplified performance test - just verify filters don't crash
-    const performanceFilters = ['blur', 'glow', 'pixelate', 'alpha'];
+    const performanceFilters = ['glow', 'pixelate', 'alpha', 'adjustment'];
 
     for (const filterName of performanceFilters) {
       try {
@@ -205,7 +212,7 @@ test.describe('Filter System E2E (Fixed)', () => {
   });
 
   test('should test different filter types through UI', async ({ page }) => {
-    const filterTypes = ['blur', 'glow', 'alpha', 'vintage'];
+    const filterTypes = ['glow', 'alpha', 'pixelate', 'adjustment'];
 
     for (const filterType of filterTypes) {
       await addAndEnableFilter(page, filterType);
@@ -218,7 +225,7 @@ test.describe('Filter System E2E (Fixed)', () => {
   });
 
   test('should handle multiple filter applications', async ({ page }) => {
-    const filterSequence = ['glow', 'oldFilm'];
+    const filterSequence = ['glow', 'alpha'];
 
     for (const filterText of filterSequence) {
       await addAndEnableFilter(page, filterText);
@@ -235,7 +242,7 @@ test.describe('Filter System E2E (Fixed)', () => {
   });
 
   test('should handle visual filter effects correctly', async ({ page }) => {
-    const workingFilters = ['blur', 'glow'];
+    const workingFilters = ['glow', 'alpha'];
 
     for (const filter of workingFilters) {
       await addAndEnableFilter(page, filter);
@@ -250,7 +257,7 @@ test.describe('Filter System E2E (Fixed)', () => {
 
   test('should handle filter system performance', async ({ page }) => {
     // Simple performance test - add multiple filters
-    await addAndEnableFilter(page, 'blur');
+    await addAndEnableFilter(page, 'glow');
     await addAndEnableFilter(page, 'alpha');
 
     // Verify system is still responsive
