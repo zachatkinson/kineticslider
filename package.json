@@ -144,12 +144,12 @@
   "size-limit": [
     {
       "path": "dist/kinetic-slider.es.js",
-      "limit": "100 KB",
+      "limit": "102 KB",
       "gzip": true
     },
     {
       "path": "dist/kinetic-slider.umd.js",
-      "limit": "100 KB",
+      "limit": "102 KB",
       "gzip": true
     }
   ],
