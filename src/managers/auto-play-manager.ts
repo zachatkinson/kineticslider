@@ -189,7 +189,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
     if (this.config.resumeAfterInteraction) {
       // Ensure resume delay is positive to avoid timeout warnings
       const resumeDelay = Math.max(1, this.config.resumeDelay);
-      
+
       this.resumeTimer = window.setTimeout(() => {
         this.resume(PauseReason.INTERACTION, onNext);
       }, resumeDelay);
