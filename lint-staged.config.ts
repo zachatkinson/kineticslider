@@ -11,6 +11,14 @@ const config: LintStagedConfig = {
 
   // TypeScript files - run type check (function to avoid running on each file)
   '*.{ts,tsx}': [(): string => 'tsc --noEmit'],
+
+  // Run critical tests on relevant file changes
+  'src/**/*.{ts,tsx}': [
+    (): string => {
+      // Only run tests if source files changed
+      return 'pnpm test:precommit';
+    },
+  ],
 };
 
 export default config;

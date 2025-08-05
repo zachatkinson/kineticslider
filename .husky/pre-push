@@ -2,9 +2,17 @@
 # Full test suite runs in CI/CD
 echo "🏗️ Running fast validation checks..."
 
-# Only check lint (fast) and build (essential)
+# Check code quality (aligns with CI)
 echo "  🔍 Linting..."
 pnpm lint
+
+# Check formatting (aligns with CI)
+echo "  💅 Format check..."
+pnpm format:check
+
+# Run quick unit tests for fast feedback
+echo "  🧪 Running quick tests..."
+pnpm test:quick
 
 echo "  🏗️ Testing build..."
 pnpm build
