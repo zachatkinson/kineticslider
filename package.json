@@ -141,6 +141,10 @@
     "react-dom": "^19.1.1"
   },
   "packageManager": "pnpm@10.7.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
   "size-limit": [
     {
       "path": "dist/kinetic-slider.es.js",
