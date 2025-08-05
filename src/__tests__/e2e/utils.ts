@@ -44,8 +44,8 @@ export async function navigateAndWait(
       // Wait for React root to render
       await page.waitForSelector('#root', { timeout: 10000 });
 
-      // Wait for the demo container to load
-      await page.waitForSelector('.demo-container', {
+      // Wait for the demo app to load (React component uses data-testid="app")
+      await page.waitForSelector('[data-testid="app"]', {
         timeout: 10000,
         state: 'visible',
       });
