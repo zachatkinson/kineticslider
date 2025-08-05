@@ -56,9 +56,6 @@ jobs:
   test:
     name: 🧪 Test & Quality
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20, 24]
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -68,10 +65,10 @@ jobs:
         with:
           version: ${{ env.PNPM_VERSION }}
 
-      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+      - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
       - name: 📥 Install dependencies

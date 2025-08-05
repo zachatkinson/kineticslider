@@ -244,7 +244,7 @@ slider.physics.setConfig({
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 24+ 
 - pnpm 10.7+
 
 ### Setup
