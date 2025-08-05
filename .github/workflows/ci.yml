@@ -99,12 +99,13 @@ jobs:
         run: pnpm test:coverage
 
       - name: 📊 Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: true
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: ✅ Coverage threshold check
         run: |
@@ -178,6 +179,11 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🔍 Verify Playwright browsers
+        run: |
+          # Ensure browsers are available, install if cache miss
+          pnpm playwright install --dry-run || pnpm playwright install
 
       - name: 🏗️ Build application
         run: pnpm build
