@@ -187,9 +187,12 @@ export class AutoPlayManager extends SimpleEventEmitter {
 
     // Schedule resume if enabled
     if (this.config.resumeAfterInteraction) {
+      // Ensure resume delay is positive to avoid timeout warnings
+      const resumeDelay = Math.max(1, this.config.resumeDelay);
+      
       this.resumeTimer = window.setTimeout(() => {
         this.resume(PauseReason.INTERACTION, onNext);
-      }, this.config.resumeDelay);
+      }, resumeDelay);
     }
   }
 
@@ -264,6 +267,9 @@ export class AutoPlayManager extends SimpleEventEmitter {
   private scheduleNext(onNext: () => Promise<void>): void {
     this.clearTimer();
 
+    // Ensure interval is positive to avoid timeout warnings
+    const interval = Math.max(1, this.config.interval);
+
     this.timer = window.setTimeout(async () => {
       if (this.isPlaying && this.pauseReasons.size === 0) {
         try {
@@ -291,7 +297,7 @@ export class AutoPlayManager extends SimpleEventEmitter {
           this.stop();
         }
       }
-    }, this.config.interval);
+    }, interval);
   }
 
   /**

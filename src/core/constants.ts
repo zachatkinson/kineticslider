@@ -405,6 +405,12 @@ export const EASING = {
   EASE_IN: 'power2.in',
   /** Standard ease in-out */
   EASE_IN_OUT: 'power2.inOut',
+  /** Strong ease out */
+  STRONG_OUT: 'power3.out',
+  /** Strong ease in */
+  STRONG_IN: 'power3.in',
+  /** Strong ease in-out */
+  STRONG_IN_OUT: 'power3.inOut',
   /** Bounce effect */
   BOUNCE: 'bounce.out',
   /** Elastic effect */
