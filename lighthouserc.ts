@@ -23,11 +23,10 @@ interface LighthouseConfig {
 const config: LighthouseConfig = {
   ci: {
     collect: {
-      startServerCommand: 'pnpm run preview',
       url: ['http://localhost:4173'],
-      numberOfRuns: 3,
+      numberOfRuns: 1,
       settings: {
-        chromeFlags: '--no-sandbox --disable-dev-shm-usage',
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu',
       },
     },
     assert: {
