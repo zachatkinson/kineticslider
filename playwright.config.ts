@@ -50,7 +50,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:3000',
+    baseURL: 'http://localhost:3000',
 
     /* Ignore HTTPS errors for local development */
     ignoreHTTPSErrors: true,
@@ -116,8 +116,10 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'pnpm run dev',
-    port: 3000,
+    url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // Allow time for dev server startup
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 });
