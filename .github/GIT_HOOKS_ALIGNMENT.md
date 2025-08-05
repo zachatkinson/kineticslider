@@ -11,7 +11,7 @@ Runs on `git commit` via lint-staged:
 4. **Critical Tests** - Run only core unit tests when source files change
 
 ## Pre-push Hook (Moderate - ~30-60 seconds)
-Runs on `git push`:
+Runs on `git push`: 
 
 1. **Lint** - Full project lint (same as CI)
 2. **Format Check** - Verify formatting (same as CI)
