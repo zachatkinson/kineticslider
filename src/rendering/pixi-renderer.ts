@@ -222,11 +222,13 @@ export class PixiRenderer implements IPixiRenderer {
 
     // Race against timeout
     const timeoutPromise = new Promise<never>((_, reject) => {
+      // Ensure timeout is positive to avoid Node.js warnings
+      const timeoutMs = Math.max(1, config.maxInitTime);
       setTimeout(() => {
         reject(
           new Error(`PIXI initialization timeout after ${config.maxInitTime}ms`)
         );
-      }, config.maxInitTime);
+      }, timeoutMs);
     });
 
     await Promise.race([initPromise, timeoutPromise]);
