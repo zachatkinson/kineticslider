@@ -50,7 +50,7 @@
     "prepare": "husky",
     "security:audit": "audit-ci --config ./audit-ci.json",
     "bundle:analyze": "size-limit",
-    "bundle:check": "size-limit --why",
+    "bundle:check": "size-limit",
     "coverage:enforce": "node scripts/enforce-coverage.js",
     "lighthouse:ci": "lhci autorun",
     "setup:https": "bash scripts/setup-https.sh"

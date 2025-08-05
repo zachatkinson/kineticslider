@@ -174,8 +174,7 @@ jobs:
       - name: 📦 Bundle size analysis
         run: |
           pnpm bundle:analyze
-          # Check bundle size limits (100KB gzipped core)
-          pnpm bundle:check
+          # Check bundle size limits
 
       - name: 🔍 Lighthouse CI
         run: |
