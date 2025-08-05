@@ -48,6 +48,7 @@ import {
   NavigationInputType,
 } from '../managers/navigation-manager';
 import { LoopManager, LoopMode } from '../managers/loop-manager';
+import { AccessibilityManager } from '../accessibility/accessibility-manager';
 
 /**
  * Main slider component providing essential functionality
@@ -63,6 +64,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private autoPlayManager: AutoPlayManager;
   private navigationManager: NavigationManager;
   private loopManager: LoopManager;
+  private accessibilityManager: AccessibilityManager;
 
   // Service dependencies
   private physics: ISliderPhysics | null = null;
@@ -89,6 +91,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     this.autoPlayManager = new AutoPlayManager();
     this.navigationManager = new NavigationManager();
     this.loopManager = new LoopManager();
+    this.accessibilityManager = new AccessibilityManager();
 
     // Initialize filter system
     this.effectPresets = new AdvancedFilterPresets();
@@ -273,6 +276,14 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         currentIndex: index,
         previousIndex: fromIndex,
       });
+
+      // Notify accessibility manager of slide change
+      if (this.accessibilityManager) {
+        this.accessibilityManager.announceSlideChange(
+          index,
+          this.stateManager.getTotalSlides()
+        );
+      }
     } catch (error) {
       this.stateManager.updateState({ isTransitioning: false });
       this.navigationManager.updateTransitionState(false);
@@ -663,6 +674,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       this.autoPlayManager.destroy();
       this.navigationManager.destroy();
       this.loopManager.destroy();
+      this.accessibilityManager.destroy();
       this.stateManager.destroy();
 
       // Destroy services
@@ -939,6 +951,27 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
             return this.handleEscape();
           },
         });
+      }
+
+      // Initialize accessibility manager if accessibility is enabled
+      if (this.config.accessibility && container) {
+        try {
+          this.accessibilityManager = new AccessibilityManager(
+            this.config.accessibility
+          );
+          await this.accessibilityManager.initialize(container, this);
+          debugLogger.info(
+            'AccessibilityManager initialized successfully',
+            'SliderCore'
+          );
+        } catch (accessibilityError) {
+          debugLogger.warn(
+            'SliderCore',
+            'AccessibilityManager initialization failed:',
+            accessibilityError
+          );
+          // Don't throw error, accessibility is optional
+        }
       }
     }
   }

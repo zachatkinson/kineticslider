@@ -263,6 +263,21 @@ export const SLIDER_EVENTS = {
   CONFIG_UPDATED: 'configUpdated',
   /** Accessibility events */
   ESCAPE_PRESSED: 'escapePressed',
+  ACCESSIBILITY_INITIALIZED: 'accessibilityInitialized',
+  ACCESSIBILITY_DESTROYED: 'accessibilityDestroyed',
+  ACCESSIBILITY_KEYBOARD_EVENT: 'accessibilityKeyboardEvent',
+  ACCESSIBILITY_SLIDE_ANNOUNCED: 'accessibilitySlideAnnounced',
+  ACCESSIBILITY_MOTION_REDUCED: 'accessibilityMotionReduced',
+  ACCESSIBILITY_MOTION_PREFERENCE_CHANGED:
+    'accessibilityMotionPreferenceChanged',
+  ACCESSIBILITY_FEATURE_ENABLED: 'accessibilityFeatureEnabled',
+  ACCESSIBILITY_FEATURE_DISABLED: 'accessibilityFeatureDisabled',
+  ACCESSIBILITY_FOCUS_CHANGED: 'accessibilityFocusChanged',
+  ACCESSIBILITY_FOCUS_TRAPPED: 'accessibilityFocusTrapped',
+  ACCESSIBILITY_FOCUS_RELEASED: 'accessibilityFocusReleased',
+  ACCESSIBILITY_ANNOUNCEMENT_MADE: 'accessibilityAnnouncementMade',
+  ACCESSIBILITY_KEYBOARD_ENABLED: 'accessibilityKeyboardEnabled',
+  ACCESSIBILITY_KEYBOARD_DISABLED: 'accessibilityKeyboardDisabled',
   /** Error events */
   ERROR: 'error',
   ERROR_RECOVERED: 'errorRecovered',

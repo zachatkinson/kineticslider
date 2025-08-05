@@ -315,7 +315,9 @@ test.describe('Core Slider Functionality', () => {
       // Wait for slider to be fully initialized with all slides
       await page.waitForFunction(
         () => {
-          const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+          const engine = window.kineticSlider?.engine as
+            | KineticSliderEngine
+            | undefined;
           const total = engine?.getTotalSlides?.() ?? 0;
           return total >= 5; // Wait for at least 5 slides to be loaded
         },
@@ -330,44 +332,62 @@ test.describe('Core Slider Functionality', () => {
         return {
           current: engine?.getCurrentIndex?.(),
           total: engine?.getTotalSlides?.(),
-          loopEnabled: (engine as KineticSliderEngine & { loopManager?: { isEnabled?: () => boolean } })?.loopManager?.isEnabled?.() ?? false,
+          loopEnabled:
+            (
+              engine as KineticSliderEngine & {
+                loopManager?: { isEnabled?: () => boolean };
+              }
+            )?.loopManager?.isEnabled?.() ?? false,
         };
       });
 
       const totalSlides = slideInfo.total || 5;
 
-
       // Navigate directly to last slide for Mobile Safari reliability
       const lastSlideIndex = totalSlides - 1;
-      
+
       // Use the slider's API to navigate directly
       await page.evaluate((targetIndex) => {
-        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
         if (engine?.goToSlide) {
           return engine.goToSlide(targetIndex, false); // No animation for speed
         }
       }, lastSlideIndex);
-      
+
       // Wait for navigation to complete
       await page.waitForTimeout(500);
-      
+
       // Verify we're at the last slide
-      const currentSlideIndex = await page.evaluate(() =>
-        (window.kineticSlider?.engine as KineticSliderEngine | undefined)?.getCurrentIndex?.() ?? -1
+      const currentSlideIndex = await page.evaluate(
+        () =>
+          (
+            window.kineticSlider?.engine as KineticSliderEngine | undefined
+          )?.getCurrentIndex?.() ?? -1
       );
-      
+
       expect(currentSlideIndex).toBe(lastSlideIndex);
 
       // Ensure the slider is ready and not transitioning
       await page.waitForFunction(
         () => {
-          const engine = (window as { kineticSlider?: { engine?: KineticSliderEngine & { stateManager?: { isTransitioning?: () => boolean } } } }).kineticSlider?.engine;
-          const isTransitioning = engine?.stateManager?.isTransitioning?.() ?? false;
+          const engine = (
+            window as {
+              kineticSlider?: {
+                engine?: KineticSliderEngine & {
+                  stateManager?: { isTransitioning?: () => boolean };
+                };
+              };
+            }
+          ).kineticSlider?.engine;
+          const isTransitioning =
+            engine?.stateManager?.isTransitioning?.() ?? false;
           return !isTransitioning;
         },
         { timeout: 2000 }
       );
-      
+
       // Small additional delay for Mobile Safari
       await page.waitForTimeout(500);
 
@@ -376,17 +396,19 @@ test.describe('Core Slider Functionality', () => {
 
       // Wait for any LOOP_FORWARD event or transition to complete
       await Promise.race([
-        page.waitForEvent('console', {
-          predicate: (msg) => msg.text().includes('LOOP_FORWARD'),
-          timeout: 5000,
-        }).catch(() => null),
-        page.waitForTimeout(2000)
+        page
+          .waitForEvent('console', {
+            predicate: (msg) => msg.text().includes('LOOP_FORWARD'),
+            timeout: 5000,
+          })
+          .catch(() => null),
+        page.waitForTimeout(2000),
       ]);
 
       // Wait for slide index to stabilize with better diagnostics
       let finalIndex = null;
       const indexHistory: number[] = [];
-      
+
       // Collect index values over time to understand what's happening
       for (let i = 0; i < 15; i++) {
         const slideIndex = await page.evaluate(() =>
@@ -394,26 +416,26 @@ test.describe('Core Slider Functionality', () => {
             window.kineticSlider?.engine as KineticSliderEngine | undefined
           )?.getCurrentIndex?.()
         );
-        
+
         if (slideIndex !== undefined) {
           indexHistory.push(slideIndex);
         }
-        
+
         // Check if we've seen index 0 (successful loop)
         if (slideIndex === 0) {
           finalIndex = 0;
           break;
         }
-        
+
         // Check if index has stabilized
         if (i >= 5 && indexHistory.length >= 3) {
           const last3 = indexHistory.slice(-3);
-          if (last3.every(idx => idx === last3[0])) {
+          if (last3.every((idx) => idx === last3[0])) {
             finalIndex = last3[0];
             break;
           }
         }
-        
+
         await page.waitForTimeout(200);
       }
 
@@ -421,7 +443,6 @@ test.describe('Core Slider Functionality', () => {
       if (finalIndex === null && indexHistory.length > 0) {
         finalIndex = indexHistory[indexHistory.length - 1];
       }
-
 
       // Should be back at first slide
       expect(finalIndex).toBe(0);

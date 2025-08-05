@@ -7,7 +7,7 @@
 
 import React, { useEffect, useRef, useCallback } from 'react';
 import { createKineticSlider, SliderEngine } from '../index';
-import type { SliderConfig } from '../core/types';
+import type { SliderConfig, AccessibilityConfig } from '../core/types';
 
 export interface KineticSliderProps
   extends Omit<Partial<SliderConfig>, 'images'> {
@@ -24,6 +24,10 @@ export interface KineticSliderProps
   }) => void;
   /** Callback when play state changes */
   onPlayStateChange?: (data: { isPlaying: boolean }) => void;
+  /** Accessibility configuration */
+  accessibility?: AccessibilityConfig;
+  /** Callback for accessibility events */
+  onAccessibilityEvent?: (event: { type: string; data?: unknown }) => void;
   /** Additional props passed to the container */
   [key: string]: unknown;
 }
@@ -67,10 +71,12 @@ export function KineticSlider({
     momentumDamping: 0.8,
   },
   rendering = { width: 800, height: 400, backgroundColor: 0x000000 },
+  accessibility,
   className,
   style,
   onSlideChange,
   onPlayStateChange,
+  onAccessibilityEvent,
   ...props
 }: KineticSliderProps): React.JSX.Element {
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -98,6 +104,16 @@ export function KineticSlider({
     [onPlayStateChange]
   );
 
+  const handleAccessibilityEvent = useCallback(
+    (...args: unknown[]) => {
+      const event = args[0] as { type: string; data?: unknown };
+      if (onAccessibilityEvent) {
+        onAccessibilityEvent(event);
+      }
+    },
+    [onAccessibilityEvent]
+  );
+
   // Initialize slider
   useEffect(() => {
     const initializeSlider = async (): Promise<void> => {
@@ -121,6 +137,18 @@ export function KineticSlider({
           duration: autoPlayInterval,
           physics,
           rendering,
+          accessibility: accessibility || {
+            screenReader: true,
+            keyboardNavigation: true,
+            focusManagement: {
+              autoFocus: true,
+              trapFocus: false,
+            },
+            ariaLabels: {
+              sliderLabel: `Image carousel with ${images.length} slides`,
+              slideLabel: 'Slide {index} of {total}',
+            },
+          },
         };
 
         // Set up event listeners
@@ -134,6 +162,21 @@ export function KineticSlider({
         slider.on('playStateChanged', (...args: unknown[]) =>
           handlePlayStateChanged(...args)
         );
+
+        // Set up accessibility event listeners
+        const accessibilityEvents = [
+          'accessibilityInitialized',
+          'accessibilityKeyboardEvent',
+          'accessibilitySlideAnnounced',
+          'accessibilityMotionReduced',
+          'accessibilityFocusChanged',
+        ];
+
+        accessibilityEvents.forEach((eventName) => {
+          slider.on(eventName, (...args: unknown[]) => {
+            handleAccessibilityEvent({ type: eventName, data: args[0] });
+          });
+        });
 
         // Initialize slider
         await slider.initialize(config, sliderRef.current);
@@ -157,8 +200,10 @@ export function KineticSlider({
     autoPlayInterval,
     physics,
     rendering,
+    accessibility,
     handleSlideChanged,
     handlePlayStateChanged,
+    handleAccessibilityEvent,
   ]);
 
   return (
@@ -175,6 +220,12 @@ export function KineticSlider({
         outline: 'none',
         ...style,
       }}
+      role="region"
+      aria-label={
+        accessibility?.ariaLabels?.sliderLabel ||
+        `Image carousel with ${images.length} slides`
+      }
+      tabIndex={0}
       {...props}
     />
   );
