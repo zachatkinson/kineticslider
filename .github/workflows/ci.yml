@@ -19,6 +19,20 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: 🔍 Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -35,8 +49,8 @@ jobs:
 
       - name: 🛡️ Audit dependencies
         run: |
-          npm audit --audit-level=high
-          npx audit-ci --high
+          pnpm audit --audit-level=high
+          pnpm exec audit-ci --config ./audit-ci.json
 
   # 🧪 Quality & Testing
   test:
