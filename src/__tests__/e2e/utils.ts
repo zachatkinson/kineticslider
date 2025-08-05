@@ -24,7 +24,7 @@ export async function navigateAndWait(
   // Use a more reliable wait strategy for webkit
   const browserName = page.context().browser()?.browserType().name();
   const isWebkit = browserName === 'webkit';
-  
+
   // Retry logic for flaky navigation
   let lastError: Error | null = null;
   for (let attempt = 1; attempt <= 5; attempt++) {
@@ -45,22 +45,23 @@ export async function navigateAndWait(
       await page.waitForSelector('#root', { timeout: 10000 });
 
       // Wait for the demo container to load
-      await page.waitForSelector('.demo-container', { 
+      await page.waitForSelector('.demo-container', {
         timeout: 10000,
-        state: 'visible' 
+        state: 'visible',
       });
 
       // Wait for the slider to initialize with more specific selector
       await page.waitForSelector('[data-testid="kinetic-slider"]', {
         timeout: 15000,
-        state: 'visible'
+        state: 'visible',
       });
 
       // Wait for the real implementation to load with better error handling
       await page.waitForFunction(
         () => {
-          const kineticSlider = (window as { kineticSlider?: { engine?: unknown } })
-            .kineticSlider;
+          const kineticSlider = (
+            window as { kineticSlider?: { engine?: unknown } }
+          ).kineticSlider;
           return kineticSlider && kineticSlider.engine;
         },
         { timeout: 15000 }
@@ -73,17 +74,17 @@ export async function navigateAndWait(
       return;
     } catch (error) {
       lastError = error as Error;
-      
+
       // Log detailed error information for debugging
       const url = page.url();
       const title = await page.title().catch(() => 'Unable to get title');
-      
+
       console.error(`Navigation attempt ${attempt} failed:`, {
         browser: browserName,
         url,
         title,
         error: lastError.message,
-        path
+        path,
       });
 
       // If not the last attempt, wait progressively longer before retrying
@@ -96,7 +97,7 @@ export async function navigateAndWait(
   // All attempts failed - provide comprehensive error info
   const finalUrl = page.url();
   const finalTitle = await page.title().catch(() => 'Unable to get title');
-  
+
   throw new Error(
     `Failed to navigate after 5 attempts. Browser: ${browserName}, URL: ${finalUrl}, Title: "${finalTitle}", Last error: ${lastError?.message}`
   );
