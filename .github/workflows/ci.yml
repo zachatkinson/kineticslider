@@ -86,7 +86,16 @@ jobs:
       - name: 💅 Format check
         run: pnpm format:check
 
-      - name: 🧪 Unit tests
+      - name: 🧪 Run Unit & Core tests
+        run: pnpm test:unit
+
+      - name: 🔗 Run Integration tests
+        run: pnpm test:integration
+
+      - name: 🎨 Run Rendering tests
+        run: pnpm test:rendering
+
+      - name: 📊 Generate coverage report
         run: pnpm test:coverage
 
       - name: 📊 Upload coverage to Codecov
@@ -100,7 +109,7 @@ jobs:
       - name: ✅ Coverage threshold check
         run: |
           # Enforce minimum 85% coverage
-          pnpm test:coverage:check
+          pnpm coverage:enforce
 
   # 🎭 E2E Testing (with sharding for better performance)
   e2e:
