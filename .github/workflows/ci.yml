@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   PNPM_VERSION: '10.7.0'
 
 jobs:
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20]
+        node-version: [20, 22]
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -139,7 +139,7 @@ jobs:
         run: pnpm playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: 📤 Upload Playwright report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-report-shard-${{ matrix.shardIndex }}
