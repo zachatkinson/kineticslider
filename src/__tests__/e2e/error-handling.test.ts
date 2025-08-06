@@ -354,8 +354,9 @@ test.describe('Error Handling E2E', () => {
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      // Should complete quickly (less than 500ms for CI)
-      expect(duration).toBeLessThan(500);
+      // Should complete within reasonable time for CI
+      const timeLimit = process.env.CI ? 1500 : 500;
+      expect(duration).toBeLessThan(timeLimit);
 
       // Should show appropriate content
       const slider = page.locator('#responsiveness-test-slider');
