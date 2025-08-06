@@ -122,6 +122,12 @@ export class AccessibilityManager extends SimpleEventEmitter {
     this.container = container;
     this.engine = engine;
 
+    // Debug log container details
+    debugLogger.info(
+      'AccessibilityManager',
+      `Initializing with container: ${container?.tagName || 'null'}, data-testid: ${container?.getAttribute('data-testid') || 'none'}, id: ${container?.id || 'none'}, className: ${container?.className || 'none'}`
+    );
+
     try {
       // Setup ARIA attributes
       this.setupARIA(container);
@@ -199,6 +205,11 @@ export class AccessibilityManager extends SimpleEventEmitter {
       'aria-label': this.config.ariaLabels?.sliderLabel || 'Image carousel',
       'aria-roledescription': 'carousel',
       tabindex: '0',
+      // Add initial dynamic attributes that will be updated by announceSlideChange
+      'aria-valuenow': '1',
+      'aria-valuemin': '1',
+      'aria-valuemax': '1', // Will be updated when we know total slides
+      'aria-valuetext': 'Slide 1 of 1', // Will be updated when we know total slides
     };
 
     this.applyARIAAttributes(container, containerAttrs);
@@ -267,6 +278,11 @@ export class AccessibilityManager extends SimpleEventEmitter {
    * Announce slide change to screen readers
    */
   announceSlideChange(index: number, total: number): void {
+    debugLogger.info(
+      'AccessibilityManager',
+      `announceSlideChange called: index=${index}, total=${total}, initialized=${this.isInitialized}, container exists=${!!this.container}`
+    );
+
     this.currentSlideIndex = index;
     this.totalSlides = total;
 
@@ -355,10 +371,25 @@ export class AccessibilityManager extends SimpleEventEmitter {
 
     this.applyARIAAttributes(this.container, valueAttrs);
 
-    // Verify attributes were set
+    // Verify attributes were set immediately after applying
+    const verifyAria = {
+      'aria-valuenow': this.container.getAttribute('aria-valuenow'),
+      'aria-valuetext': this.container.getAttribute('aria-valuetext'),
+      'aria-valuemin': this.container.getAttribute('aria-valuemin'),
+      'aria-valuemax': this.container.getAttribute('aria-valuemax'),
+    };
+
     debugLogger.info(
       'AccessibilityManager',
-      `ARIA attributes applied: aria-valuenow=${this.container.getAttribute('aria-valuenow')}, aria-valuetext=${this.container.getAttribute('aria-valuetext')}`
+      `ARIA attributes verification:`,
+      verifyAria
+    );
+
+    // Also check if this is the element tests are looking for
+    const testId = this.container.getAttribute('data-testid');
+    debugLogger.info(
+      'AccessibilityManager',
+      `Container test-id: ${testId}, attributes applied to: ${this.container.tagName}`
     );
   }
 

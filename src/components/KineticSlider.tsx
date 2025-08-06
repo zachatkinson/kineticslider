@@ -220,12 +220,8 @@ export function KineticSlider({
         outline: 'none',
         ...style,
       }}
-      role="region"
-      aria-label={
-        accessibility?.ariaLabels?.sliderLabel ||
-        `Image carousel with ${images.length} slides`
-      }
-      tabIndex={0}
+      // ARIA attributes are managed by AccessibilityManager to prevent React conflicts
+      // role, aria-label, tabindex, etc. will be set by AccessibilityManager
       {...props}
     />
   );

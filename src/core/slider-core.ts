@@ -191,9 +191,20 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
       // Announce initial slide state to set ARIA attributes
       if (this.accessibilityManager) {
+        const currentIndex = this.stateManager.getCurrentIndex();
+        const totalSlides = this.stateManager.getTotalSlides();
+        debugLogger.info(
+          'SliderCore',
+          `Making initial announcement: index=${currentIndex}, total=${totalSlides}`
+        );
         this.accessibilityManager.announceSlideChange(
-          this.stateManager.getCurrentIndex(),
-          this.stateManager.getTotalSlides()
+          currentIndex,
+          totalSlides
+        );
+      } else {
+        debugLogger.warn(
+          'SliderCore',
+          'AccessibilityManager not available for initial announcement'
         );
       }
 

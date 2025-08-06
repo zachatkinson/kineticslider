@@ -883,10 +883,8 @@ function KineticSliderDemo(): JSX.Element {
         <div
           ref={sliderRef}
           data-testid="kinetic-slider"
-          role="region"
-          aria-label="Interactive image slider"
-          tabIndex={0}
-          aria-describedby="keyboard-instructions"
+          // ARIA attributes are now managed by AccessibilityManager to prevent React conflicts
+          // role, aria-label, aria-valuenow, etc. will be set by AccessibilityManager
           style={{
             width: '100%',
             height: '400px',
