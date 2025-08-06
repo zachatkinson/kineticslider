@@ -174,11 +174,11 @@ test.describe('Keyboard Navigation E2E', () => {
       // So if initialIndex=0, initialAria="1"; if newIndex=1, newAria should be "2"
       const expectedAriaValue = String((newIndex || 0) + 1);
       await expect(_slider).toHaveAttribute('aria-valuenow', expectedAriaValue);
-      
+
       // Also verify that ARIA value actually changed from initial
       const newAriaValue = await _slider.getAttribute('aria-valuenow');
       expect(newAriaValue).not.toBe(initialAriaValue);
-      
+
       await expect(_slider).toHaveAttribute(
         'aria-valuetext',
         /slide \d+ of \d+/i

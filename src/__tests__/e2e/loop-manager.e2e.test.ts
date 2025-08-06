@@ -24,8 +24,10 @@ test.describe('LoopManager E2E Tests', () => {
 
       // Enable looping (disabled by default)
       await page.evaluate(() => {
-        const engine = window.kineticSlider?.engine as 
-          | (KineticSliderEngine & { updateConfig?: (config: { loop: boolean }) => void })
+        const engine = window.kineticSlider?.engine as
+          | (KineticSliderEngine & {
+              updateConfig?: (config: { loop: boolean }) => void;
+            })
           | undefined;
         if (engine?.updateConfig) {
           engine.updateConfig({ loop: true });
