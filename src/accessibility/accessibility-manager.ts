@@ -214,6 +214,19 @@ export class AccessibilityManager extends SimpleEventEmitter {
 
     this.applyARIAAttributes(container, containerAttrs);
 
+    // Force immediate verification that attributes were actually set
+    const verification = {
+      role: container.getAttribute('role'),
+      'aria-label': container.getAttribute('aria-label'),
+      tabindex: container.getAttribute('tabindex'),
+      'data-testid': container.getAttribute('data-testid'),
+    };
+    debugLogger.info(
+      'AccessibilityManager',
+      'setupARIA verification after applying attributes:',
+      verification
+    );
+
     // Create slide list container if it doesn't exist
     this.slideListElement = container.querySelector(
       '[role="list"]'

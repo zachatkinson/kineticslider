@@ -695,6 +695,14 @@ function KineticSliderDemo(): JSX.Element {
         // Configuration matching the HTML demo
         const config = {
           debug: true, // Enable debug logging
+          accessibility: {
+            screenReader: true,
+            keyboardNavigation: true,
+            ariaLabels: {
+              sliderLabel: 'Interactive image slider',
+              slideLabel: 'Slide {index} of {total}',
+            },
+          },
           slides: sampleImages.map((img, index) => ({
             id: `slide-${index}`,
             src: img.src,
