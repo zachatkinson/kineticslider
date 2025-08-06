@@ -171,14 +171,20 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
 
   // Remove a filter
   const removeFilter = useCallback(
-    async (filterId: string) => {
+    (filterId: string) => {
       const newFilters = activeFilters.filter((f) => f.id !== filterId);
       setActiveFilters(newFilters);
 
-      // If removing the last filter, clear the slider
-      if (newFilters.length === 0 && sliderEngine) {
-        await sliderEngine.clearFilters();
+      // Update callback immediately for responsive UX
+      if (newFilters.length === 0) {
         onFilterApplied([]);
+
+        // Clear slider in background if removing last filter
+        if (sliderEngine) {
+          sliderEngine.clearFilters().catch((error) => {
+            debugLogger.warn('Failed to clear filters from engine:', error);
+          });
+        }
       }
       // Otherwise useEffect will handle applying remaining enabled filters
     },
@@ -4323,6 +4329,8 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
                       type="checkbox"
                       checked={filter.enabled}
                       onChange={() => toggleFilterEnabled(filter.id)}
+                      data-filter={filter.name}
+                      data-testid={`filter-checkbox-${filter.name}`}
                       style={{
                         width: '16px',
                         height: '16px',
@@ -4472,12 +4480,17 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       {activeFilters.length > 0 && (
         <button
           data-testid="clear-filters-button"
-          onClick={async () => {
+          onClick={() => {
+            // Clear UI state immediately for responsive UX
             setActiveFilters([]);
-            // Actually clear filters from slider when user clicks "Clear All"
+            onFilterApplied([]);
+
+            // Clear slider in background - don't await to prevent click hanging
             if (sliderEngine) {
-              await sliderEngine.clearFilters();
-              onFilterApplied([]);
+              sliderEngine.clearFilters().catch((error) => {
+                debugLogger.warn('Failed to clear filters from engine:', error);
+                // Don't re-throw - filter UI is already cleared
+              });
             }
           }}
           style={{

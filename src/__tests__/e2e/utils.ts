@@ -75,17 +75,8 @@ export async function navigateAndWait(
     } catch (error) {
       lastError = error as Error;
 
-      // Log detailed error information for debugging
-      const url = page.url();
-      const title = await page.title().catch(() => 'Unable to get title');
-
-      console.error(`Navigation attempt ${attempt} failed:`, {
-        browser: browserName,
-        url,
-        title,
-        error: lastError.message,
-        path,
-      });
+      // Skip detailed logging for cleaner test output
+      // Navigation attempt failed, will retry
 
       // If not the last attempt, wait progressively longer before retrying
       if (attempt < 5) {
@@ -130,4 +121,51 @@ export async function testViewportResponsiveness(
   }
 
   return results;
+}
+
+/**
+ * Reset the application to a clean state for better test isolation
+ */
+export async function resetAppState(page: Page): Promise<void> {
+  try {
+    // Clear all filters first
+    const clearButton = page.locator('[data-testid="clear-filters-button"]');
+    if (await clearButton.isVisible({ timeout: 2000 })) {
+      await clearButton.click({ force: true });
+      await page.waitForTimeout(500);
+    }
+
+    // Force close any open dropdowns
+    await page.evaluate(() => {
+      // Click outside to close any dropdowns
+      const body = document.body;
+      if (body) {
+        body.click();
+      }
+
+      // Clear any React state that might be lingering
+      const event = new Event('resetFilters', { bubbles: true });
+      body.dispatchEvent(event);
+    });
+
+    // Wait for state to stabilize
+    await page.waitForTimeout(300);
+
+    // Ensure the add filter button is visible and ready
+    const addButton = page.locator('[data-testid="add-filter-button"]');
+    await addButton.waitFor({ state: 'visible', timeout: 5000 });
+  } catch {
+    // Continue with test - don't fail if cleanup fails
+  }
+}
+
+/**
+ * Enhanced navigation with state reset for better test isolation
+ */
+export async function navigateAndReset(
+  page: Page,
+  path: string = '/'
+): Promise<void> {
+  await navigateAndWait(page, path);
+  await resetAppState(page);
 }

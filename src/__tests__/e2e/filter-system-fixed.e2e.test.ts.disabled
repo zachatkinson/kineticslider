@@ -9,7 +9,7 @@
 
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { navigateAndWait } from './utils';
+import { navigateAndWait, resetAppState } from './utils';
 
 // Filter name mapping for tests (only advanced filters)
 const filterNameMap: Record<string, string> = {
@@ -35,28 +35,131 @@ const filterNameMap: Record<string, string> = {
   reflection: 'reflection',
 };
 
+// Helper to clear all filters and wait for available filters
+async function clearFiltersAndWait(page: Page) {
+  // First, close any open dropdowns
+  await page.evaluate(() => {
+    const body = document.body;
+    if (body) {
+      body.click(); // Click outside to close dropdowns
+    }
+  });
+  await page.waitForTimeout(200);
+  
+  const clearButton = page.locator('[data-testid="clear-filters-button"]');
+  
+  try {
+    // Check if clear button exists and is visible
+    if (await clearButton.isVisible({ timeout: 2000 })) {
+      // Use force:true to ensure click works even if button is in transition
+      await clearButton.click({ force: true, timeout: 3000 });
+      
+      // Wait for UI state to update
+      await page.waitForTimeout(500);
+    }
+  } catch (error) {
+    // Clear button might not exist if no filters are active - this is OK
+    console.log('Clear button not found or not clickable - likely no filters active');
+  }
+  
+  // Ensure dropdowns are closed and state is clean
+  await page.evaluate(() => {
+    // Force close any lingering dropdowns
+    const dropdowns = document.querySelectorAll('[data-testid="filter-dropdown"]');
+    dropdowns.forEach(dropdown => {
+      if (dropdown instanceof HTMLElement) {
+        dropdown.style.display = 'none';
+      }
+    });
+    
+    // Click body again to ensure state is reset
+    document.body.click();
+  });
+  
+  // Wait for add button to be available - this indicates filters are cleared
+  const addButton = page.locator('[data-testid="add-filter-button"]');
+  await addButton.waitFor({ state: 'visible', timeout: 8000 });
+  await addButton.waitFor({ state: 'attached', timeout: 8000 });
+  
+  // Additional wait for React state to stabilize
+  await page.waitForTimeout(400);
+}
+
 // Helper functions for new AdvancedFilterManager UI
 async function addAndEnableFilter(page: Page, filterName: string) {
   const mappedName = filterNameMap[filterName.toLowerCase()] || filterName;
 
-  const addButton = page.locator('[data-testid="add-filter-button"]');
-  await addButton.click();
-  await page.waitForTimeout(300);
+  // Ensure we start with a clean state - close any open dropdowns
+  await page.evaluate(() => {
+    const body = document.body;
+    if (body) {
+      body.click(); // Click outside to close dropdowns
+    }
+  });
+  await page.waitForTimeout(200);
 
+  // Wait for the add button to be ready
+  const addButton = page.locator('[data-testid="add-filter-button"]');
+  await addButton.waitFor({ state: 'visible', timeout: 8000 });
+  await expect(addButton).toBeEnabled();
+  
+  // Click to open dropdown using evaluate for better reliability
+  let dropdownVisible = false;
+  for (let i = 0; i < 3; i++) {
+    try {
+      await page.evaluate((selector) => {
+        const button = document.querySelector(selector);
+        if (button) {
+          button.click();
+        }
+      }, '[data-testid="add-filter-button"]');
+      
+      // Wait for dropdown to appear
+      const dropdown = page.locator('[data-testid="filter-dropdown"]');
+      await dropdown.waitFor({ state: 'visible', timeout: 4000 });
+      dropdownVisible = await dropdown.isVisible();
+      
+      if (dropdownVisible) {
+        break;
+      }
+      
+    } catch (error) {
+      console.log(`Dropdown open attempt ${i + 1} failed:`, error.message);
+      // Reset state before retry
+      await page.evaluate(() => {
+        document.body.click();
+      });
+      await page.waitForTimeout(500);
+    }
+  }
+  
+  if (!dropdownVisible) {
+    throw new Error(`Could not open dropdown for filter: ${filterName}`);
+  }
+
+  // Click the filter option using evaluate for better reliability
   const testId = mappedName.toLowerCase().replace(/\s+/g, '-');
-  await page.click(`[data-testid="filter-option-${testId}"]`);
-  await page.waitForTimeout(500);
+  const filterOption = page.locator(`[data-testid="filter-option-${testId}"]`);
+  await filterOption.waitFor({ state: 'visible', timeout: 4000 });
+  
+  // Use evaluate to click the option
+  await page.evaluate((selector) => {
+    const option = document.querySelector(selector);
+    if (option) {
+      option.click();
+    }
+  }, `[data-testid="filter-option-${testId}"]`);
+  
+  // Wait for dropdown to close and filter to be added
+  await page.waitForTimeout(800);
 
   // Filter is auto-enabled when added to AdvancedFilterManager
-  // No need to click checkbox - just wait for it to be applied
-}
-
-async function clearAllFilters(page: Page) {
-  const clearButton = page.locator('[data-testid="clear-filters-button"]');
-  if (await clearButton.isVisible()) {
-    await clearButton.click();
-    await page.waitForTimeout(200);
-  }
+  // Verify the filter was added by checking for the specific filter checkbox
+  const filterCheckbox = page.locator(
+    `[data-testid="filter-checkbox-${mappedName}"]`
+  );
+  await filterCheckbox.waitFor({ state: 'visible', timeout: 4000 });
+  await expect(filterCheckbox).toBeChecked({ timeout: 4000 });
 }
 
 // Helper to count enabled filters in AdvancedFilterManager
@@ -78,6 +181,12 @@ async function expectFilterEnabled(page: Page) {
 test.describe('Filter System E2E (Fixed)', () => {
   test.beforeEach(async ({ page }) => {
     await navigateAndWait(page);
+    await resetAppState(page);
+  });
+  
+  test.afterEach(async ({ page }) => {
+    // Ensure clean state after each test
+    await resetAppState(page);
   });
 
   test('should load and validate complete filter system @smoke', async ({
@@ -154,7 +263,7 @@ test.describe('Filter System E2E (Fixed)', () => {
     await expectFilterEnabled(page);
 
     // Clear all filters
-    await clearAllFilters(page);
+    await clearFiltersAndWait(page);
 
     // Verify no filters message appears
     const noFilters = page.locator('text=No filters active');
@@ -171,6 +280,8 @@ test.describe('Filter System E2E (Fixed)', () => {
     ];
 
     for (const combo of combinations) {
+      // Clear filters before each combination to ensure clean state
+      await clearFiltersAndWait(page);
       try {
         await addAndEnableFilter(page, combo[0]);
         await page.waitForTimeout(300);
@@ -181,8 +292,6 @@ test.describe('Filter System E2E (Fixed)', () => {
         const slider = page.locator('[data-testid="kinetic-slider"]');
         await expect(slider).toBeVisible();
 
-        await clearAllFilters(page);
-        await page.waitForTimeout(200);
       } catch (error) {
         console.error(`Filter combination ${combo.join(' + ')} failed:`, error);
       }
@@ -196,11 +305,10 @@ test.describe('Filter System E2E (Fixed)', () => {
     const performanceFilters = ['glow', 'pixelate', 'alpha', 'adjustment'];
 
     for (const filterName of performanceFilters) {
+      await clearFiltersAndWait(page);
       try {
         await addAndEnableFilter(page, filterName);
         await page.waitForTimeout(1000);
-        await clearAllFilters(page);
-        await page.waitForTimeout(500);
       } catch (error) {
         console.warn(`Could not test performance for ${filterName}:`, error);
       }
@@ -215,16 +323,19 @@ test.describe('Filter System E2E (Fixed)', () => {
     const filterTypes = ['glow', 'alpha', 'pixelate', 'adjustment'];
 
     for (const filterType of filterTypes) {
+      await clearFiltersAndWait(page);
       await addAndEnableFilter(page, filterType);
 
       await expectFilterEnabled(page);
-
-      await clearAllFilters(page);
+      
       await page.waitForTimeout(200);
     }
   });
 
   test('should handle multiple filter applications', async ({ page }) => {
+    // Clear filters first to ensure clean state
+    await clearFiltersAndWait(page);
+    
     const filterSequence = ['glow', 'alpha'];
 
     for (const filterText of filterSequence) {
@@ -235,7 +346,7 @@ test.describe('Filter System E2E (Fixed)', () => {
     const enabledCount = await countEnabledFilters(page);
     expect(enabledCount).toBe(2);
 
-    await clearAllFilters(page);
+    await clearFiltersAndWait(page);
 
     const noFilters = page.locator('text=No filters active');
     await expect(noFilters).toBeVisible();
@@ -251,11 +362,14 @@ test.describe('Filter System E2E (Fixed)', () => {
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await expect(slider).toBeVisible();
 
-      await clearAllFilters(page);
+      await clearFiltersAndWait(page);
     }
   });
 
   test('should handle filter system performance', async ({ page }) => {
+    // Clear filters first to ensure clean state
+    await clearFiltersAndWait(page);
+    
     // Simple performance test - add multiple filters
     await addAndEnableFilter(page, 'glow');
     await addAndEnableFilter(page, 'alpha');
