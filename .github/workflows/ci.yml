@@ -131,18 +131,13 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🎭 Install Playwright browsers
-        run: pnpm playwright install --with-deps
-        timeout-minutes: 10
+      - name: 🎭 Install Playwright Browsers
+        uses: microsoft/playwright-github-action@v1
+        with:
+          browsers: 'chromium firefox webkit'
 
       - name: 🏗️ Build application
         run: pnpm build
-
-      - name: 📦 Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
   # 🎭 E2E Testing (with sharding for better performance)
   e2e:
@@ -172,17 +167,10 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 📦 Restore Playwright browsers
-        uses: actions/cache@v4
+      - name: 🎭 Install Playwright Browsers
+        uses: microsoft/playwright-github-action@v1
         with:
-          path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: 🔍 Verify Playwright browsers
-        run: |
-          # Ensure browsers are available, install if cache miss
-          pnpm playwright install --dry-run || pnpm playwright install
-        timeout-minutes: 5
+          browsers: 'chromium firefox webkit'
 
       - name: 🏗️ Build application
         run: pnpm build
@@ -194,7 +182,6 @@ jobs:
         run: pnpm playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
         env:
           CI: true
-          PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
           NODE_OPTIONS: --max_old_space_size=4096
         timeout-minutes: 15
 

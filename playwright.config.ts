@@ -66,12 +66,23 @@ export default defineConfig({
 
     /* Performance optimizations */
     launchOptions: {
-      // Faster browser startup
+      // Faster browser startup with CI compatibility
       args: [
         '--no-sandbox',
         '--disable-dev-shm-usage',
         '--disable-web-security',
+        '--disable-features=TranslateUI',
+        '--disable-ipc-flooding-protection',
+        // CI-specific args
+        ...(process.env.CI ? [
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+          '--disable-field-trial-config',
+          '--disable-background-timer-throttling',
+        ] : []),
       ],
+      // Increase timeout for CI
+      timeout: process.env.CI ? 60000 : 30000,
     },
   },
 
