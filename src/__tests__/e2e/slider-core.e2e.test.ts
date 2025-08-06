@@ -848,7 +848,9 @@ test.describe('Core Slider Functionality', () => {
 
       // Verify navigation worked
       const currentIndex = await page.evaluate(() => {
-        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
         return engine?.getCurrentIndex?.();
       });
       expect(currentIndex).toBeGreaterThan(0);

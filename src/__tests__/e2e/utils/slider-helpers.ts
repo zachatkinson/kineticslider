@@ -10,9 +10,7 @@ export async function getSliderState(page: Page): Promise<{
   isPlaying: boolean;
 }> {
   return await page.evaluate(() => {
-    const engine = window.kineticSlider?.engine as
-      | ISliderEngine
-      | undefined;
+    const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
     return {
       currentIndex: engine?.getCurrentIndex?.() || 0,
       totalSlides: engine?.getTotalSlides?.() || 0,
@@ -26,9 +24,7 @@ export async function getSliderState(page: Page): Promise<{
  */
 export async function getCurrentSlideIndex(page: Page): Promise<number> {
   return await page.evaluate(() => {
-    const engine = window.kineticSlider?.engine as
-      | ISliderEngine
-      | undefined;
+    const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
     return engine?.getCurrentIndex?.() || 0;
   });
 }
@@ -38,9 +34,7 @@ export async function getCurrentSlideIndex(page: Page): Promise<number> {
  */
 export async function getTotalSlides(page: Page): Promise<number> {
   return await page.evaluate(() => {
-    const engine = window.kineticSlider?.engine as
-      | ISliderEngine
-      | undefined;
+    const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
     return engine?.getTotalSlides?.() || 0;
   });
 }
@@ -50,9 +44,7 @@ export async function getTotalSlides(page: Page): Promise<number> {
  */
 export async function goToSlide(page: Page, index: number): Promise<void> {
   await page.evaluate((targetIndex) => {
-    const engine = window.kineticSlider?.engine as
-      | ISliderEngine
-      | undefined;
+    const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
     return engine?.goToSlide?.(targetIndex);
   }, index);
 }

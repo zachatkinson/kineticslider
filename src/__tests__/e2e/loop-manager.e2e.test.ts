@@ -33,7 +33,11 @@ test.describe('LoopManager E2E Tests', () => {
       await page.evaluate(() => {
         const engine = window.kineticSlider?.engine as EngineWithManagers & {
           loopManager?: {
-            updateConfig: (config: { enabled: boolean; mode?: string; useVirtualSlides?: boolean }) => void;
+            updateConfig: (config: {
+              enabled: boolean;
+              mode?: string;
+              useVirtualSlides?: boolean;
+            }) => void;
             getConfig?: () => { mode?: string };
           };
         };
@@ -178,7 +182,11 @@ test.describe('LoopManager E2E Tests', () => {
       await page.evaluate(() => {
         const engine = window.kineticSlider?.engine as EngineWithManagers & {
           loopManager?: {
-            updateConfig: (config: { enabled: boolean; mode?: string; useVirtualSlides?: boolean }) => void;
+            updateConfig: (config: {
+              enabled: boolean;
+              mode?: string;
+              useVirtualSlides?: boolean;
+            }) => void;
             getConfig?: () => { mode?: string };
           };
         };
@@ -234,7 +242,11 @@ test.describe('LoopManager E2E Tests', () => {
       const virtualSlidesEnabled = await page.evaluate(() => {
         const engine = window.kineticSlider?.engine as EngineWithManagers & {
           loopManager?: {
-            updateConfig: (config: { enabled: boolean; mode?: string; useVirtualSlides?: boolean }) => void;
+            updateConfig: (config: {
+              enabled: boolean;
+              mode?: string;
+              useVirtualSlides?: boolean;
+            }) => void;
             getConfig?: () => { mode?: string };
           };
         };
@@ -261,11 +273,15 @@ test.describe('LoopManager E2E Tests', () => {
         // Check if virtual slides were created
         const hasVirtualSlides = await page.evaluate(() => {
           const engine = window.kineticSlider?.engine as EngineWithManagers & {
-          loopManager?: {
-            updateConfig: (config: { enabled: boolean; mode?: string; useVirtualSlides?: boolean }) => void;
-            getConfig?: () => { mode?: string };
+            loopManager?: {
+              updateConfig: (config: {
+                enabled: boolean;
+                mode?: string;
+                useVirtualSlides?: boolean;
+              }) => void;
+              getConfig?: () => { mode?: string };
+            };
           };
-        };
           const loopManager = engine?.loopManager;
           const virtualSlides = loopManager?.getVirtualSlides?.();
           return Array.isArray(virtualSlides) && virtualSlides.length > 0;
@@ -284,7 +300,11 @@ test.describe('LoopManager E2E Tests', () => {
         (window as { loopEvents?: string[] }).loopEvents = [];
         const engine = window.kineticSlider?.engine as EngineWithManagers & {
           loopManager?: {
-            updateConfig: (config: { enabled: boolean; mode?: string; useVirtualSlides?: boolean }) => void;
+            updateConfig: (config: {
+              enabled: boolean;
+              mode?: string;
+              useVirtualSlides?: boolean;
+            }) => void;
             on?: (event: string, handler: () => void) => void;
             getVirtualSlides?: () => unknown[];
           };
@@ -316,7 +336,9 @@ test.describe('LoopManager E2E Tests', () => {
       await page.keyboard.press('ArrowLeft'); // Should trigger backward loop
       await page.waitForTimeout(300);
 
-      const events = await page.evaluate(() => (window as { loopEvents?: string[] }).loopEvents);
+      const events = await page.evaluate(
+        () => (window as { loopEvents?: string[] }).loopEvents
+      );
 
       // Events might not fire in all browser contexts
       if (Array.isArray(events)) {
@@ -358,9 +380,10 @@ test.describe('LoopManager E2E Tests', () => {
       page,
     }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
+      const liveRegion = page.locator('#slider-announcements[aria-live]');
 
-      // Check for proper ARIA attributes
-      const ariaLive = await _slider.getAttribute('aria-live');
+      // Check for proper ARIA attributes on the live region
+      const ariaLive = await liveRegion.getAttribute('aria-live');
       expect(['polite', 'assertive', 'off']).toContain(ariaLive);
 
       // Navigate to trigger loop
@@ -370,9 +393,13 @@ test.describe('LoopManager E2E Tests', () => {
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(300);
 
-      // Check if current value was updated
+      // Check if current value was updated on slider
       const ariaValueNow = await _slider.getAttribute('aria-valuenow');
       expect(ariaValueNow).toBeTruthy();
+
+      // Check if announcement was made
+      const announcement = await liveRegion.textContent();
+      expect(announcement).toBeTruthy();
     });
   });
 });

@@ -47,12 +47,12 @@ describe('Performance Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Register mock services
     serviceContainer.register('_slider-physics', () => mockPhysics);
     serviceContainer.register('_slider-renderer', () => mockRenderer);
     serviceContainer.register('_slider-controller', () => mockController);
-    
+
     container = document.createElement('div');
     container.innerHTML = `
       <div class="slider-viewport">
@@ -68,17 +68,20 @@ describe('Performance Integration Tests', () => {
 
   it('should handle rapid navigation without performance degradation', async () => {
     engine = new SliderCore();
-    await engine.initialize({
-      loop: true,
-      autoPlay: false,
-      images: [
-        { id: '1', src: '/images/slides/1.jpg' },
-        { id: '2', src: '/images/slides/2.jpg' },
-        { id: '3', src: '/images/slides/3.jpg' },
-        { id: '4', src: '/images/slides/4.jpg' },
-        { id: '5', src: '/images/slides/5.jpg' }
-      ]
-    }, container);
+    await engine.initialize(
+      {
+        loop: true,
+        autoPlay: false,
+        images: [
+          { id: '1', src: '/images/slides/1.jpg' },
+          { id: '2', src: '/images/slides/2.jpg' },
+          { id: '3', src: '/images/slides/3.jpg' },
+          { id: '4', src: '/images/slides/4.jpg' },
+          { id: '5', src: '/images/slides/5.jpg' },
+        ],
+      },
+      container
+    );
 
     const startTime = performance.now();
     const navigationTimes: number[] = [];
@@ -97,7 +100,7 @@ describe('Performance Integration Tests', () => {
     // Performance assertions for navigation timing
     expect(avgNavigationTime).toBeLessThan(200); // Each navigation should be reasonably fast
     expect(totalTime).toBeLessThan(10000); // Total time should be reasonable
-    
+
     // Test that performance monitor can be created and provides metrics
     const performanceMonitor = new PerformanceMonitor();
     const metrics = performanceMonitor.getMetrics();
@@ -108,17 +111,20 @@ describe('Performance Integration Tests', () => {
 
   it('should maintain performance during loop transitions', async () => {
     engine = new SliderCore();
-    await engine.initialize({
-      loop: true,
-      autoPlay: false,
-      images: [
-        { id: '1', src: '/images/slides/1.jpg' },
-        { id: '2', src: '/images/slides/2.jpg' },
-        { id: '3', src: '/images/slides/3.jpg' },
-        { id: '4', src: '/images/slides/4.jpg' },
-        { id: '5', src: '/images/slides/5.jpg' }
-      ]
-    }, container);
+    await engine.initialize(
+      {
+        loop: true,
+        autoPlay: false,
+        images: [
+          { id: '1', src: '/images/slides/1.jpg' },
+          { id: '2', src: '/images/slides/2.jpg' },
+          { id: '3', src: '/images/slides/3.jpg' },
+          { id: '4', src: '/images/slides/4.jpg' },
+          { id: '5', src: '/images/slides/5.jpg' },
+        ],
+      },
+      container
+    );
 
     // LoopManager is integrated with the engine
 
