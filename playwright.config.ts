@@ -64,59 +64,123 @@ export default defineConfig({
     /* Videos - only for critical failures */
     video: process.env.CI ? 'retain-on-failure' : 'off',
 
-    /* Performance optimizations */
-    launchOptions: {
-      // Faster browser startup with CI compatibility
-      args: [
-        '--no-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-web-security',
-        '--disable-features=TranslateUI',
-        '--disable-ipc-flooding-protection',
-        // CI-specific args
-        ...(process.env.CI ? [
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding',
-          '--disable-field-trial-config',
-          '--disable-background-timer-throttling',
-        ] : []),
-      ],
-      // Increase timeout for CI
-      timeout: process.env.CI ? 60000 : 30000,
-    },
+    /* Performance optimizations - removed browser-specific args */
+    // Browser-specific launch options will be defined per project
+    timeout: process.env.CI ? 60000 : 30000,
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], hasTouch: true },
+      use: { 
+        ...devices['Desktop Chrome'], 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-features=TranslateUI',
+            '--disable-ipc-flooding-protection',
+            // CI-specific args for Chromium
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+              '--disable-field-trial-config',
+              '--disable-background-timer-throttling',
+            ] : []),
+          ],
+        },
+      },
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'], hasTouch: true },
+      use: { 
+        ...devices['Desktop Firefox'], 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            // Firefox-specific args (no --no-sandbox)
+            '--disable-web-security',
+          ],
+        },
+      },
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'], hasTouch: true },
+      use: { 
+        ...devices['Desktop Safari'], 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            // webkit-specific args (no Chrome flags)
+            '--disable-web-security',
+          ],
+        },
+      },
     },
 
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      use: { 
+        ...devices['Pixel 5'],
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-features=TranslateUI',
+            '--disable-ipc-flooding-protection',
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+              '--disable-field-trial-config',
+              '--disable-background-timer-throttling',
+            ] : []),
+          ],
+        },
+      },
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
+      use: { 
+        ...devices['iPhone 12'],
+        launchOptions: {
+          args: [
+            // webkit mobile-specific args (no Chrome flags)
+            '--disable-web-security',
+          ],
+        },
+      },
     },
 
     /* Test against installed browsers only */
     {
       name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome', hasTouch: true },
+      use: { 
+        ...devices['Desktop Chrome'], 
+        channel: 'chrome', 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-features=TranslateUI',
+            '--disable-ipc-flooding-protection',
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+              '--disable-field-trial-config',
+              '--disable-background-timer-throttling',
+            ] : []),
+          ],
+        },
+      },
     },
   ],
 
