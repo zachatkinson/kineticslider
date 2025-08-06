@@ -131,10 +131,9 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🎭 Install Playwright Browsers
-        uses: microsoft/playwright-github-action@v1
-        with:
-          browsers: 'chromium firefox webkit'
+      - name: 🎭 Install Playwright browsers and system dependencies
+        run: pnpm exec playwright install --with-deps
+        timeout-minutes: 10
 
       - name: 🏗️ Build application
         run: pnpm build
@@ -167,10 +166,9 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🎭 Install Playwright Browsers
-        uses: microsoft/playwright-github-action@v1
-        with:
-          browsers: 'chromium firefox webkit'
+      - name: 🎭 Install Playwright browsers and system dependencies
+        run: pnpm exec playwright install --with-deps
+        timeout-minutes: 10
 
       - name: 🏗️ Build application
         run: pnpm build
