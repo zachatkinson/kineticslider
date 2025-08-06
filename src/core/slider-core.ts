@@ -189,6 +189,14 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         this.play();
       }
 
+      // Announce initial slide state to set ARIA attributes
+      if (this.accessibilityManager) {
+        this.accessibilityManager.announceSlideChange(
+          this.stateManager.getCurrentIndex(),
+          this.stateManager.getTotalSlides()
+        );
+      }
+
       this.emit(SLIDER_EVENTS.INITIALIZED, {
         totalSlides: this.stateManager.getTotalSlides(),
         currentIndex: this.stateManager.getCurrentIndex(),
