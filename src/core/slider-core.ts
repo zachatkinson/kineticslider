@@ -980,6 +980,21 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
           );
           // Don't throw error, accessibility is optional
         }
+      } else if (container) {
+        // Even if accessibility config is not provided, initialize with defaults for ARIA attributes
+        try {
+          await this.accessibilityManager.initialize(container, this);
+          debugLogger.info(
+            'AccessibilityManager initialized with defaults',
+            'SliderCore'
+          );
+        } catch (accessibilityError) {
+          debugLogger.warn(
+            'SliderCore',
+            'Default AccessibilityManager initialization failed:',
+            accessibilityError
+          );
+        }
       }
     }
   }

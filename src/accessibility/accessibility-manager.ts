@@ -320,7 +320,18 @@ export class AccessibilityManager extends SimpleEventEmitter {
    * Update ARIA attributes for current slide
    */
   private updateSlideARIA(index: number, total: number): void {
-    if (!this.container) return;
+    if (!this.container) {
+      debugLogger.warn(
+        'AccessibilityManager',
+        'updateSlideARIA called but container is null'
+      );
+      return;
+    }
+
+    debugLogger.info(
+      'AccessibilityManager',
+      `Updating ARIA attributes for slide ${index + 1} of ${total}`
+    );
 
     // Update slides with aria-current
     const slides = this.container.querySelectorAll('[role="listitem"]');
@@ -343,6 +354,12 @@ export class AccessibilityManager extends SimpleEventEmitter {
     };
 
     this.applyARIAAttributes(this.container, valueAttrs);
+
+    // Verify attributes were set
+    debugLogger.info(
+      'AccessibilityManager',
+      `ARIA attributes applied: aria-valuenow=${this.container.getAttribute('aria-valuenow')}, aria-valuetext=${this.container.getAttribute('aria-valuetext')}`
+    );
   }
 
   /**
