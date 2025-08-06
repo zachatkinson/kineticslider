@@ -417,6 +417,16 @@ test.describe('Auto-Play Controls', () => {
     test('should continue auto-play through loop transitions', async ({
       page,
     }) => {
+      // Enable looping (disabled by default)
+      await page.evaluate(() => {
+        const engine = window.kineticSlider?.engine as 
+          | (KineticSliderEngine & { updateConfig?: (config: { loop: boolean }) => void })
+          | undefined;
+        if (engine?.updateConfig) {
+          engine.updateConfig({ loop: true });
+        }
+      });
+
       // Start auto-play
       const playButton = page.locator('#play-pause-btn');
       if ((await playButton.count()) > 0) {
@@ -526,7 +536,9 @@ test.describe('Auto-Play Controls', () => {
         }
       });
 
-      if (manualNextResult.success && manualNextResult.newIndex === 0) {
+      if (manualNextResult.success && manualNextResult.newIndex !== undefined) {
+        // Should have looped back to first slide (index 0)
+        expect(manualNextResult.newIndex).toBe(0);
         return; // Test passes - manual loop works
       } else {
         expect(manualNextResult.newIndex).toBe(0);

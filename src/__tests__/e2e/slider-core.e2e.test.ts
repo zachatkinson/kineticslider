@@ -312,6 +312,16 @@ test.describe('Core Slider Functionality', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
+      // Enable looping (disabled by default)
+      await page.evaluate(() => {
+        const engine = window.kineticSlider?.engine as 
+          | (KineticSliderEngine & { updateConfig?: (config: { loop: boolean }) => void })
+          | undefined;
+        if (engine?.updateConfig) {
+          engine.updateConfig({ loop: true });
+        }
+      });
+
       // Wait for slider to be fully initialized with all slides
       await page.waitForFunction(
         () => {
@@ -444,7 +454,12 @@ test.describe('Core Slider Functionality', () => {
         finalIndex = indexHistory[indexHistory.length - 1];
       }
 
-      // Should be back at first slide
+      // Should be back at first slide (index 0) when loop is enabled
+      // If this fails, it suggests loop is not enabled or there's a timing issue
+      if (finalIndex !== 0) {
+        console.log(`Loop test: expected index 0, got ${finalIndex}. Last slide was ${lastSlideIndex}`);
+        console.log('Index history:', indexHistory);
+      }
       expect(finalIndex).toBe(0);
     });
 

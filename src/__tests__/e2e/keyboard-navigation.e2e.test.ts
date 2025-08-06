@@ -155,6 +155,8 @@ test.describe('Keyboard Navigation E2E', () => {
       )?.getCurrentIndex?.()
     );
 
+    const initialAriaValue = await _slider.getAttribute('aria-valuenow');
+
     // Navigate to next slide
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(500);
@@ -168,10 +170,18 @@ test.describe('Keyboard Navigation E2E', () => {
     // Check if navigation is working
     if (newIndex !== undefined && newIndex !== initialIndex) {
       // Navigation working - test ARIA updates
-      await expect(_slider).toHaveAttribute('aria-valuenow', '2');
+      // Based on implementation: aria-valuenow = String(getCurrentIndex() + 1)
+      // So if initialIndex=0, initialAria="1"; if newIndex=1, newAria should be "2"
+      const expectedAriaValue = String((newIndex || 0) + 1);
+      await expect(_slider).toHaveAttribute('aria-valuenow', expectedAriaValue);
+      
+      // Also verify that ARIA value actually changed from initial
+      const newAriaValue = await _slider.getAttribute('aria-valuenow');
+      expect(newAriaValue).not.toBe(initialAriaValue);
+      
       await expect(_slider).toHaveAttribute(
         'aria-valuetext',
-        /slide 2 of \d+/i
+        /slide \d+ of \d+/i
       );
 
       // Check for live region announcements

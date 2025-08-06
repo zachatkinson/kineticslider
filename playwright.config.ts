@@ -115,10 +115,7 @@ export default defineConfig({
         ...devices['Desktop Safari'], 
         hasTouch: true,
         launchOptions: {
-          args: [
-            // webkit-specific args (no Chrome flags)
-            '--disable-web-security',
-          ],
+          // webkit doesn't support ANY browser arguments - remove all args
         },
       },
     },
@@ -150,10 +147,7 @@ export default defineConfig({
       use: { 
         ...devices['iPhone 12'],
         launchOptions: {
-          args: [
-            // webkit mobile-specific args (no Chrome flags)
-            '--disable-web-security',
-          ],
+          // webkit mobile doesn't support ANY browser arguments - remove all args
         },
       },
     },

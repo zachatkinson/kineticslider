@@ -22,6 +22,16 @@ test.describe('LoopManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
+      // Enable looping (disabled by default)
+      await page.evaluate(() => {
+        const engine = window.kineticSlider?.engine as 
+          | (KineticSliderEngine & { updateConfig?: (config: { loop: boolean }) => void })
+          | undefined;
+        if (engine?.updateConfig) {
+          engine.updateConfig({ loop: true });
+        }
+      });
+
       // Navigate to last slide - webkit-compatible approach
       // Get total slides first
       const slideInfo = await page.evaluate(() => {
@@ -84,7 +94,8 @@ test.describe('LoopManager E2E Tests', () => {
         }
       }
 
-      expect(stableIndex).toBe(0); // Should be back at first slide
+      // Should be back at first slide (index 0) when loop is enabled
+      expect(stableIndex).toBe(0);
     });
 
     test('should loop from first slide to last slide in reverse', async ({
