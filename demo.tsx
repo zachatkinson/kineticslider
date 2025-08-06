@@ -886,10 +886,6 @@ function KineticSliderDemo(): JSX.Element {
           role="region"
           aria-label="Interactive image slider"
           tabIndex={0}
-          aria-valuenow={state.currentIndex + 1}
-          aria-valuemin={1}
-          aria-valuemax={state.totalSlides}
-          aria-valuetext={`Slide ${state.currentIndex + 1} of ${state.totalSlides}`}
           aria-describedby="keyboard-instructions"
           style={{
             width: '100%',
