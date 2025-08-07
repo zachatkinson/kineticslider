@@ -131,9 +131,10 @@ describe('KeyboardNavigator', () => {
     it('should set up proper ARIA attributes', () => {
       expect(mockElement.setAttribute).toHaveBeenCalledWith('role', 'region');
       expect(mockElement.setAttribute).toHaveBeenCalledWith('tabindex', '0');
+      // Note: aria-label is no longer set by KeyboardNavigator - handled by AccessibilityManager
       expect(mockElement.setAttribute).toHaveBeenCalledWith(
-        'aria-label',
-        'Interactive image slider'
+        'aria-describedby',
+        '_slider-keyboard-instructions'
       );
       // aria-live is set on the separate live region element created by the navigator
     });
@@ -564,11 +565,10 @@ describe('KeyboardNavigator', () => {
   });
 
   describe('Accessibility Compliance', () => {
-    it('should provide proper ARIA labels', () => {
-      expect(mockElement.setAttribute).toHaveBeenCalledWith(
-        'aria-label',
-        'Interactive image slider'
-      );
+    it('should provide proper ARIA attributes', () => {
+      // KeyboardNavigator sets role and tabindex, but not aria-label (handled by AccessibilityManager)
+      expect(mockElement.setAttribute).toHaveBeenCalledWith('role', 'region');
+      expect(mockElement.setAttribute).toHaveBeenCalledWith('tabindex', '0');
     });
 
     it('should create keyboard instructions', () => {
