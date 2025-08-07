@@ -37,7 +37,14 @@ vi.mock('../../physics/gsap-timeline-factory', () => ({
 
 // Mock dependencies that need real implementations
 const mockPhysics = {
-  animateTransition: vi.fn(),
+  animateTransition: vi
+    .fn()
+    .mockImplementation((_fromIndex, _toIndex, _config, onComplete) => {
+      // Immediately call completion callback to simulate finished transition
+      if (onComplete) {
+        setTimeout(onComplete, 0);
+      }
+    }),
   animateSwipe: vi.fn(),
   animateScale: vi.fn(),
   setPhysicsConfig: vi.fn(),
@@ -110,6 +117,9 @@ describe('SliderCore Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Clear localStorage to prevent state persistence between tests
+    localStorage.clear();
 
     // Use mock timeline factory for integration testing
     timelineFactory = {

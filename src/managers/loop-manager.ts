@@ -110,13 +110,46 @@ export class LoopManager extends SimpleEventEmitter {
     direction: 'forward' | 'backward'
   ): LoopTransition {
     try {
+      // If looping is disabled, handle normal navigation within bounds
       if (!this.config.enabled) {
-        return {
-          shouldNavigate: false,
-          targetIndex: currentIndex,
-          isLoop: false,
-          loopDirection: direction,
-        };
+        const isAtStart = currentIndex === 0;
+        const isAtEnd = currentIndex === totalSlides - 1;
+        
+        if (direction === 'forward') {
+          if (isAtEnd) {
+            // Can't go past the end when loop is disabled
+            return {
+              shouldNavigate: false,
+              targetIndex: currentIndex,
+              isLoop: false,
+              loopDirection: direction,
+            };
+          }
+          // Normal forward navigation
+          return {
+            shouldNavigate: true,
+            targetIndex: currentIndex + 1,
+            isLoop: false,
+            loopDirection: direction,
+          };
+        } else {
+          if (isAtStart) {
+            // Can't go before the start when loop is disabled
+            return {
+              shouldNavigate: false,
+              targetIndex: currentIndex,
+              isLoop: false,
+              loopDirection: direction,
+            };
+          }
+          // Normal backward navigation
+          return {
+            shouldNavigate: true,
+            targetIndex: currentIndex - 1,
+            isLoop: false,
+            loopDirection: direction,
+          };
+        }
       }
 
       // Validate inputs

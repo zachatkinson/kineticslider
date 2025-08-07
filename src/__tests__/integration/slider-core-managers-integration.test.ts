@@ -38,7 +38,14 @@ vi.mock('../../physics/gsap-timeline-factory', () => ({
 
 // Mock service dependencies
 const mockPhysics = {
-  animateTransition: vi.fn(),
+  animateTransition: vi
+    .fn()
+    .mockImplementation((_fromIndex, _toIndex, _config, onComplete) => {
+      // Immediately call completion callback to simulate finished transition
+      if (onComplete) {
+        setTimeout(onComplete, 0);
+      }
+    }),
   animateSwipe: vi.fn(),
   animateScale: vi.fn(),
   setPhysicsConfig: vi.fn(),
@@ -116,6 +123,9 @@ describe('SliderCore - Managers Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Clear localStorage to prevent state persistence between tests
+    localStorage.clear();
 
     // Register mock services in the service container
     serviceContainer.register('_slider-physics', () => mockPhysics);

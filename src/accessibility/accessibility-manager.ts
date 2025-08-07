@@ -182,7 +182,12 @@ export class AccessibilityManager extends SimpleEventEmitter {
           keyboardCallbacks,
           {
             enableArrowKeys: true,
+            enableWASD: true,
+            enableSpaceBar: true,
+            enableEnterKey: true,
             enableTabNavigation: true,
+            enableHomeEnd: true,
+            enablePageKeys: true,
             respectMotionPreferences: true,
             enableAnnouncements: false, // We handle announcements separately
           }

@@ -55,7 +55,14 @@ vi.mock('gsap', () => ({
 
 // Simple mocks for dependencies
 const mockPhysics = {
-  animateTransition: vi.fn(),
+  animateTransition: vi
+    .fn()
+    .mockImplementation((_fromIndex, _toIndex, _config, onComplete) => {
+      // Immediately call completion callback to simulate finished transition
+      if (onComplete) {
+        setTimeout(onComplete, 0);
+      }
+    }),
   animateSwipe: vi.fn(),
   animateScale: vi.fn(),
   setPhysicsConfig: vi.fn(),
@@ -103,6 +110,9 @@ describe('SliderCore - LoopManager Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Clear localStorage to prevent state persistence between tests
+    localStorage.clear();
 
     // Register mocked services as factories
     serviceContainer.register('_slider-physics', () => mockPhysics);

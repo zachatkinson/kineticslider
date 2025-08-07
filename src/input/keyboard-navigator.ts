@@ -158,7 +158,11 @@ export class KeyboardNavigator {
 
     // Set ARIA role for slider
     this.element.setAttribute('role', 'region');
-    this.element.setAttribute('aria-label', 'Interactive image slider');
+
+    // Only set aria-label if it doesn't already exist (let AccessibilityManager handle it)
+    if (!this.element.hasAttribute('aria-label')) {
+      this.element.setAttribute('aria-label', 'Interactive image slider');
+    }
 
     // Add keyboard instructions
     this.element.setAttribute(
