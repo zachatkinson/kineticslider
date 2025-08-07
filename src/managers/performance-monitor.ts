@@ -251,7 +251,11 @@ export class PerformanceMonitor extends SimpleEventEmitter {
   private requestFrameUpdate(): void {
     if (!this.isRunning) return;
 
-    requestAnimationFrame((timestamp) => {
+    const scheduleFrame = typeof requestAnimationFrame !== 'undefined'
+      ? requestAnimationFrame
+      : (callback: (timestamp: number) => void) => setTimeout(() => callback(Date.now()), 16);
+    
+    scheduleFrame((timestamp) => {
       this.frameCount++;
 
       // Calculate current FPS

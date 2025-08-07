@@ -260,8 +260,12 @@ export class ScreenReaderSupport extends SimpleEventEmitter {
     // Clear region first for better screen reader support
     region.textContent = '';
 
-    // Use requestAnimationFrame for better timing
-    requestAnimationFrame(() => {
+    // Use requestAnimationFrame for better timing, with fallback for Node.js environment
+    const scheduleUpdate = typeof requestAnimationFrame !== 'undefined' 
+      ? requestAnimationFrame 
+      : (callback: () => void) => setTimeout(callback, 0);
+    
+    scheduleUpdate(() => {
       region.textContent = announcement.message;
       this.lastAnnouncement = announcement.message;
 
