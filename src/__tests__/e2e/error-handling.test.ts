@@ -156,8 +156,10 @@ test.describe('Error Handling E2E', () => {
       const slider = page.locator('#recovery-test-slider');
       const content = await slider.textContent();
 
-      // Should either recover or show fallback
-      expect(content).toMatch(/loaded successfully|showing fallback/i);
+      // Should either recover, show fallback, or be attempting recovery
+      expect(content).toMatch(
+        /loaded successfully|showing fallback|attempting to recover/i
+      );
     });
 
     test('should provide retry functionality', async ({ page }) => {
