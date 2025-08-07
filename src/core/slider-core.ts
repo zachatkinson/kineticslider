@@ -91,6 +91,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     this.autoPlayManager = new AutoPlayManager();
     this.navigationManager = new NavigationManager();
     this.loopManager = new LoopManager();
+    // AccessibilityManager will be initialized properly in configureManagers with correct config
     this.accessibilityManager = new AccessibilityManager();
 
     // Initialize filter system
@@ -975,8 +976,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       // Initialize accessibility manager (always enabled for ARIA compliance)
       if (container) {
         try {
-          this.accessibilityManager = new AccessibilityManager(
-            this.config.accessibility
+          // Update existing AccessibilityManager with proper config instead of creating new one
+          this.accessibilityManager.updateConfig(
+            this.config.accessibility || {}
           );
           await this.accessibilityManager.initialize(container, this);
           debugLogger.info(

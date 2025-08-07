@@ -67,6 +67,12 @@ export async function navigateAndWait(
         { timeout: 15000 }
       );
 
+      // Wait for slider initialization to complete (critical for ARIA attributes)
+      await page.waitForSelector('[data-kinetic-slider-initialized="true"]', {
+        timeout: 10000,
+        state: 'attached',
+      });
+
       // Additional wait for any animations/transitions to settle
       await page.waitForTimeout(500);
 

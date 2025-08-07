@@ -180,8 +180,19 @@ export function KineticSlider({
 
         // Initialize slider
         await slider.initialize(config, sliderRef.current);
+
+        // Mark as initialized for E2E tests
+        if (sliderRef.current) {
+          sliderRef.current.setAttribute(
+            'data-kinetic-slider-initialized',
+            'true'
+          );
+        }
       } catch {
         // Slider initialization failed - component will render empty container
+        if (sliderRef.current) {
+          sliderRef.current.setAttribute('data-kinetic-slider-error', 'true');
+        }
       }
     };
 
