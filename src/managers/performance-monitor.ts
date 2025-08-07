@@ -251,10 +251,12 @@ export class PerformanceMonitor extends SimpleEventEmitter {
   private requestFrameUpdate(): void {
     if (!this.isRunning) return;
 
-    const scheduleFrame = typeof requestAnimationFrame !== 'undefined'
-      ? requestAnimationFrame
-      : (callback: (timestamp: number) => void) => setTimeout(() => callback(Date.now()), 16);
-    
+    const scheduleFrame =
+      typeof requestAnimationFrame !== 'undefined'
+        ? requestAnimationFrame
+        : (callback: (timestamp: number) => void): number =>
+            setTimeout(() => callback(Date.now()), 16) as unknown as number;
+
     scheduleFrame((timestamp) => {
       this.frameCount++;
 

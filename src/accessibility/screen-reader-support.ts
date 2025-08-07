@@ -261,10 +261,12 @@ export class ScreenReaderSupport extends SimpleEventEmitter {
     region.textContent = '';
 
     // Use requestAnimationFrame for better timing, with fallback for Node.js environment
-    const scheduleUpdate = typeof requestAnimationFrame !== 'undefined' 
-      ? requestAnimationFrame 
-      : (callback: () => void) => setTimeout(callback, 0);
-    
+    const scheduleUpdate =
+      typeof requestAnimationFrame !== 'undefined'
+        ? requestAnimationFrame
+        : (callback: () => void): number =>
+            setTimeout(callback, 0) as unknown as number;
+
     scheduleUpdate(() => {
       region.textContent = announcement.message;
       this.lastAnnouncement = announcement.message;
