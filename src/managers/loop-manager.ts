@@ -114,7 +114,7 @@ export class LoopManager extends SimpleEventEmitter {
       if (!this.config.enabled) {
         const isAtStart = currentIndex === 0;
         const isAtEnd = currentIndex === totalSlides - 1;
-        
+
         if (direction === 'forward') {
           if (isAtEnd) {
             // Can't go past the end when loop is disabled

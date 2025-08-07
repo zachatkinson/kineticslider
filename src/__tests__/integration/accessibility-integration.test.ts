@@ -480,7 +480,7 @@ describe('Accessibility Integration Tests', () => {
       expect(container.getAttribute('aria-valuenow')).toBe('2');
       expect(container.getAttribute('aria-valuetext')).toBe('Slide 2 of 3');
 
-      // Navigate to slide 2 and wait for completion  
+      // Navigate to slide 2 and wait for completion
       await slider.goToSlide(2);
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(slider.getCurrentIndex()).toBe(2);
@@ -553,7 +553,7 @@ describe('Accessibility Integration Tests', () => {
 
       // More realistic expectation for integration test environment (up to 2 seconds)
       expect(initTime).toBeLessThan(2000);
-      
+
       // Verify basic functionality works
       expect(slider.getCurrentIndex()).toBe(0);
       expect(container.getAttribute('aria-label')).toBe('Test carousel');
@@ -568,7 +568,7 @@ describe('Accessibility Integration Tests', () => {
 
       // Wait a bit then reinitialize
       await new Promise((resolve) => setTimeout(resolve, 50));
-      
+
       // Second initialization should work without hanging
       const startTime = performance.now();
       await slider.initialize(config, container);
@@ -576,7 +576,7 @@ describe('Accessibility Integration Tests', () => {
 
       const reinitTime = endTime - startTime;
 
-      // Reinitialization should be reasonably fast  
+      // Reinitialization should be reasonably fast
       expect(reinitTime).toBeLessThan(2000);
       expect(slider.getCurrentIndex()).toBe(0);
       expect(container.getAttribute('aria-valuenow')).toBe('1');
