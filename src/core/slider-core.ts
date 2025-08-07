@@ -93,8 +93,8 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         storageKey: 'kineticSlider_state',
         persistedProperties: ['currentIndex', 'isPlaying'],
         enableHistory: false,
-        autoSaveInterval: 0
-      }
+        autoSaveInterval: 0,
+      },
     });
     this.autoPlayManager = new AutoPlayManager();
     this.navigationManager = new NavigationManager();
@@ -169,14 +169,15 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
       // Set up initial state through StateManager (proper way)
       this.stateManager.setTotalSlides(slideCount, 'slider-core:initialize');
-      
+
       // Get current state to preserve any persisted values
       const currentState = this.stateManager.getState();
-      
+
       // Only set currentIndex to 0 if it's not already set from persisted state
       // Make sure the persisted index is valid for the current slide count
-      const initialIndex = currentState.currentIndex >= slideCount ? 0 : currentState.currentIndex;
-      
+      const initialIndex =
+        currentState.currentIndex >= slideCount ? 0 : currentState.currentIndex;
+
       this.stateManager.updateState({
         currentIndex: initialIndex,
         isLoading: false,
@@ -200,7 +201,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
           this.stateManager.getTotalSlides()
         );
       }
-      
+
       // If we restored a non-zero index from persisted state, navigate to it
       if (initialIndex > 0) {
         // Use goToSlide without animation to immediately show the correct slide

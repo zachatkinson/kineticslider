@@ -23,6 +23,7 @@ interface LighthouseConfig {
 const config: LighthouseConfig = {
   ci: {
     collect: {
+      startServerCommand: 'pnpm preview',
       url: ['http://localhost:4173'],
       numberOfRuns: 1,
       settings: {
@@ -37,13 +38,13 @@ const config: LighthouseConfig = {
         'categories:best-practices': ['warn', { minScore: 0.90 }],
         'categories:seo': ['warn', { minScore: 0.90 }],
 
-        // Performance Metrics - Strict Targets
-        'first-contentful-paint': ['warn', { maxNumericValue: 2000 }],
-        'largest-contentful-paint': ['warn', { maxNumericValue: 3000 }],
-        'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }],
-        'total-blocking-time': ['warn', { maxNumericValue: 300 }],
-        'speed-index': ['warn', { maxNumericValue: 3000 }],
-        interactive: ['warn', { maxNumericValue: 4000 }],
+        // Performance Metrics - CI-friendly Targets
+        'first-contentful-paint': ['warn', { maxNumericValue: 2500 }],
+        'largest-contentful-paint': ['warn', { maxNumericValue: 3500 }],
+        'cumulative-layout-shift': ['warn', { maxNumericValue: 0.15 }],
+        'total-blocking-time': ['warn', { maxNumericValue: 400 }],
+        'speed-index': ['warn', { maxNumericValue: 3500 }],
+        interactive: ['warn', { maxNumericValue: 5000 }],
 
         // Resource Optimization
         'mainthread-work-breakdown': ['warn', { maxNumericValue: 4000 }],

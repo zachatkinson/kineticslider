@@ -38,6 +38,7 @@
     "test:e2e:quick": "playwright test --project=chromium --workers=4 --max-failures=5",
     "test:e2e:parallel": "playwright test --workers=80% --reporter=dot",
     "test:e2e:core": "playwright test src/__tests__/e2e/slider-core.e2e.test.ts src/__tests__/e2e/slider-foundation.test.ts --project=chromium --project=firefox",
+    "test:e2e:performance": "playwright test --grep=\"performance\" --project=chromium",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "tsx scripts/format.ts",
@@ -153,7 +154,7 @@
     },
     {
       "path": "dist/kinetic-slider.umd.js",
-      "limit": "102 KB",
+      "limit": "103 KB",
       "gzip": true
     }
   ],

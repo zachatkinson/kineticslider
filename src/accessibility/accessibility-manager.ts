@@ -168,7 +168,10 @@ export class AccessibilityManager extends SimpleEventEmitter {
           onTogglePlayPause: (): void => engine.togglePlayPause(),
           onGoToSlide: (index: number): void => {
             engine.goToSlide(index).catch((error) => {
-              debugLogger.error(`Failed to navigate to slide ${index + 1}:`, error);
+              debugLogger.error(
+                `Failed to navigate to slide ${index + 1}:`,
+                error
+              );
             });
           },
           onEscape: (): void => engine.handleEscape(),

@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "dist/kinetic-slider.es.js",
+      "maxSize": "102kb",
+      "compression": "gzip"
+    },
+    {
+      "path": "dist/kinetic-slider.umd.js", 
+      "maxSize": "103kb",
+      "compression": "gzip"
+    }
+  ],
+  "ci": {
+    "trackBranches": ["main", "develop"],
+    "repoBranchBase": "main"
+  },
+  "defaultCompression": "gzip"
+}

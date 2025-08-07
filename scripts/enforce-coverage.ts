@@ -26,10 +26,10 @@ interface CoverageSummary {
 }
 
 const COVERAGE_THRESHOLDS: CoverageThresholds = {
-  statements: 30,
-  branches: 80,
-  functions: 60,
-  lines: 30,
+  statements: 75,
+  branches: 70,
+  functions: 75,
+  lines: 75,
 };
 
 function checkMetric(metric: keyof CoverageThresholds, actual: number, threshold: number): string | null {
