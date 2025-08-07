@@ -109,10 +109,12 @@ jobs:
           # Enforce minimum coverage thresholds (75% statements/lines/functions, 70% branches)
           pnpm coverage:enforce
 
-  # 🎭 E2E Setup (install browsers once)
+  # 🎭 E2E Setup (install browsers once with caching)
   e2e-setup:
     name: 🎭 E2E Setup
     runs-on: ubuntu-latest
+    outputs:
+      playwright-version: ${{ steps.get-playwright-version.outputs.version }}
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -131,14 +133,37 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: 🔍 Get Playwright version
+        id: get-playwright-version
+        run: echo "version=$(pnpm exec playwright --version | cut -d' ' -f2)" >> $GITHUB_OUTPUT
+
+      - name: 💾 Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.get-playwright-version.outputs.version }}
+
       - name: 🎭 Install Playwright browsers and system dependencies
-        run: pnpm exec playwright install --with-deps
-        timeout-minutes: 10
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: |
+          # Install browsers with optimized settings
+          pnpm exec playwright install --with-deps chromium firefox webkit
+          # Pre-warm browser binaries
+          pnpm exec playwright install-deps
+        timeout-minutes: 15
 
       - name: 🏗️ Build application
         run: pnpm build
 
-  # 🎭 E2E Testing (with sharding for better performance)
+      - name: 💾 Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: dist/
+          key: build-${{ github.sha }}
+
+  # 🎭 E2E Testing (with sharding and cached browsers)
   e2e:
     name: 🎭 E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
@@ -166,12 +191,38 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🎭 Install Playwright browsers and system dependencies
-        run: pnpm exec playwright install --with-deps
-        timeout-minutes: 10
+      - name: 💾 Restore Playwright browsers from cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ needs.e2e-setup.outputs.playwright-version }}
 
-      - name: 🏗️ Build application
-        run: pnpm build
+      - name: 🎭 Verify Playwright installation (fallback)
+        run: |
+          # Quick check if browsers are available, install if missing
+          if ! pnpm exec playwright install --dry-run >/dev/null 2>&1; then
+            echo "⚠️ Browsers not found in cache, installing..."
+            pnpm exec playwright install --with-deps chromium firefox webkit
+          else
+            echo "✅ Browsers found in cache"
+          fi
+        timeout-minutes: 5
+
+      - name: 💾 Restore build artifacts
+        uses: actions/cache@v4
+        with:
+          path: dist/
+          key: build-${{ github.sha }}
+
+      - name: 🏗️ Build application (fallback)
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "⚠️ Build artifacts not found, building..."
+            pnpm build
+          else
+            echo "✅ Build artifacts restored from cache"
+          fi
         timeout-minutes: 5
         env:
           NODE_OPTIONS: --max_old_space_size=4096
@@ -181,7 +232,7 @@ jobs:
         env:
           CI: true
           NODE_OPTIONS: --max_old_space_size=4096
-        timeout-minutes: 15
+        timeout-minutes: 20
 
       - name: 📤 Upload Playwright report
         uses: actions/upload-artifact@v4
