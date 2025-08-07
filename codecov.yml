@@ -1,0 +1,55 @@
+# Codecov configuration
+# https://docs.codecov.io/docs/codecov-yaml
+
+coverage:
+  # Coverage precision (number of decimal places)
+  precision: 2
+  round: down
+  range: "30...100"  # Visual color range in Codecov UI
+
+  status:
+    # Overall project coverage checks
+    project:
+      default:
+        # Only fail if coverage drops by more than 1%
+        threshold: 1%
+        target: auto  # Compare against base branch
+        
+    # Coverage checks for changed files (patch coverage)
+    patch:
+      default:
+        # Require at least 30% coverage on new/changed code
+        target: 30%
+        threshold: 1%
+
+# Comment configuration for PRs
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false  # Comment even if no coverage change
+
+# Files to ignore for coverage
+ignore:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/__tests__/**"
+  - "**/node_modules/**"
+  - "scripts/**"
+  - "dist/**"
+  - "coverage/**"
+  - "*.config.ts"
+  - "*.config.js"
+
+# Coverage flag configuration
+flags:
+  unittests:
+    paths:
+      - src/
+    carryforward: true
+    
+  comprehensive:
+    paths:
+      - src/
+    carryforward: true

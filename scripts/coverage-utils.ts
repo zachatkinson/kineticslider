@@ -7,12 +7,12 @@
  * @version 1.0.0
  */
 
-/* eslint-disable no-console, security/detect-non-literal-fs-filename */
+/* eslint-disable no-console, security/detect-non-literal-fs-filename, @typescript-eslint/no-require-imports */
 
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { createCoverageMap } from 'istanbul-lib-coverage';
+import { createCoverageMap, CoverageMap } from 'istanbul-lib-coverage';
 import { create } from 'istanbul-reports';
 import libReport from 'istanbul-lib-report';
 
@@ -100,7 +100,7 @@ export class CoverageUtils {
           const coverage = JSON.parse(readFileSync(file, 'utf-8'));
           mergedCoverage.merge(coverage);
           console.log(`📊 Added E2E coverage: ${file}`);
-        } catch (error) {
+        } catch {
           console.warn(`⚠️  Skipping invalid coverage file: ${file}`);
         }
       });
@@ -122,7 +122,7 @@ export class CoverageUtils {
   /**
    * Generate coverage reports in multiple formats
    */
-  private static generateReports(coverageMap: any): void {
+  private static generateReports(coverageMap: CoverageMap): void {
     try {
       console.log('📈 Generating coverage reports...');
 
@@ -164,7 +164,7 @@ export class CoverageUtils {
     const files: string[] = [];
     
     try {
-      const { readdirSync, statSync } = require('fs');
+      const { readdirSync } = require('fs');
       
       // Check NYC output directory
       if (existsSync(CoverageUtils.NYC_OUTPUT_DIR)) {

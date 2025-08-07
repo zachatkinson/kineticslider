@@ -162,6 +162,21 @@ jobs:
           pnpm exec playwright install-deps
         timeout-minutes: 15
 
+      - name: 🔧 Install WebKit system dependencies
+        run: |
+          # Install missing WebKit dependencies for Ubuntu
+          sudo apt-get update
+          sudo apt-get install -y libwoff2-1.0-0 || true
+          # Install additional WebKit dependencies if needed
+          sudo apt-get install -y \
+            libwebkit2gtk-4.0-37 \
+            libenchant-2-2 \
+            libsecret-1-0 \
+            libhyphen0 \
+            libgstreamer-plugins-base1.0-0 \
+            libgstreamer-gl1.0-0 || true
+        continue-on-error: true
+
       - name: 🏗️ Build application
         run: pnpm build
 
@@ -216,6 +231,16 @@ jobs:
             echo "✅ Browsers found in cache"
           fi
         timeout-minutes: 5
+
+      - name: 🔧 Ensure WebKit dependencies
+        run: |
+          # Install WebKit runtime dependencies (lightweight, always run)
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libwoff2-1.0-0 \
+            libwebkit2gtk-4.0-37 \
+            libenchant-2-2 || true
+        continue-on-error: true
 
       - name: 💾 Restore build artifacts
         uses: actions/cache@v4
