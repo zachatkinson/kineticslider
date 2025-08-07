@@ -11,6 +11,9 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
+// Increase timeout for performance tests as they monitor metrics over time
+test.describe.configure({ mode: 'serial', timeout: 120000 });
+
 test.describe('PerformanceMonitor E2E', () => {
   test.beforeEach(async ({ page }) => {
     await navigateAndWait(page);

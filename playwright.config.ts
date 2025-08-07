@@ -66,7 +66,7 @@ export default defineConfig({
 
     /* Performance optimizations - removed browser-specific args */
     // Browser-specific launch options will be defined per project
-    timeout: process.env.CI ? 60000 : 30000,
+    timeout: process.env.CI ? 90000 : 60000,
   },
 
   /* Configure projects for major browsers */

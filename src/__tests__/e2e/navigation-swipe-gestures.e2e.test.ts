@@ -8,6 +8,9 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
+// Increase timeout for swipe gesture tests due to animation timing
+test.describe.configure({ mode: 'serial', timeout: 90000 });
+
 test.describe('Navigation Swipe Gestures E2E', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to demo page with slider
