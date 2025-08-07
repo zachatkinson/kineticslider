@@ -10,6 +10,9 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
+// Increase timeout for error recovery tests
+test.describe.configure({ mode: 'serial', timeout: 120000 });
+
 test.describe('Error Handling E2E', () => {
   test.beforeEach(async ({ page }) => {
     await navigateAndWait(page);

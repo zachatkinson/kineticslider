@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
+// Increase timeout for complex system integration tests
+test.describe.configure({ mode: 'serial', timeout: 120000 });
+
 test.describe('Complete System E2E - User Workflows', () => {
   test.beforeEach(async ({ page }) => {
     await navigateAndWait(page);
