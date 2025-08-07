@@ -354,11 +354,11 @@ describe('Accessibility Integration Tests', () => {
 
       // Test the actual navigation methods that keyboard events would trigger
       await slider.nextSlide();
-      await new Promise(resolve => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
       expect(slider.getCurrentIndex()).toBe(1);
 
       await slider.previousSlide();
-      await new Promise(resolve => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
       expect(slider.getCurrentIndex()).toBe(0);
     });
 
@@ -370,11 +370,11 @@ describe('Accessibility Integration Tests', () => {
 
       // Test direct slide navigation (what number keys would trigger)
       await slider.goToSlide(2);
-      await new Promise(resolve => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
       expect(slider.getCurrentIndex()).toBe(2);
 
       await slider.goToSlide(0);
-      await new Promise(resolve => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
       expect(slider.getCurrentIndex()).toBe(0);
     });
 
@@ -386,17 +386,17 @@ describe('Accessibility Integration Tests', () => {
 
       // Go to middle slide first
       await slider.goToSlide(1);
-      await new Promise(resolve => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
       expect(slider.getCurrentIndex()).toBe(1);
 
       // Test navigation to first slide (Home key functionality)
       await slider.goToSlide(0);
-      await new Promise(resolve => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
       expect(slider.getCurrentIndex()).toBe(0);
 
       // Test navigation to last slide (End key functionality)
       await slider.goToSlide(2);
-      await new Promise(resolve => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
       expect(slider.getCurrentIndex()).toBe(2);
     });
 
