@@ -350,7 +350,8 @@ test.describe('StateManager E2E Tests', () => {
       // Check if navigation worked before refresh
       if (slideIndex !== undefined && slideIndex !== initialIndex) {
         // Navigation worked - test persistence behavior
-        expect(restoredIndex).toBeTruthy();
+        // After going to slide 3 (index 2), the restored index should be 2
+        expect(restoredIndex).toBe(2);
       } else {
         // Navigation didn't work - test basic functionality after refresh
         expect(restoredIndex).toBeGreaterThanOrEqual(0);

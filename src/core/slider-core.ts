@@ -87,7 +87,15 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     this.timelineFactory = timelineFactory || new GSAPTimelineFactory();
 
     // Initialize managers
-    this.stateManager = new StateManager();
+    this.stateManager = new StateManager({
+      persistence: {
+        enabled: true,
+        storageKey: 'kineticSlider_state',
+        persistedProperties: ['currentIndex', 'isPlaying'],
+        enableHistory: false,
+        autoSaveInterval: 0
+      }
+    });
     this.autoPlayManager = new AutoPlayManager();
     this.navigationManager = new NavigationManager();
     this.loopManager = new LoopManager();
@@ -161,8 +169,16 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
       // Set up initial state through StateManager (proper way)
       this.stateManager.setTotalSlides(slideCount, 'slider-core:initialize');
+      
+      // Get current state to preserve any persisted values
+      const currentState = this.stateManager.getState();
+      
+      // Only set currentIndex to 0 if it's not already set from persisted state
+      // Make sure the persisted index is valid for the current slide count
+      const initialIndex = currentState.currentIndex >= slideCount ? 0 : currentState.currentIndex;
+      
       this.stateManager.updateState({
-        currentIndex: 0,
+        currentIndex: initialIndex,
         isLoading: false,
         loadingProgress: 100,
         isInitialized: true,
@@ -183,6 +199,12 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
           this.stateManager.getCurrentIndex(),
           this.stateManager.getTotalSlides()
         );
+      }
+      
+      // If we restored a non-zero index from persisted state, navigate to it
+      if (initialIndex > 0) {
+        // Use goToSlide without animation to immediately show the correct slide
+        await this.goToSlide(initialIndex, false);
       }
 
       // Start auto-play if enabled
@@ -942,9 +964,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
           swipeThreshold: 50,
           dragThreshold: 10,
         };
-        
+
         this.controller.setInputConfig(inputConfig);
-        
+
         this.controller.initialize(container, {
           onSwipeLeft: () => {
             return this.nextSlide();

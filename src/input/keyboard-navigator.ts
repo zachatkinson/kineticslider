@@ -396,7 +396,7 @@ export class KeyboardNavigator {
           handled = true;
           break;
       }
-      
+
       // Handle number keys for direct slide navigation
       if (!handled && /^Digit[1-9]$/.test(event.code)) {
         const slideNumber = parseInt(event.code.replace('Digit', ''));

@@ -324,9 +324,12 @@ describe('Accessibility Integration Tests', () => {
         );
         const basicFunctionalityWorks = typeof slider.isPlaying() === 'boolean';
 
-        expect(hasAnnouncements || playStateChanged || observerTriggered || basicFunctionalityWorks).toBe(
-          true
-        );
+        expect(
+          hasAnnouncements ||
+            playStateChanged ||
+            observerTriggered ||
+            basicFunctionalityWorks
+        ).toBe(true);
       }
     });
   });
@@ -379,18 +382,18 @@ describe('Accessibility Integration Tests', () => {
       expect(slider.getCurrentIndex()).toBe(1);
 
       // Press Home key with proper event setup
-      const homeEvent = new KeyboardEvent('keydown', { 
-        key: 'Home', 
-        bubbles: true, 
-        cancelable: true 
+      const homeEvent = new KeyboardEvent('keydown', {
+        key: 'Home',
+        bubbles: true,
+        cancelable: true,
       });
-      
+
       // Ensure container is focused for keyboard events
       container.focus();
       container.dispatchEvent(homeEvent);
 
       await new Promise((resolve) => setTimeout(resolve, 200));
-      
+
       // Check if navigation worked, otherwise test basic functionality
       const homeIndex = slider.getCurrentIndex();
       if (homeIndex === 0) {
@@ -398,10 +401,10 @@ describe('Accessibility Integration Tests', () => {
         expect(homeIndex).toBe(0);
 
         // Press End key
-        const endEvent = new KeyboardEvent('keydown', { 
-          key: 'End', 
-          bubbles: true, 
-          cancelable: true 
+        const endEvent = new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          cancelable: true,
         });
         container.dispatchEvent(endEvent);
 
@@ -411,7 +414,7 @@ describe('Accessibility Integration Tests', () => {
         // Keyboard navigation not working - test that basic navigation works
         await slider.goToSlide(0);
         expect(slider.getCurrentIndex()).toBe(0);
-        
+
         await slider.goToSlide(2);
         expect(slider.getCurrentIndex()).toBe(2);
       }

@@ -145,15 +145,31 @@ export class AccessibilityManager extends SimpleEventEmitter {
         // Note: Engine methods are async but KeyboardNavigator expects sync callbacks
         // We use fire-and-forget pattern to avoid blocking the UI
         const keyboardCallbacks = {
-          onNext: (): void => { engine.nextSlide().catch(console.error); },
-          onPrevious: (): void => { engine.previousSlide().catch(console.error); },
-          onFirst: (): void => { engine.goToSlide(0).catch(console.error); },
+          onNext: (): void => {
+            engine.nextSlide().catch((error) => {
+              debugLogger.error('Failed to navigate to next slide:', error);
+            });
+          },
+          onPrevious: (): void => {
+            engine.previousSlide().catch((error) => {
+              debugLogger.error('Failed to navigate to previous slide:', error);
+            });
+          },
+          onFirst: (): void => {
+            engine.goToSlide(0).catch((error) => {
+              debugLogger.error('Failed to navigate to first slide:', error);
+            });
+          },
           onLast: (): void => {
-            engine.goToSlide(engine.getTotalSlides() - 1).catch(console.error);
+            engine.goToSlide(engine.getTotalSlides() - 1).catch((error) => {
+              debugLogger.error('Failed to navigate to last slide:', error);
+            });
           },
           onTogglePlayPause: (): void => engine.togglePlayPause(),
           onGoToSlide: (index: number): void => {
-            engine.goToSlide(index).catch(console.error);
+            engine.goToSlide(index).catch((error) => {
+              debugLogger.error(`Failed to navigate to slide ${index + 1}:`, error);
+            });
           },
           onEscape: (): void => engine.handleEscape(),
         };
@@ -476,7 +492,7 @@ export class AccessibilityManager extends SimpleEventEmitter {
         if (this.keyboardNavigator) {
           this.keyboardNavigator.setPlayingState(data.isPlaying);
         }
-        
+
         // Announce to screen readers
         if (this.screenReaderSupport) {
           const message = data.isPlaying
