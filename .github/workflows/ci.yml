@@ -166,7 +166,7 @@ jobs:
         run: |
           # Install missing WebKit dependencies for Ubuntu
           sudo apt-get update
-          sudo apt-get install -y libwoff2-1.0-0 || true
+          sudo apt-get install -y libwoff1 || true
           # Install additional WebKit dependencies if needed
           sudo apt-get install -y \
             libwebkit2gtk-4.0-37 \
@@ -237,7 +237,7 @@ jobs:
           # Install WebKit runtime dependencies (lightweight, always run)
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            libwoff2-1.0-0 \
+            libwoff1 \
             libwebkit2gtk-4.0-37 \
             libenchant-2-2 || true
         continue-on-error: true
