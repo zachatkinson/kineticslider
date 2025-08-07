@@ -277,7 +277,7 @@ jobs:
           retention-days: 30
 
       - name: 📊 Collect E2E coverage data
-        run: tsx scripts/collect-e2e-coverage.ts
+        run: pnpm exec tsx scripts/collect-e2e-coverage.ts
 
       - name: 📊 Upload E2E coverage data
         uses: actions/upload-artifact@v4
