@@ -53,6 +53,9 @@
     "bundle:analyze": "size-limit",
     "bundle:check": "size-limit",
     "coverage:enforce": "tsx scripts/enforce-coverage.ts",
+    "coverage:merge": "tsx scripts/coverage-utils.ts",
+    "coverage:e2e": "COVERAGE=true tsx scripts/coverage-utils.ts --collect-e2e",
+    "coverage:comprehensive": "tsx scripts/coverage-utils.ts",
     "lighthouse:ci": "lhci autorun",
     "setup:https": "bash scripts/setup-https.sh"
   },
@@ -85,6 +88,7 @@
   "devDependencies": {
     "@axe-core/cli": "4.10.2",
     "@eslint/js": "^9.32.0",
+    "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@lhci/cli": "0.15.1",
     "@playwright/test": "1.54.2",
     "@size-limit/preset-small-lib": "11.2.0",
@@ -114,9 +118,12 @@
     "gsap": "3.13.0",
     "husky": "9.1.7",
     "identity-obj-proxy": "^3.0.0",
+    "istanbul-lib-coverage": "3.2.2",
+    "istanbul-reports": "3.1.7",
     "jsdom": "26.1.0",
     "lint-staged": "16.1.4",
     "lru-cache": "^11.1.0",
+    "nyc": "17.1.0",
     "pixi-filters": "^6.1.4",
     "pixi.js": "^8.11.0",
     "postcss-flexbugs-fixes": "5.0.2",
@@ -135,6 +142,7 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "8.39.0",
     "vite": "7.0.6",
+    "vite-plugin-istanbul": "7.1.0",
     "vitest": "3.2.4"
   },
   "dependencies": {

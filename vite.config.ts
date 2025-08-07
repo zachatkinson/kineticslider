@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import istanbul from 'vite-plugin-istanbul';
 import { resolve } from 'path';
 import fs from 'fs';
 
@@ -15,7 +16,20 @@ const httpsConfig = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Add Istanbul instrumentation for E2E coverage when in CI or coverage mode
+    ...(process.env.CI || process.env.COVERAGE === 'true'
+      ? [
+          istanbul({
+            include: 'src/*',
+            exclude: ['node_modules', 'src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+            extension: ['.js', '.jsx', '.ts', '.tsx'],
+            requireEnv: false,
+          }),
+        ]
+      : []),
+  ],
 
   // Build configuration for library
   build: {

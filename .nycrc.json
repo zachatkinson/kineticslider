@@ -1,0 +1,28 @@
+{
+  "extends": "@istanbuljs/nyc-config-typescript",
+  "all": true,
+  "check-coverage": false,
+  "reporter": [
+    "text",
+    "text-summary", 
+    "html",
+    "lcov",
+    "json-summary"
+  ],
+  "include": [
+    "src/**/*.{js,ts,tsx}"
+  ],
+  "exclude": [
+    "src/**/*.d.ts",
+    "src/**/*.test.{js,ts,tsx}",
+    "src/**/*.spec.{js,ts,tsx}",
+    "src/**/__tests__/**",
+    "src/**/*.config.{js,ts}",
+    "coverage/**",
+    "dist/**",
+    "node_modules/**"
+  ],
+  "temp-dir": "./coverage/.nyc_output",
+  "cache-dir": "./coverage/.nyc_cache",
+  "report-dir": "./coverage/merged"
+}
