@@ -396,6 +396,15 @@ export class KeyboardNavigator {
           handled = true;
           break;
       }
+      
+      // Handle number keys for direct slide navigation
+      if (!handled && /^Digit[1-9]$/.test(event.code)) {
+        const slideNumber = parseInt(event.code.replace('Digit', ''));
+        if (slideNumber <= this.totalSlides) {
+          this.navigateToSlide(slideNumber - 1); // Convert to zero-indexed
+          handled = true;
+        }
+      }
     }
 
     // Prevent default browser behavior for handled keys
@@ -506,6 +515,20 @@ export class KeyboardNavigator {
     setTimeout(() => {
       this.announce(
         `Last slide. ${this.getCurrentSlideAnnouncement()}`,
+        AnnouncementType.NAVIGATION
+      );
+    }, 100);
+  }
+
+  /**
+   * Navigate to specific slide
+   */
+  private navigateToSlide(index: number): void {
+    this.callbacks.onGoToSlide(index);
+    // Delay announcement to allow slide change to complete and state to update
+    setTimeout(() => {
+      this.announce(
+        `Slide ${index + 1}. ${this.getCurrentSlideAnnouncement()}`,
         AnnouncementType.NAVIGATION
       );
     }, 100);

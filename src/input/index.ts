@@ -49,9 +49,10 @@ export class SliderController implements ISliderController {
 
   /**
    * Setup accessible keyboard navigation
+   * Only enabled if accessibility manager is not handling keyboard navigation
    */
   private setupKeyboardNavigator(): void {
-    if (!this.element || !this.callbacks) return;
+    if (!this.element || !this.callbacks || !this.config.enableKeyboard) return;
 
     const keyboardCallbacks: KeyboardCallbacks = {
       onNext: () => this.callbacks?.onKeyRight(), // Next slide (right arrow)

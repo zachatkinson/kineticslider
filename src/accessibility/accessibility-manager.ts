@@ -142,15 +142,19 @@ export class AccessibilityManager extends SimpleEventEmitter {
 
       if (this.config.keyboardNavigation) {
         // Create keyboard callbacks that delegate to the engine
+        // Note: Engine methods are async but KeyboardNavigator expects sync callbacks
+        // We use fire-and-forget pattern to avoid blocking the UI
         const keyboardCallbacks = {
-          onNext: (): Promise<void> => engine.nextSlide(),
-          onPrevious: (): Promise<void> => engine.previousSlide(),
-          onFirst: (): Promise<void> => engine.goToSlide(0),
-          onLast: (): Promise<void> =>
-            engine.goToSlide(engine.getTotalSlides() - 1),
+          onNext: (): void => { engine.nextSlide().catch(console.error); },
+          onPrevious: (): void => { engine.previousSlide().catch(console.error); },
+          onFirst: (): void => { engine.goToSlide(0).catch(console.error); },
+          onLast: (): void => {
+            engine.goToSlide(engine.getTotalSlides() - 1).catch(console.error);
+          },
           onTogglePlayPause: (): void => engine.togglePlayPause(),
-          onGoToSlide: (index: number): Promise<void> =>
-            engine.goToSlide(index),
+          onGoToSlide: (index: number): void => {
+            engine.goToSlide(index).catch(console.error);
+          },
           onEscape: (): void => engine.handleEscape(),
         };
 
@@ -298,6 +302,12 @@ export class AccessibilityManager extends SimpleEventEmitter {
 
     this.currentSlideIndex = index;
     this.totalSlides = total;
+
+    // Update keyboard navigator state if it exists
+    if (this.keyboardNavigator) {
+      this.keyboardNavigator.setCurrentSlide(index);
+      this.keyboardNavigator.setTotalSlides(total);
+    }
 
     // Update ARIA attributes
     this.updateSlideARIA(index, total);
@@ -461,15 +471,19 @@ export class AccessibilityManager extends SimpleEventEmitter {
     // Listen for play state changes
     this.engine.on(SLIDER_EVENTS.PLAY_STATE_CHANGED, (...args: unknown[]) => {
       const data = args[0] as { isPlaying: boolean };
-      if (
-        data &&
-        typeof data.isPlaying === 'boolean' &&
-        this.screenReaderSupport
-      ) {
-        const message = data.isPlaying
-          ? 'Slideshow playing'
-          : 'Slideshow paused';
-        this.screenReaderSupport.announce(message, 'polite');
+      if (data && typeof data.isPlaying === 'boolean') {
+        // Update keyboard navigator state if it exists
+        if (this.keyboardNavigator) {
+          this.keyboardNavigator.setPlayingState(data.isPlaying);
+        }
+        
+        // Announce to screen readers
+        if (this.screenReaderSupport) {
+          const message = data.isPlaying
+            ? 'Slideshow playing'
+            : 'Slideshow paused';
+          this.screenReaderSupport.announce(message, 'polite');
+        }
       }
     });
 

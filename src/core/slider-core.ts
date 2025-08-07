@@ -934,6 +934,17 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
       // Initialize controller with input callbacks
       if (this.controller && container) {
+        // Configure input to disable keyboard navigation if accessibility manager will handle it
+        const inputConfig = {
+          enableMouse: true,
+          enableTouch: true,
+          enableKeyboard: !this.config.accessibility?.keyboardNavigation, // Disable if accessibility handles it
+          swipeThreshold: 50,
+          dragThreshold: 10,
+        };
+        
+        this.controller.setInputConfig(inputConfig);
+        
         this.controller.initialize(container, {
           onSwipeLeft: () => {
             return this.nextSlide();

@@ -729,7 +729,7 @@ function KineticSliderDemo(): JSX.Element {
           input: {
             enableMouse: true,
             enableTouch: true,
-            enableKeyboard: true,
+            enableKeyboard: false, // Disabled because accessibility manager handles keyboard navigation
             swipeThreshold: 50,
             dragThreshold: 10,
           },
