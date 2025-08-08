@@ -109,18 +109,16 @@ export default defineConfig({
       },
     },
 
-    // Temporarily disabled due to libwoff2 dependency issues in CI
-    // TODO: Re-enable once WebKit dependencies are properly resolved
-    // {
-    //   name: 'webkit',
-    //   use: { 
-    //     ...devices['Desktop Safari'], 
-    //     hasTouch: true,
-    //     launchOptions: {
-    //       // webkit doesn't support ANY browser arguments - remove all args
-    //     },
-    //   },
-    // },
+    {
+      name: 'webkit',
+      use: { 
+        ...devices['Desktop Safari'], 
+        hasTouch: true,
+        launchOptions: {
+          // webkit doesn't support browser arguments - keep empty
+        },
+      },
+    },
 
     /* Test against mobile viewports. */
     {
@@ -144,17 +142,15 @@ export default defineConfig({
         },
       },
     },
-    // Temporarily disabled due to libwoff2 dependency issues in CI
-    // TODO: Re-enable once WebKit dependencies are properly resolved
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { 
-    //     ...devices['iPhone 12'],
-    //     launchOptions: {
-    //       // webkit mobile doesn't support ANY browser arguments - remove all args
-    //     },
-    //   },
-    // },
+    {
+      name: 'Mobile Safari',
+      use: { 
+        ...devices['iPhone 12'],
+        launchOptions: {
+          // webkit mobile doesn't support browser arguments - keep empty
+        },
+      },
+    },
 
     /* Test against installed browsers only */
     {
