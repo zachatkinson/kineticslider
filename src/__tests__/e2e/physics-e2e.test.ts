@@ -497,7 +497,7 @@ test.describe('Physics E2E Tests', () => {
       page,
       browserName: _browserName,
     }) => {
-      // Set CI-friendly timeout for cross-browser test  
+      // Set CI-friendly timeout for cross-browser test
       test.setTimeout(process.env.CI ? 30000 : 15000);
 
       // Simplified velocity consistency testing
