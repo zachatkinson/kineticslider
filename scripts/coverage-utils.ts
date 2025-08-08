@@ -7,14 +7,19 @@
  * @version 1.0.0
  */
 
-/* eslint-disable no-console, security/detect-non-literal-fs-filename, @typescript-eslint/no-require-imports */
+/* eslint-disable no-console, security/detect-non-literal-fs-filename */
 
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
-import { createCoverageMap, CoverageMap } from 'istanbul-lib-coverage';
-import { create } from 'istanbul-reports';
+import libCoverage from 'istanbul-lib-coverage';
+import libReports from 'istanbul-reports';
 import libReport from 'istanbul-lib-report';
+
+// Extract types and functions from the imported modules
+const { createCoverageMap } = libCoverage;
+const { create } = libReports;
+type CoverageMap = ReturnType<typeof createCoverageMap>;
 
 /**
  * Coverage collection and merging utilities
@@ -164,7 +169,6 @@ export class CoverageUtils {
     const files: string[] = [];
     
     try {
-      const { readdirSync } = require('fs');
       
       // Check NYC output directory
       if (existsSync(CoverageUtils.NYC_OUTPUT_DIR)) {
@@ -198,26 +202,13 @@ export class CoverageUtils {
       // Extract coverage from global window object
       const coverage = window.__coverage__;
       if (coverage) {
-        // Save to file that can be picked up by our merge process
-        const fs = require('fs');
-        const path = require('path');
-        
-        const coverageDir = './coverage';
-        if (!fs.existsSync(coverageDir)) {
-          fs.mkdirSync(coverageDir, { recursive: true });
-        }
-        
-        fs.writeFileSync(
-          path.join(coverageDir, 'e2e-coverage.json'), 
-          JSON.stringify(coverage)
-        );
-        
-        console.log('✅ Browser coverage extracted');
+        // This code runs in the browser, so we use browser APIs
+        console.log('✅ Coverage data found in browser');
+        return coverage;
       } else {
         console.warn('⚠️  No coverage data found in browser');
+        return null;
       }
-      
-      return coverage;
     `;
   }
 
@@ -228,7 +219,6 @@ export class CoverageUtils {
     try {
       console.log('🧹 Cleaning up old coverage files...');
       
-      const { rmSync } = require('fs');
       
       // Remove NYC temp directory
       if (existsSync(CoverageUtils.NYC_OUTPUT_DIR)) {
@@ -277,7 +267,6 @@ export async function runCoverageWorkflow(): Promise<void> {
   }
 }
 
-// CLI interface
-if (require.main === module) {
-  runCoverageWorkflow();
-}
+// CLI interface - ES modules don't have require.main, so we'll always run
+// This file is only invoked from CI, so it's safe to always execute
+void runCoverageWorkflow();
