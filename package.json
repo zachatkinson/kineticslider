@@ -119,6 +119,7 @@
     "husky": "9.1.7",
     "identity-obj-proxy": "^3.0.0",
     "istanbul-lib-coverage": "3.2.2",
+    "istanbul-lib-report": "3.0.1",
     "istanbul-reports": "3.1.7",
     "jsdom": "26.1.0",
     "lint-staged": "16.1.4",
