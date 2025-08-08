@@ -10,8 +10,8 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
-// Increase timeout for auto-play tests due to animation timing
-test.describe.configure({ mode: 'serial', timeout: 90000 });
+// Reduce timeout for auto-play tests to prevent CI timeouts
+test.describe.configure({ mode: 'serial', timeout: 45000 });
 
 test.describe('Auto-Play Controls', () => {
   test.beforeEach(async ({ page }) => {

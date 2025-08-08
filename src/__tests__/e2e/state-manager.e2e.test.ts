@@ -10,8 +10,8 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
-// Increase timeout for state management tests due to persistence operations
-test.describe.configure({ mode: 'serial', timeout: 90000 });
+// Reduce timeout for state management tests to prevent CI timeouts
+test.describe.configure({ mode: 'serial', timeout: 45000 });
 
 test.describe('StateManager E2E Tests', () => {
   test.beforeEach(async ({ page }) => {

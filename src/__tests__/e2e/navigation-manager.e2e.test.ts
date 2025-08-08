@@ -10,8 +10,8 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
-// Increase timeout for navigation tests due to multiple interaction types
-test.describe.configure({ mode: 'serial', timeout: 90000 });
+// Reduce timeout for navigation tests to prevent CI timeouts
+test.describe.configure({ mode: 'serial', timeout: 45000 });
 
 test.describe('NavigationManager E2E Tests', () => {
   test.beforeEach(async ({ page }) => {

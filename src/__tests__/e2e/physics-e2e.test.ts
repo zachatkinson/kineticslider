@@ -8,8 +8,8 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
-// Increase timeout for physics tests due to complex interactions and animations
-test.describe.configure({ mode: 'serial', timeout: 120000 });
+// Reduce timeout for physics tests to prevent CI timeouts
+test.describe.configure({ mode: 'serial', timeout: 60000 });
 
 // Define types for window test data
 interface WindowWithTestData extends Window {

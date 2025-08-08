@@ -47,7 +47,7 @@ test.describe('Keyboard Navigation E2E', () => {
 
     // Navigate with arrow key
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(2000); // Wait longer to see if timeout triggers
+    await page.waitForTimeout(1000); // Reduced for CI performance
 
     // Check debug info after navigation
     await page.evaluate(() => {

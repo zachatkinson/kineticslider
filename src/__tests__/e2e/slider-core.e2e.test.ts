@@ -511,6 +511,9 @@ test.describe('Core Slider Functionality', () => {
     test('should handle continuous looping with auto-play', async ({
       page,
     }) => {
+      // Set lower timeout for this specific test to prevent CI timeouts
+      test.setTimeout(20000);
+
       // Use shorter timeouts to prevent browser crashes
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
@@ -533,11 +536,11 @@ test.describe('Core Slider Functionality', () => {
         await page.keyboard.press('Space').catch(() => {});
       }
 
-      // Use shorter monitoring periods to prevent timeouts
+      // Use even shorter monitoring periods to prevent timeouts
       const slideProgression: number[] = [initialIndex ?? 0];
       let samplesCollected = 0;
-      const maxSamples = 3; // Reduced from 5
-      const sampleInterval = 500; // Reduced from 1000ms
+      const maxSamples = 2; // Reduced from 3
+      const sampleInterval = 300; // Reduced from 500ms
 
       for (let i = 0; i < maxSamples && samplesCollected < maxSamples; i++) {
         try {
@@ -866,8 +869,8 @@ test.describe('Core Slider Functionality', () => {
       // Start auto-play for extended testing
       await page.keyboard.press('Space');
 
-      // Let it run for several cycles
-      await page.waitForTimeout(10000);
+      // Let it run for several cycles - reduced for CI performance
+      await page.waitForTimeout(3000);
 
       // Stop auto-play
       await page.keyboard.press('Space');

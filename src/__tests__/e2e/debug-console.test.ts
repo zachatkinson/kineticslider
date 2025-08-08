@@ -37,8 +37,8 @@ test('debug console logs', async ({ page }) => {
       waitUntil: 'domcontentloaded',
     });
 
-    // Wait a bit to collect logs
-    await page.waitForTimeout(3000);
+    // Wait a bit to collect logs - reduced for CI performance
+    await page.waitForTimeout(1500);
 
     // Also log the DOM structure to see what's loaded
     await page.evaluate(() => {
