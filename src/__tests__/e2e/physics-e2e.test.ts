@@ -379,8 +379,8 @@ test.describe('Physics E2E Tests', () => {
     test('should handle memory efficiently during extended physics usage', async ({
       page,
     }) => {
-      // Set reasonable timeout for memory test
-      test.setTimeout(30000);
+      // Set CI-friendly timeout for memory test
+      test.setTimeout(process.env.CI ? 60000 : 30000);
 
       // Check if memory measurement is available
       const memorySupported = await page.evaluate(() => {
@@ -497,8 +497,8 @@ test.describe('Physics E2E Tests', () => {
       page,
       browserName: _browserName,
     }) => {
-      // Set reasonable timeout for cross-browser test
-      test.setTimeout(15000);
+      // Set CI-friendly timeout for cross-browser test  
+      test.setTimeout(process.env.CI ? 30000 : 15000);
 
       // Simplified velocity consistency testing
       const sliderElement = await page

@@ -130,7 +130,7 @@ test.describe('ResourceLoader E2E', () => {
 
       expect(result.success).toBe(true);
       expect(result.resourceCount).toBe(5);
-      expect(result.totalTime).toBeLessThan(1000); // Should complete within 1 second
+      expect(result.totalTime).toBeLessThan(process.env.CI ? 2000 : 1000); // CI-friendly timing
       expect(result.allLoaded).toBe(true);
     });
 

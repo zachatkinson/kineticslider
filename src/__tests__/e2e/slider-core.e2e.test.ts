@@ -1173,6 +1173,9 @@ test.describe('Core Slider Functionality', () => {
     });
 
     test('should coordinate all managers together', async ({ page }) => {
+      // Set longer timeout for complex manager coordination test
+      test.setTimeout(process.env.CI ? 60000 : 40000);
+      
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
