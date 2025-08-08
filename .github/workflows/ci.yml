@@ -418,9 +418,9 @@ jobs:
 
       - name: ♿ Run accessibility tests
         run: |
-          # Install axe-core CLI and browser-driver-manager
+          # Install axe-core CLI and browser-driver-manager for Chrome compatibility
           npm install -g @axe-core/cli browser-driver-manager
-          # Install matching Chrome and ChromeDriver versions
+          # Install matching Chrome and ChromeDriver versions to prevent version mismatches
           npx browser-driver-manager install chrome
           # Test built application for WCAG 2.2 AA compliance
           axe --dir ./dist --tags wcag2a,wcag2aa,wcag21aa,wcag22aa
