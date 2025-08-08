@@ -512,17 +512,19 @@ test.describe('Core Slider Functionality', () => {
       page,
     }) => {
       // Simple, fast test that verifies auto-play functionality without complex timing
-      
+
       // Check if slider engine exists and has auto-play capabilities
       const hasAutoPlay = await page.evaluate(() => {
-        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
         return {
           engineExists: !!engine,
           hasPlayMethod: typeof engine?.play === 'function',
           hasPauseMethod: typeof engine?.pause === 'function',
           hasIsPlayingMethod: typeof engine?.isPlaying === 'function',
           getCurrentIndex: engine?.getCurrentIndex?.() ?? -1,
-          getTotalSlides: engine?.getTotalSlides?.() ?? 0
+          getTotalSlides: engine?.getTotalSlides?.() ?? 0,
         };
       });
 
@@ -535,32 +537,34 @@ test.describe('Core Slider Functionality', () => {
       if (hasAutoPlay.hasPlayMethod && hasAutoPlay.hasPauseMethod) {
         // Try to start and stop auto-play without errors
         const autoPlayResult = await page.evaluate(() => {
-          const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+          const engine = window.kineticSlider?.engine as
+            | KineticSliderEngine
+            | undefined;
           try {
             // Test play
             if (engine?.play) {
               engine.play();
             }
             const isPlayingAfterStart = engine?.isPlaying?.() ?? false;
-            
+
             // Test pause
             if (engine?.pause) {
               engine.pause();
             }
             const isPlayingAfterStop = engine?.isPlaying?.() ?? false;
-            
+
             return {
               success: true,
               playingAfterStart: isPlayingAfterStart,
               playingAfterStop: isPlayingAfterStop,
-              error: null
+              error: null,
             };
           } catch (error) {
             return {
               success: false,
               playingAfterStart: false,
               playingAfterStop: false,
-              error: String(error)
+              error: String(error),
             };
           }
         });

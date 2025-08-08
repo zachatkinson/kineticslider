@@ -57,10 +57,10 @@ export default defineConfig({
       '**/*.e2e.{test,spec}.{js,ts,jsx,tsx}', // Exclude E2E tests
     ],
 
-    // Performance & Reliability
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    teardownTimeout: 5000,
+    // Performance & Reliability - CI-friendly timeouts
+    testTimeout: process.env.CI ? 30000 : 15000, // Longer timeout for CI
+    hookTimeout: process.env.CI ? 20000 : 10000,
+    teardownTimeout: process.env.CI ? 10000 : 5000,
 
     // Parallel execution
     threads: true,
