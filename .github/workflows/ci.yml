@@ -157,6 +157,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: |
           # Install browsers with all system dependencies (official recommended approach)
+          # This includes Chromium, Firefox, and WebKit with their required dependencies
           pnpm exec playwright install --with-deps
         timeout-minutes: 15
 
