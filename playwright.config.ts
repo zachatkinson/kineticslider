@@ -109,16 +109,19 @@ export default defineConfig({
       },
     },
 
-    {
-      name: 'webkit',
-      use: { 
-        ...devices['Desktop Safari'], 
-        hasTouch: true,
-        launchOptions: {
-          // webkit doesn't support browser arguments - keep empty
-        },
-      },
-    },
+    // WebKit temporarily disabled due to libicudata.so.74 compatibility issues on ubuntu-22.04
+    // See: https://github.com/microsoft/playwright/issues/30368 
+    // TODO: Re-enable when Playwright WebKit supports Ubuntu 22.04 ICU libraries or move to ubuntu-24.04
+    // {
+    //   name: 'webkit',
+    //   use: { 
+    //     ...devices['Desktop Safari'], 
+    //     hasTouch: true,
+    //     launchOptions: {
+    //       // webkit doesn't support browser arguments - keep empty
+    //     },
+    //   },
+    // },
 
     /* Test against mobile viewports. */
     {
@@ -142,15 +145,16 @@ export default defineConfig({
         },
       },
     },
-    {
-      name: 'Mobile Safari',
-      use: { 
-        ...devices['iPhone 12'],
-        launchOptions: {
-          // webkit mobile doesn't support browser arguments - keep empty
-        },
-      },
-    },
+    // Mobile Safari temporarily disabled (also uses WebKit engine)
+    // {
+    //   name: 'Mobile Safari',
+    //   use: { 
+    //     ...devices['iPhone 12'],
+    //     launchOptions: {
+    //       // webkit mobile doesn't support browser arguments - keep empty
+    //     },
+    //   },
+    // },
 
     /* Test against installed browsers only */
     {

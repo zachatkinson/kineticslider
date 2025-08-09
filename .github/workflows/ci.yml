@@ -14,7 +14,7 @@ jobs:
   # 🔍 Security & Dependency Scanning
   security:
     name: 🔒 Security Scan
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -55,7 +55,7 @@ jobs:
   # 🧪 Quality & Testing
   test:
     name: 🧪 Test & Quality
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -120,7 +120,7 @@ jobs:
   # 🎭 E2E Setup (install browsers once with caching)
   e2e-setup:
     name: 🎭 E2E Setup
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       playwright-version: ${{ steps.get-playwright-version.outputs.version }}
     steps:
@@ -151,13 +151,13 @@ jobs:
         with:
           path: |
             ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.get-playwright-version.outputs.version }}
+          key: playwright-${{ runner.os }}-${{ steps.get-playwright-version.outputs.version }}-v2
 
       - name: 🎭 Install Playwright browsers and system dependencies
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: |
           # Install browsers with all system dependencies (official recommended approach)
-          pnpm exec playwright install --with-deps chromium firefox webkit
+          pnpm exec playwright install --with-deps
         timeout-minutes: 15
 
       - name: 🏗️ Build application
@@ -172,7 +172,7 @@ jobs:
   # 🎭 E2E Testing (with sharding and cached browsers)
   e2e:
     name: 🎭 E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: e2e-setup
     strategy:
       fail-fast: false
@@ -202,14 +202,14 @@ jobs:
         with:
           path: |
             ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ needs.e2e-setup.outputs.playwright-version }}
+          key: playwright-${{ runner.os }}-${{ needs.e2e-setup.outputs.playwright-version }}-v2
 
       - name: 🎭 Verify Playwright installation (fallback)
         run: |
           # Quick check if browsers are available, install if missing
           if ! pnpm exec playwright install --dry-run >/dev/null 2>&1; then
             echo "⚠️ Browsers not found in cache, installing..."
-            pnpm exec playwright install --with-deps chromium firefox webkit
+            pnpm exec playwright install --with-deps
           else
             echo "✅ Browsers found in cache"
           fi
@@ -265,7 +265,7 @@ jobs:
   # 📊 Merge Coverage Reports (runs after all E2E shards complete)
   coverage-merge:
     name: 📊 Merge Coverage Reports
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [test, e2e]
     if: always() && needs.test.result == 'success'
     steps:
@@ -328,7 +328,7 @@ jobs:
   # 📊 Performance & Bundle Analysis
   performance:
     name: 📊 Performance Analysis
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -367,7 +367,7 @@ jobs:
   # ♿ Accessibility Testing
   accessibility:
     name: ♿ Accessibility Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -401,7 +401,7 @@ jobs:
   # 🚀 Build & Deploy (on main branch only)
   deploy:
     name: 🚀 Deploy
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [security, test, e2e-setup, e2e, coverage-merge, performance, accessibility]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
@@ -434,7 +434,7 @@ jobs:
   # 📋 Quality Gate Summary
   quality-gate:
     name: 📋 Quality Gate
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [security, test, e2e-setup, e2e, coverage-merge, performance, accessibility]
     if: always()
     steps:
