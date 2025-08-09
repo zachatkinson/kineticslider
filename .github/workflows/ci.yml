@@ -167,6 +167,8 @@ jobs:
           # Install missing WebKit dependencies for Ubuntu
           sudo apt-get update
           sudo apt-get install -y libwoff1 libwoff-dev woff2 || true
+          # Install ICU libraries required by WebKit
+          sudo apt-get install -y libicu74 libicu-dev || true
           # Install additional WebKit dependencies if needed
           sudo apt-get install -y \
             libwebkit2gtk-4.0-37 \
@@ -240,6 +242,8 @@ jobs:
             libwoff1 \
             libwoff-dev \
             woff2 \
+            libicu74 \
+            libicu-dev \
             libwebkit2gtk-4.0-37 \
             libenchant-2-2 || true
         continue-on-error: true
