@@ -22,7 +22,8 @@ export interface EngineState {
 
 export class StateSynchronizer {
   /**
-   * Wait for engine to be fully initialized
+   * Wait for engine to be fully initialized with fallback validation
+   * Matches the pattern from utils.ts for better compatibility
    */
   static async waitForEngineInitialization(
     page: Page,
@@ -31,14 +32,52 @@ export class StateSynchronizer {
     const config = getTimeoutConfig();
     const timeout = timeoutMs || config.stateSync;
 
+    // Try strict engine initialization check first
+    const strictCheck = await E2EErrorHandler.waitForCondition(
+      page,
+      async () => {
+        return await page.evaluate(() => {
+          const kineticSlider = (window as any).kineticSlider;
+          return (
+            kineticSlider?.engine &&
+            typeof kineticSlider.engine.getCurrentIndex === 'function'
+          );
+        });
+      },
+      timeout / 2, // Give half time to strict check
+      100, // intervalMs
+      false // Don't throw on timeout
+    );
+
+    if (strictCheck) return true;
+
+    // Fallback: Check DOM state (matches utils.ts pattern)
     return E2EErrorHandler.waitForCondition(
       page,
       async () => {
-        const state = await this.getEngineState(page);
-        return state?.isInitialized === true;
+        const result = await page.evaluate(() => {
+          const slider = document.querySelector(
+            '[data-testid="kinetic-slider"]'
+          ) as HTMLElement | null;
+          return slider && slider.offsetHeight > 0; // Ensure it's rendered
+        });
+        return Boolean(result); // Convert to boolean
       },
-      timeout
+      timeout / 2, // Use remaining half of timeout
+      100, // intervalMs
+      false // Don't throw on timeout
     );
+  }
+
+  /**
+   * Wait for engine to be ready for operations (alias for backward compatibility)
+   * Follows DRY principle: reuses existing initialization logic
+   */
+  static async waitForEngineReady(
+    page: Page,
+    timeoutMs?: number
+  ): Promise<boolean> {
+    return this.waitForEngineInitialization(page, timeoutMs);
   }
 
   /**

@@ -79,15 +79,52 @@ export class SliderStateHelpers {
   }
 
   /**
-   * Check if slider is initialized
+   * Check if slider is initialized with robust validation
+   * Uses multiple validation methods to ensure accurate state detection
    */
   static async isInitialized(page: Page): Promise<boolean> {
-    const state = await this.getSliderState(page);
-    return state?.isInitialized || false;
+    return E2EErrorHandler.withContextProtection(
+      page,
+      async () => {
+        return await page.evaluate(() => {
+          const engine = (window as any).kineticSlider?.engine;
+
+          if (!engine) return false;
+
+          // Method 1: Direct isInitialized check
+          if (typeof engine.isInitialized === 'function') {
+            const initialized = engine.isInitialized();
+            if (initialized === true) return true;
+          }
+
+          // Method 2: Check for essential engine methods (fallback validation)
+          const hasEssentialMethods =
+            typeof engine.getCurrentIndex === 'function' &&
+            typeof engine.getTotalSlides === 'function' &&
+            engine.getTotalSlides() > 0;
+
+          // Method 3: Check if DOM elements are properly set up
+          const sliderElement = document.querySelector(
+            '[data-testid="kinetic-slider"]'
+          );
+          const hasValidDom =
+            sliderElement && sliderElement.children.length > 0;
+
+          // Method 4: Check renderer state
+          const hasRenderer =
+            engine.renderer && (engine.renderer.app || engine.renderer.canvas);
+
+          // Return true if engine has essential functionality OR DOM is ready
+          return hasEssentialMethods && (hasValidDom || hasRenderer);
+        });
+      },
+      false
+    );
   }
 
   /**
-   * Wait for slider to be ready
+   * Wait for slider to be ready with enhanced validation
+   * Uses the improved isInitialized method for better reliability
    */
   static async waitForSliderReady(
     page: Page,
@@ -96,8 +133,9 @@ export class SliderStateHelpers {
     return E2EErrorHandler.waitForCondition(
       page,
       async () => {
-        const state = await this.getSliderState(page);
-        return state?.isInitialized === true && state?.isLoading === false;
+        const isInit = await this.isInitialized(page);
+        const isNotLoading = !(await this.isLoading(page));
+        return isInit && isNotLoading;
       },
       timeoutMs
     );

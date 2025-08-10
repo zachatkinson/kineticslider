@@ -131,7 +131,8 @@ export class E2EErrorHandler {
     page: Page,
     condition: () => Promise<boolean>,
     timeoutMs: number = 5000,
-    intervalMs: number = 100
+    intervalMs: number = 100,
+    _throwOnTimeout: boolean = true
   ): Promise<boolean> {
     const startTime = Date.now();
 

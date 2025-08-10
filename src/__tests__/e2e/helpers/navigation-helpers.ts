@@ -205,22 +205,90 @@ export class NavigationHelpers {
   }
 
   /**
-   * Navigate to last slide
+   * Navigate to last slide with enhanced validation
+   * Follows SOLID principle: validates pre-conditions before navigation
    */
   static async navigateToLast(
     page: Page,
     options?: {
       waitForTransition?: boolean;
       method?: 'keyboard' | 'button' | 'api';
+      retryCount?: number;
     }
   ): Promise<boolean> {
-    const state = await StateSynchronizer.getEngineState(page);
-    if (!state || state.totalSlides === 0) return false;
+    const retryCount = options?.retryCount || 2;
 
-    return this.navigateToSlide(page, state.totalSlides - 1, {
-      waitForTransition: options?.waitForTransition,
-      method: options?.method,
-    });
+    for (let attempt = 0; attempt <= retryCount; attempt++) {
+      try {
+        console.info(
+          `[NavigateToLast] Attempt ${attempt + 1}/${retryCount + 1}`
+        );
+
+        // Wait for engine to be ready if this is a retry
+        if (attempt > 0) {
+          await StateSynchronizer.waitForEngineReady(page, 2000);
+        }
+
+        const state = await StateSynchronizer.getEngineState(page);
+
+        // Enhanced validation
+        if (!state) {
+          console.warn('[NavigateToLast] No engine state available');
+          if (attempt === retryCount) return false;
+          continue;
+        }
+
+        if (!state.isInitialized) {
+          console.warn('[NavigateToLast] Engine not initialized');
+          if (attempt === retryCount) return false;
+          continue;
+        }
+
+        if (state.totalSlides === 0) {
+          console.warn('[NavigateToLast] No slides available');
+          if (attempt === retryCount) return false;
+          continue;
+        }
+
+        const lastSlideIndex = state.totalSlides - 1;
+        console.info(
+          `[NavigateToLast] Navigating to slide ${lastSlideIndex} of ${state.totalSlides}`
+        );
+
+        // Check if already at last slide
+        if (state.currentIndex === lastSlideIndex) {
+          console.info('[NavigateToLast] Already at last slide');
+          return true;
+        }
+
+        const success = await this.navigateToSlide(page, lastSlideIndex, {
+          waitForTransition: options?.waitForTransition,
+          method: options?.method,
+        });
+
+        if (success) {
+          console.info('[NavigateToLast] Successfully navigated to last slide');
+          return true;
+        }
+
+        console.warn(
+          `[NavigateToLast] Navigation failed on attempt ${attempt + 1}`
+        );
+      } catch (error) {
+        console.warn(
+          `[NavigateToLast] Error on attempt ${attempt + 1}:`,
+          error
+        );
+      }
+
+      // Wait before retry (except on last attempt)
+      if (attempt < retryCount) {
+        await page.waitForTimeout(500);
+      }
+    }
+
+    console.error('[NavigateToLast] All attempts failed');
+    return false;
   }
 
   /**

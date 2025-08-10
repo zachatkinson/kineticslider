@@ -25,7 +25,8 @@ export class AutoPlayHelpers {
   ];
 
   /**
-   * Start auto-play with multiple strategies
+   * Start auto-play with multiple strategies and enhanced validation
+   * Follows SOLID principles: Open/Closed (extensible strategies), Single Responsibility
    */
   static async startAutoPlay(
     page: Page,
@@ -41,31 +42,57 @@ export class AutoPlayHelpers {
     const method = options?.method || 'auto';
 
     try {
-      // Check if already playing
+      // STEP 1: Pre-condition validation (DRY principle - reuse state helpers)
       const currentState = await StateSynchronizer.getEngineState(page);
+
+      // Early return if already playing
       if (currentState?.isPlaying) {
+        console.info('[AutoPlayHelpers] Auto-play already active');
         return true;
       }
 
-      // Try specified method or auto-detect
+      // Ensure engine is ready for auto-play
+      if (!currentState || !currentState.isInitialized) {
+        console.warn('[AutoPlayHelpers] Engine not initialized, waiting...');
+        const ready = await StateSynchronizer.waitForEngineReady(page, 3000);
+        if (!ready) {
+          console.error('[AutoPlayHelpers] Engine failed to initialize');
+          return false;
+        }
+      }
+
+      // STEP 2: Try specified method or auto-detect (Strategy Pattern)
       let started = false;
 
       if (method === 'api' || method === 'auto') {
+        console.info('[AutoPlayHelpers] Attempting API method...');
         started = await this.startViaAPI(page);
       }
 
       if (!started && (method === 'button' || method === 'auto')) {
+        console.info('[AutoPlayHelpers] Attempting button method...');
         started = await this.startViaButton(page);
       }
 
       if (!started) {
-        console.warn('[AutoPlayHelpers] Failed to start auto-play');
+        console.warn('[AutoPlayHelpers] All start methods failed');
         return false;
       }
 
-      // Verify if requested
+      // STEP 3: Verification (if requested)
       if (verifyStart) {
-        return await StateSynchronizer.waitForAutoPlayStart(page, timeout);
+        console.info('[AutoPlayHelpers] Verifying auto-play start...');
+        const verified = await StateSynchronizer.waitForAutoPlayStart(
+          page,
+          timeout
+        );
+        if (!verified) {
+          console.warn('[AutoPlayHelpers] Auto-play start verification failed');
+          return false;
+        }
+        console.info(
+          '[AutoPlayHelpers] Auto-play successfully started and verified'
+        );
       }
 
       return true;
@@ -147,7 +174,8 @@ export class AutoPlayHelpers {
   }
 
   /**
-   * Start auto-play via API
+   * Start auto-play via API with enhanced validation
+   * Follows SOLID principle: Single Responsibility (validates prerequisites)
    */
   private static async startViaAPI(page: Page): Promise<boolean> {
     const result = await E2EErrorHandler.withContextProtection(
@@ -155,14 +183,59 @@ export class AutoPlayHelpers {
       async () => {
         return await page.evaluate(() => {
           const engine = (window as any).kineticSlider?.engine as SliderEngine;
-          if (engine?.play) {
-            engine.play();
-            return true;
+
+          // Validate engine exists and is initialized
+          if (!engine) {
+            console.warn('[startViaAPI] Engine not found');
+            return false;
           }
-          if (engine?.startAutoPlay) {
-            engine.startAutoPlay();
-            return true;
+
+          // Check if engine is ready for auto-play (DRY principle - reuse validation logic)
+          if (
+            typeof engine.isInitialized === 'function' &&
+            !engine.isInitialized()
+          ) {
+            console.warn('[startViaAPI] Engine not initialized');
+            return false;
           }
+
+          // Validate essential methods exist before attempting to call them
+          const hasPlayMethod = typeof engine.play === 'function';
+          const hasStartAutoPlayMethod =
+            typeof engine.startAutoPlay === 'function';
+
+          if (!hasPlayMethod && !hasStartAutoPlayMethod) {
+            console.warn('[startViaAPI] No play methods available on engine');
+            return false;
+          }
+
+          // Try primary method first
+          if (hasPlayMethod) {
+            try {
+              engine.play();
+              console.info('[startViaAPI] Successfully called engine.play()');
+              return true;
+            } catch (error) {
+              console.warn('[startViaAPI] engine.play() failed:', error);
+            }
+          }
+
+          // Fallback to secondary method
+          if (hasStartAutoPlayMethod) {
+            try {
+              engine.startAutoPlay();
+              console.info(
+                '[startViaAPI] Successfully called engine.startAutoPlay()'
+              );
+              return true;
+            } catch (error) {
+              console.warn(
+                '[startViaAPI] engine.startAutoPlay() failed:',
+                error
+              );
+            }
+          }
+
           return false;
         });
       },
