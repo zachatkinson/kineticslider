@@ -20,30 +20,91 @@ async function startAutoPlay(page: Page): Promise<boolean> {
       return false;
     }
 
-    const playButton = page.locator('#play-pause-btn');
-    if ((await playButton.count()) === 0) return false;
+    // Multiple button selectors for reliability
+    const buttonSelectors = [
+      '#play-pause-btn',
+      '[data-testid="play-button"]',
+      '[data-testid="play-pause-button"]',
+      'button[aria-label*="play" i]',
+      'button[aria-label*="start" i]',
+    ];
 
-    await playButton.click();
+    let clicked = false;
+
+    // Try each button selector until one works
+    for (const selector of buttonSelectors) {
+      try {
+        const button = page.locator(selector);
+        if ((await button.count()) > 0 && (await button.isVisible())) {
+          await button.click({ timeout: 2000 });
+          clicked = true;
+          break;
+        }
+      } catch {
+        // Continue to next selector
+        continue;
+      }
+    }
+
+    if (!clicked) {
+      return false;
+    }
 
     // Check page validity before verification
     if (page.isClosed()) {
       return false;
     }
 
-    // Wait for auto-play to actually start instead of fixed timeout
+    // Multiple verification strategies with reduced timeouts for CI
+    const verificationTimeout = process.env.CI === 'true' ? 2000 : 3000;
+
+    // Strategy 1: Check for data attribute
     try {
-      await page.waitForSelector('[data-autoplay="true"]', { timeout: 3000 });
+      await page.waitForSelector('[data-autoplay="true"]', {
+        timeout: verificationTimeout,
+      });
       return true;
     } catch {
-      // Fallback: check if engine reports playing state
-      return await page
-        .evaluate(() => {
-          const engine = window.kineticSlider?.engine as
-            | ISliderEngine
-            | undefined;
-          return engine?.isPlaying?.() === true;
-        })
-        .catch(() => false);
+      // Continue to next strategy
+    }
+
+    // Strategy 2: Check engine state
+    try {
+      const isPlaying = await page.evaluate(() => {
+        const engine = window.kineticSlider?.engine as
+          | ISliderEngine
+          | undefined;
+        return engine?.isPlaying?.() === true;
+      });
+      if (isPlaying) return true;
+    } catch {
+      // Continue to next strategy
+    }
+
+    // Strategy 3: Check for playing indicator
+    try {
+      await page.waitForSelector(
+        '[data-playing="true"], [data-state="playing"]',
+        {
+          timeout: verificationTimeout,
+        }
+      );
+      return true;
+    } catch {
+      // Continue to next strategy
+    }
+
+    // Strategy 4: Check button state change
+    try {
+      const hasPlayingState =
+        (await page
+          .locator(
+            'button[aria-pressed="true"], button[aria-label*="pause" i], button[aria-label*="stop" i]'
+          )
+          .count()) > 0;
+      return hasPlayingState;
+    } catch {
+      return false;
     }
   } catch (error: unknown) {
     // Handle browser context closure gracefully

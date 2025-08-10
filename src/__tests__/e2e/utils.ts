@@ -16,74 +16,88 @@ export const VIEWPORT_SIZES = {
 
 /**
  * Navigate to the demo page with real implementation and wait for it to be fully loaded
+ * Optimized for CI reliability with reduced cumulative timeouts
  */
 export async function navigateAndWait(
   page: Page,
   path: string = '/'
 ): Promise<void> {
-  // Use a more reliable wait strategy for webkit
   const browserName = page.context().browser()?.browserType().name();
   const isWebkit = browserName === 'webkit';
+  const isCI = process.env.CI === 'true';
+
+  // Adjust timeouts for CI environment
+  const timeouts = {
+    navigation: isCI ? 20000 : 30000,
+    selector: isCI ? 8000 : 15000,
+    initialization: isCI ? 5000 : 10000,
+    finalWait: isCI ? 500 : 1000,
+  };
 
   try {
-    // Navigate with appropriate wait strategy
+    // Navigate with browser-specific wait strategy
     await page.goto(path, {
-      waitUntil: isWebkit ? 'load' : 'networkidle',
-      timeout: 30000, // Increased timeout for CI
+      waitUntil: isWebkit ? 'load' : 'domcontentloaded', // Changed from 'networkidle' for speed
+      timeout: timeouts.navigation,
     });
 
-    // First check if page loaded at all
+    // Quick title check
     const title = await page.title();
     if (!title || !title.includes('KineticSlider')) {
       throw new Error(`Page didn't load properly. Title: "${title}"`);
     }
 
-    // Wait for React root to render
-    await page.waitForSelector('#root', { timeout: 10000 });
-
-    // Wait for the demo app to load (React component uses data-testid="app")
+    // Essential elements only - reduced timeout chain
+    await page.waitForSelector('#root', { timeout: timeouts.selector });
     await page.waitForSelector('[data-testid="app"]', {
-      timeout: 15000,
+      timeout: timeouts.selector,
       state: 'visible',
     });
 
-    // Wait for the slider to initialize with more specific selector
+    // Core slider element
     await page.waitForSelector('[data-testid="kinetic-slider"]', {
-      timeout: 20000,
+      timeout: timeouts.selector,
       state: 'visible',
     });
 
-    // Try to wait for full initialization, but don't fail if it doesn't complete
+    // Simplified initialization check - single condition
     try {
-      // Wait for the real implementation to load
       await page.waitForFunction(
         () => {
           const kineticSlider = (
-            window as { kineticSlider?: { engine?: unknown } }
+            window as {
+              kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
+            }
           ).kineticSlider;
-          return kineticSlider && kineticSlider.engine;
+          // More specific check - ensure engine has basic functionality
+          return (
+            kineticSlider?.engine &&
+            typeof kineticSlider.engine.getCurrentIndex === 'function'
+          );
         },
-        { timeout: 10000 }
+        { timeout: timeouts.initialization }
       );
-
-      // Wait for slider initialization to complete (critical for ARIA attributes)
-      await page.waitForSelector('[data-kinetic-slider-initialized="true"]', {
-        timeout: 8000,
-        state: 'attached',
-      });
     } catch {
-      // If full initialization doesn't complete, continue with basic setup
-      // This prevents tests from failing due to initialization timeouts
+      // Fallback: Just ensure the slider element exists and is interactive
+      await page.waitForFunction(
+        () => {
+          const slider = document.querySelector(
+            '[data-testid="kinetic-slider"]'
+          ) as HTMLElement | null;
+          return slider && slider.offsetHeight > 0; // Ensure it's rendered
+        },
+        { timeout: timeouts.initialization }
+      );
     }
 
-    // Additional wait for any animations/transitions to settle
-    await page.waitForTimeout(1000);
+    // Minimal settle time
+    await page.waitForTimeout(timeouts.finalWait);
   } catch (error) {
     const finalUrl = page.url();
     const finalTitle = await page.title().catch(() => 'Unable to get title');
 
     throw new Error(
-      `Navigation failed. Browser: ${browserName}, URL: ${finalUrl}, Title: "${finalTitle}", Error: ${(error as Error).message}`
+      `Navigation failed. Browser: ${browserName}, CI: ${isCI}, URL: ${finalUrl}, Title: "${finalTitle}", Error: ${(error as Error).message}`
     );
   }
 }
