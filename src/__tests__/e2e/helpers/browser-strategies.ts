@@ -41,6 +41,31 @@ export abstract class BrowserStrategy {
    * Check if browser supports specific feature
    */
   abstract supportsFeature(feature: string): boolean;
+
+  /**
+   * Shared navigation helper using arrow keys (DRY principle)
+   * Protected method available to all subclasses
+   */
+  protected async navigateViaArrows(
+    page: Page,
+    targetIndex: number,
+    currentIndex: number
+  ): Promise<boolean> {
+    try {
+      const distance = targetIndex - currentIndex;
+      const key = distance > 0 ? 'ArrowRight' : 'ArrowLeft';
+      const steps = Math.abs(distance);
+
+      for (let i = 0; i < steps; i++) {
+        await page.keyboard.press(key);
+        await page.waitForTimeout(100); // Small delay between keypresses
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 export class ChromiumStrategy extends BrowserStrategy {
@@ -85,9 +110,44 @@ export class ChromiumStrategy extends BrowserStrategy {
 
   async navigateToSlide(page: Page, index: number): Promise<boolean> {
     try {
-      await page.keyboard.press(`Digit${index + 1}`);
-      return true;
-    } catch {
+      // Enhanced navigation following Single Responsibility Principle
+      // Method 1: Use Home/End for boundary slides (most reliable)
+      const state = await page.evaluate(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const engine = (window as any).kineticSlider?.engine;
+        return {
+          totalSlides: engine?.getTotalSlides?.() || 0,
+          currentIndex: engine?.getCurrentIndex?.() || 0,
+        };
+      });
+
+      if (state.totalSlides > 0) {
+        // Navigate to first slide
+        if (index === 0) {
+          await page.keyboard.press('Home');
+          return true;
+        }
+
+        // Navigate to last slide
+        if (index === state.totalSlides - 1) {
+          await page.keyboard.press('End');
+          return true;
+        }
+      }
+
+      // Method 2: Use digit keys for slides 1-9 (backward compatibility)
+      if (index >= 0 && index <= 8) {
+        await page.keyboard.press(`Digit${index + 1}`);
+        return true;
+      }
+
+      // Method 3: Use arrow navigation for other slides (DRY principle)
+      return await this.navigateViaArrows(page, index, state.currentIndex);
+    } catch (error) {
+      console.warn(
+        `[ChromiumStrategy] Navigation to slide ${index} failed:`,
+        error
+      );
       return false;
     }
   }
@@ -145,8 +205,10 @@ export class WebkitStrategy extends BrowserStrategy {
     try {
       // Webkit sometimes needs focus before keyboard events
       await page.locator('[data-testid="kinetic-slider"]').focus();
-      await page.keyboard.press(`Digit${index + 1}`);
-      return true;
+
+      // Reuse Chromium's robust navigation logic (DRY principle)
+      const chromiumStrategy = new ChromiumStrategy();
+      return await chromiumStrategy.navigateToSlide(page, index);
     } catch {
       return false;
     }
@@ -205,9 +267,10 @@ export class FirefoxStrategy extends BrowserStrategy {
 
   async navigateToSlide(page: Page, index: number): Promise<boolean> {
     try {
-      // Firefox keyboard events are reliable
-      await page.keyboard.press(`Digit${index + 1}`);
-      return true;
+      // Reuse Chromium's robust navigation logic (DRY principle)
+      // Firefox keyboard events work the same as Chromium
+      const chromiumStrategy = new ChromiumStrategy();
+      return await chromiumStrategy.navigateToSlide(page, index);
     } catch {
       return false;
     }
@@ -268,14 +331,29 @@ export class MobileChromeStrategy extends BrowserStrategy {
   async navigateToSlide(page: Page, index: number): Promise<boolean> {
     // Mobile doesn't have keyboard, use touch gestures or buttons
     try {
+      // Method 1: Try navigation buttons first
       const navButton = page.locator(`[data-slide-index="${index}"]`);
       if (await navButton.isVisible({ timeout: 1000 })) {
         await navButton.tap();
         return true;
       }
 
-      // Fallback to swipe gestures
-      return false;
+      // Method 2: Use API navigation as fallback (follows Interface Segregation Principle)
+      const navigated = await page.evaluate((targetIndex) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const engine = (window as any).kineticSlider?.engine;
+        if (engine?.goToSlide) {
+          engine.goToSlide(targetIndex);
+          return true;
+        }
+        if (engine?.navigateToSlide) {
+          engine.navigateToSlide(targetIndex);
+          return true;
+        }
+        return false;
+      }, index);
+
+      return navigated;
     } catch {
       return false;
     }
