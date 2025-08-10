@@ -483,6 +483,15 @@ export class AccessibilityManager extends SimpleEventEmitter {
    * Following DRY principle - centralized validation logic
    */
   private ensureARIAAttributesApplied(container: HTMLElement): void {
+    // Safety check - ensure container exists
+    if (!container) {
+      debugLogger.warn(
+        'AccessibilityManager',
+        'Container is null, skipping ARIA validation'
+      );
+      return;
+    }
+
     // Force a DOM flush to ensure attributes are applied immediately
     // This is needed for E2E tests that check attributes synchronously
     void container.offsetHeight; // Trigger reflow
