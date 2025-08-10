@@ -10,8 +10,6 @@
  * @version 2.0.0 - Manager Integration
  */
 
- 
-
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 

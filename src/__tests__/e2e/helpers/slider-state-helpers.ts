@@ -32,12 +32,15 @@ export class SliderStateHelpers {
             return null;
           }
 
+          // Get state from SliderCore state management (matches StateSynchronizer pattern)
+          const state = engine.getState?.() || {};
+
           return {
             currentIndex: engine.getCurrentIndex?.() || 0,
             totalSlides: engine.getTotalSlides?.() || 0,
             isPlaying: engine.isPlaying?.() || false,
-            isLoading: engine.isLoading?.() || false,
-            isInitialized: engine.isInitialized?.() || false,
+            isLoading: state.isLoading || false,
+            isInitialized: state.isInitialized || false,
           };
         });
       },
@@ -91,11 +94,9 @@ export class SliderStateHelpers {
 
           if (!engine) return false;
 
-          // Method 1: Direct isInitialized check
-          if (typeof engine.isInitialized === 'function') {
-            const initialized = engine.isInitialized();
-            if (initialized === true) return true;
-          }
+          // Method 1: State-based initialization check (follows DRY pattern)
+          const state = engine.getState?.() || {};
+          if (state.isInitialized === true) return true;
 
           // Method 2: Check for essential engine methods (fallback validation)
           const hasEssentialMethods =

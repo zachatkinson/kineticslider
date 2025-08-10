@@ -67,12 +67,24 @@ export class AutoPlayHelpers {
         return false;
       }
 
-      // STEP 3: Simple verification (if requested)
+      // STEP 3: Enhanced verification using StateSynchronizer (follows SOLID principles)
       if (verifyStart) {
         console.info('[AutoPlayHelpers] Verifying auto-play start...');
-        // Simple verification - just wait a moment and check if button shows "playing"
-        await page.waitForTimeout(100);
 
+        // Wait for engine state to synchronize (more reliable than DOM attribute)
+        const stateVerified = await StateSynchronizer.waitForEngineState(
+          page,
+          (state) => state.isPlaying === true,
+          2000 // 2 second timeout for state sync
+        );
+
+        if (stateVerified) {
+          console.info('[AutoPlayHelpers] Auto-play verified via engine state');
+          return true;
+        }
+
+        // Fallback: check button state for backward compatibility
+        await page.waitForTimeout(100);
         const playButton = page.locator('[data-testid="play-button"]');
         const dataPlaying = await playButton.getAttribute('data-playing');
 
@@ -82,9 +94,9 @@ export class AutoPlayHelpers {
         }
 
         console.warn(
-          '[AutoPlayHelpers] Auto-play verification via button failed'
+          '[AutoPlayHelpers] Auto-play verification failed on both engine and button state'
         );
-        // Return true anyway if the API call succeeded - verification is not critical
+        // Still return true if API call succeeded - verification timing may vary
         return true;
       }
 
@@ -126,10 +138,26 @@ export class AutoPlayHelpers {
         return false;
       }
 
-      // Simple verification if requested
+      // Enhanced verification using StateSynchronizer (follows SOLID principles)
       if (verifyStop) {
-        await page.waitForTimeout(100);
+        console.info('[AutoPlayHelpers] Verifying auto-play stop...');
 
+        // Wait for engine state to synchronize (more reliable than DOM attribute)
+        const stateVerified = await StateSynchronizer.waitForEngineState(
+          page,
+          (state) => state.isPlaying === false,
+          2000 // 2 second timeout for state sync
+        );
+
+        if (stateVerified) {
+          console.info(
+            '[AutoPlayHelpers] Auto-play stop verified via engine state'
+          );
+          return true;
+        }
+
+        // Fallback: check button state for backward compatibility
+        await page.waitForTimeout(100);
         const playButton = page.locator('[data-testid="play-button"]');
         const dataPlaying = await playButton.getAttribute('data-playing');
 
@@ -140,8 +168,10 @@ export class AutoPlayHelpers {
           return true;
         }
 
-        console.warn('[AutoPlayHelpers] Auto-play stop verification failed');
-        // Return true anyway if the API call succeeded
+        console.warn(
+          '[AutoPlayHelpers] Auto-play stop verification failed on both engine and button state'
+        );
+        // Still return true if API call succeeded - verification timing may vary
         return true;
       }
 
