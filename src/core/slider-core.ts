@@ -225,6 +225,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
           currentIndex,
           totalSlides
         );
+
+        // Additional delay to ensure ARIA attributes are fully set
+        await new Promise((resolve) => setTimeout(resolve, 100));
       } else {
         debugLogger.warn(
           'SliderCore',
@@ -401,10 +404,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       return;
     }
 
-    // Update state through StateManager
-    this.stateManager.updateState({ isPlaying: true });
-
-    // Enable auto-play temporarily if not already enabled (for manual play button)
+    // Enable auto-play configuration first to ensure proper state
     const currentState = this.autoPlayManager.getState();
 
     if (!currentState.config.enabled) {
@@ -419,10 +419,13 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       pauseOnInteraction: false,
     });
 
-    // Start auto-play through AutoPlayManager
+    // Start auto-play through AutoPlayManager FIRST
     this.autoPlayManager.start(async (): Promise<void> => {
       await this.nextSlide();
     });
+
+    // Update state through StateManager after AutoPlayManager is started
+    this.stateManager.updateState({ isPlaying: true });
 
     // Update controller state
     if (this.controller) {
@@ -441,11 +444,11 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       return;
     }
 
-    // Update state through StateManager
-    this.stateManager.updateState({ isPlaying: false });
-
-    // Pause auto-play through AutoPlayManager (emits PLAY_PAUSED)
+    // Pause auto-play through AutoPlayManager FIRST (emits PLAY_PAUSED)
     this.autoPlayManager.pause();
+
+    // Update state through StateManager after AutoPlayManager is paused
+    this.stateManager.updateState({ isPlaying: false });
 
     // Update controller state
     if (this.controller) {

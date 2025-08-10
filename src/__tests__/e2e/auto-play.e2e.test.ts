@@ -334,11 +334,17 @@ test.describe('Auto-Play Controls', () => {
         mode: 'infinite',
       });
 
+      // Set longer auto-play interval to prevent multiple advances during wait
+      await AutoPlayHelpers.setAutoPlayInterval(page, config.longPause * 3);
+
       const started = await AutoPlayHelpers.startAutoPlay(page);
       expect(started).toBe(true);
 
-      // Wait for loop transition
+      // Wait for loop transition (less than auto-play interval to catch exactly one loop)
       await page.waitForTimeout(config.longPause * 2);
+
+      // Stop auto-play to prevent further advancement
+      await AutoPlayHelpers.stopAutoPlay(page);
 
       // Verify looped to first slide
       const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -364,6 +370,9 @@ test.describe('Auto-Play Controls', () => {
       await SliderStateHelpers.updateLoopConfig(page, {
         enabled: false,
       });
+
+      // Set reasonable auto-play interval
+      await AutoPlayHelpers.setAutoPlayInterval(page, config.longPause);
 
       const started = await AutoPlayHelpers.startAutoPlay(page);
       expect(started).toBe(true);
