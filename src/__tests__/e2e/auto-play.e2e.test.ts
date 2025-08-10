@@ -329,8 +329,9 @@ test.describe('Auto-Play Controls', () => {
 
       // Check if this is Mobile Chrome by examining user agent
       const userAgent = await page.evaluate(() => navigator.userAgent);
-      const isMobileChrome = userAgent.includes('Mobile') && userAgent.includes('Chrome');
-      
+      const isMobileChrome =
+        userAgent.includes('Mobile') && userAgent.includes('Chrome');
+
       if (isMobileChrome) {
         // Skip Mobile Chrome as it can cause browser context closure
         return;
@@ -384,7 +385,12 @@ test.describe('Auto-Play Controls', () => {
         await expect(slider).toBeVisible();
       } catch (error: unknown) {
         // Handle browser context closure gracefully
-        if (error instanceof Error && error.message.includes('Target page, context or browser has been closed')) {
+        if (
+          error instanceof Error &&
+          error.message.includes(
+            'Target page, context or browser has been closed'
+          )
+        ) {
           // This is expected in some mobile environments - skip test
           return;
         }
