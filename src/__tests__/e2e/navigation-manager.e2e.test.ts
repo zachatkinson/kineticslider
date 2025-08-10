@@ -7,63 +7,91 @@
  * @version 1.0.0
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
 // Reduce timeout for navigation tests to prevent CI timeouts
 test.describe.configure({ mode: 'serial', timeout: 45000 });
 
 // Helper functions to reduce duplication and avoid browser context issues
-async function waitForSlideIndex(page: any): Promise<number | null> {
+async function waitForSlideIndex(page: Page): Promise<number | null> {
   try {
-    return await page.waitForFunction(() => {
-      const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-      const currentIndex = engine?.getCurrentIndex?.();
-      return currentIndex !== undefined ? currentIndex : null;
-    }, { timeout: 3000 });
+    const result = await page.waitForFunction(
+      () => {
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
+        const currentIndex = engine?.getCurrentIndex?.();
+        return currentIndex !== undefined ? currentIndex : null;
+      },
+      { timeout: 3000 }
+    );
+    return await result.jsonValue();
   } catch {
     return null;
   }
 }
 
-async function getCurrentSlideIndex(page: any): Promise<number | null> {
+async function getCurrentSlideIndex(page: Page): Promise<number | null> {
   try {
-    return await page.evaluate(() => 
-      (window.kineticSlider?.engine as KineticSliderEngine | undefined)?.getCurrentIndex?.() ?? null
+    return await page.evaluate(
+      () =>
+        (
+          window.kineticSlider?.engine as KineticSliderEngine | undefined
+        )?.getCurrentIndex?.() ?? null
     );
   } catch {
     return null;
   }
 }
 
-async function navigateAndWaitForSlide(page: any, key: string): Promise<number | null> {
+async function navigateAndWaitForSlide(
+  page: Page,
+  key: string
+): Promise<number | null> {
   await page.keyboard.press(key);
   return await waitForSlideIndex(page);
 }
 
-async function waitForPlayState(page: any, expectedPlaying: boolean): Promise<boolean> {
+async function waitForPlayState(
+  page: Page,
+  expectedPlaying: boolean
+): Promise<boolean> {
   try {
-    await page.waitForFunction((playing) => {
-      const playIndicator = document.querySelector('[data-playing="' + playing + '"]');
-      if (playIndicator) return true;
-      
-      const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-      return engine?.isPlaying?.() === playing;
-    }, expectedPlaying, { timeout: 3000 });
+    await page.waitForFunction(
+      (playing: boolean) => {
+        const playIndicator = document.querySelector(
+          '[data-playing="' + playing + '"]'
+        );
+        if (playIndicator) return true;
+
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
+        return engine?.isPlaying?.() === playing;
+      },
+      expectedPlaying,
+      { timeout: 3000 }
+    );
     return true;
   } catch {
     return false;
   }
 }
 
-async function togglePlayPause(page: any): Promise<boolean> {
+async function togglePlayPause(page: Page): Promise<boolean> {
   await page.keyboard.press('Space');
   // Wait a moment for the toggle to register, then check either state
   try {
-    await page.waitForFunction(() => {
-      const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-      return typeof engine?.isPlaying?.() === 'boolean';
-    }, { timeout: 3000 });
+    await page.waitForFunction(
+      () => {
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
+        return typeof engine?.isPlaying?.() === 'boolean';
+      },
+      { timeout: 3000 }
+    );
     return true;
   } catch {
     return false;
@@ -86,13 +114,17 @@ test.describe('NavigationManager E2E Tests', () => {
       const rightSlide = await navigateAndWaitForSlide(page, 'ArrowRight');
 
       // Check if navigation is working
-      if (rightSlide !== null && initialSlide !== null && rightSlide !== initialSlide) {
+      if (
+        rightSlide !== null &&
+        initialSlide !== null &&
+        rightSlide !== initialSlide
+      ) {
         // Navigation is working, test the expected behavior
         expect(rightSlide).not.toBe(initialSlide);
 
         // Navigate left using helper function
         const leftSlide = await navigateAndWaitForSlide(page, 'ArrowLeft');
-        
+
         if (leftSlide !== null) {
           expect(leftSlide).toBe(initialSlide);
         }
@@ -118,17 +150,13 @@ test.describe('NavigationManager E2E Tests', () => {
       const dSlide = await navigateAndWaitForSlide(page, 'KeyD');
 
       // Check if navigation is working
-      if (
-        dSlide !== null &&
-        initialSlide !== null &&
-        dSlide > initialSlide
-      ) {
+      if (dSlide !== null && initialSlide !== null && dSlide > initialSlide) {
         // Navigation is working
         expect(dSlide).toBeGreaterThan(0);
 
         // Navigate with A (left) using helper function
         const aSlide = await navigateAndWaitForSlide(page, 'KeyA');
-        
+
         if (aSlide !== null) {
           expect(aSlide).toBe(initialSlide);
         }
@@ -251,7 +279,7 @@ test.describe('NavigationManager E2E Tests', () => {
           await expect(playIndicator).toBeVisible();
         }
 
-        // Toggle pause using helper function  
+        // Toggle pause using helper function
         const pauseToggled = await togglePlayPause(page);
         if (pauseToggled) {
           // Check for pause indicator
@@ -273,7 +301,7 @@ test.describe('NavigationManager E2E Tests', () => {
         // Press Escape and wait for stop
         await page.keyboard.press('Escape');
         const stopped = await waitForPlayState(page, false);
-        
+
         if (stopped) {
           // Should stop auto-play
           const stoppedIndicator = page.locator('[data-playing="false"]');

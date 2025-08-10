@@ -16,21 +16,31 @@ test.describe.configure({ mode: 'serial', timeout: 45000 });
 // Helper functions to reduce duplication and avoid browser context issues
 async function getCurrentSlideIndex(page: Page): Promise<number | null> {
   try {
-    return await page.evaluate(() => 
-      (window.kineticSlider?.engine as KineticSliderEngine | undefined)?.getCurrentIndex?.() ?? null
+    return await page.evaluate(
+      () =>
+        (
+          window.kineticSlider?.engine as KineticSliderEngine | undefined
+        )?.getCurrentIndex?.() ?? null
     );
   } catch {
     return null;
   }
 }
 
-async function waitForSlideChange(page: Page, fromIndex: number | null): Promise<number | null> {
+async function waitForSlideChange(
+  page: Page,
+  fromIndex: number | null
+): Promise<number | null> {
   try {
     const result = await page.waitForFunction(
       (initialIndex) => {
-        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
         const currentIndex = engine?.getCurrentIndex?.();
-        return currentIndex !== undefined && currentIndex !== initialIndex ? currentIndex : null;
+        return currentIndex !== undefined && currentIndex !== initialIndex
+          ? currentIndex
+          : null;
       },
       fromIndex,
       { timeout: 3000 }
@@ -41,11 +51,16 @@ async function waitForSlideChange(page: Page, fromIndex: number | null): Promise
   }
 }
 
-async function waitForPlayState(page: Page, expectedPlaying: boolean): Promise<boolean> {
+async function waitForPlayState(
+  page: Page,
+  expectedPlaying: boolean
+): Promise<boolean> {
   try {
     const result = await page.waitForFunction(
-      (playing) => {
-        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+      (playing: boolean) => {
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
         return engine?.isPlaying?.() === playing;
       },
       expectedPlaying,
@@ -57,7 +72,10 @@ async function waitForPlayState(page: Page, expectedPlaying: boolean): Promise<b
   }
 }
 
-async function navigateAndWaitForSlide(page: Page, key: string): Promise<number | null> {
+async function navigateAndWaitForSlide(
+  page: Page,
+  key: string
+): Promise<number | null> {
   const initialIndex = await getCurrentSlideIndex(page);
   await page.keyboard.press(key);
   return await waitForSlideChange(page, initialIndex);
@@ -69,7 +87,7 @@ async function tryStartAutoPlay(page: Page): Promise<boolean> {
   if (await waitForPlayState(page, true)) {
     return true;
   }
-  
+
   // Try play button if spacebar didn't work
   const playPauseButton = page.locator('#play-pause-btn');
   if ((await playPauseButton.count()) > 0) {
@@ -78,13 +96,15 @@ async function tryStartAutoPlay(page: Page): Promise<boolean> {
       return true;
     }
   }
-  
+
   // Try programmatic start as last resort
   await page.evaluate(() => {
-    const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+    const engine = window.kineticSlider?.engine as
+      | KineticSliderEngine
+      | undefined;
     engine?.play?.();
   });
-  
+
   return await waitForPlayState(page, true);
 }
 
@@ -94,7 +114,7 @@ async function tryStopAutoPlay(page: Page): Promise<boolean> {
   if (await waitForPlayState(page, false)) {
     return true;
   }
-  
+
   // Try play button if spacebar didn't work
   const playPauseButton = page.locator('#play-pause-btn');
   if ((await playPauseButton.count()) > 0) {
@@ -103,13 +123,15 @@ async function tryStopAutoPlay(page: Page): Promise<boolean> {
       return true;
     }
   }
-  
+
   // Try programmatic stop as last resort
   await page.evaluate(() => {
-    const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+    const engine = window.kineticSlider?.engine as
+      | KineticSliderEngine
+      | undefined;
     engine?.pause?.();
   });
-  
+
   return await waitForPlayState(page, false);
 }
 
@@ -131,7 +153,11 @@ test.describe('StateManager E2E Tests', () => {
       const slideIndex = await navigateAndWaitForSlide(page, 'ArrowRight');
 
       // Check if navigation is working
-      if (slideIndex !== null && initialIndex !== null && slideIndex !== initialIndex) {
+      if (
+        slideIndex !== null &&
+        initialIndex !== null &&
+        slideIndex !== initialIndex
+      ) {
         // Navigation working - test state synchronization
         expect(slideIndex).toBe(1);
       } else {
@@ -208,7 +234,7 @@ test.describe('StateManager E2E Tests', () => {
 
         // Stop auto-play using helper function
         const autoPlayStopped = await tryStopAutoPlay(page);
-        
+
         if (autoPlayStopped) {
           // Check indicators after stopping (if they exist)
           const playButton = page.locator('[data-testid="play-button"]');
