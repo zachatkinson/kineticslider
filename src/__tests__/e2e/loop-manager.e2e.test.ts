@@ -19,17 +19,15 @@ import {
 } from './helpers';
 
 test.describe('LoopManager E2E Tests', () => {
-  const testUrl = 'http://localhost:5188/';
   const config = getTimeoutConfig();
 
   test.beforeEach(async ({ page }) => {
-    // Navigate and wait for slider initialization
+    // Navigate using relative path (baseURL from playwright config)
     const navigationSuccess = await NavigationHelpers.navigateAndWait(
       page,
-      testUrl,
+      '/',
       {
         waitForSlider: true,
-        expectedTitle: 'KineticSlider',
       }
     );
 

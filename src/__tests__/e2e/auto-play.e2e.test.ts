@@ -35,20 +35,18 @@ async function simulateVisibilityChange(
 }
 
 test.describe('Auto-Play Controls', () => {
-  const testUrl = 'http://localhost:5188/';
   const config = getTimeoutConfig();
 
   test.beforeEach(async ({ page }) => {
     // Increase default timeout for auto-play tests
     test.setTimeout(40000);
 
-    // Navigate and wait for slider
+    // Navigate using relative path (baseURL from playwright config)
     const navigationSuccess = await NavigationHelpers.navigateAndWait(
       page,
-      testUrl,
+      '/',
       {
         waitForSlider: true,
-        expectedTitle: 'KineticSlider',
       }
     );
 

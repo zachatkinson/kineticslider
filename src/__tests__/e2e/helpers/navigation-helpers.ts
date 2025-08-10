@@ -225,10 +225,11 @@ export class NavigationHelpers {
 
   /**
    * Navigate and wait for complete page load
+   * Compatible with original navigateAndWait behavior - uses baseURL from playwright config
    */
   static async navigateAndWait(
     page: Page,
-    url: string,
+    path: string = '/',
     options?: {
       waitForSlider?: boolean;
       expectedTitle?: string;
@@ -239,8 +240,8 @@ export class NavigationHelpers {
     const timeout = options?.timeoutMs || config.navigation;
 
     try {
-      // Navigate to URL
-      await page.goto(url, {
+      // Navigate to path (uses baseURL from playwright config)
+      await page.goto(path, {
         waitUntil: 'domcontentloaded',
         timeout,
       });

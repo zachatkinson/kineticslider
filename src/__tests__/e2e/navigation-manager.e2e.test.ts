@@ -19,7 +19,8 @@ test.describe.configure({ mode: 'serial', timeout: 45000 });
 
 test.describe('NavigationManager E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+    // Navigate using relative path (baseURL from playwright config)
+    await NavigationHelpers.navigateAndWait(page, '/', {
       waitForSlider: true,
     });
   });
@@ -727,7 +728,7 @@ test.describe('NavigationManager E2E Tests', () => {
         // For webkit, just wait a bit for styles to apply
         await page.waitForTimeout(500);
       }
-      await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+      await NavigationHelpers.navigateAndWait(page, '/', {
         waitForSlider: true,
       });
 

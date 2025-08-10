@@ -19,7 +19,8 @@ test.describe.configure({ mode: 'serial', timeout: 45000 });
 
 test.describe('StateManager E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+    // Navigate using relative path (baseURL from playwright config)
+    await NavigationHelpers.navigateAndWait(page, '/', {
       waitForSlider: true,
     });
   });
@@ -232,7 +233,7 @@ test.describe('StateManager E2E Tests', () => {
 
       // Refresh page
       await page.reload();
-      await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+      await NavigationHelpers.navigateAndWait(page, '/', {
         waitForSlider: true,
       });
 
@@ -260,7 +261,7 @@ test.describe('StateManager E2E Tests', () => {
 
       // Refresh page
       await page.reload();
-      await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+      await NavigationHelpers.navigateAndWait(page, '/', {
         waitForSlider: true,
       });
 
@@ -289,11 +290,9 @@ test.describe('StateManager E2E Tests', () => {
 
         // Refresh page
         await page.reload();
-        await NavigationHelpers.navigateAndWait(
-          page,
-          'http://localhost:5188/',
-          { waitForSlider: true }
-        );
+        await NavigationHelpers.navigateAndWait(page, '/', {
+          waitForSlider: true,
+        });
 
         // Check if setting was persisted
         const restoredToggle = page.locator(
@@ -722,7 +721,7 @@ test.describe('StateManager E2E Tests', () => {
 
       // Reload and check that it recovers
       await page.reload();
-      await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+      await NavigationHelpers.navigateAndWait(page, '/', {
         waitForSlider: true,
       });
 
