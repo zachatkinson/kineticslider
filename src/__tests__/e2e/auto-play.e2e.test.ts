@@ -44,7 +44,7 @@ async function stopAutoPlay(page: Page): Promise<boolean> {
       return engine?.isPlaying?.();
     })
     .catch(() => null);
-    
+
   if (currentState === false) {
     return true; // Already stopped
   }
@@ -70,7 +70,9 @@ async function stopAutoPlay(page: Page): Promise<boolean> {
   try {
     await page.waitForFunction(
       () => {
-        const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
+        const engine = window.kineticSlider?.engine as
+          | ISliderEngine
+          | undefined;
         return engine?.isPlaying?.() === false;
       },
       { timeout: 3000 }
@@ -622,7 +624,7 @@ test.describe('Auto-Play Controls', () => {
         test.skip();
         return;
       }
-      
+
       // Enable looping (disabled by default)
       await page.evaluate(() => {
         const engine = window.kineticSlider?.engine as

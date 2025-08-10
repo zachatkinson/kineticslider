@@ -14,24 +14,6 @@ import { navigateAndWait } from './utils';
 test.describe.configure({ mode: 'serial', timeout: 45000 });
 
 // Helper functions to reduce duplication and avoid browser context issues
-async function waitForSlideIndex(page: Page): Promise<number | null> {
-  try {
-    const result = await page.waitForFunction(
-      () => {
-        const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
-          | undefined;
-        const currentIndex = engine?.getCurrentIndex?.();
-        return currentIndex !== undefined ? currentIndex : null;
-      },
-      { timeout: 3000 }
-    );
-    return await result.jsonValue();
-  } catch {
-    return null;
-  }
-}
-
 async function getCurrentSlideIndex(page: Page): Promise<number | null> {
   try {
     return await page.evaluate(
@@ -51,15 +33,19 @@ async function navigateAndWaitForSlide(
 ): Promise<number | null> {
   const initialIndex = await getCurrentSlideIndex(page);
   await page.keyboard.press(key);
-  
+
   // Wait for the index to actually change
   try {
     const result = await page.waitForFunction(
       (startIndex) => {
-        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+        const engine = window.kineticSlider?.engine as
+          | KineticSliderEngine
+          | undefined;
         const currentIndex = engine?.getCurrentIndex?.();
         // Return new index only if it changed
-        return currentIndex !== undefined && currentIndex !== startIndex ? currentIndex : null;
+        return currentIndex !== undefined && currentIndex !== startIndex
+          ? currentIndex
+          : null;
       },
       initialIndex,
       { timeout: 3000 }
