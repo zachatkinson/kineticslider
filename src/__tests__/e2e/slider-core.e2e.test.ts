@@ -10,7 +10,7 @@
  * @version 2.0.0 - Manager Integration
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
@@ -932,8 +932,13 @@ test.describe('Core Slider Functionality', () => {
         const engine = window.kineticSlider?.engine as
           | KineticSliderEngine
           | undefined;
+
+        // Get state from SliderCore state management (matches our fixed state-sync-helpers)
+        const state = engine?.getState?.() || {};
+
         return {
-          isInitialized: (engine as any)?.isInitialized?.() || false,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          isInitialized: (state as any).isInitialized || false,
           totalSlides: engine?.getTotalSlides?.() || 0,
         };
       });
