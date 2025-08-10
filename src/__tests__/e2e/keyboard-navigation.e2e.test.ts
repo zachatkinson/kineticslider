@@ -8,7 +8,11 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { navigateAndWait } from './utils';
+import {
+  navigateAndWait,
+  waitForSliderAriaAttributes,
+  waitForSliderFocus,
+} from './utils';
 
 test.describe('Keyboard Navigation E2E', () => {
   test.beforeEach(async ({ page }) => {
@@ -268,9 +272,11 @@ test.describe('Keyboard Navigation E2E', () => {
   });
 
   test('should handle number key navigation', async ({ page }) => {
-    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    // CRITICAL: Wait for ARIA attributes and focus to be properly set up
+    await waitForSliderAriaAttributes(page);
+    await waitForSliderFocus(page);
 
-    await _slider.focus();
+    const _slider = page.locator('[data-testid="kinetic-slider"]');
 
     const initialIndex = await page.evaluate(() =>
       (
@@ -304,7 +310,7 @@ test.describe('Keyboard Navigation E2E', () => {
       // Navigation not working - test basic functionality
       expect(initialIndex).toBeGreaterThanOrEqual(0);
 
-      // Ensure basic accessibility
+      // Ensure basic accessibility - now guaranteed to be present
       const ariaValueNow = await _slider.getAttribute('aria-valuenow');
       expect(ariaValueNow).toBeTruthy();
     }

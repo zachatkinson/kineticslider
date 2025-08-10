@@ -5,6 +5,7 @@
  */
 
 import type { Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { VIEWPORT } from '../../core/constants';
 
 // Viewport sizes for responsive testing
@@ -176,4 +177,74 @@ export async function navigateAndReset(
 ): Promise<void> {
   await navigateAndWait(page, path);
   await resetAppState(page);
+}
+
+/**
+ * Wait for slider ARIA attributes to be fully initialized
+ * This addresses the timing issue where tests check attributes before they're set
+ */
+export async function waitForSliderAriaAttributes(
+  page: Page,
+  timeout: number = 10000
+): Promise<void> {
+  const slider = page.locator('[data-testid="kinetic-slider"]');
+
+  // Wait for the slider to be visible first
+  await expect(slider).toBeVisible({ timeout });
+
+  // Wait for essential ARIA attributes to be set
+  await page.waitForFunction(
+    () => {
+      const sliderElement = document.querySelector(
+        '[data-testid="kinetic-slider"]'
+      );
+      if (!sliderElement) return false;
+
+      // Check for essential ARIA attributes that should always be present
+      const hasTabIndex = sliderElement.getAttribute('tabindex') === '0';
+      const hasRole = sliderElement.getAttribute('role') === 'region';
+      const hasAriaLabel = !!sliderElement.getAttribute('aria-label');
+      const hasAriaValueNow = !!sliderElement.getAttribute('aria-valuenow');
+      const hasAriaValueMin = !!sliderElement.getAttribute('aria-valuemin');
+      const hasAriaValueMax = !!sliderElement.getAttribute('aria-valuemax');
+
+      return (
+        hasTabIndex &&
+        hasRole &&
+        hasAriaLabel &&
+        hasAriaValueNow &&
+        hasAriaValueMin &&
+        hasAriaValueMax
+      );
+    },
+    { timeout }
+  );
+}
+
+/**
+ * Wait for slider focus to be properly established
+ * This addresses focus management timing issues in tests
+ */
+export async function waitForSliderFocus(
+  page: Page,
+  timeout: number = 5000
+): Promise<void> {
+  const slider = page.locator('[data-testid="kinetic-slider"]');
+
+  // Ensure slider is ready for focus
+  await waitForSliderAriaAttributes(page, timeout);
+
+  // Focus the slider
+  await slider.focus();
+
+  // Wait for focus to be established
+  await page.waitForFunction(
+    () => {
+      const sliderElement = document.querySelector(
+        '[data-testid="kinetic-slider"]'
+      );
+      return sliderElement && document.activeElement === sliderElement;
+    },
+    { timeout: 3000 }
+  );
 }

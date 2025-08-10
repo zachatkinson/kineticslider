@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { navigateAndWait } from './utils';
+import {
+  navigateAndWait,
+  waitForSliderAriaAttributes,
+  waitForSliderFocus,
+} from './utils';
 
 test.describe('Accessibility E2E', () => {
   // Increase timeout for accessibility tests that may need more time
@@ -41,10 +45,12 @@ test.describe('Accessibility E2E', () => {
     test('should provide proper ARIA attributes and focus management', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      // CRITICAL: Wait for slider ARIA attributes to be fully initialized
+      await waitForSliderAriaAttributes(page);
 
-      // Check essential ARIA attributes
+      const _slider = page.locator('[data-testid="kinetic-slider"]');
+
+      // Check essential ARIA attributes - now guaranteed to be present
       const tabindex = await _slider.getAttribute('tabindex');
       expect(tabindex).toBe('0');
 
@@ -54,8 +60,8 @@ test.describe('Accessibility E2E', () => {
       const ariaLabel = await _slider.getAttribute('aria-label');
       expect(ariaLabel).toBeTruthy();
 
-      // Test focus management
-      await _slider.focus();
+      // Test focus management with proper timing
+      await waitForSliderFocus(page);
       const focused = page.locator(':focus');
       await expect(focused).toHaveAttribute('data-testid', 'kinetic-slider');
 
@@ -271,23 +277,12 @@ test.describe('Accessibility E2E', () => {
     });
 
     test('should update aria-valuenow and aria-valuetext', async ({ page }) => {
+      // CRITICAL: Wait for ARIA attributes to be fully initialized
+      await waitForSliderAriaAttributes(page);
+
       const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
 
-      // WAIT FOR FULL INITIALIZATION - like the working navigation test
-      await page.waitForFunction(
-        () => {
-          const engine = (
-            window as {
-              kineticSlider?: { engine?: { getCurrentIndex?: () => number } };
-            }
-          ).kineticSlider?.engine;
-          return engine?.getCurrentIndex?.() !== undefined;
-        },
-        { timeout: 5000 }
-      );
-
-      // Check initial values
+      // Check initial values - now guaranteed to be present
       const initialValueNow = await _slider.getAttribute('aria-valuenow');
       const initialValueText = await _slider.getAttribute('aria-valuetext');
 
