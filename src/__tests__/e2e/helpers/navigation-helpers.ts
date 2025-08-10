@@ -224,9 +224,18 @@ export class NavigationHelpers {
           `[NavigateToLast] Attempt ${attempt + 1}/${retryCount + 1}`
         );
 
-        // Wait for engine to be ready if this is a retry
+        // Enhanced context and engine validation for retries
         if (attempt > 0) {
-          await StateSynchronizer.waitForEngineReady(page, 2000);
+          // Wait longer for engine recovery after failures
+          await page.waitForTimeout(1000);
+
+          // Check page is still valid before proceeding
+          if (page.isClosed()) {
+            console.warn('[NavigateToLast] Page closed during retry');
+            return false;
+          }
+
+          await StateSynchronizer.waitForEngineReady(page, 3000);
         }
 
         const state = await StateSynchronizer.getEngineState(page);

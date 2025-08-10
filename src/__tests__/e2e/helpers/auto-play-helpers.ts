@@ -40,7 +40,12 @@ export class AutoPlayHelpers {
     const method = options?.method || 'auto';
 
     try {
-      // STEP 1: Wait for basic slider availability
+      // STEP 1: Enhanced page and context validation before auto-play
+      if (page.isClosed()) {
+        console.warn('[AutoPlayHelpers] Page is closed');
+        return false;
+      }
+
       await page.waitForSelector('[data-testid="kinetic-slider"]', {
         state: 'visible',
         timeout: 5000,

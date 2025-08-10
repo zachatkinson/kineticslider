@@ -14,6 +14,11 @@ export class E2EErrorHandler {
     'Protocol error',
     'page.evaluate: Target closed',
     'page.locator: Target closed',
+    'Browser has been closed',
+    'Connection closed',
+    'Session closed',
+    'Target crashed',
+    'Navigation failed because',
   ];
 
   /**
@@ -27,7 +32,8 @@ export class E2EErrorHandler {
   }
 
   /**
-   * Execute an operation with context protection
+   * Execute an operation with enhanced context protection
+   * Now includes browser context validation
    */
   static async withContextProtection<T>(
     page: Page,
@@ -35,15 +41,38 @@ export class E2EErrorHandler {
     defaultValue?: T
   ): Promise<T | undefined> {
     try {
+      // Enhanced context validation
       if (page.isClosed()) {
         console.warn('[E2EErrorHandler] Page is already closed');
         return defaultValue;
       }
 
+      // Check browser context
+      const context = page.context();
+      if (!context) {
+        console.warn('[E2EErrorHandler] Browser context is null');
+        return defaultValue;
+      }
+
+      // Quick liveness test
+      try {
+        await page.evaluate(() => true);
+      } catch (testError) {
+        if (this.isContextClosureError(testError)) {
+          console.warn(
+            '[E2EErrorHandler] Context closure detected during liveness test'
+          );
+          return defaultValue;
+        }
+      }
+
       return await operation();
     } catch (error) {
       if (this.isContextClosureError(error)) {
-        console.warn('[E2EErrorHandler] Context closure detected:', error);
+        console.warn(
+          '[E2EErrorHandler] Context closure detected:',
+          (error as any)?.message || String(error)
+        );
         return defaultValue;
       }
 

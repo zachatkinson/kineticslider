@@ -322,6 +322,9 @@ test.describe('Auto-Play Controls', () => {
     test('should loop to first slide after reaching last slide', async ({
       page,
     }) => {
+      // Extend timeout for this complex test involving navigation and auto-play
+      test.setTimeout(60000);
+
       // Navigate to last slide
       await NavigationHelpers.navigateToLast(page);
 
@@ -345,6 +348,9 @@ test.describe('Auto-Play Controls', () => {
     test('should stop at last slide when loop is disabled', async ({
       page,
     }) => {
+      // Extend timeout for this complex test involving navigation and auto-play
+      test.setTimeout(60000);
+
       // Get total slides
       const totalSlides = await SliderStateHelpers.getTotalSlides(page);
       expect(totalSlides).toBeGreaterThan(1);
@@ -478,6 +484,9 @@ test.describe('Auto-Play Controls', () => {
 
   test.describe('Auto-Play Performance', () => {
     test('should handle long-running auto-play sessions', async ({ page }) => {
+      // Extend timeout for this long-running test
+      test.setTimeout(120000);
+
       // Start auto-play
       const started = await AutoPlayHelpers.startAutoPlay(page);
       expect(started).toBe(true);

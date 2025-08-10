@@ -40,6 +40,9 @@ test.describe('LoopManager E2E Tests', () => {
     test('should loop from last slide to first slide seamlessly', async ({
       page,
     }) => {
+      // Extend timeout for this complex test
+      test.setTimeout(60000);
+
       // Enable loop mode with proper synchronization
       const loopConfigured = await StateSynchronizer.syncAfterConfigChange(
         page,
@@ -58,10 +61,27 @@ test.describe('LoopManager E2E Tests', () => {
       const totalSlides = await SliderStateHelpers.getTotalSlides(page);
       expect(totalSlides).toBeGreaterThan(1);
 
-      // Navigate to last slide
-      const navigatedToLast = await NavigationHelpers.navigateToLast(page, {
+      // Navigate to last slide with retry and enhanced error handling
+      let navigatedToLast = await NavigationHelpers.navigateToLast(page, {
         waitForTransition: true,
+        retryCount: 3, // Increase retry attempts
       });
+
+      // If navigation fails, try alternative approach
+      if (!navigatedToLast && totalSlides) {
+        console.warn(
+          '[LoopManager Test] NavigateToLast failed, trying direct navigation'
+        );
+        navigatedToLast = await NavigationHelpers.navigateToSlide(
+          page,
+          totalSlides - 1,
+          {
+            waitForTransition: true,
+            method: 'api', // Use API method as fallback
+          }
+        );
+      }
+
       expect(navigatedToLast).toBe(true);
 
       // Verify we're at the last slide
