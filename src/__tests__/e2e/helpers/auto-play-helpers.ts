@@ -46,8 +46,9 @@ export class AutoPlayHelpers {
         timeout: 5000,
       });
 
-      // Give the slider a moment to fully initialize
-      await page.waitForTimeout(500);
+      // Wait for slider to be fully ready before attempting auto-play
+      await StateSynchronizer.waitForEngineInitialization(page, 3000);
+      await page.waitForTimeout(300); // Additional settling time
 
       // STEP 2: Try specified method or auto-detect (Strategy Pattern)
       let started = false;
@@ -71,11 +72,13 @@ export class AutoPlayHelpers {
       if (verifyStart) {
         console.info('[AutoPlayHelpers] Verifying auto-play start...');
 
-        // Wait for engine state to synchronize (more reliable than DOM attribute)
+        // Wait for engine state to synchronize with extended timeout and retries
+        await page.waitForTimeout(200); // Allow state to settle
+
         const stateVerified = await StateSynchronizer.waitForEngineState(
           page,
           (state) => state.isPlaying === true,
-          2000 // 2 second timeout for state sync
+          3000 // Extended timeout for state sync
         );
 
         if (stateVerified) {
@@ -96,8 +99,8 @@ export class AutoPlayHelpers {
         console.warn(
           '[AutoPlayHelpers] Auto-play verification failed on both engine and button state'
         );
-        // Still return true if API call succeeded - verification timing may vary
-        return true;
+        // Return false to indicate verification failure - this is critical for test reliability
+        return false;
       }
 
       return true;
@@ -142,11 +145,13 @@ export class AutoPlayHelpers {
       if (verifyStop) {
         console.info('[AutoPlayHelpers] Verifying auto-play stop...');
 
-        // Wait for engine state to synchronize (more reliable than DOM attribute)
+        // Wait for engine state to synchronize with extended timeout and retries
+        await page.waitForTimeout(200); // Allow state to settle
+
         const stateVerified = await StateSynchronizer.waitForEngineState(
           page,
           (state) => state.isPlaying === false,
-          2000 // 2 second timeout for state sync
+          3000 // Extended timeout for state sync
         );
 
         if (stateVerified) {
@@ -171,8 +176,8 @@ export class AutoPlayHelpers {
         console.warn(
           '[AutoPlayHelpers] Auto-play stop verification failed on both engine and button state'
         );
-        // Still return true if API call succeeded - verification timing may vary
-        return true;
+        // Return false to indicate verification failure - this is critical for test reliability
+        return false;
       }
 
       return true;

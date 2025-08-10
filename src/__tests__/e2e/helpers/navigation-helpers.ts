@@ -244,8 +244,10 @@ export class NavigationHelpers {
           continue;
         }
 
-        if (state.totalSlides === 0) {
-          console.warn('[NavigateToLast] No slides available');
+        if (state.totalSlides <= 1) {
+          console.warn(
+            `[NavigateToLast] Insufficient slides: ${state.totalSlides}`
+          );
           if (attempt === retryCount) return false;
           continue;
         }
