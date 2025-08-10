@@ -115,12 +115,15 @@ export class StateSynchronizer {
             return null;
           }
 
+          // Get state from SliderCore state management
+          const state = engine.getState?.() || {};
+
           return {
             currentIndex: engine.getCurrentIndex?.() || 0,
             totalSlides: engine.getTotalSlides?.() || 0,
             isPlaying: engine.isPlaying?.() || false,
-            isLoading: engine.isLoading?.() || false,
-            isInitialized: engine.isInitialized?.() || false,
+            isLoading: state.isLoading || false,
+            isInitialized: state.isInitialized || false,
             loopEnabled: engine.loopManager?.isEnabled?.() || false,
             loopMode: engine.loopManager?.getMode?.() || 'none',
           };
