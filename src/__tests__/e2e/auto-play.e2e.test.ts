@@ -14,90 +14,176 @@ import type { ISliderEngine } from '../../core/types';
 
 // Helper functions to reduce duplication and improve performance
 async function startAutoPlay(page: Page): Promise<boolean> {
-  const playButton = page.locator('#play-pause-btn');
-  if ((await playButton.count()) === 0) return false;
-
-  await playButton.click();
-
-  // Wait for auto-play to actually start instead of fixed timeout
   try {
-    await page.waitForSelector('[data-autoplay="true"]', { timeout: 3000 });
-    return true;
-  } catch {
-    // Fallback: check if engine reports playing state
-    return await page
-      .evaluate(() => {
-        const engine = window.kineticSlider?.engine as
-          | ISliderEngine
-          | undefined;
-        return engine?.isPlaying?.() === true;
-      })
-      .catch(() => false);
+    // Check if page is still valid before any operations
+    if (page.isClosed()) {
+      return false;
+    }
+
+    const playButton = page.locator('#play-pause-btn');
+    if ((await playButton.count()) === 0) return false;
+
+    await playButton.click();
+
+    // Check page validity before verification
+    if (page.isClosed()) {
+      return false;
+    }
+
+    // Wait for auto-play to actually start instead of fixed timeout
+    try {
+      await page.waitForSelector('[data-autoplay="true"]', { timeout: 3000 });
+      return true;
+    } catch {
+      // Fallback: check if engine reports playing state
+      return await page
+        .evaluate(() => {
+          const engine = window.kineticSlider?.engine as
+            | ISliderEngine
+            | undefined;
+          return engine?.isPlaying?.() === true;
+        })
+        .catch(() => false);
+    }
+  } catch (error: unknown) {
+    // Handle browser context closure gracefully
+    if (
+      error instanceof Error &&
+      error.message.includes('Target page, context or browser has been closed')
+    ) {
+      return false;
+    }
+    // Re-throw other errors
+    throw error;
   }
 }
 
 async function stopAutoPlay(page: Page): Promise<boolean> {
-  // First check if already stopped
-  const currentState = await page
-    .evaluate(() => {
-      const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
-      return engine?.isPlaying?.();
-    })
-    .catch(() => null);
-
-  if (currentState === false) {
-    return true; // Already stopped
-  }
-
-  // Try pause button first
-  const pauseButton = page.locator('[data-testid="pause-button"]');
-  if ((await pauseButton.count()) > 0) {
-    await pauseButton.click();
-  } else {
-    // Fallback to play button if pause button doesn't exist
-    const playButton = page.locator('#play-pause-btn');
-    if ((await playButton.count()) > 0) {
-      await playButton.click();
-    } else {
-      // Try spacebar as last resort
-      const slider = page.locator('[data-testid="kinetic-slider"]');
-      await slider.focus();
-      await page.keyboard.press('Space');
-    }
-  }
-
-  // Wait for auto-play to actually stop
   try {
+    // Check if page is still valid before any operations
+    if (page.isClosed()) {
+      return false;
+    }
+
+    // First check if already stopped
+    const currentState = await page
+      .evaluate(() => {
+        const engine = window.kineticSlider?.engine as
+          | ISliderEngine
+          | undefined;
+        return engine?.isPlaying?.();
+      })
+      .catch(() => null);
+
+    if (currentState === false) {
+      return true; // Already stopped
+    }
+
+    // Check page validity before UI interactions
+    if (page.isClosed()) {
+      return false;
+    }
+
+    // Try pause button first with browser context closure protection
+    try {
+      const pauseButton = page.locator('[data-testid="pause-button"]');
+      if ((await pauseButton.count()) > 0) {
+        await pauseButton.click();
+      } else {
+        // Fallback to play button if pause button doesn't exist
+        const playButton = page.locator('#play-pause-btn');
+        if ((await playButton.count()) > 0) {
+          await playButton.click();
+        } else {
+          // Try spacebar as last resort
+          const slider = page.locator('[data-testid="kinetic-slider"]');
+          await slider.focus();
+          await page.keyboard.press('Space');
+        }
+      }
+    } catch (error: unknown) {
+      // Handle browser context closure gracefully
+      if (
+        error instanceof Error &&
+        error.message.includes(
+          'Target page, context or browser has been closed'
+        )
+      ) {
+        return false;
+      }
+      // Re-throw other errors
+      throw error;
+    }
+
+    // Check page validity before final verification
+    if (page.isClosed()) {
+      return false;
+    }
+
+    // Wait for auto-play to actually stop
+    try {
+      await page.waitForFunction(
+        () => {
+          const engine = window.kineticSlider?.engine as
+            | ISliderEngine
+            | undefined;
+          return engine?.isPlaying?.() === false;
+        },
+        { timeout: 3000 }
+      );
+      return true;
+    } catch {
+      // Fallback: check if any stop indicator exists
+      try {
+        await page.waitForSelector('[data-autoplay="false"]', {
+          timeout: 1000,
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  } catch (error: unknown) {
+    // Handle browser context closure gracefully at top level
+    if (
+      error instanceof Error &&
+      error.message.includes('Target page, context or browser has been closed')
+    ) {
+      return false;
+    }
+    // Re-throw other errors
+    throw error;
+  }
+}
+
+async function waitForSliderReady(page: Page): Promise<void> {
+  try {
+    // Check if page is still valid before any operations
+    if (page.isClosed()) {
+      return;
+    }
+
+    // Wait for slider to be fully initialized instead of fixed timeout
     await page.waitForFunction(
       () => {
         const engine = window.kineticSlider?.engine as
           | ISliderEngine
           | undefined;
-        return engine?.isPlaying?.() === false;
+        return engine && typeof engine.getCurrentIndex === 'function';
       },
-      { timeout: 3000 }
+      { timeout: 5000 }
     );
-    return true;
-  } catch {
-    // Fallback: check if any stop indicator exists
-    try {
-      await page.waitForSelector('[data-autoplay="false"]', { timeout: 1000 });
-      return true;
-    } catch {
-      return false;
+  } catch (error: unknown) {
+    // Handle browser context closure gracefully
+    if (
+      error instanceof Error &&
+      error.message.includes('Target page, context or browser has been closed')
+    ) {
+      return;
     }
+    // Re-throw other errors
+    throw error;
   }
-}
-
-async function waitForSliderReady(page: Page): Promise<void> {
-  // Wait for slider to be fully initialized instead of fixed timeout
-  await page.waitForFunction(
-    () => {
-      const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
-      return engine && typeof engine.getCurrentIndex === 'function';
-    },
-    { timeout: 5000 }
-  );
 }
 
 // Reduce timeout for auto-play tests to prevent CI timeouts
