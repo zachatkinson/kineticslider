@@ -502,18 +502,24 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       });
     }
 
-    // If auto-play is running and interval changed, restart with new interval
+    // If auto-play interval changed, update AutoPlayManager config without restarting
+    // Following SOLID: Single Responsibility - just update config, don't manage lifecycle
     if (
-      this.stateManager.isPlaying() &&
       (updates as { autoPlayInterval?: number }).autoPlayInterval !== undefined
     ) {
-      this.autoPlayManager.stop();
+      const wasPlaying = this.stateManager.isPlaying();
+
+      // Update AutoPlayManager config directly (DRY principle)
       this.autoPlayManager.updateConfig({
         interval: (updates as { autoPlayInterval?: number }).autoPlayInterval!,
       });
-      this.autoPlayManager.start(async (): Promise<void> => {
-        await this.nextSlide();
-      });
+
+      // Only restart if auto-play was actually running AND the interval change requires it
+      // This prevents unwanted extra advances during E2E tests
+      if (wasPlaying && this.autoPlayManager.isActive()) {
+        // AutoPlayManager will handle restarting with new interval automatically
+        // No manual restart needed (prevents race conditions)
+      }
     }
 
     this.emit(SLIDER_EVENTS.CONFIG_UPDATED, { config: this.config });
@@ -808,12 +814,13 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     });
 
     this.autoPlayManager.on(SLIDER_EVENTS.VISIBILITY_RESUMED, () => {
-      // Handle page visibility resumed
-      if (this.stateManager.isPlaying()) {
-        this.autoPlayManager.start(async (): Promise<void> => {
+      // Handle page visibility resumed using proper resume mechanism
+      // Following DRY and Single Responsibility principles
+      this.autoPlayManager.handlePendingVisibilityResume(
+        async (): Promise<void> => {
           await this.nextSlide();
-        });
-      }
+        }
+      );
       this.emit(SLIDER_EVENTS.VISIBILITY_RESUMED);
     });
 
@@ -826,6 +833,23 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       }
       this.emit(SLIDER_EVENTS.WINDOW_FOCUS_RESUMED);
     });
+
+    // Handle auto-play interval changes (prevents off-by-1 loop errors)
+    this.autoPlayManager.on(
+      SLIDER_EVENTS.CONFIG_UPDATED,
+      (...args: unknown[]) => {
+        const data = args[0] as { intervalChanged?: boolean };
+        if (data?.intervalChanged) {
+          // Handle pending interval restart with proper callback
+          // Following DRY principle: reuse existing nextSlide logic
+          this.autoPlayManager.handlePendingIntervalRestart(
+            async (): Promise<void> => {
+              await this.nextSlide();
+            }
+          );
+        }
+      }
+    );
 
     // NavigationManager events
     this.navigationManager.on(SLIDER_EVENTS.NAVIGATION_REQUESTED, (data) => {

@@ -306,25 +306,160 @@ export class MobileChromeStrategy extends BrowserStrategy {
   }
 
   async startAutoPlay(page: Page): Promise<boolean> {
-    // Mobile needs tap events
+    // Mobile Chrome auto-play requires user interaction and has stricter policies
+    // Following SOLID: Single Responsibility for Mobile Chrome-specific auto-play
+
+    console.info(
+      '[MobileChromeStrategy] Attempting Mobile Chrome auto-play...'
+    );
+
     try {
-      const button = page.locator('#play-pause-btn');
-      await button.tap();
-      return true;
-    } catch {
-      // Fallback to touch simulation
-      return await page.evaluate(() => {
+      // Step 1: Ensure slider is focused (required for auto-play on mobile)
+      await page.locator('[data-testid="kinetic-slider"]').focus();
+      await page.waitForTimeout(100);
+
+      // Step 2: Try API-based auto-play first (most reliable)
+      const apiResult = await page.evaluate(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const engine = (window as any).kineticSlider?.engine;
+
+        if (!engine) {
+          console.warn('[MobileChromeStrategy] Engine not found');
+          return false;
+        }
+
+        // Check if already playing to avoid duplicate calls
+        if (typeof engine.isPlaying === 'function' && engine.isPlaying()) {
+          console.info('[MobileChromeStrategy] Auto-play already active');
+          return true;
+        }
+
+        // Try engine.play() method first
+        if (typeof engine.play === 'function') {
+          try {
+            engine.play();
+            console.info(
+              '[MobileChromeStrategy] Started auto-play via engine.play()'
+            );
+            return true;
+          } catch (error) {
+            console.warn('[MobileChromeStrategy] engine.play() failed:', error);
+          }
+        }
+
+        // Fallback to togglePlayPause if not already playing
+        if (typeof engine.togglePlayPause === 'function') {
+          try {
+            engine.togglePlayPause();
+            console.info(
+              '[MobileChromeStrategy] Started auto-play via togglePlayPause()'
+            );
+            return true;
+          } catch (error) {
+            console.warn(
+              '[MobileChromeStrategy] togglePlayPause() failed:',
+              error
+            );
+          }
+        }
+
+        return false;
+      });
+
+      if (apiResult) {
+        console.info('[MobileChromeStrategy] API-based auto-play successful');
+        return true;
+      }
+
+      // Step 3: Try button interaction with Mobile Chrome-specific handling
+      const buttonSelectors = [
+        '#play-pause-btn',
+        '[data-testid="play-button"]',
+        '[data-testid="play-pause-button"]',
+        '[aria-label*="play" i]',
+        'button:has-text("Play")',
+      ];
+
+      for (const selector of buttonSelectors) {
+        try {
+          const button = page.locator(selector).first();
+          const isVisible = await button.isVisible({ timeout: 500 });
+
+          if (isVisible) {
+            // Mobile Chrome requires tap events, not clicks
+            await button.tap({ timeout: 1000 });
+            console.info(
+              `[MobileChromeStrategy] Successfully tapped button: ${selector}`
+            );
+            return true;
+          }
+        } catch (error) {
+          console.warn(
+            `[MobileChromeStrategy] Button tap failed for ${selector}:`,
+            error
+          );
+          continue;
+        }
+      }
+
+      // Step 4: Fallback to touch event simulation
+      const touchResult = await page.evaluate(() => {
         const button = document.querySelector(
           '#play-pause-btn'
         ) as HTMLButtonElement;
+
         if (button) {
-          const touch = new TouchEvent('touchstart', { bubbles: true });
-          button.dispatchEvent(touch);
-          button.click();
+          // Create proper touch events for Mobile Chrome
+          const touchStart = new TouchEvent('touchstart', {
+            bubbles: true,
+            cancelable: true,
+            touches: [
+              {
+                identifier: 0,
+                target: button,
+                clientX: button.offsetLeft + button.offsetWidth / 2,
+                clientY: button.offsetTop + button.offsetHeight / 2,
+                force: 1,
+                pageX: button.offsetLeft + button.offsetWidth / 2,
+                pageY: button.offsetTop + button.offsetHeight / 2,
+                radiusX: 1,
+                radiusY: 1,
+                rotationAngle: 0,
+                screenX: 0,
+                screenY: 0,
+              } as Touch,
+            ],
+          } as TouchEventInit);
+
+          const touchEnd = new TouchEvent('touchend', {
+            bubbles: true,
+            cancelable: true,
+          });
+
+          button.dispatchEvent(touchStart);
+          button.dispatchEvent(touchEnd);
+          button.click(); // Also trigger click for compatibility
+
+          console.info('[MobileChromeStrategy] Touch simulation completed');
           return true;
         }
+
         return false;
       });
+
+      if (touchResult) {
+        console.info('[MobileChromeStrategy] Touch simulation successful');
+        return true;
+      }
+
+      console.warn('[MobileChromeStrategy] All auto-play methods failed');
+      return false;
+    } catch (error) {
+      console.error(
+        '[MobileChromeStrategy] Auto-play failed with error:',
+        error
+      );
+      return false;
     }
   }
 

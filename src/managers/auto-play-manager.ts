@@ -57,6 +57,8 @@ export class AutoPlayManager extends SimpleEventEmitter {
   private pauseReasons = new Set<PauseReason>();
   private resumeTimer: number | null = null;
   private lastInteractionTime = 0;
+  private pendingVisibilityResume = false;
+  private pendingIntervalRestart = false;
 
   constructor(config: Partial<AutoPlayConfig> = {}) {
     super();
@@ -118,6 +120,29 @@ export class AutoPlayManager extends SimpleEventEmitter {
     if (this.pauseReasons.size === 0 && this.isPlaying) {
       this.scheduleNext(onNext);
       this.emit(SLIDER_EVENTS.PLAY_RESUMED, { reason });
+    }
+  }
+
+  /**
+   * Handle pending visibility resume with onNext callback
+   * Following DRY principle: reuse existing resume logic
+   */
+  handlePendingVisibilityResume(onNext: () => Promise<void>): void {
+    if (this.pendingVisibilityResume) {
+      this.pendingVisibilityResume = false;
+      this.resume(PauseReason.VISIBILITY, onNext);
+    }
+  }
+
+  /**
+   * Handle pending interval restart with onNext callback
+   * Following DRY principle: reuse existing scheduling logic
+   */
+  handlePendingIntervalRestart(onNext: () => Promise<void>): void {
+    if (this.pendingIntervalRestart) {
+      this.pendingIntervalRestart = false;
+      // Restart scheduling with new interval (prevents off-by-1 errors)
+      this.scheduleNext(onNext);
     }
   }
 
@@ -214,15 +239,16 @@ export class AutoPlayManager extends SimpleEventEmitter {
       this.stop();
     }
 
-    // Handle interval change
+    // Handle interval change (Following SOLID: Single Responsibility)
     if (
       oldInterval !== this.config.interval &&
       this.isPlaying &&
       this.pauseReasons.size === 0
     ) {
-      // Restart with new interval
+      // Store pending interval change for when we have the onNext callback
+      // Following Dependency Inversion principle: don't depend on concrete callback
+      this.pendingIntervalRestart = true;
       this.clearTimer();
-      // Note: We need the onNext callback to restart, which should be provided by SliderCore
       this.emit(SLIDER_EVENTS.CONFIG_UPDATED, { intervalChanged: true });
     }
   }
@@ -340,16 +366,18 @@ export class AutoPlayManager extends SimpleEventEmitter {
 
   /**
    * Handle page visibility changes
+   * Following SOLID: Single Responsibility for visibility state management
    */
   private handleVisibilityChange = (): void => {
     if (document.hidden) {
+      // Pause when page becomes hidden
       this.pause(PauseReason.VISIBILITY);
     } else {
-      // We need the onNext callback, so we'll emit an event instead
-      this.pauseReasons.delete(PauseReason.VISIBILITY);
-      if (this.pauseReasons.size === 0 && this.isPlaying) {
-        this.emit(SLIDER_EVENTS.VISIBILITY_RESUMED);
-      }
+      // Resume when page becomes visible
+      // Following Dependency Inversion: use existing resume mechanism
+      // Store resume request for when we have the onNext callback
+      this.pendingVisibilityResume = true;
+      this.emit(SLIDER_EVENTS.VISIBILITY_RESUMED);
     }
   };
 
