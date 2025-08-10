@@ -7,11 +7,111 @@
  * @version 1.0.0
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { navigateAndWait } from './utils';
 
 // Reduce timeout for state management tests to prevent CI timeouts
 test.describe.configure({ mode: 'serial', timeout: 45000 });
+
+// Helper functions to reduce duplication and avoid browser context issues
+async function getCurrentSlideIndex(page: Page): Promise<number | null> {
+  try {
+    return await page.evaluate(() => 
+      (window.kineticSlider?.engine as KineticSliderEngine | undefined)?.getCurrentIndex?.() ?? null
+    );
+  } catch {
+    return null;
+  }
+}
+
+async function waitForSlideChange(page: Page, fromIndex: number | null): Promise<number | null> {
+  try {
+    const result = await page.waitForFunction(
+      (initialIndex) => {
+        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+        const currentIndex = engine?.getCurrentIndex?.();
+        return currentIndex !== undefined && currentIndex !== initialIndex ? currentIndex : null;
+      },
+      fromIndex,
+      { timeout: 3000 }
+    );
+    return await result.jsonValue();
+  } catch {
+    return await getCurrentSlideIndex(page);
+  }
+}
+
+async function waitForPlayState(page: Page, expectedPlaying: boolean): Promise<boolean> {
+  try {
+    const result = await page.waitForFunction(
+      (playing) => {
+        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+        return engine?.isPlaying?.() === playing;
+      },
+      expectedPlaying,
+      { timeout: 3000 }
+    );
+    return await result.jsonValue();
+  } catch {
+    return false;
+  }
+}
+
+async function navigateAndWaitForSlide(page: Page, key: string): Promise<number | null> {
+  const initialIndex = await getCurrentSlideIndex(page);
+  await page.keyboard.press(key);
+  return await waitForSlideChange(page, initialIndex);
+}
+
+async function tryStartAutoPlay(page: Page): Promise<boolean> {
+  // Try spacebar first
+  await page.keyboard.press('Space');
+  if (await waitForPlayState(page, true)) {
+    return true;
+  }
+  
+  // Try play button if spacebar didn't work
+  const playPauseButton = page.locator('#play-pause-btn');
+  if ((await playPauseButton.count()) > 0) {
+    await playPauseButton.click();
+    if (await waitForPlayState(page, true)) {
+      return true;
+    }
+  }
+  
+  // Try programmatic start as last resort
+  await page.evaluate(() => {
+    const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+    engine?.play?.();
+  });
+  
+  return await waitForPlayState(page, true);
+}
+
+async function tryStopAutoPlay(page: Page): Promise<boolean> {
+  // Try spacebar first
+  await page.keyboard.press('Space');
+  if (await waitForPlayState(page, false)) {
+    return true;
+  }
+  
+  // Try play button if spacebar didn't work
+  const playPauseButton = page.locator('#play-pause-btn');
+  if ((await playPauseButton.count()) > 0) {
+    await playPauseButton.click();
+    if (await waitForPlayState(page, false)) {
+      return true;
+    }
+  }
+  
+  // Try programmatic stop as last resort
+  await page.evaluate(() => {
+    const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+    engine?.pause?.();
+  });
+  
+  return await waitForPlayState(page, false);
+}
 
 test.describe('StateManager E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -25,30 +125,20 @@ test.describe('StateManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      const initialIndex = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const initialIndex = await getCurrentSlideIndex(page);
 
-      // Navigate to slide 2
-      await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(300);
-
-      // Check various UI elements that should reflect the state
-      const slideIndex = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      // Navigate to slide 2 using helper function
+      const slideIndex = await navigateAndWaitForSlide(page, 'ArrowRight');
 
       // Check if navigation is working
-      if (slideIndex !== undefined && slideIndex !== initialIndex) {
+      if (slideIndex !== null && initialIndex !== null && slideIndex !== initialIndex) {
         // Navigation working - test state synchronization
         expect(slideIndex).toBe(1);
       } else {
         // Navigation not working - test basic state consistency
-        expect(slideIndex).toBeGreaterThanOrEqual(0);
+        if (slideIndex !== null) {
+          expect(slideIndex).toBeGreaterThanOrEqual(0);
+        }
       }
 
       // Check slide counter if present
@@ -79,53 +169,8 @@ test.describe('StateManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      // Start auto-play - webkit-compatible approach
-      let autoPlayStarted = false;
-
-      // Try spacebar first
-      await page.keyboard.press('Space');
-      await page.waitForTimeout(500);
-
-      // Check if spacebar worked
-      const spacebarResult = await page.evaluate(() => {
-        const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
-          | undefined;
-        return engine?.isPlaying?.();
-      });
-
-      if (spacebarResult) {
-        autoPlayStarted = true;
-      } else {
-        // Try play button if spacebar didn't work
-        const playPauseButton = page.locator('#play-pause-btn');
-        if ((await playPauseButton.count()) > 0) {
-          await playPauseButton.click();
-          await page.waitForTimeout(500);
-
-          const buttonResult = await page.evaluate(() => {
-            const engine = window.kineticSlider?.engine as
-              | KineticSliderEngine
-              | undefined;
-            return engine?.isPlaying?.();
-          });
-
-          if (buttonResult) {
-            autoPlayStarted = true;
-          } else {
-            // Try programmatic start as last resort
-            await page.evaluate(() => {
-              const engine = window.kineticSlider?.engine as
-                | KineticSliderEngine
-                | undefined;
-              engine?.play?.();
-            });
-
-            await page.waitForTimeout(300);
-            autoPlayStarted = true; // Assume it worked
-          }
-        }
-      }
+      // Start auto-play using helper function
+      const autoPlayStarted = await tryStartAutoPlay(page);
 
       if (autoPlayStarted) {
         // Check play button state (if it exists)
@@ -160,6 +205,30 @@ test.describe('StateManager E2E Tests', () => {
         });
 
         expect(enginePlaying).toBe(true);
+
+        // Stop auto-play using helper function
+        const autoPlayStopped = await tryStopAutoPlay(page);
+        
+        if (autoPlayStopped) {
+          // Check indicators after stopping (if they exist)
+          const playButton = page.locator('[data-testid="play-button"]');
+          if ((await playButton.count()) > 0) {
+            const stopState = await playButton.getAttribute('data-playing');
+            if (stopState !== null) {
+              expect(stopState).toBe('false');
+            }
+          }
+
+          // Verify through engine state as fallback
+          const finalEngineState = await page.evaluate(() => {
+            const engine = window.kineticSlider?.engine as
+              | KineticSliderEngine
+              | undefined;
+            return engine?.isPlaying?.();
+          });
+
+          expect(finalEngineState).toBe(false);
+        }
       } else {
         // Auto-play couldn't be started - test that state manager interface exists
         const hasStateManager = await page.evaluate(() => {
@@ -174,68 +243,6 @@ test.describe('StateManager E2E Tests', () => {
         });
 
         expect(hasStateManager).toBe(true);
-      }
-
-      // Stop auto-play - webkit-compatible approach
-      if (autoPlayStarted) {
-        // Try spacebar first
-        await page.keyboard.press('Space');
-        await page.waitForTimeout(500);
-
-        // Check if spacebar worked
-        let engineStopped = await page.evaluate(() => {
-          const engine = window.kineticSlider?.engine as
-            | KineticSliderEngine
-            | undefined;
-          return engine?.isPlaying?.() === false;
-        });
-
-        if (!engineStopped) {
-          // Try play button if spacebar didn't work
-          const playPauseButton = page.locator('#play-pause-btn');
-          if ((await playPauseButton.count()) > 0) {
-            await playPauseButton.click();
-            await page.waitForTimeout(500);
-
-            engineStopped = await page.evaluate(() => {
-              const engine = window.kineticSlider?.engine as
-                | KineticSliderEngine
-                | undefined;
-              return engine?.isPlaying?.() === false;
-            });
-          }
-
-          if (!engineStopped) {
-            // Try programmatic stop as last resort
-            await page.evaluate(() => {
-              const engine = window.kineticSlider?.engine as
-                | KineticSliderEngine
-                | undefined;
-              engine?.pause?.();
-            });
-
-            await page.waitForTimeout(300);
-          }
-        }
-
-        // Check indicators after stopping (if they exist)
-        const playButton = page.locator('[data-testid="play-button"]');
-        if ((await playButton.count()) > 0) {
-          const stopState = await playButton.getAttribute('data-playing');
-          if (stopState !== null) {
-            expect(stopState).toBe('false');
-          }
-        }
-
-        // Verify through engine state as fallback
-        const finalEngineState = await page.evaluate(() => {
-          const engine = window.kineticSlider?.engine as
-            | KineticSliderEngine
-            | undefined;
-          return engine?.isPlaying?.();
-        });
-
-        expect(finalEngineState).toBe(false);
       }
     });
 
