@@ -49,8 +49,26 @@ async function navigateAndWaitForSlide(
   page: Page,
   key: string
 ): Promise<number | null> {
+  const initialIndex = await getCurrentSlideIndex(page);
   await page.keyboard.press(key);
-  return await waitForSlideIndex(page);
+  
+  // Wait for the index to actually change
+  try {
+    const result = await page.waitForFunction(
+      (startIndex) => {
+        const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
+        const currentIndex = engine?.getCurrentIndex?.();
+        // Return new index only if it changed
+        return currentIndex !== undefined && currentIndex !== startIndex ? currentIndex : null;
+      },
+      initialIndex,
+      { timeout: 3000 }
+    );
+    return await result.jsonValue();
+  } catch {
+    // If navigation didn't work, return current index
+    return await getCurrentSlideIndex(page);
+  }
 }
 
 async function waitForPlayState(
