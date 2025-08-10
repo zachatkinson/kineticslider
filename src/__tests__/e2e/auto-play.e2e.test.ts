@@ -10,24 +10,29 @@
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
 import type { Page } from '@playwright/test';
+import type { ISliderEngine } from '../../core/types';
 
 // Helper functions to reduce duplication and improve performance
 async function startAutoPlay(page: Page): Promise<boolean> {
   const playButton = page.locator('#play-pause-btn');
   if ((await playButton.count()) === 0) return false;
-  
+
   await playButton.click();
-  
+
   // Wait for auto-play to actually start instead of fixed timeout
   try {
     await page.waitForSelector('[data-autoplay="true"]', { timeout: 3000 });
     return true;
   } catch {
     // Fallback: check if engine reports playing state
-    return await page.evaluate(() => {
-      const engine = window.kineticSlider?.engine as any;
-      return engine?.isPlaying?.() === true;
-    }).catch(() => false);
+    return await page
+      .evaluate(() => {
+        const engine = window.kineticSlider?.engine as
+          | ISliderEngine
+          | undefined;
+        return engine?.isPlaying?.() === true;
+      })
+      .catch(() => false);
   }
 }
 
@@ -40,26 +45,35 @@ async function stopAutoPlay(page: Page): Promise<boolean> {
     const playButton = page.locator('#play-pause-btn');
     await playButton.click();
   }
-  
+
   // Wait for auto-play to actually stop instead of fixed timeout
   try {
     await page.waitForSelector('[data-autoplay="false"]', { timeout: 3000 });
     return true;
   } catch {
     // Fallback: check if engine reports stopped state
-    return await page.evaluate(() => {
-      const engine = window.kineticSlider?.engine as any;
-      return engine?.isPlaying?.() === false;
-    }).catch(() => true);
+    return await page
+      .evaluate(() => {
+        const engine = window.kineticSlider?.engine as
+          | ISliderEngine
+          | undefined;
+        return engine?.isPlaying?.() === false;
+      })
+      .catch(() => true);
   }
 }
 
 async function waitForSliderReady(page: Page): Promise<void> {
   // Wait for slider to be fully initialized instead of fixed timeout
-  await page.waitForFunction(() => {
-    return window.kineticSlider?.engine && 
-           typeof window.kineticSlider.engine.getCurrentIndex === 'function';
-  }, { timeout: 5000 });
+  await page.waitForFunction(
+    () => {
+      const engine = window.kineticSlider?.engine as
+        | ISliderEngine
+        | undefined;
+      return engine && typeof engine.getCurrentIndex === 'function';
+    },
+    { timeout: 5000 }
+  );
 }
 
 // Reduce timeout for auto-play tests to prevent CI timeouts
@@ -75,7 +89,7 @@ test.describe('Auto-Play Controls', () => {
       page,
     }) => {
       await waitForSliderReady(page);
-      
+
       // Start auto-play using helper function
       const started = await startAutoPlay(page);
       if (started) {
@@ -103,11 +117,19 @@ test.describe('Auto-Play Controls', () => {
 
       // Toggle auto-play on
       await page.keyboard.press('Space');
-      await page.waitForSelector('[data-autoplay="true"], [data-playing="true"]', { timeout: 2000 }).catch(() => {});
+      await page
+        .waitForSelector('[data-autoplay="true"], [data-playing="true"]', {
+          timeout: 2000,
+        })
+        .catch(() => {});
 
       // Toggle auto-play off
       await page.keyboard.press('Space');
-      await page.waitForSelector('[data-autoplay="false"], [data-playing="false"]', { timeout: 2000 }).catch(() => {});
+      await page
+        .waitForSelector('[data-autoplay="false"], [data-playing="false"]', {
+          timeout: 2000,
+        })
+        .catch(() => {});
 
       // Verify slider is still responsive
       await expect(slider).toBeVisible();
@@ -126,16 +148,20 @@ test.describe('Auto-Play Controls', () => {
         const slider = page.locator('[data-testid="kinetic-slider"]');
         await slider.focus();
         await page.keyboard.press('Space');
-        
+
         // Wait for status to update based on content change
-        await page.waitForFunction(
-          (initial) => {
-            const element = document.querySelector('[data-testid="autoplay-status"]');
-            return element && element.textContent !== initial;
-          },
-          initialText,
-          { timeout: 3000 }
-        ).catch(() => {});
+        await page
+          .waitForFunction(
+            (initial) => {
+              const element = document.querySelector(
+                '[data-testid="autoplay-status"]'
+              );
+              return element && element.textContent !== initial;
+            },
+            initialText,
+            { timeout: 3000 }
+          )
+          .catch(() => {});
 
         const updatedText = await statusElement.textContent();
         expect(updatedText).toBeTruthy();
@@ -146,7 +172,7 @@ test.describe('Auto-Play Controls', () => {
   test.describe('Intelligent Pause Detection', () => {
     test('should pause auto-play on hover', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Start auto-play using helper function
       await startAutoPlay(page);
 
@@ -154,28 +180,32 @@ test.describe('Auto-Play Controls', () => {
 
       // Hover over slider
       await slider.hover();
-      
+
       // Wait for pause indicator to appear
       const pausedIndicator = page.locator('[data-paused="hover"]');
       if ((await pausedIndicator.count()) > 0) {
-        await pausedIndicator.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
+        await pausedIndicator
+          .waitFor({ state: 'visible', timeout: 2000 })
+          .catch(() => {});
         await expect(pausedIndicator).toBeVisible();
       }
 
       // Move mouse away
       await page.mouse.move(0, 0);
-      
+
       // Wait for resume indicator
       const resumedIndicator = page.locator('[data-paused="false"]');
       if ((await resumedIndicator.count()) > 0) {
-        await resumedIndicator.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
+        await resumedIndicator
+          .waitFor({ state: 'visible', timeout: 2000 })
+          .catch(() => {});
         await expect(resumedIndicator).toBeVisible();
       }
     });
 
     test('should pause auto-play on focus', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Start auto-play using helper function
       await startAutoPlay(page);
 
@@ -183,27 +213,33 @@ test.describe('Auto-Play Controls', () => {
 
       // Focus on slider
       await slider.focus();
-      
+
       // Wait for focus indicator to appear
       const focusIndicator = page.locator('[data-focused="true"]');
       if ((await focusIndicator.count()) > 0) {
-        await focusIndicator.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
+        await focusIndicator
+          .waitFor({ state: 'visible', timeout: 2000 })
+          .catch(() => {});
         await expect(focusIndicator).toBeVisible();
       }
 
       // Blur (remove focus)
       await page.keyboard.press('Tab');
-      
+
       // Wait for focus to be removed
-      await page.waitForFunction(
-        () => document.activeElement?.getAttribute('data-testid') !== 'kinetic-slider',
-        { timeout: 2000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(
+          () =>
+            document.activeElement?.getAttribute('data-testid') !==
+            'kinetic-slider',
+          { timeout: 2000 }
+        )
+        .catch(() => {});
     });
 
     test('should pause auto-play on user interaction', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Start auto-play using helper function
       await startAutoPlay(page);
 
@@ -212,18 +248,20 @@ test.describe('Auto-Play Controls', () => {
 
       // User navigation should pause auto-play
       await page.keyboard.press('ArrowRight');
-      
+
       // Wait for interaction pause indicator
       const interactionPause = page.locator('[data-paused="interaction"]');
       if ((await interactionPause.count()) > 0) {
-        await interactionPause.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
+        await interactionPause
+          .waitFor({ state: 'visible', timeout: 2000 })
+          .catch(() => {});
         await expect(interactionPause).toBeVisible();
       }
     });
 
     test('should handle page visibility changes', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Start auto-play using helper function
       await startAutoPlay(page);
 
@@ -239,7 +277,9 @@ test.describe('Auto-Play Controls', () => {
       // Wait for visibility pause indicator
       const visibilityPause = page.locator('[data-paused="visibility"]');
       if ((await visibilityPause.count()) > 0) {
-        await visibilityPause.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
+        await visibilityPause
+          .waitFor({ state: 'visible', timeout: 2000 })
+          .catch(() => {});
         await expect(visibilityPause).toBeVisible();
       }
 
@@ -253,15 +293,14 @@ test.describe('Auto-Play Controls', () => {
       });
 
       // Wait for visibility to be restored
-      await page.waitForFunction(
-        () => !document.hidden,
-        { timeout: 2000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(() => !document.hidden, { timeout: 2000 })
+        .catch(() => {});
     });
 
     test('should handle window focus/blur events', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Start auto-play using helper function
       await startAutoPlay(page);
 
@@ -271,10 +310,9 @@ test.describe('Auto-Play Controls', () => {
       });
 
       // Wait for blur effect to settle
-      await page.waitForFunction(
-        () => !document.hasFocus(),
-        { timeout: 2000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(() => !document.hasFocus(), { timeout: 2000 })
+        .catch(() => {});
 
       // Simulate window focus
       await page.evaluate(() => {
@@ -282,10 +320,9 @@ test.describe('Auto-Play Controls', () => {
       });
 
       // Wait for focus to be restored
-      await page.waitForFunction(
-        () => document.hasFocus(),
-        { timeout: 2000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(() => document.hasFocus(), { timeout: 2000 })
+        .catch(() => {});
 
       // Verify slider is still functional
       const slider = page.locator('[data-testid="kinetic-slider"]');
@@ -309,15 +346,19 @@ test.describe('Auto-Play Controls', () => {
         // Set custom interval (e.g., 1 second) and trigger input event
         await intervalInput.fill('1000');
         await intervalInput.dispatchEvent('input');
-        
+
         // Wait for configuration to be applied
-        await page.waitForFunction(
-          () => {
-            const input = document.querySelector('#auto-play-interval') as HTMLInputElement;
-            return input && input.value === '1000';
-          },
-          { timeout: 2000 }
-        ).catch(() => {});
+        await page
+          .waitForFunction(
+            () => {
+              const input = document.querySelector(
+                '#auto-play-interval'
+              ) as HTMLInputElement;
+              return input && input.value === '1000';
+            },
+            { timeout: 2000 }
+          )
+          .catch(() => {});
       }
 
       // Start auto-play
@@ -330,7 +371,7 @@ test.describe('Auto-Play Controls', () => {
       // Check engine state before clicking
       await page.evaluate(() => {
         const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
+          | ISliderEngine
           | undefined;
         if (!engine) {
           return { currentIndex: undefined, isPlaying: undefined };
@@ -342,15 +383,17 @@ test.describe('Auto-Play Controls', () => {
       });
 
       await playButton.click();
-      
+
       // Wait for auto-play to start using condition-based wait
-      await page.waitForFunction(
-        () => {
-          const status = document.querySelector('#play-status')?.textContent;
-          return status?.match(/playing/i);
-        },
-        { timeout: 3000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(
+          () => {
+            const status = document.querySelector('#play-status')?.textContent;
+            return status?.match(/playing/i);
+          },
+          { timeout: 3000 }
+        )
+        .catch(() => {});
 
       // Verify auto-play is actually running
       const playStatus = await page.locator('#play-status').textContent();
@@ -360,7 +403,7 @@ test.describe('Auto-Play Controls', () => {
         // Check if the engine state shows playing
         await page.evaluate(() => {
           const engine = window.kineticSlider?.engine as
-            | KineticSliderEngine
+            | ISliderEngine
             | undefined;
           if (!engine) {
             return { isPlaying: undefined, currentIndex: undefined };
@@ -372,28 +415,28 @@ test.describe('Auto-Play Controls', () => {
         });
 
         await page.evaluate(() => {
-          if (
-            (window.kineticSlider?.engine as KineticSliderEngine | undefined)
-              ?.play
-          ) {
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.play?.();
+          const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
+          if (engine && !engine.isPlaying()) {
+            engine.togglePlayPause();
           }
         });
-        
+
         // Wait for direct play to take effect
-        await page.waitForFunction(
-          () => {
-            const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-            return engine?.isPlaying?.() === true;
-          },
-          { timeout: 2000 }
-        ).catch(() => {});
+        await page
+          .waitForFunction(
+            () => {
+              const engine = window.kineticSlider?.engine as
+                | ISliderEngine
+                | undefined;
+              return engine?.isPlaying?.() === true;
+            },
+            { timeout: 2000 }
+          )
+          .catch(() => {});
 
         await page.evaluate(() => {
           const engine = window.kineticSlider?.engine as
-            | KineticSliderEngine
+            | ISliderEngine
             | undefined;
           if (!engine) {
             return { isPlaying: undefined, currentIndex: undefined };
@@ -416,24 +459,28 @@ test.describe('Auto-Play Controls', () => {
       // Track slide changes over time
       const initialSlide = await page.evaluate(() =>
         (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
+          window.kineticSlider?.engine as ISliderEngine | undefined
         )?.getCurrentIndex?.()
       );
 
       // Wait for slide change or timeout (custom interval of 1000ms + buffer)
-      await page.waitForFunction(
-        (initial) => {
-          const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-          const current = engine?.getCurrentIndex?.();
-          return current !== undefined && current !== initial;
-        },
-        initialSlide,
-        { timeout: 3000 }
-      ).catch(() => {}); // Don't fail if no slide change detected
+      await page
+        .waitForFunction(
+          (initial) => {
+            const engine = window.kineticSlider?.engine as
+              | ISliderEngine
+              | undefined;
+            const current = engine?.getCurrentIndex?.();
+            return current !== undefined && current !== initial;
+          },
+          initialSlide,
+          { timeout: 3000 }
+        )
+        .catch(() => {}); // Don't fail if no slide change detected
 
       const newSlide = await page.evaluate(() =>
         (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
+          window.kineticSlider?.engine as ISliderEngine | undefined
         )?.getCurrentIndex?.()
       );
 
@@ -445,7 +492,7 @@ test.describe('Auto-Play Controls', () => {
         // Auto-play might be working but navigation isn't - test that auto-play is at least running
         const isPlaying = await page.evaluate(() =>
           (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
+            window.kineticSlider?.engine as ISliderEngine | undefined
           )?.isPlaying?.()
         );
 
@@ -458,7 +505,7 @@ test.describe('Auto-Play Controls', () => {
 
     test('should handle pause on interaction setting', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Look for pause on interaction toggle
       const pauseOnInteractionToggle = page.locator(
         '[data-testid="pause-on-interaction"]'
@@ -467,15 +514,19 @@ test.describe('Auto-Play Controls', () => {
       if ((await pauseOnInteractionToggle.count()) > 0) {
         // Disable pause on interaction
         await pauseOnInteractionToggle.uncheck();
-        
+
         // Wait for setting to be applied
-        await page.waitForFunction(
-          () => {
-            const toggle = document.querySelector('[data-testid="pause-on-interaction"]') as HTMLInputElement;
-            return toggle && !toggle.checked;
-          },
-          { timeout: 2000 }
-        ).catch(() => {});
+        await page
+          .waitForFunction(
+            () => {
+              const toggle = document.querySelector(
+                '[data-testid="pause-on-interaction"]'
+              ) as HTMLInputElement;
+              return toggle && !toggle.checked;
+            },
+            { timeout: 2000 }
+          )
+          .catch(() => {});
 
         // Start auto-play using helper function
         await startAutoPlay(page);
@@ -483,7 +534,7 @@ test.describe('Auto-Play Controls', () => {
         // Interact with slider
         const slider = page.locator('[data-testid="kinetic-slider"]');
         await slider.hover();
-        
+
         // Wait for interaction response
         await page.waitForTimeout(500);
 
@@ -507,17 +558,21 @@ test.describe('Auto-Play Controls', () => {
         await expect(timeIndicator).toBeVisible();
 
         const initialTime = await timeIndicator.textContent();
-        
+
         // Wait for timer to update
-        await page.waitForFunction(
-          (initial) => {
-            const timer = document.querySelector('[data-testid="autoplay-timer"]');
-            return timer && timer.textContent !== initial;
-          },
-          initialTime,
-          { timeout: 3000 }
-        ).catch(() => {});
-        
+        await page
+          .waitForFunction(
+            (initial) => {
+              const timer = document.querySelector(
+                '[data-testid="autoplay-timer"]'
+              );
+              return timer && timer.textContent !== initial;
+            },
+            initialTime,
+            { timeout: 3000 }
+          )
+          .catch(() => {});
+
         const updatedTime = await timeIndicator.textContent();
 
         // Time should have changed (progressed)
@@ -533,7 +588,7 @@ test.describe('Auto-Play Controls', () => {
       // Enable looping (disabled by default)
       await page.evaluate(() => {
         const engine = window.kineticSlider?.engine as
-          | (KineticSliderEngine & {
+          | (ISliderEngine & {
               updateConfig?: (config: { loop: boolean }) => void;
             })
           | undefined;
@@ -552,16 +607,20 @@ test.describe('Auto-Play Controls', () => {
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await slider.focus();
       await page.keyboard.press('End');
-      
+
       // Wait for navigation to complete
-      await page.waitForFunction(
-        () => {
-          const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-          const currentIndex = engine?.getCurrentIndex?.();
-          return currentIndex !== undefined && currentIndex > 0;
-        },
-        { timeout: 2000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(
+          () => {
+            const engine = window.kineticSlider?.engine as
+              | ISliderEngine
+              | undefined;
+            const currentIndex = engine?.getCurrentIndex?.();
+            return currentIndex !== undefined && currentIndex > 0;
+          },
+          { timeout: 2000 }
+        )
+        .catch(() => {});
 
       // Check play status after End key - auto-play should still be running
       playStatus = await page.locator('#play-status').textContent();
@@ -574,7 +633,7 @@ test.describe('Auto-Play Controls', () => {
       // Get the current slide index (should be last slide)
       const currentSlide = await page.evaluate(() =>
         (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
+          window.kineticSlider?.engine as ISliderEngine | undefined
         )?.getCurrentIndex?.()
       );
 
@@ -587,7 +646,7 @@ test.describe('Auto-Play Controls', () => {
 
         const isPlaying = await page.evaluate(() =>
           (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
+            window.kineticSlider?.engine as ISliderEngine | undefined
           )?.isPlaying?.()
         );
         expect(isPlaying).toBe(true);
@@ -601,7 +660,7 @@ test.describe('Auto-Play Controls', () => {
           return { error: 'No engine' };
         }
         const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
+          | ISliderEngine
           | undefined;
 
         // Check what methods are available
@@ -636,7 +695,7 @@ test.describe('Auto-Play Controls', () => {
             return { error: 'No engine' };
           }
           const engine = window.kineticSlider?.engine as
-            | KineticSliderEngine
+            | ISliderEngine
             | undefined;
 
           await engine?.nextSlide?.();
@@ -665,40 +724,49 @@ test.describe('Auto-Play Controls', () => {
       // Wait for the slider to loop from last slide (4) to first slide (0)
 
       // Wait for slide to loop back to index 0
-      await page.waitForFunction(
-        () => {
-          const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-          const currentIndex = engine?.getCurrentIndex?.();
-          return currentIndex === 0;
-        },
-        { timeout: 5000 }
-      ).catch(() => {});
-      
-      const loopedSlide = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      ) ?? -1;
+      await page
+        .waitForFunction(
+          () => {
+            const engine = window.kineticSlider?.engine as
+              | ISliderEngine
+              | undefined;
+            const currentIndex = engine?.getCurrentIndex?.();
+            return currentIndex === 0;
+          },
+          { timeout: 5000 }
+        )
+        .catch(() => {});
+
+      const loopedSlide =
+        (await page.evaluate(() =>
+          (
+            window.kineticSlider?.engine as ISliderEngine | undefined
+          )?.getCurrentIndex?.()
+        )) ?? -1;
 
       expect(loopedSlide).toBe(0);
     });
 
     test('should handle infinite loop with auto-play', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Enable infinite loop if there's a control
       const infiniteLoopToggle = page.locator('[data-testid="infinite-loop"]');
       if ((await infiniteLoopToggle.count()) > 0) {
         await infiniteLoopToggle.check();
-        
+
         // Wait for setting to be applied
-        await page.waitForFunction(
-          () => {
-            const toggle = document.querySelector('[data-testid="infinite-loop"]') as HTMLInputElement;
-            return toggle && toggle.checked;
-          },
-          { timeout: 2000 }
-        ).catch(() => {});
+        await page
+          .waitForFunction(
+            () => {
+              const toggle = document.querySelector(
+                '[data-testid="infinite-loop"]'
+              ) as HTMLInputElement;
+              return toggle && toggle.checked;
+            },
+            { timeout: 2000 }
+          )
+          .catch(() => {});
       }
 
       // Start auto-play using helper function
@@ -710,22 +778,26 @@ test.describe('Auto-Play Controls', () => {
       let previousIndex = -1;
       for (let i = 0; i < 6; i++) {
         // Wait for slide change or timeout
-        await page.waitForFunction(
-          (prev) => {
-            const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-            const current = engine?.getCurrentIndex?.();
-            return current !== undefined && current !== prev;
-          },
-          previousIndex,
-          { timeout: 2000 }
-        ).catch(() => {}); // Don't fail if no change detected
-        
+        await page
+          .waitForFunction(
+            (prev) => {
+              const engine = window.kineticSlider?.engine as
+                | ISliderEngine
+                | undefined;
+              const current = engine?.getCurrentIndex?.();
+              return current !== undefined && current !== prev;
+            },
+            previousIndex,
+            { timeout: 2000 }
+          )
+          .catch(() => {}); // Don't fail if no change detected
+
         const slideIndex = await page.evaluate(() =>
           (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
+            window.kineticSlider?.engine as ISliderEngine | undefined
           )?.getCurrentIndex?.()
         );
-        
+
         const currentIndex = slideIndex ?? 0;
         slideProgression.push(currentIndex);
         previousIndex = currentIndex;
@@ -744,7 +816,7 @@ test.describe('Auto-Play Controls', () => {
         // Navigation not working - test that auto-play is at least running or slides are changing
         const isPlaying = await page.evaluate(() =>
           (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
+            window.kineticSlider?.engine as ISliderEngine | undefined
           )?.isPlaying?.()
         );
 
@@ -766,11 +838,11 @@ test.describe('Auto-Play Controls', () => {
           // If nothing is working, test that basic slider functionality exists
           const basicFunctionality = await page.evaluate(() => {
             const engine = window.kineticSlider?.engine as
-              | KineticSliderEngine
+              | ISliderEngine
               | undefined;
             return {
               hasEngine: !!engine,
-              hasPlayMethod: typeof engine?.play === 'function',
+              hasToggleMethod: typeof engine?.togglePlayPause === 'function',
               hasCurrentIndex: typeof engine?.getCurrentIndex === 'function',
               currentIndex: engine?.getCurrentIndex?.(),
               totalSlides: engine?.getTotalSlides?.(),
@@ -778,7 +850,7 @@ test.describe('Auto-Play Controls', () => {
           });
 
           expect(basicFunctionality.hasEngine).toBe(true);
-          expect(basicFunctionality.hasPlayMethod).toBe(true);
+          expect(basicFunctionality.hasToggleMethod).toBe(true);
           expect(basicFunctionality.hasCurrentIndex).toBe(true);
           expect(typeof basicFunctionality.currentIndex).toBe('number');
           expect(basicFunctionality.totalSlides).toBeGreaterThan(0);
@@ -797,7 +869,7 @@ test.describe('Auto-Play Controls', () => {
 
       // Start auto-play using helper function
       const started = await startAutoPlay(page);
-      
+
       if (started) {
         // Wait for play announcement to appear
         await expect(announcement).toHaveText(/play|start|enabled/i, {
@@ -806,27 +878,35 @@ test.describe('Auto-Play Controls', () => {
 
         // Pause auto-play using helper function
         const stopped = await stopAutoPlay(page);
-        
+
         if (stopped) {
           // Wait for pause announcement or button state change
-          await page.waitForFunction(
-            (initialText) => {
-              const announcement = document.querySelector('#slider-announcements');
-              const button = document.querySelector('#play-pause-btn');
-              const currentText = announcement?.textContent || '';
-              const buttonText = button?.textContent || '';
-              
-              return currentText !== initialText || 
-                     /pause|stop|disabled/i.test(currentText) ||
-                     /play|start/i.test(buttonText);
-            },
-            await announcement.textContent(),
-            { timeout: 3000 }
-          ).catch(() => {});
-          
+          await page
+            .waitForFunction(
+              (initialText) => {
+                const announcement = document.querySelector(
+                  '#slider-announcements'
+                );
+                const button = document.querySelector('#play-pause-btn');
+                const currentText = announcement?.textContent || '';
+                const buttonText = button?.textContent || '';
+
+                return (
+                  currentText !== initialText ||
+                  /pause|stop|disabled/i.test(currentText) ||
+                  /play|start/i.test(buttonText)
+                );
+              },
+              await announcement.textContent(),
+              { timeout: 3000 }
+            )
+            .catch(() => {});
+
           // Verify final state
           const finalAnnouncement = await announcement.textContent();
-          const buttonText = await page.locator('#play-pause-btn').textContent();
+          const buttonText = await page
+            .locator('#play-pause-btn')
+            .textContent();
 
           const hasValidPauseState =
             /pause|stop|disabled/i.test(finalAnnouncement || '') ||
@@ -906,14 +986,17 @@ test.describe('Auto-Play Controls', () => {
       await expect(playButton).toBeVisible();
 
       await playButton.click();
-      
+
       // Wait for reduced motion to take effect
-      await page.waitForFunction(
-        () => {
-          return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        },
-        { timeout: 2000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(
+          () => {
+            return window.matchMedia('(prefers-reduced-motion: reduce)')
+              .matches;
+          },
+          { timeout: 2000 }
+        )
+        .catch(() => {});
 
       // Check if slider respects reduced motion by checking if auto-play is disabled
       // or if animation duration is reduced
@@ -932,7 +1015,7 @@ test.describe('Auto-Play Controls', () => {
   test.describe('Auto-Play Error Handling', () => {
     test('should handle auto-play failures gracefully', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Simulate an error condition by rapidly toggling
       const playButton = page.locator('#play-pause-btn');
       const pauseButton = page.locator('[data-testid="pause-button"]');
@@ -950,7 +1033,7 @@ test.describe('Auto-Play Controls', () => {
 
         // Should still be able to play normally using helper function
         const started = await startAutoPlay(page);
-        
+
         if (started) {
           const autoPlayIndicator = page.locator('[data-autoplay="true"]');
           if ((await autoPlayIndicator.count()) > 0) {
@@ -962,7 +1045,7 @@ test.describe('Auto-Play Controls', () => {
 
     test('should recover from interrupted auto-play', async ({ page }) => {
       await waitForSliderReady(page);
-      
+
       // Start auto-play using helper function
       await startAutoPlay(page);
 
@@ -975,15 +1058,19 @@ test.describe('Auto-Play Controls', () => {
       const newPlayButton = page.locator('[data-testid="play-button"]');
       if ((await newPlayButton.count()) > 0) {
         await newPlayButton.click();
-        
+
         // Wait for auto-play to start
-        await page.waitForFunction(
-          () => {
-            const engine = window.kineticSlider?.engine as KineticSliderEngine | undefined;
-            return engine?.isPlaying?.() === true;
-          },
-          { timeout: 3000 }
-        ).catch(() => {});
+        await page
+          .waitForFunction(
+            () => {
+              const engine = window.kineticSlider?.engine as
+                | ISliderEngine
+                | undefined;
+              return engine?.isPlaying?.() === true;
+            },
+            { timeout: 3000 }
+          )
+          .catch(() => {});
 
         const slider = page.locator('[data-testid="kinetic-slider"]');
         await expect(slider).toBeVisible();
