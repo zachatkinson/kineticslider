@@ -67,9 +67,7 @@ async function waitForSliderReady(page: Page): Promise<void> {
   // Wait for slider to be fully initialized instead of fixed timeout
   await page.waitForFunction(
     () => {
-      const engine = window.kineticSlider?.engine as
-        | ISliderEngine
-        | undefined;
+      const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
       return engine && typeof engine.getCurrentIndex === 'function';
     },
     { timeout: 5000 }
@@ -415,7 +413,9 @@ test.describe('Auto-Play Controls', () => {
         });
 
         await page.evaluate(() => {
-          const engine = window.kineticSlider?.engine as ISliderEngine | undefined;
+          const engine = window.kineticSlider?.engine as
+            | ISliderEngine
+            | undefined;
           if (engine && !engine.isPlaying()) {
             engine.togglePlayPause();
           }
