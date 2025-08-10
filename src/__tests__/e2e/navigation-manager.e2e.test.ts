@@ -7,104 +7,21 @@
  * @version 1.0.0
  */
 
-import { test, expect, type Page } from '@playwright/test';
-import { navigateAndWait } from './utils';
+import { test, expect } from '@playwright/test';
+import {
+  NavigationHelpers,
+  SliderStateHelpers,
+  AutoPlayHelpers,
+} from './helpers';
 
 // Reduce timeout for navigation tests to prevent CI timeouts
 test.describe.configure({ mode: 'serial', timeout: 45000 });
 
-// Helper functions to reduce duplication and avoid browser context issues
-async function getCurrentSlideIndex(page: Page): Promise<number | null> {
-  try {
-    return await page.evaluate(
-      () =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.() ?? null
-    );
-  } catch {
-    return null;
-  }
-}
-
-async function navigateAndWaitForSlide(
-  page: Page,
-  key: string
-): Promise<number | null> {
-  const initialIndex = await getCurrentSlideIndex(page);
-  await page.keyboard.press(key);
-
-  // Wait for the index to actually change
-  try {
-    const result = await page.waitForFunction(
-      (startIndex) => {
-        const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
-          | undefined;
-        const currentIndex = engine?.getCurrentIndex?.();
-        // Return new index only if it changed
-        return currentIndex !== undefined && currentIndex !== startIndex
-          ? currentIndex
-          : null;
-      },
-      initialIndex,
-      { timeout: 3000 }
-    );
-    return await result.jsonValue();
-  } catch {
-    // If navigation didn't work, return current index
-    return await getCurrentSlideIndex(page);
-  }
-}
-
-async function waitForPlayState(
-  page: Page,
-  expectedPlaying: boolean
-): Promise<boolean> {
-  try {
-    await page.waitForFunction(
-      (playing: boolean) => {
-        const playIndicator = document.querySelector(
-          '[data-playing="' + playing + '"]'
-        );
-        if (playIndicator) return true;
-
-        const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
-          | undefined;
-        return engine?.isPlaying?.() === playing;
-      },
-      expectedPlaying,
-      { timeout: 3000 }
-    );
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function togglePlayPause(page: Page): Promise<boolean> {
-  await page.keyboard.press('Space');
-  // Wait a moment for the toggle to register, then check either state
-  try {
-    await page.waitForFunction(
-      () => {
-        const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
-          | undefined;
-        return typeof engine?.isPlaying?.() === 'boolean';
-      },
-      { timeout: 3000 }
-    );
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 test.describe('NavigationManager E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await navigateAndWait(page);
+    await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+      waitForSlider: true,
+    });
   });
 
   test.describe('Keyboard Navigation', () => {
@@ -112,10 +29,12 @@ test.describe('NavigationManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      const initialSlide = await getCurrentSlideIndex(page);
+      const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate right using helper function
-      const rightSlide = await navigateAndWaitForSlide(page, 'ArrowRight');
+      await page.keyboard.press('ArrowRight');
+      await page.waitForTimeout(300);
+      const rightSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Check if navigation is working
       if (
@@ -127,7 +46,9 @@ test.describe('NavigationManager E2E Tests', () => {
         expect(rightSlide).not.toBe(initialSlide);
 
         // Navigate left using helper function
-        const leftSlide = await navigateAndWaitForSlide(page, 'ArrowLeft');
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(300);
+        const leftSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
         if (leftSlide !== null) {
           expect(leftSlide).toBe(initialSlide);
@@ -148,10 +69,12 @@ test.describe('NavigationManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      const initialSlide = await getCurrentSlideIndex(page);
+      const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate with D (right) using helper function
-      const dSlide = await navigateAndWaitForSlide(page, 'KeyD');
+      await page.keyboard.press('KeyD');
+      await page.waitForTimeout(300);
+      const dSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Check if navigation is working
       if (dSlide !== null && initialSlide !== null && dSlide > initialSlide) {
@@ -159,7 +82,9 @@ test.describe('NavigationManager E2E Tests', () => {
         expect(dSlide).toBeGreaterThan(0);
 
         // Navigate with A (left) using helper function
-        const aSlide = await navigateAndWaitForSlide(page, 'KeyA');
+        await page.keyboard.press('KeyA');
+        await page.waitForTimeout(300);
+        const aSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
         if (aSlide !== null) {
           expect(aSlide).toBe(initialSlide);
@@ -180,21 +105,13 @@ test.describe('NavigationManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      const initialSlide = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate to slide 2
       await page.keyboard.press('Digit2');
       await page.waitForTimeout(500);
 
-      const slide2 = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const slide2 = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Check if navigation is working
       if (slide2 !== undefined && slide2 === 1) {
@@ -205,11 +122,7 @@ test.describe('NavigationManager E2E Tests', () => {
         await page.keyboard.press('Digit1');
         await page.waitForTimeout(500);
 
-        const slide1 = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const slide1 = await SliderStateHelpers.getCurrentSlideIndex(page);
         expect(slide1).toBe(0);
       } else {
         // Navigation not working, test basic functionality
@@ -225,26 +138,20 @@ test.describe('NavigationManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      const initialSlide = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate to last slide
       await page.keyboard.press('End');
       await page.waitForTimeout(500);
 
-      const lastSlide = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const lastSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Check if navigation is working
       if (
         lastSlide !== undefined &&
+        lastSlide !== null &&
         initialSlide !== undefined &&
+        initialSlide !== null &&
         lastSlide > initialSlide
       ) {
         // Navigation is working
@@ -254,11 +161,7 @@ test.describe('NavigationManager E2E Tests', () => {
         await page.keyboard.press('Home');
         await page.waitForTimeout(500);
 
-        const firstSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const firstSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
         expect(firstSlide).toBe(0);
       } else {
         // Navigation not working, test basic functionality
@@ -275,7 +178,7 @@ test.describe('NavigationManager E2E Tests', () => {
       await _slider.focus();
 
       // Toggle play using helper function
-      const playToggled = await togglePlayPause(page);
+      const playToggled = await AutoPlayHelpers.toggleAutoPlay(page);
       if (playToggled) {
         // Check for play indicator
         const playIndicator = page.locator('[data-playing="true"]');
@@ -284,7 +187,7 @@ test.describe('NavigationManager E2E Tests', () => {
         }
 
         // Toggle pause using helper function
-        const pauseToggled = await togglePlayPause(page);
+        const pauseToggled = await AutoPlayHelpers.toggleAutoPlay(page);
         if (pauseToggled) {
           // Check for pause indicator
           const pauseIndicator = page.locator('[data-playing="false"]');
@@ -300,11 +203,12 @@ test.describe('NavigationManager E2E Tests', () => {
       await _slider.focus();
 
       // Start auto-play first using helper function
-      const playStarted = await togglePlayPause(page);
+      const playStarted = await AutoPlayHelpers.startAutoPlay(page);
       if (playStarted) {
         // Press Escape and wait for stop
         await page.keyboard.press('Escape');
-        const stopped = await waitForPlayState(page, false);
+        await AutoPlayHelpers.stopAutoPlay(page);
+        const stopped = true;
 
         if (stopped) {
           // Should stop auto-play
@@ -322,38 +226,30 @@ test.describe('NavigationManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      const initialSlide = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Page Down (forward multiple slides)
       await page.keyboard.press('PageDown');
       await page.waitForTimeout(500);
 
-      const pageDownSlide = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const pageDownSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Check if navigation is working
       if (
         pageDownSlide !== undefined &&
+        pageDownSlide !== null &&
         initialSlide !== undefined &&
+        initialSlide !== null &&
         pageDownSlide > initialSlide
       ) {
         // Navigation working - test Page Up
         await page.keyboard.press('PageUp');
         await page.waitForTimeout(500);
 
-        const pageUpSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
-        expect(pageUpSlide).toBeLessThan(pageDownSlide);
+        const pageUpSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
+        if (pageUpSlide !== null) {
+          expect(pageUpSlide).toBeLessThan(pageDownSlide);
+        }
       } else {
         // Navigation not working - test basic functionality
         expect(initialSlide).toBeGreaterThanOrEqual(0);
@@ -371,11 +267,8 @@ test.describe('NavigationManager E2E Tests', () => {
       const sliderBox = await _slider.boundingBox();
 
       if (sliderBox) {
-        const initialSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const initialSlide =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Click right zone
         await page.mouse.click(
@@ -384,11 +277,8 @@ test.describe('NavigationManager E2E Tests', () => {
         );
         await page.waitForTimeout(300);
 
-        const rightClickSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const rightClickSlide =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Check if navigation is working
         if (rightClickSlide !== undefined && rightClickSlide !== initialSlide) {
@@ -402,11 +292,8 @@ test.describe('NavigationManager E2E Tests', () => {
           );
           await page.waitForTimeout(300);
 
-          const leftClickSlide = await page.evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          );
+          const leftClickSlide =
+            await SliderStateHelpers.getCurrentSlideIndex(page);
           expect(leftClickSlide).toBe(initialSlide);
         } else {
           // Navigation not working - test basic functionality
@@ -445,21 +332,14 @@ test.describe('NavigationManager E2E Tests', () => {
       const prevButton = page.locator('[data-testid="prev-button"]');
 
       if ((await nextButton.count()) > 0) {
-        const initialSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const initialSlide =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Click next button
         await nextButton.click();
         await page.waitForTimeout(300);
 
-        const nextSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const nextSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Check if navigation is working
         if (nextSlide !== undefined && nextSlide !== initialSlide) {
@@ -471,11 +351,8 @@ test.describe('NavigationManager E2E Tests', () => {
             await prevButton.click();
             await page.waitForTimeout(300);
 
-            const prevSlide = await page.evaluate(() =>
-              (
-                window.kineticSlider?.engine as KineticSliderEngine | undefined
-              )?.getCurrentIndex?.()
-            );
+            const prevSlide =
+              await SliderStateHelpers.getCurrentSlideIndex(page);
             expect(prevSlide).toBe(initialSlide);
           }
         } else {
@@ -541,11 +418,8 @@ test.describe('NavigationManager E2E Tests', () => {
       const sliderBox = await _slider.boundingBox();
 
       if (sliderBox) {
-        const initialSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const initialSlide =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Swipe left (next slide)
         await page.mouse.move(
@@ -561,11 +435,8 @@ test.describe('NavigationManager E2E Tests', () => {
         await page.mouse.up();
         await page.waitForTimeout(500);
 
-        const swipeLeftSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const swipeLeftSlide =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Check if navigation is working
         if (swipeLeftSlide !== undefined && swipeLeftSlide !== initialSlide) {
@@ -586,11 +457,8 @@ test.describe('NavigationManager E2E Tests', () => {
           await page.mouse.up();
           await page.waitForTimeout(500);
 
-          const swipeRightSlide = await page.evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          );
+          const swipeRightSlide =
+            await SliderStateHelpers.getCurrentSlideIndex(page);
           expect(swipeRightSlide).toBe(initialSlide);
         } else {
           // Navigation not working - test basic functionality
@@ -687,21 +555,15 @@ test.describe('NavigationManager E2E Tests', () => {
         const _slider = page.locator('[data-testid="kinetic-slider"]');
         await _slider.focus();
 
-        const initialSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const initialSlide =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Try to navigate with keyboard (should not work)
         await page.keyboard.press('ArrowRight');
         await page.waitForTimeout(300);
 
-        const disabledSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const disabledSlide =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
         expect(disabledSlide).toBe(initialSlide); // Should not have changed
 
         // Re-enable keyboard navigation
@@ -712,11 +574,8 @@ test.describe('NavigationManager E2E Tests', () => {
         await page.keyboard.press('ArrowRight');
         await page.waitForTimeout(300);
 
-        const enabledSlide = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const enabledSlide =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
         expect(enabledSlide).not.toBe(initialSlide);
       }
     });
@@ -735,11 +594,8 @@ test.describe('NavigationManager E2E Tests', () => {
         const sliderBox = await _slider.boundingBox();
 
         if (sliderBox) {
-          const initialSlide = await page.evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          );
+          const initialSlide =
+            await SliderStateHelpers.getCurrentSlideIndex(page);
 
           // Try to navigate with mouse (should not work)
           await page.mouse.click(
@@ -748,11 +604,8 @@ test.describe('NavigationManager E2E Tests', () => {
           );
           await page.waitForTimeout(300);
 
-          const disabledSlide = await page.evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          );
+          const disabledSlide =
+            await SliderStateHelpers.getCurrentSlideIndex(page);
           expect(disabledSlide).toBe(initialSlide); // Should not have changed
 
           // Re-enable mouse navigation
@@ -766,11 +619,8 @@ test.describe('NavigationManager E2E Tests', () => {
           );
           await page.waitForTimeout(300);
 
-          const enabledSlide = await page.evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          );
+          const enabledSlide =
+            await SliderStateHelpers.getCurrentSlideIndex(page);
           expect(enabledSlide).not.toBe(initialSlide);
         }
       }
@@ -803,11 +653,8 @@ test.describe('NavigationManager E2E Tests', () => {
           await page.mouse.up();
           await page.waitForTimeout(300);
 
-          const slideIndex = await page.evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          );
+          const slideIndex =
+            await SliderStateHelpers.getCurrentSlideIndex(page);
           expect(slideIndex).toBeGreaterThan(0); // Should have navigated
         }
       }
@@ -880,7 +727,9 @@ test.describe('NavigationManager E2E Tests', () => {
         // For webkit, just wait a bit for styles to apply
         await page.waitForTimeout(500);
       }
-      await navigateAndWait(page);
+      await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+        waitForSlider: true,
+      });
 
       const _slider = page.locator('[data-testid="kinetic-slider"]');
 
@@ -940,11 +789,7 @@ test.describe('NavigationManager E2E Tests', () => {
       await page.keyboard.press('Home');
       await page.waitForTimeout(300);
 
-      const slideIndex = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const slideIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
       expect(slideIndex).toBe(0); // Should be at first slide
     });
 

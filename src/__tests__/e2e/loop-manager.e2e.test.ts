@@ -4,444 +4,461 @@
  * End-to-end tests verifying loop behavior including infinite loops,
  * seamless transitions, and virtual slide management.
  *
- * @version 1.0.0
+ * @version 2.0.0
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { test, expect } from '@playwright/test';
-import { navigateAndWait } from './utils';
 import {
-  getSliderState,
-  getCurrentSlideIndex,
-  getTotalSlides,
-  waitForStableSlideIndex,
-} from './utils/slider-helpers';
-import type { EngineWithManagers } from './types/engine-with-managers';
+  NavigationHelpers,
+  SliderStateHelpers,
+  StateSynchronizer,
+  AutoPlayHelpers,
+  getTimeoutConfig,
+} from './helpers';
 
 test.describe('LoopManager E2E Tests', () => {
+  const testUrl = 'http://localhost:5188/';
+  const config = getTimeoutConfig();
+
   test.beforeEach(async ({ page }) => {
-    await navigateAndWait(page);
+    // Navigate and wait for slider initialization
+    const navigationSuccess = await NavigationHelpers.navigateAndWait(
+      page,
+      testUrl,
+      {
+        waitForSlider: true,
+        expectedTitle: 'KineticSlider',
+      }
+    );
+
+    if (!navigationSuccess) {
+      throw new Error('Failed to navigate to test page');
+    }
   });
 
   test.describe('Infinite Loop Behavior', () => {
     test('should loop from last slide to first slide seamlessly', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      // Enable loop mode with proper synchronization
+      const loopConfigured = await StateSynchronizer.syncAfterConfigChange(
+        page,
+        async () => {
+          await SliderStateHelpers.updateLoopConfig(page, {
+            enabled: true,
+            mode: 'infinite',
+          });
+        },
+        { loopEnabled: true }
+      );
 
-      // Enable loop mode if not already enabled
-      await page.evaluate(() => {
-        const engine = window.kineticSlider?.engine as EngineWithManagers & {
-          loopManager?: {
-            updateConfig: (config: {
-              enabled: boolean;
-              mode?: string;
-              useVirtualSlides?: boolean;
-            }) => void;
-            getConfig?: () => { mode?: string };
-          };
-        };
-        const loopManager = engine?.loopManager;
-        if (loopManager) {
-          loopManager.updateConfig({ enabled: true, mode: 'infinite' });
-        }
+      expect(loopConfigured).toBe(true);
+
+      // Get total slides
+      const totalSlides = await SliderStateHelpers.getTotalSlides(page);
+      expect(totalSlides).toBeGreaterThan(1);
+
+      // Navigate to last slide
+      const navigatedToLast = await NavigationHelpers.navigateToLast(page, {
+        waitForTransition: true,
       });
-
-      // Get initial slide info
-      const { currentIndex, totalSlides } = await getSliderState(page);
-
-      // Navigate to last slide using arrow keys (webkit-compatible)
-      let attempts = 0;
-      let currentSlideIndex = currentIndex;
-
-      while (currentSlideIndex < totalSlides - 1 && attempts < totalSlides) {
-        await page.keyboard.press('ArrowRight');
-        await page.waitForTimeout(300); // Longer wait for webkit
-
-        currentSlideIndex = await getCurrentSlideIndex(page);
-        attempts++;
-      }
+      expect(navigatedToLast).toBe(true);
 
       // Verify we're at the last slide
-      expect(currentSlideIndex).toBeGreaterThanOrEqual(totalSlides - 2); // Allow for browser quirks
+      const lastIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(lastIndex).toBe((totalSlides || 0) - 1);
 
-      // Go forward from last slide (should loop to first)
-      await page.keyboard.press('ArrowRight');
+      // Navigate forward (should loop to first)
+      const navigatedNext = await NavigationHelpers.navigateNext(page, {
+        waitForTransition: true,
+      });
+      expect(navigatedNext).toBe(true);
 
-      // Wait for slide transition to complete with webkit-specific longer timeout
-      await page.waitForTimeout(1000);
-
-      // Wait for slide index to stabilize
-      const stableIndex = await waitForStableSlideIndex(page, 3, 200);
-
-      // Should be back at first slide (index 0) when loop is enabled
+      // Wait for stable index after loop
+      const stableIndex = await StateSynchronizer.waitForStableSlideIndex(page);
       expect(stableIndex).toBe(0);
     });
 
     test('should loop from first slide to last slide in reverse', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      // Enable loop mode
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
+      });
+
+      // Wait for configuration to take effect
+      const loopEnabled = await StateSynchronizer.waitForLoopConfiguration(
+        page,
+        true,
+        'infinite'
+      );
+      expect(loopEnabled).toBe(true);
+
+      // Get total slides
+      const totalSlides = await SliderStateHelpers.getTotalSlides(page);
+      expect(totalSlides).toBeGreaterThan(1);
 
       // Navigate to first slide
-      await page.keyboard.press('Home');
-      await page.waitForTimeout(500);
+      await NavigationHelpers.navigateToFirst(page);
 
-      const initialSlideIndex = await getCurrentSlideIndex(page);
+      // Verify at first slide
+      const firstIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(firstIndex).toBe(0);
 
-      // Go backward from first slide (should loop to last)
-      await page.keyboard.press('ArrowLeft');
-      await page.waitForTimeout(500);
+      // Navigate backward (should loop to last)
+      const navigatedPrevious = await NavigationHelpers.navigatePrevious(page, {
+        waitForTransition: true,
+      });
+      expect(navigatedPrevious).toBe(true);
 
-      const newSlideIndex = await getCurrentSlideIndex(page);
-
-      // Get total slides to calculate expected last index
-      const totalSlides = await getTotalSlides(page);
-
-      // Check if navigation/looping is working
-      if (newSlideIndex !== undefined && newSlideIndex !== initialSlideIndex) {
-        // Looping is working
-        // When going backward from index 0, should loop to last slide
-        expect(newSlideIndex).toBe(totalSlides - 1); // Should be at last slide index
-      } else {
-        // Navigation/looping not working, test basic functionality
-        expect(initialSlideIndex).toBeGreaterThanOrEqual(0);
-
-        // Ensure basic accessibility
-        const ariaValueNow = await _slider.getAttribute('aria-valuenow');
-        expect(ariaValueNow).toBeTruthy();
-      }
+      // Verify looped to last slide
+      const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(currentIndex).toBe((totalSlides || 0) - 1);
     });
 
-    test('should handle continuous forward looping', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+    test('should handle rapid navigation across loop boundaries', async ({
+      page,
+    }) => {
+      // Enable loop mode
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
+      });
 
-      const initialIndex = await getCurrentSlideIndex(page);
+      const totalSlides = await SliderStateHelpers.getTotalSlides(page);
+      expect(totalSlides).toBeGreaterThan(2);
 
-      // Test one navigation first to see if it works
-      await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(500);
+      // Navigate to near the end
+      await NavigationHelpers.navigateToSlide(page, (totalSlides || 0) - 2);
 
-      const afterFirstNav = await getCurrentSlideIndex(page);
+      // Perform rapid forward navigation
+      const rapidSuccess = await NavigationHelpers.performRapidNavigation(
+        page,
+        5,
+        config.shortPause
+      );
+      expect(rapidSuccess).toBe(true);
 
-      if (afterFirstNav !== undefined && afterFirstNav !== initialIndex) {
-        // Navigation is working, test continuous looping
-        const totalSlides = await getTotalSlides(page);
-        const loopCount = totalSlides + 2; // Loop through all slides plus extra
-
-        for (let i = 0; i < loopCount; i++) {
-          await page.keyboard.press('ArrowRight');
-          await page.waitForTimeout(200);
-        }
-
-        // Should have looped and still be in valid range
-        const finalIndex = await getCurrentSlideIndex(page);
-        expect(finalIndex).toBeGreaterThanOrEqual(0);
-        expect(finalIndex).toBeLessThan(totalSlides || 5);
-      } else {
-        // Navigation not working, skip continuous loop test
-        expect(initialIndex).toBeGreaterThanOrEqual(0);
-      }
-    });
-
-    test('should handle continuous backward looping', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
-
-      const totalSlides = await getTotalSlides(page);
-      const loopCount = totalSlides + 2;
-
-      // Test continuous backward looping
-      for (let i = 0; i < loopCount; i++) {
-        await page.keyboard.press('ArrowLeft');
-        await page.waitForTimeout(200);
-      }
-
-      // Should have looped and still be in valid range
-      const finalIndex = await getCurrentSlideIndex(page);
+      // Should have looped and be at a valid index
+      const finalIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(finalIndex).not.toBeNull();
       expect(finalIndex).toBeGreaterThanOrEqual(0);
-      expect(finalIndex).toBeLessThan(totalSlides || 5);
+      expect(finalIndex).toBeLessThan(totalSlides || 0);
+    });
 
-      // Should not be stuck at initial index after multiple loops
-      if (loopCount > 1) {
-        // Allow for the possibility of ending up at the same index after full loops
-        // but verify the slider is still responsive
-        await page.keyboard.press('ArrowRight');
-        await page.waitForTimeout(200);
-        const afterNav = await getCurrentSlideIndex(page);
-        expect(typeof afterNav).toBe('number');
-      }
+    test('should maintain smooth transitions during loop', async ({
+      page,
+      browserName,
+    }) => {
+      // Enable loop mode
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
+      });
+
+      // Navigate to last slide
+      await NavigationHelpers.navigateToLast(page);
+
+      // Measure transition timing
+      const startTime = Date.now();
+
+      // Navigate forward to trigger loop
+      await NavigationHelpers.navigateNext(page, {
+        waitForTransition: true,
+      });
+
+      const transitionTime = Date.now() - startTime;
+
+      // Verify smooth transition (should be under 2 seconds)
+      const maxTransitionTime = browserName === 'webkit' ? 3000 : 2000;
+      expect(transitionTime).toBeLessThan(maxTransitionTime);
+
+      // Verify we looped correctly
+      const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(currentIndex).toBe(0);
     });
   });
 
-  test.describe('Loop Manager Integration', () => {
-    test('should respect loop configuration', async ({ page }) => {
-      // Wait for slider to be fully initialized first
-      await page.waitForFunction(
-        () => {
-          const engine = window.kineticSlider?.engine as
-            | EngineWithManagers
-            | undefined;
-          return engine && typeof engine.getCurrentIndex === 'function';
+  test.describe('Loop Mode Configuration', () => {
+    test('should disable loop when configured', async ({ page }) => {
+      // First enable loop
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
+      });
+
+      // Then disable it
+      const disabled = await StateSynchronizer.syncAfterConfigChange(
+        page,
+        async () => {
+          await SliderStateHelpers.updateLoopConfig(page, {
+            enabled: false,
+          });
         },
-        { timeout: 10000 }
+        { loopEnabled: false }
       );
 
-      // Test disabling loop
-      await page.evaluate(() => {
-        const engine = window.kineticSlider?.engine as EngineWithManagers & {
-          loopManager?: {
-            updateConfig: (config: {
-              enabled: boolean;
-              mode?: string;
-              useVirtualSlides?: boolean;
-            }) => void;
-            getConfig?: () => { mode?: string };
-          };
-        };
-        const loopManager = engine?.loopManager;
-        if (loopManager) {
-          loopManager.updateConfig({ enabled: false });
-        }
-      });
+      expect(disabled).toBe(true);
 
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      // Navigate to last slide
+      await NavigationHelpers.navigateToLast(page);
 
-      // Get initial slide info
-      const initialInfo = await page.evaluate(() => {
-        const engine = window.kineticSlider?.engine as
-          | EngineWithManagers
-          | undefined;
-        return {
-          current: engine?.getCurrentIndex?.() ?? 0,
-          total: engine?.getTotalSlides?.() ?? 5,
-        };
-      });
-
-      // Navigate to last slide using direct API instead of keyboard for reliability
-      const lastSlideIndex = initialInfo.total - 1;
-      await page.evaluate((targetIndex) => {
-        const engine = window.kineticSlider?.engine as
-          | EngineWithManagers
-          | undefined;
-        if (engine?.goToSlide) {
-          return engine.goToSlide(targetIndex, false); // No animation for speed
-        }
-      }, lastSlideIndex);
-
-      await page.waitForTimeout(500);
-
-      const lastIndex = await getCurrentSlideIndex(page);
-      const totalSlides = await getTotalSlides(page);
-
-      // Verify we're at the last slide
-      if (lastIndex !== lastSlideIndex) {
-        console.log(
-          `Failed to navigate to last slide. Expected: ${lastSlideIndex}, Got: ${lastIndex}`
-        );
-        // If we can't navigate to last slide, test basic functionality instead
-        expect(lastIndex).toBeGreaterThanOrEqual(0);
-        expect(totalSlides).toBeGreaterThan(0);
-        return; // Skip rest of test if navigation isn't working
-      }
-
-      // Try to go forward (should not loop)
+      // Try to navigate forward (should not loop)
       await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(config.mediumPause);
 
-      const afterForward = await getCurrentSlideIndex(page);
-
-      // Should still be at last slide (no loop)
-      expect(afterForward).toBe(lastIndex);
-      expect(afterForward).toBe((totalSlides || 5) - 1);
+      // Should still be at last slide
+      const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      const totalSlides = await SliderStateHelpers.getTotalSlides(page);
+      expect(currentIndex).toBe((totalSlides || 0) - 1);
     });
 
-    test('should handle rapid direction changes', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+    test('should switch between loop modes dynamically', async ({ page }) => {
+      // Start with infinite loop
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
+      });
 
-      // Rapid alternating navigation
-      for (let i = 0; i < 5; i++) {
-        await page.keyboard.press('ArrowRight');
-        await page.waitForTimeout(50);
-        await page.keyboard.press('ArrowLeft');
-        await page.waitForTimeout(50);
-      }
+      // Verify infinite loop works
+      await NavigationHelpers.navigateToLast(page);
+      await NavigationHelpers.navigateNext(page);
 
-      // Slider should still be functional
-      const currentIndex = await getCurrentSlideIndex(page);
-      expect(typeof currentIndex).toBe('number');
-      expect(currentIndex).toBeGreaterThanOrEqual(0);
+      let currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(currentIndex).toBe(0);
+
+      // Switch to disabled
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: false,
+      });
+
+      // Wait for config change
+      await StateSynchronizer.waitForLoopConfiguration(page, false);
+
+      // Navigate to last and try to go forward
+      await NavigationHelpers.navigateToLast(page);
+      await page.keyboard.press('ArrowRight');
+      await page.waitForTimeout(config.mediumPause);
+
+      // Should stay at last
+      const totalSlides = await SliderStateHelpers.getTotalSlides(page);
+      currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(currentIndex).toBe((totalSlides || 0) - 1);
+    });
+
+    test('should persist loop configuration across navigation methods', async ({
+      page,
+    }) => {
+      // Enable loop
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
+      });
+
+      // Test with keyboard navigation
+      await NavigationHelpers.navigateToLast(page, { method: 'keyboard' });
+      await NavigationHelpers.navigateNext(page, { method: 'keyboard' });
+
+      let currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(currentIndex).toBe(0);
+
+      // Test with API navigation
+      await NavigationHelpers.navigateToLast(page, { method: 'api' });
+      await NavigationHelpers.navigateNext(page, { method: 'api' });
+
+      currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(currentIndex).toBe(0);
+
+      // Test with button navigation if available
+      await NavigationHelpers.navigateToLast(page, { method: 'button' });
+      await NavigationHelpers.navigateNext(page, { method: 'button' });
+
+      currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      expect(currentIndex).toBe(0);
     });
   });
 
-  test.describe('Virtual Slides', () => {
-    test('should create virtual slides when enabled', async ({ page }) => {
-      // Enable virtual slides
-      const virtualSlidesEnabled = await page.evaluate(() => {
-        const engine = window.kineticSlider?.engine as EngineWithManagers & {
-          loopManager?: {
-            updateConfig: (config: {
-              enabled: boolean;
-              mode?: string;
-              useVirtualSlides?: boolean;
-            }) => void;
-            getConfig?: () => { mode?: string };
-          };
-        };
-        const loopManager = engine?.loopManager;
-        if (loopManager) {
-          loopManager.updateConfig({
+  test.describe('Loop with Auto-Play', () => {
+    test('should loop continuously during auto-play', async ({ page }) => {
+      // Enable loop and start auto-play
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
+      });
+
+      // Set faster interval for testing
+      await AutoPlayHelpers.setAutoPlayInterval(page, 1000);
+
+      // Start auto-play
+      const started = await AutoPlayHelpers.startAutoPlay(page);
+      expect(started).toBe(true);
+
+      // Wait for at least one full cycle
+      const cycleCompleted = await AutoPlayHelpers.waitForAutoPlayCycle(page, {
+        expectedCycles: 1,
+        timeoutMs: 20000,
+      });
+
+      expect(cycleCompleted).toBe(true);
+
+      // Stop auto-play
+      await AutoPlayHelpers.stopAutoPlay(page);
+    });
+
+    test('should stop at boundaries when loop is disabled during auto-play', async ({
+      page,
+    }) => {
+      // Disable loop
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: false,
+      });
+
+      // Navigate near the end
+      const totalSlides = await SliderStateHelpers.getTotalSlides(page);
+      if (totalSlides && totalSlides > 2) {
+        await NavigationHelpers.navigateToSlide(page, totalSlides - 2);
+      }
+
+      // Start auto-play
+      await AutoPlayHelpers.startAutoPlay(page);
+
+      // Wait for auto-play to reach the end
+      await page.waitForTimeout(config.longPause * 3);
+
+      // Should be stopped at last slide
+      const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+      const isPlaying = await SliderStateHelpers.isPlaying(page);
+
+      expect(currentIndex).toBe((totalSlides || 0) - 1);
+      expect(isPlaying).toBe(false);
+    });
+  });
+
+  test.describe('Virtual Slides Management', () => {
+    test('should create virtual slides for smooth loop transitions', async ({
+      page,
+    }) => {
+      // Enable loop with virtual slides
+      await page.evaluate(() => {
+        const engine = (window as any).kineticSlider?.engine;
+        if (engine?.loopManager) {
+          engine.loopManager.updateConfig({
             enabled: true,
             mode: 'infinite',
             useVirtualSlides: true,
           });
-          return true;
         }
-        return false;
       });
 
-      if (virtualSlidesEnabled) {
-        // Trigger virtual slide creation by navigating
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+      // Wait for configuration
+      await page.waitForTimeout(config.mediumPause);
 
-        await page.keyboard.press('ArrowRight');
-        await page.waitForTimeout(300);
+      // Check for virtual slide creation
+      const hasVirtualSlides = await page.evaluate(() => {
+        const engine = (window as any).kineticSlider?.engine;
+        return engine?.loopManager?.hasVirtualSlides?.() || false;
+      });
 
-        // Check if virtual slides were created
-        const hasVirtualSlides = await page.evaluate(() => {
-          const engine = window.kineticSlider?.engine as EngineWithManagers & {
-            loopManager?: {
-              updateConfig: (config: {
-                enabled: boolean;
-                mode?: string;
-                useVirtualSlides?: boolean;
-              }) => void;
-              getConfig?: () => { mode?: string };
-            };
-          };
-          const loopManager = engine?.loopManager;
-          const virtualSlides = loopManager?.getVirtualSlides?.();
-          return Array.isArray(virtualSlides) && virtualSlides.length > 0;
+      // Virtual slides may not be implemented in all configurations
+      if (hasVirtualSlides) {
+        // Navigate through loop boundary
+        await NavigationHelpers.navigateToLast(page);
+        await NavigationHelpers.navigateNext(page);
+
+        // Should have smooth transition
+        const currentIndex =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
+        expect(currentIndex).toBe(0);
+      }
+    });
+
+    test('should maintain performance with loop enabled', async ({ page }) => {
+      // Enable loop
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
+      });
+
+      // Perform multiple loop transitions
+      const startTime = Date.now();
+      const iterations = 10;
+
+      for (let i = 0; i < iterations; i++) {
+        await NavigationHelpers.navigateNext(page, {
+          waitForTransition: false,
+        });
+        await page.waitForTimeout(config.shortPause);
+      }
+
+      const elapsedTime = Date.now() - startTime;
+      const averageTime = elapsedTime / iterations;
+
+      // Average transition should be reasonably fast
+      expect(averageTime).toBeLessThan(500);
+
+      // Slider should still be functional
+      const state = await SliderStateHelpers.getSliderState(page);
+      expect(state).not.toBeNull();
+      expect(state?.isInitialized).toBe(true);
+    });
+  });
+
+  test.describe('Edge Cases', () => {
+    test('should handle loop with single slide', async ({ page }) => {
+      // This test would need a special setup with single slide
+      // Skip if not applicable
+      const totalSlides = await SliderStateHelpers.getTotalSlides(page);
+
+      if (totalSlides === 1) {
+        // Enable loop
+        await SliderStateHelpers.updateLoopConfig(page, {
+          enabled: true,
+          mode: 'infinite',
         });
 
-        // Virtual slides feature might not be fully implemented yet
-        expect(typeof hasVirtualSlides).toBe('boolean');
+        // Try to navigate (should stay on same slide)
+        await NavigationHelpers.navigateNext(page);
+
+        const currentIndex =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
+        expect(currentIndex).toBe(0);
+      } else {
+        test.skip();
       }
     });
-  });
 
-  test.describe('Loop Events', () => {
-    test('should emit loop events', async ({ page }) => {
-      // Set up event tracking
-      await page.evaluate(() => {
-        (window as { loopEvents?: string[] }).loopEvents = [];
-        const engine = window.kineticSlider?.engine as EngineWithManagers & {
-          loopManager?: {
-            updateConfig: (config: {
-              enabled: boolean;
-              mode?: string;
-              useVirtualSlides?: boolean;
-            }) => void;
-            on?: (event: string, handler: () => void) => void;
-            getVirtualSlides?: () => unknown[];
-          };
-        };
-        const loopManager = engine?.loopManager;
-        if (loopManager && loopManager.on) {
-          loopManager.on('loop:forward', () => {
-            const win = window as { loopEvents?: string[] };
-            win.loopEvents?.push('forward');
-          });
-          loopManager.on('loop:backward', () => {
-            const win = window as { loopEvents?: string[] };
-            win.loopEvents?.push('backward');
-          });
-        }
+    test('should handle loop configuration changes during transitions', async ({
+      page,
+    }) => {
+      // Enable loop
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: true,
+        mode: 'infinite',
       });
 
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      // Start navigation
+      await NavigationHelpers.navigateToLast(page);
 
-      // Navigate to trigger loop events
-      await page.keyboard.press('End');
-      await page.waitForTimeout(300);
-      await page.keyboard.press('ArrowRight'); // Should trigger forward loop
-      await page.waitForTimeout(300);
+      // Start transition and immediately disable loop
+      const navigationPromise = NavigationHelpers.navigateNext(page, {
+        waitForTransition: false,
+      });
 
-      await page.keyboard.press('Home');
-      await page.waitForTimeout(300);
-      await page.keyboard.press('ArrowLeft'); // Should trigger backward loop
-      await page.waitForTimeout(300);
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: false,
+      });
 
-      const events = await page.evaluate(
-        () => (window as { loopEvents?: string[] }).loopEvents
-      );
+      await navigationPromise;
+      await page.waitForTimeout(config.mediumPause);
 
-      // Events might not fire in all browser contexts
-      if (Array.isArray(events)) {
-        expect(events.length).toBeGreaterThanOrEqual(0);
-      }
-    });
-  });
-
-  test.describe('Loop Performance', () => {
-    test('should maintain smooth performance during rapid looping', async ({
-      page,
-    }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
-
-      const startTime = Date.now();
-
-      // Rapid navigation to test performance
-      // Reduced iterations for more stable CI performance
-      for (let i = 0; i < 15; i++) {
-        await page.keyboard.press('ArrowRight');
-        await page.waitForTimeout(100); // Increased timeout for stability
-      }
-
-      const endTime = Date.now();
-      const duration = endTime - startTime;
-
-      // CI runners are slower, so use more realistic threshold
-      const timeThreshold = process.env.CI ? 25000 : 10000; // Increased thresholds
-      expect(duration).toBeLessThan(timeThreshold);
-
-      // System should still be responsive
-      await expect(_slider).toBeVisible();
-    });
-  });
-
-  test.describe('Accessibility with Loop', () => {
-    test('should announce loop transitions to screen readers', async ({
-      page,
-    }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const liveRegion = page.locator('#slider-announcements[aria-live]');
-
-      // Check for proper ARIA attributes on the live region
-      const ariaLive = await liveRegion.getAttribute('aria-live');
-      expect(['polite', 'assertive', 'off']).toContain(ariaLive);
-
-      // Navigate to trigger loop
-      await _slider.focus();
-      await page.keyboard.press('End');
-      await page.waitForTimeout(300);
-      await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(300);
-
-      // Check if current value was updated on slider
-      const ariaValueNow = await _slider.getAttribute('aria-valuenow');
-      expect(ariaValueNow).toBeTruthy();
-
-      // Check if announcement was made
-      const announcement = await liveRegion.textContent();
-      expect(announcement).toBeTruthy();
+      // Should handle gracefully
+      const state = await SliderStateHelpers.getSliderState(page);
+      expect(state).not.toBeNull();
+      expect(state?.isInitialized).toBe(true);
     });
   });
 });

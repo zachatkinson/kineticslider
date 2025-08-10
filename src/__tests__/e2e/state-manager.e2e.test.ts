@@ -7,137 +7,21 @@
  * @version 1.0.0
  */
 
-import { test, expect, type Page } from '@playwright/test';
-import { navigateAndWait } from './utils';
+import { test, expect } from '@playwright/test';
+import {
+  NavigationHelpers,
+  SliderStateHelpers,
+  AutoPlayHelpers,
+} from './helpers';
 
 // Reduce timeout for state management tests to prevent CI timeouts
 test.describe.configure({ mode: 'serial', timeout: 45000 });
 
-// Helper functions to reduce duplication and avoid browser context issues
-async function getCurrentSlideIndex(page: Page): Promise<number | null> {
-  try {
-    return await page.evaluate(
-      () =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.() ?? null
-    );
-  } catch {
-    return null;
-  }
-}
-
-async function waitForSlideChange(
-  page: Page,
-  fromIndex: number | null
-): Promise<number | null> {
-  try {
-    const result = await page.waitForFunction(
-      (initialIndex) => {
-        const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
-          | undefined;
-        const currentIndex = engine?.getCurrentIndex?.();
-        return currentIndex !== undefined && currentIndex !== initialIndex
-          ? currentIndex
-          : null;
-      },
-      fromIndex,
-      { timeout: 3000 }
-    );
-    return await result.jsonValue();
-  } catch {
-    return await getCurrentSlideIndex(page);
-  }
-}
-
-async function waitForPlayState(
-  page: Page,
-  expectedPlaying: boolean
-): Promise<boolean> {
-  try {
-    const result = await page.waitForFunction(
-      (playing: boolean) => {
-        const engine = window.kineticSlider?.engine as
-          | KineticSliderEngine
-          | undefined;
-        return engine?.isPlaying?.() === playing;
-      },
-      expectedPlaying,
-      { timeout: 3000 }
-    );
-    return await result.jsonValue();
-  } catch {
-    return false;
-  }
-}
-
-async function navigateAndWaitForSlide(
-  page: Page,
-  key: string
-): Promise<number | null> {
-  const initialIndex = await getCurrentSlideIndex(page);
-  await page.keyboard.press(key);
-  return await waitForSlideChange(page, initialIndex);
-}
-
-async function tryStartAutoPlay(page: Page): Promise<boolean> {
-  // Try spacebar first
-  await page.keyboard.press('Space');
-  if (await waitForPlayState(page, true)) {
-    return true;
-  }
-
-  // Try play button if spacebar didn't work
-  const playPauseButton = page.locator('#play-pause-btn');
-  if ((await playPauseButton.count()) > 0) {
-    await playPauseButton.click();
-    if (await waitForPlayState(page, true)) {
-      return true;
-    }
-  }
-
-  // Try programmatic start as last resort
-  await page.evaluate(() => {
-    const engine = window.kineticSlider?.engine as
-      | KineticSliderEngine
-      | undefined;
-    engine?.play?.();
-  });
-
-  return await waitForPlayState(page, true);
-}
-
-async function tryStopAutoPlay(page: Page): Promise<boolean> {
-  // Try spacebar first
-  await page.keyboard.press('Space');
-  if (await waitForPlayState(page, false)) {
-    return true;
-  }
-
-  // Try play button if spacebar didn't work
-  const playPauseButton = page.locator('#play-pause-btn');
-  if ((await playPauseButton.count()) > 0) {
-    await playPauseButton.click();
-    if (await waitForPlayState(page, false)) {
-      return true;
-    }
-  }
-
-  // Try programmatic stop as last resort
-  await page.evaluate(() => {
-    const engine = window.kineticSlider?.engine as
-      | KineticSliderEngine
-      | undefined;
-    engine?.pause?.();
-  });
-
-  return await waitForPlayState(page, false);
-}
-
 test.describe('StateManager E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await navigateAndWait(page);
+    await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+      waitForSlider: true,
+    });
   });
 
   test.describe('State Synchronization', () => {
@@ -147,10 +31,12 @@ test.describe('StateManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      const initialIndex = await getCurrentSlideIndex(page);
+      const initialIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate to slide 2 using helper function
-      const slideIndex = await navigateAndWaitForSlide(page, 'ArrowRight');
+      await page.keyboard.press('ArrowRight');
+      await page.waitForTimeout(300);
+      const slideIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Check if navigation is working
       if (
@@ -196,7 +82,7 @@ test.describe('StateManager E2E Tests', () => {
       await _slider.focus();
 
       // Start auto-play using helper function
-      const autoPlayStarted = await tryStartAutoPlay(page);
+      const autoPlayStarted = await AutoPlayHelpers.startAutoPlay(page);
 
       if (autoPlayStarted) {
         // Check play button state (if it exists)
@@ -223,17 +109,12 @@ test.describe('StateManager E2E Tests', () => {
         }
 
         // Verify through engine state as fallback
-        const enginePlaying = await page.evaluate(() => {
-          const engine = window.kineticSlider?.engine as
-            | KineticSliderEngine
-            | undefined;
-          return engine?.isPlaying?.();
-        });
+        const enginePlaying = await SliderStateHelpers.isPlaying(page);
 
         expect(enginePlaying).toBe(true);
 
         // Stop auto-play using helper function
-        const autoPlayStopped = await tryStopAutoPlay(page);
+        const autoPlayStopped = await AutoPlayHelpers.stopAutoPlay(page);
 
         if (autoPlayStopped) {
           // Check indicators after stopping (if they exist)
@@ -246,12 +127,7 @@ test.describe('StateManager E2E Tests', () => {
           }
 
           // Verify through engine state as fallback
-          const finalEngineState = await page.evaluate(() => {
-            const engine = window.kineticSlider?.engine as
-              | KineticSliderEngine
-              | undefined;
-            return engine?.isPlaying?.();
-          });
+          const finalEngineState = await SliderStateHelpers.isPlaying(page);
 
           expect(finalEngineState).toBe(false);
         }
@@ -309,26 +185,16 @@ test.describe('StateManager E2E Tests', () => {
         const _slider = page.locator('[data-testid="kinetic-slider"]');
         await _slider.focus();
 
-        const initialIndex = await page
-          .evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          )
-          .catch(() => 0);
+        const initialIndex =
+          (await SliderStateHelpers.getCurrentSlideIndex(page)) || 0;
 
         // Very limited navigation to test consistency without overloading browser
         let finalIndex = initialIndex;
         try {
           await page.keyboard.press('ArrowRight');
           await page.waitForTimeout(200);
-          finalIndex = await page
-            .evaluate(() =>
-              (
-                window.kineticSlider?.engine as KineticSliderEngine | undefined
-              )?.getCurrentIndex?.()
-            )
-            .catch(() => 0);
+          finalIndex =
+            (await SliderStateHelpers.getCurrentSlideIndex(page)) || 0;
         } catch {
           // Intentionally empty
         }
@@ -356,32 +222,22 @@ test.describe('StateManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
-      const initialIndex = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const initialIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate to specific slide
       await page.keyboard.press('Digit3'); // Go to slide 3
       await page.waitForTimeout(500);
 
-      const slideIndex = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const slideIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Refresh page
       await page.reload();
-      await navigateAndWait(page);
+      await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+        waitForSlider: true,
+      });
 
       // Check if position was restored
-      const restoredIndex = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const restoredIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Check if navigation worked before refresh
       if (slideIndex !== undefined && slideIndex !== initialIndex) {
@@ -404,7 +260,9 @@ test.describe('StateManager E2E Tests', () => {
 
       // Refresh page
       await page.reload();
-      await navigateAndWait(page);
+      await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+        waitForSlider: true,
+      });
 
       // Check if auto-play preference was restored
       const playButton = page.locator('[data-testid="play-button"]');
@@ -431,7 +289,11 @@ test.describe('StateManager E2E Tests', () => {
 
         // Refresh page
         await page.reload();
-        await navigateAndWait(page);
+        await NavigationHelpers.navigateAndWait(
+          page,
+          'http://localhost:5188/',
+          { waitForSlider: true }
+        );
 
         // Check if setting was persisted
         const restoredToggle = page.locator(
@@ -484,13 +346,8 @@ test.describe('StateManager E2E Tests', () => {
         await expect(currentSlide).toBeVisible();
       } else {
         // If currentSlide doesn't exist, test that basic functionality still works
-        const slideIndex = await page
-          .evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          )
-          .catch(() => 0);
+        const slideIndex =
+          (await SliderStateHelpers.getCurrentSlideIndex(page)) || 0;
         expect(slideIndex).toBeGreaterThanOrEqual(0);
       }
     });
@@ -604,11 +461,8 @@ test.describe('StateManager E2E Tests', () => {
         const _slider = page.locator('[data-testid="kinetic-slider"]');
         await _slider.focus();
 
-        const initialIndex = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const initialIndex =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Rapid navigation that would trigger multiple announcements
         await page.keyboard.press('ArrowRight');
@@ -617,11 +471,7 @@ test.describe('StateManager E2E Tests', () => {
         await page.keyboard.press('Space'); // Pause
         await page.waitForTimeout(1000);
 
-        const finalIndex = await page.evaluate(() =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.()
-        );
+        const finalIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Should handle gracefully without overwhelming screen readers
         const content = await announcement.textContent();
@@ -872,7 +722,9 @@ test.describe('StateManager E2E Tests', () => {
 
       // Reload and check that it recovers
       await page.reload();
-      await navigateAndWait(page);
+      await NavigationHelpers.navigateAndWait(page, 'http://localhost:5188/', {
+        waitForSlider: true,
+      });
 
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await expect(_slider).toBeVisible();
@@ -998,13 +850,8 @@ test.describe('StateManager E2E Tests', () => {
         await _slider.focus();
 
         // Test basic state handling without complex operations
-        const initialIndex = await page
-          .evaluate(() =>
-            (
-              window.kineticSlider?.engine as KineticSliderEngine | undefined
-            )?.getCurrentIndex?.()
-          )
-          .catch(() => 0);
+        const initialIndex =
+          (await SliderStateHelpers.getCurrentSlideIndex(page)) || 0;
 
         // Just verify that state is valid and system is stable
         expect(initialIndex).toBeGreaterThanOrEqual(0);
@@ -1015,13 +862,8 @@ test.describe('StateManager E2E Tests', () => {
 
         // Test minimal state operation
         try {
-          const currentIndex = await page
-            .evaluate(() =>
-              (
-                window.kineticSlider?.engine as KineticSliderEngine | undefined
-              )?.getCurrentIndex?.()
-            )
-            .catch(() => 0);
+          const currentIndex =
+            (await SliderStateHelpers.getCurrentSlideIndex(page)) || 0;
           expect(currentIndex).toBeGreaterThanOrEqual(0);
         } catch {
           // Intentionally empty
@@ -1067,12 +909,7 @@ test.describe('StateManager E2E Tests', () => {
       await page.waitForTimeout(500);
 
       // Get initial state
-      await page.evaluate(
-        () =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.() || 0
-      );
+      await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Perform sequential state updates instead of concurrent to avoid race conditions
       await page.keyboard.press('ArrowRight');
@@ -1082,23 +919,15 @@ test.describe('StateManager E2E Tests', () => {
       await page.waitForTimeout(200);
 
       // Check that system is still stable after multiple updates
-      const finalIndex = await page.evaluate(
-        () =>
-          (
-            window.kineticSlider?.engine as KineticSliderEngine | undefined
-          )?.getCurrentIndex?.() || 0
-      );
+      const finalIndex =
+        (await SliderStateHelpers.getCurrentSlideIndex(page)) || 0;
 
       // System should still be functional
       expect(typeof finalIndex).toBe('number');
       await page.waitForTimeout(300);
 
       // Should resolve to consistent state
-      const slideIndex = await page.evaluate(() =>
-        (
-          window.kineticSlider?.engine as KineticSliderEngine | undefined
-        )?.getCurrentIndex?.()
-      );
+      const slideIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
       expect(slideIndex).toBeGreaterThanOrEqual(0);
 
       // All UI elements should be in sync
