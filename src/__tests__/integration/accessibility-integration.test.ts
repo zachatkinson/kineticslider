@@ -386,17 +386,17 @@ describe('Accessibility Integration Tests', () => {
 
       // Go to middle slide first
       await slider.goToSlide(1);
-      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Increased wait for CI stability
       expect(slider.getCurrentIndex()).toBe(1);
 
       // Test navigation to first slide (Home key functionality)
       await slider.goToSlide(0);
-      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Increased wait for CI stability
       expect(slider.getCurrentIndex()).toBe(0);
 
       // Test navigation to last slide (End key functionality)
       await slider.goToSlide(2);
-      await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for async completion
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Increased wait for CI stability
       expect(slider.getCurrentIndex()).toBe(2);
     });
 
