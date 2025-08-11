@@ -444,6 +444,7 @@ export class AutoPlayHelpers {
 
   /**
    * Wait for auto-play to complete a full cycle
+   * Enhanced cycle detection that's more robust against timing issues
    */
   static async waitForAutoPlayCycle(
     page: Page,
@@ -463,29 +464,67 @@ export class AutoPlayHelpers {
       const startIndex = initialState.currentIndex;
       const totalSlides = initialState.totalSlides;
       let cyclesCompleted = 0;
-      let lastIndex = startIndex;
+      let hasSeenLastSlide = false;
+      let hasSeenFirstSlide = startIndex === 0; // Track if we started at first slide
 
       const startTime = Date.now();
 
+      console.info(
+        `[AutoPlayHelpers] Starting cycle detection from index ${startIndex} of ${totalSlides} slides`
+      );
+
       while (Date.now() - startTime < timeout) {
-        await page.waitForTimeout(config.mediumPause);
+        // Use shorter polling interval for better detection accuracy
+        await page.waitForTimeout(config.shortPause);
 
         const currentState = await StateSynchronizer.getEngineState(page);
-        if (!currentState || !currentState.isPlaying) return false;
+        if (!currentState || !currentState.isPlaying) {
+          console.warn(
+            '[AutoPlayHelpers] Auto-play stopped or state unavailable during cycle wait'
+          );
+          return false;
+        }
 
         const currentIndex = currentState.currentIndex;
 
-        // Detect cycle completion
-        if (lastIndex === totalSlides - 1 && currentIndex === 0) {
-          cyclesCompleted++;
-          if (cyclesCompleted >= expectedCycles) {
-            return true;
+        // Track when we've seen the last slide
+        if (currentIndex === totalSlides - 1) {
+          if (!hasSeenLastSlide) {
+            console.info(
+              `[AutoPlayHelpers] Reached last slide (${currentIndex})`
+            );
           }
+          hasSeenLastSlide = true;
         }
 
-        lastIndex = currentIndex;
+        // Detect cycle completion: we've seen the last slide and now we're at first slide
+        if (hasSeenLastSlide && currentIndex === 0) {
+          if (!hasSeenFirstSlide) {
+            cyclesCompleted++;
+            hasSeenFirstSlide = true;
+            console.info(
+              `[AutoPlayHelpers] Cycle ${cyclesCompleted} completed (looped back to first slide)`
+            );
+
+            if (cyclesCompleted >= expectedCycles) {
+              console.info(
+                `[AutoPlayHelpers] All ${expectedCycles} cycles completed successfully`
+              );
+              return true;
+            }
+
+            // Reset for next cycle
+            hasSeenLastSlide = false;
+          }
+        } else if (currentIndex !== 0) {
+          // Reset first slide flag when we move away from first slide
+          hasSeenFirstSlide = false;
+        }
       }
 
+      console.warn(
+        `[AutoPlayHelpers] Timeout waiting for ${expectedCycles} cycles (completed: ${cyclesCompleted})`
+      );
       return false;
     } catch (error) {
       console.error('[AutoPlayHelpers] Cycle wait failed:', error);
