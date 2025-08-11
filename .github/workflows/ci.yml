@@ -284,9 +284,10 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report-${{ steps.artifact-name.outputs.name }}
+          name: playwright-report-${{ github.run_id }}-${{ steps.artifact-name.outputs.name }}
           path: playwright-report/
           retention-days: 30
+          if-no-files-found: ignore
 
       - name: 📊 Collect E2E coverage data
         run: pnpm exec tsx scripts/collect-e2e-coverage.ts
@@ -295,11 +296,12 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-coverage-${{ steps.artifact-name.outputs.name }}
+          name: e2e-coverage-${{ github.run_id }}-${{ steps.artifact-name.outputs.name }}
           path: |
             coverage/.nyc_output/
             coverage/e2e-coverage.json
           retention-days: 1
+          if-no-files-found: ignore
 
   # 📊 Merge Coverage Reports (runs after all E2E shards complete)
   coverage-merge:
