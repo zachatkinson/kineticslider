@@ -426,10 +426,12 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     });
 
     // Start auto-play through AutoPlayManager FIRST
-    // StateManager will be updated automatically via event listener
     this.autoPlayManager.start(async (): Promise<void> => {
       await this.nextSlide();
     });
+
+    // Update StateManager immediately to ensure synchronous state consistency
+    this.stateManager.updateState({ isPlaying: true }, 'manual-play');
 
     // Update controller state
     if (this.controller) {
@@ -448,9 +450,11 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       return;
     }
 
-    // Pause auto-play through AutoPlayManager FIRST (emits PLAY_PAUSED)
-    // StateManager will be updated automatically via event listener
+    // Pause auto-play through AutoPlayManager FIRST
     this.autoPlayManager.pause();
+
+    // Update StateManager immediately to ensure synchronous state consistency
+    this.stateManager.updateState({ isPlaying: false }, 'manual-pause');
 
     // Update controller state
     if (this.controller) {
