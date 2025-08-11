@@ -49,6 +49,8 @@ import {
 } from '../managers/navigation-manager';
 import { LoopManager, LoopMode } from '../managers/loop-manager';
 import { AccessibilityManager } from '../accessibility/accessibility-manager';
+import { AnimationManager } from '../managers/animation-manager';
+import { PerformanceMonitor } from '../managers/performance-monitor';
 
 /**
  * Main slider component providing essential functionality
@@ -65,6 +67,8 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private navigationManager: NavigationManager;
   private loopManager: LoopManager;
   private accessibilityManager: AccessibilityManager;
+  private animationManager: AnimationManager;
+  private performanceMonitor: PerformanceMonitor;
 
   // Service dependencies
   private physics: ISliderPhysics | null = null;
@@ -101,6 +105,8 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     this.loopManager = new LoopManager();
     // AccessibilityManager will be initialized properly in configureManagers with correct config
     this.accessibilityManager = new AccessibilityManager();
+    this.animationManager = new AnimationManager();
+    this.performanceMonitor = new PerformanceMonitor();
 
     // Initialize filter system
     this.effectPresets = new AdvancedFilterPresets();
@@ -779,6 +785,21 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
    */
   getRenderer(): ISliderRenderer | null {
     return this.renderer;
+  }
+
+  /**
+   * Get managers for testing and advanced operations
+   */
+  getManagers() {
+    return {
+      stateManager: this.stateManager,
+      autoPlayManager: this.autoPlayManager,
+      navigationManager: this.navigationManager,
+      loopManager: this.loopManager,
+      accessibilityManager: this.accessibilityManager,
+      animationManager: this.animationManager,
+      performanceMonitor: this.performanceMonitor,
+    };
   }
 
   // =============================================================================

@@ -24,6 +24,15 @@ declare global {
   interface Window {
     kineticSlider: {
       engine: SliderEngine;
+      managers: {
+        stateManager: any;
+        autoPlayManager: any;
+        navigationManager: any;
+        loopManager: any;
+        accessibilityManager: any;
+        animationManager: any;
+        performanceMonitor: any;
+      };
       version: string;
     };
     kineticSliderConfig: {
@@ -681,6 +690,7 @@ function KineticSliderDemo(): JSX.Element {
         // Expose to window for E2E tests (CRITICAL)
         window.kineticSlider = {
           engine: slider,
+          managers: slider.getManagers(),
           version: KINETIC_SLIDER_VERSION,
         };
 
