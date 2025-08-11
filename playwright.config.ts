@@ -47,7 +47,10 @@ export default defineConfig({
   /* Report slow tests for optimization */
   reportSlowTests: { max: 10, threshold: 30000 },
 
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. 
+   * Auto-play policies have been configured per-browser to allow media auto-play without user interaction.
+   * This is essential for testing auto-play functionality in CI environments where user gestures are not available.
+   */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:3000',
@@ -83,6 +86,11 @@ export default defineConfig({
             '--disable-web-security',
             '--disable-features=TranslateUI',
             '--disable-ipc-flooding-protection',
+            // Auto-play policy override for media/animation testing
+            '--autoplay-policy=no-user-gesture-required',
+            '--allow-running-insecure-content',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
             // CI-specific args for Chromium
             ...(process.env.CI ? [
               '--disable-backgrounding-occluded-windows',
@@ -105,6 +113,13 @@ export default defineConfig({
             // Firefox-specific args (no --no-sandbox)
             '--disable-web-security',
           ],
+          firefoxUserPrefs: {
+            // Enable auto-play for media elements
+            'media.autoplay.default': 0, // 0 = Allow all, 1 = Block non-muted, 2 = Prompt
+            'media.autoplay.blocking_policy': 0,
+            'media.autoplay.allow-extension-background-pages': true,
+            'media.autoplay.enabled.user-gestures-needed': false,
+          },
         },
       },
     },
@@ -135,6 +150,10 @@ export default defineConfig({
             '--disable-web-security',
             '--disable-features=TranslateUI',
             '--disable-ipc-flooding-protection',
+            // Auto-play policy override for media/animation testing
+            '--autoplay-policy=no-user-gesture-required',
+            '--allow-running-insecure-content',
+            '--disable-features=VizDisplayCompositor',
             ...(process.env.CI ? [
               '--disable-backgrounding-occluded-windows',
               '--disable-renderer-backgrounding',
@@ -170,6 +189,10 @@ export default defineConfig({
             '--disable-web-security',
             '--disable-features=TranslateUI',
             '--disable-ipc-flooding-protection',
+            // Auto-play policy override for media/animation testing
+            '--autoplay-policy=no-user-gesture-required',
+            '--allow-running-insecure-content',
+            '--disable-features=VizDisplayCompositor',
             ...(process.env.CI ? [
               '--disable-backgrounding-occluded-windows',
               '--disable-renderer-backgrounding',
