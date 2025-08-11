@@ -277,6 +277,26 @@ export default defineConfig({
     },
 
     // =====================================================
+    // WEBKIT/SAFARI CROSS-BROWSER VALIDATION
+    // =====================================================
+    {
+      name: '🧭 WebKit Desktop Safari',
+      testMatch: [
+        '**/basic.test.ts',
+        '**/navigation-manager.e2e.test.ts',
+        '**/accessibility.test.ts',
+        '**/auto-play.e2e.test.ts',
+      ],
+      use: { 
+        ...devices['Desktop Safari'],
+        hasTouch: true,
+        launchOptions: {
+          // WebKit doesn't support browser launch arguments
+        },
+      },
+    },
+
+    // =====================================================
     // MOBILE TESTING
     // =====================================================
     {
@@ -300,6 +320,21 @@ export default defineConfig({
               '--disable-renderer-backgrounding',
             ] : []),
           ],
+        },
+      },
+    },
+
+    {
+      name: '📱 Mobile Safari',
+      testMatch: [
+        '**/basic.test.ts',
+        '**/navigation-swipe-gestures.e2e.test.ts',
+        '**/accessibility.test.ts',
+      ],
+      use: { 
+        ...devices['iPhone 12'],
+        launchOptions: {
+          // WebKit mobile doesn't support browser launch arguments
         },
       },
     },

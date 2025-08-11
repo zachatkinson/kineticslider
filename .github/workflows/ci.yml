@@ -201,7 +201,9 @@ jobs:
           - '🎨 Rendering & Performance'
           - '⚙️ Configuration & Errors'
           - '🦊 Firefox Cross-Browser'
+          - '🧭 WebKit Desktop Safari'
           - '📱 Mobile Chrome'
+          - '📱 Mobile Safari'
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
