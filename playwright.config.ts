@@ -76,45 +76,198 @@ export default defineConfig({
     timeout: process.env.CI ? 90000 : 60000,
   },
 
-  /* Configure projects for major browsers */
+  /* Configure descriptive E2E shard projects by feature area */
   projects: [
+    // =====================================================
+    // CORE FUNCTIONALITY TESTS
+    // =====================================================
     {
-      name: 'chromium',
+      name: '🎯 Core & Foundation',
+      testMatch: [
+        '**/basic.test.ts',
+        '**/slider-foundation.test.ts',
+        '**/slider-core.e2e.test.ts',
+        '**/complete-system.test.ts',
+      ],
       use: { 
         ...devices['Desktop Chrome'], 
         hasTouch: true,
         launchOptions: {
           args: [
-            // Essential CI flags
-            '--no-sandbox', // Required for CI environments
-            '--disable-dev-shm-usage', // Prevent memory issues in CI
-            '--disable-features=TranslateUI', // Reduce noise in tests
-            // Auto-play policy override for media/animation testing
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-features=TranslateUI',
             '--autoplay-policy=no-user-gesture-required',
-            // CI-specific performance args
             ...(process.env.CI ? [
               '--disable-backgrounding-occluded-windows',
               '--disable-renderer-backgrounding',
-              '--disable-field-trial-config',
-              '--disable-background-timer-throttling',
             ] : []),
           ],
         },
       },
     },
 
+    // =====================================================
+    // NAVIGATION & INTERACTION TESTS
+    // =====================================================
     {
-      name: 'firefox',
+      name: '🧭 Navigation & Input',
+      testMatch: [
+        '**/navigation-manager.e2e.test.ts',
+        '**/keyboard-navigation.e2e.test.ts',
+        '**/navigation-swipe-gestures.e2e.test.ts',
+      ],
+      use: { 
+        ...devices['Desktop Chrome'], 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-features=TranslateUI',
+            '--autoplay-policy=no-user-gesture-required',
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+            ] : []),
+          ],
+        },
+      },
+    },
+
+    // =====================================================
+    // AUTO-PLAY & STATE MANAGEMENT TESTS
+    // =====================================================
+    {
+      name: '⏯️ Auto-play & State',
+      testMatch: [
+        '**/auto-play.e2e.test.ts',
+        '**/state-manager.e2e.test.ts',
+        '**/loop-manager.e2e.test.ts',
+      ],
+      use: { 
+        ...devices['Desktop Chrome'], 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-features=TranslateUI',
+            '--autoplay-policy=no-user-gesture-required',
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+            ] : []),
+          ],
+        },
+      },
+    },
+
+    // =====================================================
+    // ACCESSIBILITY TESTS
+    // =====================================================
+    {
+      name: '♿ Accessibility & ARIA',
+      testMatch: [
+        '**/accessibility.test.ts',
+        '**/accessibility-comprehensive.e2e.test.ts',
+        '**/accessibility-coordination.e2e.ts',
+      ],
+      use: { 
+        ...devices['Desktop Chrome'], 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-features=TranslateUI',
+            '--autoplay-policy=no-user-gesture-required',
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+            ] : []),
+          ],
+        },
+      },
+    },
+
+    // =====================================================
+    // RENDERING & PERFORMANCE TESTS  
+    // =====================================================
+    {
+      name: '🎨 Rendering & Performance',
+      testMatch: [
+        '**/rendering-performance.e2e.ts',
+        '**/performance-monitor.e2e.test.ts',
+        '**/shader-manager.e2e.test.ts',
+        '**/physics-e2e.test.ts',
+      ],
+      use: { 
+        ...devices['Desktop Chrome'], 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-features=TranslateUI',
+            '--autoplay-policy=no-user-gesture-required',
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+            ] : []),
+          ],
+        },
+      },
+    },
+
+    // =====================================================
+    // CONFIGURATION & ERROR HANDLING TESTS
+    // =====================================================
+    {
+      name: '⚙️ Configuration & Errors',
+      testMatch: [
+        '**/configuration-system.e2e.test.ts',
+        '**/error-handling.test.ts',
+        '**/resource-loader.e2e.test.ts',
+        '**/filter-system-essential.e2e.test.ts',
+        '**/debug-console.test.ts',
+      ],
+      use: { 
+        ...devices['Desktop Chrome'], 
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-features=TranslateUI',
+            '--autoplay-policy=no-user-gesture-required',
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+            ] : []),
+          ],
+        },
+      },
+    },
+
+    // =====================================================
+    // CROSS-BROWSER VALIDATION (FIREFOX)
+    // =====================================================
+    {
+      name: '🦊 Firefox Cross-Browser',
+      testMatch: [
+        '**/basic.test.ts',
+        '**/auto-play.e2e.test.ts',
+        '**/navigation-manager.e2e.test.ts',
+        '**/accessibility.test.ts',
+      ],
       use: { 
         ...devices['Desktop Firefox'], 
         hasTouch: true,
         launchOptions: {
-          args: [
-            // Firefox args - minimal flags only
-          ],
+          args: [],
           firefoxUserPrefs: {
-            // Enable auto-play for media elements
-            'media.autoplay.default': 0, // 0 = Allow all, 1 = Block non-muted, 2 = Prompt
+            'media.autoplay.default': 0,
             'media.autoplay.blocking_policy': 0,
             'media.autoplay.allow-extension-background-pages': true,
             'media.autoplay.enabled.user-gestures-needed': false,
@@ -123,74 +276,28 @@ export default defineConfig({
       },
     },
 
-    // WebKit temporarily disabled due to libicudata.so.74 compatibility issues on ubuntu-22.04
-    // See: https://github.com/microsoft/playwright/issues/30368 
-    // TODO: Re-enable when Playwright WebKit supports Ubuntu 22.04 ICU libraries or move to ubuntu-24.04
-    // {
-    //   name: 'webkit',
-    //   use: { 
-    //     ...devices['Desktop Safari'], 
-    //     hasTouch: true,
-    //     launchOptions: {
-    //       // webkit doesn't support browser arguments - keep empty
-    //     },
-    //   },
-    // },
-
-    /* Test against mobile viewports. */
+    // =====================================================
+    // MOBILE TESTING
+    // =====================================================
     {
-      name: 'Mobile Chrome',
+      name: '📱 Mobile Chrome',
+      testMatch: [
+        '**/basic.test.ts',
+        '**/navigation-swipe-gestures.e2e.test.ts', 
+        '**/auto-play.e2e.test.ts',
+        '**/state-manager.e2e.test.ts',
+      ],
       use: { 
         ...devices['Pixel 5'],
         launchOptions: {
           args: [
-            // Essential CI flags for mobile testing
-            '--no-sandbox', // Required for CI environments
-            '--disable-dev-shm-usage', // Prevent memory issues in CI
-            '--disable-features=TranslateUI', // Reduce noise in tests
-            // Auto-play policy override for media/animation testing
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-features=TranslateUI',
             '--autoplay-policy=no-user-gesture-required',
             ...(process.env.CI ? [
               '--disable-backgrounding-occluded-windows',
               '--disable-renderer-backgrounding',
-              '--disable-field-trial-config',
-              '--disable-background-timer-throttling',
-            ] : []),
-          ],
-        },
-      },
-    },
-    // Mobile Safari temporarily disabled (also uses WebKit engine)
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { 
-    //     ...devices['iPhone 12'],
-    //     launchOptions: {
-    //       // webkit mobile doesn't support browser arguments - keep empty
-    //     },
-    //   },
-    // },
-
-    /* Test against installed browsers only */
-    {
-      name: 'Google Chrome',
-      use: { 
-        ...devices['Desktop Chrome'], 
-        channel: 'chrome', 
-        hasTouch: true,
-        launchOptions: {
-          args: [
-            // Essential CI flags
-            '--no-sandbox', // Required for CI environments
-            '--disable-dev-shm-usage', // Prevent memory issues in CI
-            '--disable-features=TranslateUI', // Reduce noise in tests
-            // Auto-play policy override for media/animation testing
-            '--autoplay-policy=no-user-gesture-required',
-            ...(process.env.CI ? [
-              '--disable-backgrounding-occluded-windows',
-              '--disable-renderer-backgrounding',
-              '--disable-field-trial-config',
-              '--disable-background-timer-throttling',
             ] : []),
           ],
         },
