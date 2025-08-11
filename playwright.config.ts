@@ -297,6 +297,36 @@ export default defineConfig({
     },
 
     // =====================================================
+    // MICROSOFT EDGE CROSS-BROWSER VALIDATION
+    // =====================================================
+    {
+      name: '🌐 Edge Cross-Browser',
+      testMatch: [
+        '**/basic.test.ts',
+        '**/auto-play.e2e.test.ts',
+        '**/navigation-manager.e2e.test.ts',
+        '**/accessibility.test.ts',
+      ],
+      use: { 
+        ...devices['Desktop Edge'],
+        channel: 'msedge', // Use stable Edge channel
+        hasTouch: true,
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-features=TranslateUI',
+            '--autoplay-policy=no-user-gesture-required',
+            ...(process.env.CI ? [
+              '--disable-backgrounding-occluded-windows',
+              '--disable-renderer-backgrounding',
+            ] : []),
+          ],
+        },
+      },
+    },
+
+    // =====================================================
     // MOBILE TESTING
     // =====================================================
     {
