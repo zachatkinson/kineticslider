@@ -147,6 +147,48 @@ export class NavigationHelpers {
   }
 
   /**
+   * Navigate to next slide using proper engine method (handles loop logic correctly)
+   */
+  private static async navigateNextViaEngine(page: Page): Promise<boolean> {
+    const result = await E2EErrorHandler.withContextProtection(
+      page,
+      async () => {
+        return await page.evaluate(() => {
+          const engine = (window as any).kineticSlider?.engine as SliderEngine;
+          if (engine?.nextSlide) {
+            engine.nextSlide();
+            return true;
+          }
+          return false;
+        });
+      },
+      false
+    );
+    return result || false;
+  }
+
+  /**
+   * Navigate to previous slide using proper engine method (handles loop logic correctly)
+   */
+  private static async navigatePreviousViaEngine(page: Page): Promise<boolean> {
+    const result = await E2EErrorHandler.withContextProtection(
+      page,
+      async () => {
+        return await page.evaluate(() => {
+          const engine = (window as any).kineticSlider?.engine as SliderEngine;
+          if (engine?.previousSlide) {
+            engine.previousSlide();
+            return true;
+          }
+          return false;
+        });
+      },
+      false
+    );
+    return result || false;
+  }
+
+  /**
    * Navigate to next slide
    */
   static async navigateNext(
@@ -156,13 +198,42 @@ export class NavigationHelpers {
       method?: 'keyboard' | 'button' | 'api';
     }
   ): Promise<boolean> {
+    // Default to 'api' method for better loop handling unless explicitly specified
+    const method = options?.method || 'api';
+
+    // For loop-aware navigation, use the engine's nextSlide method directly
+    // This ensures proper loop transition handling by the LoopManager
+    if (method === 'api') {
+      const success = await this.navigateNextViaEngine(page);
+
+      if (!success) {
+        return false;
+      }
+
+      // Wait for transition if requested
+      if (options?.waitForTransition) {
+        // Get the target index for transition waiting
+        const state = await StateSynchronizer.getEngineState(page);
+        if (state) {
+          const nextIndex = (state.currentIndex + 1) % state.totalSlides;
+          return await StateSynchronizer.waitForSlideTransition(
+            page,
+            nextIndex
+          );
+        }
+      }
+
+      return true;
+    }
+
+    // For other methods (keyboard, button), use the original index calculation
     const state = await StateSynchronizer.getEngineState(page);
     if (!state) return false;
 
     const nextIndex = (state.currentIndex + 1) % state.totalSlides;
     return this.navigateToSlide(page, nextIndex, {
       waitForTransition: options?.waitForTransition,
-      method: options?.method,
+      method: method,
     });
   }
 
@@ -176,6 +247,38 @@ export class NavigationHelpers {
       method?: 'keyboard' | 'button' | 'api';
     }
   ): Promise<boolean> {
+    // Default to 'api' method for better loop handling unless explicitly specified
+    const method = options?.method || 'api';
+
+    // For loop-aware navigation, use the engine's previousSlide method directly
+    // This ensures proper loop transition handling by the LoopManager
+    if (method === 'api') {
+      const success = await this.navigatePreviousViaEngine(page);
+
+      if (!success) {
+        return false;
+      }
+
+      // Wait for transition if requested
+      if (options?.waitForTransition) {
+        // Get the target index for transition waiting
+        const state = await StateSynchronizer.getEngineState(page);
+        if (state) {
+          const prevIndex =
+            state.currentIndex > 0
+              ? state.currentIndex - 1
+              : state.totalSlides - 1;
+          return await StateSynchronizer.waitForSlideTransition(
+            page,
+            prevIndex
+          );
+        }
+      }
+
+      return true;
+    }
+
+    // For other methods (keyboard, button), use the original index calculation
     const state = await StateSynchronizer.getEngineState(page);
     if (!state) return false;
 
@@ -184,7 +287,7 @@ export class NavigationHelpers {
 
     return this.navigateToSlide(page, prevIndex, {
       waitForTransition: options?.waitForTransition,
-      method: options?.method,
+      method: method,
     });
   }
 

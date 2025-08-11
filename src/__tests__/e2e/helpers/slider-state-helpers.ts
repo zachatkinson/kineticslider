@@ -346,10 +346,18 @@ export class SliderStateHelpers {
       async () => {
         return await page.evaluate((loopConfig) => {
           const engine = (window as any).kineticSlider?.engine as SliderEngine;
-          const loopManager = engine?.loopManager;
 
-          if (!loopManager?.updateConfig) return false;
+          // Use the proper getter method to access loopManager
+          const loopManager = engine?.getLoopManager?.();
 
+          if (!loopManager?.updateConfig) {
+            console.warn(
+              '[updateLoopConfig] loopManager.updateConfig not available'
+            );
+            return false;
+          }
+
+          console.info('[updateLoopConfig] Applying loop config:', loopConfig);
           loopManager.updateConfig(loopConfig);
           return true;
         }, config);

@@ -772,6 +772,13 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
   /**
+   * Get loop manager instance for testing and advanced operations
+   */
+  getLoopManager(): LoopManager {
+    return this.loopManager;
+  }
+
+  /**
    * Get renderer instance for advanced operations
    */
   getRenderer(): ISliderRenderer | null {
