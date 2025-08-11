@@ -904,7 +904,12 @@ function KineticSliderDemo(): JSX.Element {
           // Set baseline ARIA attributes that AccessibilityManager will enhance
           role="region"
           aria-label="Interactive image slider"
-          // Additional ARIA attributes (aria-valuenow, etc.) will be set by AccessibilityManager
+          aria-valuenow={String(state.currentIndex + 1)}
+          aria-valuemin="1"
+          aria-valuemax={String(state.totalSlides)}
+          aria-valuetext={`Slide ${state.currentIndex + 1} of ${state.totalSlides}`}
+          tabIndex={0}
+          // Additional ARIA attributes will be updated by AccessibilityManager
           style={{
             width: '100%',
             height: '400px',
