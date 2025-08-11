@@ -50,13 +50,17 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. 
    * Auto-play policies have been configured per-browser to allow media auto-play without user interaction.
    * This is essential for testing auto-play functionality in CI environments where user gestures are not available.
+   * Security: Uses minimal, targeted flags instead of --disable-web-security for better security posture.
    */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:3000',
 
-    /* Ignore HTTPS errors for local development */
+    /* Ignore HTTPS errors for local development only */
     ignoreHTTPSErrors: true,
+
+    /* Bypass CSP for testing dynamic content without disabling all security */
+    bypassCSP: true,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -81,17 +85,13 @@ export default defineConfig({
         hasTouch: true,
         launchOptions: {
           args: [
-            '--no-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-web-security',
-            '--disable-features=TranslateUI',
-            '--disable-ipc-flooding-protection',
+            // Essential CI flags
+            '--no-sandbox', // Required for CI environments
+            '--disable-dev-shm-usage', // Prevent memory issues in CI
+            '--disable-features=TranslateUI', // Reduce noise in tests
             // Auto-play policy override for media/animation testing
             '--autoplay-policy=no-user-gesture-required',
-            '--allow-running-insecure-content',
-            '--disable-web-security',
-            '--disable-features=VizDisplayCompositor',
-            // CI-specific args for Chromium
+            // CI-specific performance args
             ...(process.env.CI ? [
               '--disable-backgrounding-occluded-windows',
               '--disable-renderer-backgrounding',
@@ -110,8 +110,7 @@ export default defineConfig({
         hasTouch: true,
         launchOptions: {
           args: [
-            // Firefox-specific args (no --no-sandbox)
-            '--disable-web-security',
+            // Firefox args - minimal flags only
           ],
           firefoxUserPrefs: {
             // Enable auto-play for media elements
@@ -145,15 +144,12 @@ export default defineConfig({
         ...devices['Pixel 5'],
         launchOptions: {
           args: [
-            '--no-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-web-security',
-            '--disable-features=TranslateUI',
-            '--disable-ipc-flooding-protection',
+            // Essential CI flags for mobile testing
+            '--no-sandbox', // Required for CI environments
+            '--disable-dev-shm-usage', // Prevent memory issues in CI
+            '--disable-features=TranslateUI', // Reduce noise in tests
             // Auto-play policy override for media/animation testing
             '--autoplay-policy=no-user-gesture-required',
-            '--allow-running-insecure-content',
-            '--disable-features=VizDisplayCompositor',
             ...(process.env.CI ? [
               '--disable-backgrounding-occluded-windows',
               '--disable-renderer-backgrounding',
@@ -184,15 +180,12 @@ export default defineConfig({
         hasTouch: true,
         launchOptions: {
           args: [
-            '--no-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-web-security',
-            '--disable-features=TranslateUI',
-            '--disable-ipc-flooding-protection',
+            // Essential CI flags
+            '--no-sandbox', // Required for CI environments
+            '--disable-dev-shm-usage', // Prevent memory issues in CI
+            '--disable-features=TranslateUI', // Reduce noise in tests
             // Auto-play policy override for media/animation testing
             '--autoplay-policy=no-user-gesture-required',
-            '--allow-running-insecure-content',
-            '--disable-features=VizDisplayCompositor',
             ...(process.env.CI ? [
               '--disable-backgrounding-occluded-windows',
               '--disable-renderer-backgrounding',
