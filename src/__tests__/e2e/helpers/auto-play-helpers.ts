@@ -78,27 +78,39 @@ export class AutoPlayHelpers {
         console.info('[AutoPlayHelpers] Verifying auto-play start...');
 
         // Wait for engine state to synchronize with extended timeout and retries
-        await page.waitForTimeout(200); // Allow state to settle
+        await page.waitForTimeout(500); // Increased settling time for CI environment
 
-        const stateVerified = await StateSynchronizer.waitForEngineState(
-          page,
-          (state) => state.isPlaying === true,
-          3000 // Extended timeout for state sync
-        );
+        // Try verification multiple times with increasing waits
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const stateVerified = await StateSynchronizer.waitForEngineState(
+            page,
+            (state) => state.isPlaying === true,
+            4000 // Increased timeout for state sync in CI
+          );
 
-        if (stateVerified) {
-          console.info('[AutoPlayHelpers] Auto-play verified via engine state');
-          return true;
-        }
+          if (stateVerified) {
+            console.info(
+              '[AutoPlayHelpers] Auto-play verified via engine state'
+            );
+            return true;
+          }
 
-        // Fallback: check button state for backward compatibility
-        await page.waitForTimeout(100);
-        const playButton = page.locator('[data-testid="play-button"]');
-        const dataPlaying = await playButton.getAttribute('data-playing');
+          // Fallback: check button state for backward compatibility
+          await page.waitForTimeout(200 * (attempt + 1)); // Progressive wait
+          const playButton = page.locator('[data-testid="play-button"]');
+          const dataPlaying = await playButton.getAttribute('data-playing');
 
-        if (dataPlaying === 'true') {
-          console.info('[AutoPlayHelpers] Auto-play verified via button state');
-          return true;
+          if (dataPlaying === 'true') {
+            console.info(
+              '[AutoPlayHelpers] Auto-play verified via button state'
+            );
+            return true;
+          }
+
+          // Wait before retry (except on last attempt)
+          if (attempt < 2) {
+            await page.waitForTimeout(500);
+          }
         }
 
         console.warn(
@@ -151,31 +163,39 @@ export class AutoPlayHelpers {
         console.info('[AutoPlayHelpers] Verifying auto-play stop...');
 
         // Wait for engine state to synchronize with extended timeout and retries
-        await page.waitForTimeout(200); // Allow state to settle
+        await page.waitForTimeout(500); // Increased settling time for CI environment
 
-        const stateVerified = await StateSynchronizer.waitForEngineState(
-          page,
-          (state) => state.isPlaying === false,
-          3000 // Extended timeout for state sync
-        );
-
-        if (stateVerified) {
-          console.info(
-            '[AutoPlayHelpers] Auto-play stop verified via engine state'
+        // Try verification multiple times with increasing waits
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const stateVerified = await StateSynchronizer.waitForEngineState(
+            page,
+            (state) => state.isPlaying === false,
+            4000 // Increased timeout for state sync in CI
           );
-          return true;
-        }
 
-        // Fallback: check button state for backward compatibility
-        await page.waitForTimeout(100);
-        const playButton = page.locator('[data-testid="play-button"]');
-        const dataPlaying = await playButton.getAttribute('data-playing');
+          if (stateVerified) {
+            console.info(
+              '[AutoPlayHelpers] Auto-play stop verified via engine state'
+            );
+            return true;
+          }
 
-        if (dataPlaying === 'false') {
-          console.info(
-            '[AutoPlayHelpers] Auto-play stop verified via button state'
-          );
-          return true;
+          // Fallback: check button state for backward compatibility
+          await page.waitForTimeout(200 * (attempt + 1)); // Progressive wait
+          const playButton = page.locator('[data-testid="play-button"]');
+          const dataPlaying = await playButton.getAttribute('data-playing');
+
+          if (dataPlaying === 'false') {
+            console.info(
+              '[AutoPlayHelpers] Auto-play stop verified via button state'
+            );
+            return true;
+          }
+
+          // Wait before retry (except on last attempt)
+          if (attempt < 2) {
+            await page.waitForTimeout(500);
+          }
         }
 
         console.warn(

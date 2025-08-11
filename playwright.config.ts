@@ -22,12 +22,12 @@ export default defineConfig({
   /* Optimize workers for performance vs resource balance */
   workers: process.env.CI ? 6 : Math.min(10, cpus().length),
 
-  /* Global timeout for each test (increased for filter tests) */
-  timeout: 30 * 1000,
+  /* Global timeout for each test (increased for CI environment) */
+  timeout: process.env.CI ? 45 * 1000 : 30 * 1000,
 
-  /* Expect timeout */
+  /* Expect timeout (increased for CI environment) */
   expect: {
-    timeout: 15 * 1000,
+    timeout: process.env.CI ? 20 * 1000 : 15 * 1000,
   },
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */

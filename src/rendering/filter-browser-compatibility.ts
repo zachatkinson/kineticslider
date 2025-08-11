@@ -138,10 +138,28 @@ export class FilterBrowserCompatibility {
 
     const mobile = /mobile|android|ios|iphone|ipad|tablet/i.test(ua);
 
-    // Detect WebGL support
+    // Detect WebGL support with proper error handling
     const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl');
-    const gl2 = canvas.getContext('webgl2');
+    let gl: WebGLRenderingContext | null = null;
+    let gl2: WebGL2RenderingContext | null = null;
+
+    try {
+      gl = canvas.getContext('webgl', {
+        failIfMajorPerformanceCaveat: false,
+        powerPreference: 'low-power',
+      }) as WebGLRenderingContext | null;
+    } catch {
+      // WebGL not available
+    }
+
+    try {
+      gl2 = canvas.getContext('webgl2', {
+        failIfMajorPerformanceCaveat: false,
+        powerPreference: 'low-power',
+      }) as WebGL2RenderingContext | null;
+    } catch {
+      // WebGL2 not available
+    }
 
     return {
       name,

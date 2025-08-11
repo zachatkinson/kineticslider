@@ -295,8 +295,28 @@ export class FallbackRenderer {
    */
   private detectCapabilities(): RendererCapabilities {
     const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl');
-    const gl2 = canvas.getContext('webgl2');
+    let gl: WebGLRenderingContext | null = null;
+    let gl2: WebGL2RenderingContext | null = null;
+
+    // Try to get WebGL context with proper error handling
+    try {
+      gl = canvas.getContext('webgl', {
+        failIfMajorPerformanceCaveat: false,
+        powerPreference: 'low-power',
+      }) as WebGLRenderingContext | null;
+    } catch {
+      // WebGL not available, continue without it
+    }
+
+    // Try to get WebGL2 context with proper error handling
+    try {
+      gl2 = canvas.getContext('webgl2', {
+        failIfMajorPerformanceCaveat: false,
+        powerPreference: 'low-power',
+      }) as WebGL2RenderingContext | null;
+    } catch {
+      // WebGL2 not available, continue without it
+    }
 
     return {
       webgl: !!gl,

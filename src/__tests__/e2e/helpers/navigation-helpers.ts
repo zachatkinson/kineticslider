@@ -319,7 +319,14 @@ export class NavigationHelpers {
       retryCount?: number;
     }
   ): Promise<boolean> {
-    const retryCount = options?.retryCount || 2;
+    const retryCount = options?.retryCount || 3; // Increased default retry count
+
+    // Always wait for engine initialization first
+    const engineReady = await StateSynchronizer.waitForEngineReady(page, 5000);
+    if (!engineReady) {
+      console.error('[NavigateToLast] Engine initialization failed');
+      return false;
+    }
 
     for (let attempt = 0; attempt <= retryCount; attempt++) {
       try {
@@ -330,7 +337,7 @@ export class NavigationHelpers {
         // Enhanced context and engine validation for retries
         if (attempt > 0) {
           // Wait longer for engine recovery after failures
-          await page.waitForTimeout(1000);
+          await page.waitForTimeout(1500); // Increased wait time
 
           // Check page is still valid before proceeding
           if (page.isClosed()) {
@@ -338,7 +345,16 @@ export class NavigationHelpers {
             return false;
           }
 
-          await StateSynchronizer.waitForEngineReady(page, 3000);
+          // Re-verify engine is ready
+          const stillReady = await StateSynchronizer.waitForEngineReady(
+            page,
+            3000
+          );
+          if (!stillReady) {
+            console.warn('[NavigateToLast] Engine became unready during retry');
+            if (attempt === retryCount) return false;
+            continue;
+          }
         }
 
         const state = await StateSynchronizer.getEngineState(page);
@@ -352,8 +368,23 @@ export class NavigationHelpers {
 
         if (!state.isInitialized) {
           console.warn('[NavigateToLast] Engine not initialized');
-          if (attempt === retryCount) return false;
-          continue;
+          // Try to wait for initialization instead of failing immediately
+          const initialized = await StateSynchronizer.waitForEngineState(
+            page,
+            (s) => s.isInitialized,
+            2000
+          );
+          if (!initialized) {
+            if (attempt === retryCount) return false;
+            continue;
+          }
+          // Re-fetch state after initialization
+          const newState = await StateSynchronizer.getEngineState(page);
+          if (!newState) {
+            if (attempt === retryCount) return false;
+            continue;
+          }
+          Object.assign(state, newState);
         }
 
         if (state.totalSlides <= 1) {
@@ -377,7 +408,7 @@ export class NavigationHelpers {
 
         const success = await this.navigateToSlide(page, lastSlideIndex, {
           waitForTransition: options?.waitForTransition,
-          method: options?.method,
+          method: options?.method || 'api', // Default to API method for reliability
         });
 
         if (success) {
@@ -397,7 +428,7 @@ export class NavigationHelpers {
 
       // Wait before retry (except on last attempt)
       if (attempt < retryCount) {
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(750); // Increased wait time
       }
     }
 

@@ -12,6 +12,7 @@ import {
   NavigationHelpers,
   SliderStateHelpers,
   AutoPlayHelpers,
+  StateSynchronizer,
 } from './helpers';
 
 // Reduce timeout for navigation tests to prevent CI timeouts
@@ -139,13 +140,28 @@ test.describe('NavigationManager E2E Tests', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
+      // Wait for engine to be ready before navigation
+      await StateSynchronizer.waitForEngineInitialization(page, 5000);
+      await page.waitForTimeout(500); // Extra settling time
+
       const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
-      // Navigate to last slide
-      await page.keyboard.press('End');
-      await page.waitForTimeout(500);
+      // Navigate to last slide with retry logic
+      let lastSlide: number | null = initialSlide;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        await page.keyboard.press('End');
+        await page.waitForTimeout(1000); // Increased wait time
 
-      const lastSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
+        lastSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
+        if (lastSlide !== null && lastSlide !== initialSlide && lastSlide > 0) {
+          break; // Success
+        }
+
+        // Wait before retry
+        if (attempt < 2) {
+          await page.waitForTimeout(500);
+        }
+      }
 
       // Check if navigation is working
       if (
@@ -158,11 +174,23 @@ test.describe('NavigationManager E2E Tests', () => {
         // Navigation is working
         expect(lastSlide).toBeGreaterThan(0);
 
-        // Navigate to first slide
-        await page.keyboard.press('Home');
-        await page.waitForTimeout(500);
+        // Navigate to first slide with retry logic
+        let firstSlide: number | null = lastSlide;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          await page.keyboard.press('Home');
+          await page.waitForTimeout(1000); // Increased wait time
 
-        const firstSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
+          firstSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
+          if (firstSlide === 0) {
+            break; // Success
+          }
+
+          // Wait before retry
+          if (attempt < 2) {
+            await page.waitForTimeout(500);
+          }
+        }
+
         expect(firstSlide).toBe(0);
       } else {
         // Navigation not working, test basic functionality

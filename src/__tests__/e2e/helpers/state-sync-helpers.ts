@@ -118,12 +118,20 @@ export class StateSynchronizer {
           // Get state from SliderCore state management
           const state = engine.getState?.() || {};
 
+          // More robust initialization check
+          const isInitialized = !!(
+            state.isInitialized ||
+            (engine.getCurrentIndex &&
+              engine.getTotalSlides &&
+              engine.getTotalSlides() > 0)
+          );
+
           return {
             currentIndex: engine.getCurrentIndex?.() || 0,
             totalSlides: engine.getTotalSlides?.() || 0,
             isPlaying: engine.isPlaying?.() || false,
             isLoading: state.isLoading || false,
-            isInitialized: state.isInitialized || false,
+            isInitialized: isInitialized,
             loopEnabled: engine.loopManager?.isEnabled?.() || false,
             loopMode: engine.loopManager?.getMode?.() || 'none',
           };

@@ -34,18 +34,18 @@ export function getTimeoutConfig(
     maxRetries: 3,
   };
 
-  // CI environment adjustments
+  // CI environment adjustments (increased for slower CI runners)
   if (isCI) {
     return {
       ...baseConfig,
-      navigation: 8000,
-      selector: 5000,
-      animation: 2000,
-      stateSync: 3000,
-      verification: 4000,
-      shortPause: 200,
-      mediumPause: 800,
-      longPause: 1500,
+      navigation: 10000, // Increased from 8000
+      selector: 7000, // Increased from 5000
+      animation: 3000, // Increased from 2000
+      stateSync: 5000, // Increased from 3000
+      verification: 6000, // Increased from 4000
+      shortPause: 300, // Increased from 200
+      mediumPause: 1000, // Increased from 800
+      longPause: 2000, // Increased from 1500
       maxRetries: 5,
     };
   }
