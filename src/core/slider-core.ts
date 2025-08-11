@@ -790,7 +790,15 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   /**
    * Get managers for testing and advanced operations
    */
-  getManagers() {
+  getManagers(): {
+    stateManager: StateManager;
+    autoPlayManager: AutoPlayManager;
+    navigationManager: NavigationManager;
+    loopManager: LoopManager;
+    accessibilityManager: AccessibilityManager;
+    animationManager: AnimationManager;
+    performanceMonitor: PerformanceMonitor;
+  } {
     return {
       stateManager: this.stateManager,
       autoPlayManager: this.autoPlayManager,

@@ -25,13 +25,13 @@ declare global {
     kineticSlider: {
       engine: SliderEngine;
       managers: {
-        stateManager: any;
-        autoPlayManager: any;
-        navigationManager: any;
-        loopManager: any;
-        accessibilityManager: any;
-        animationManager: any;
-        performanceMonitor: any;
+        stateManager: unknown;
+        autoPlayManager: unknown;
+        navigationManager: unknown;
+        loopManager: unknown;
+        accessibilityManager: unknown;
+        animationManager: unknown;
+        performanceMonitor: unknown;
       };
       version: string;
     };
