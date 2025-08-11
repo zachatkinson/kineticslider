@@ -12,6 +12,7 @@ import {
   NavigationHelpers,
   SliderStateHelpers,
   AutoPlayHelpers,
+  StateSynchronizer,
 } from './helpers';
 
 // Reduce timeout for state management tests to prevent CI timeouts
@@ -373,6 +374,10 @@ test.describe('StateManager E2E Tests', () => {
         // If no live region, ensure basic accessibility is still present
         const _slider = page.locator('[data-testid="kinetic-slider"]');
         await _slider.focus();
+
+        // Wait for accessibility manager to initialize
+        await StateSynchronizer.waitForEngineInitialization(page, 5000);
+        await page.waitForTimeout(500); // Additional time for ARIA attributes
 
         const ariaValueNow = await _slider.getAttribute('aria-valuenow');
         const ariaValueText = await _slider.getAttribute('aria-valuetext');
