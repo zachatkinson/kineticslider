@@ -420,12 +420,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     });
 
     // Start auto-play through AutoPlayManager FIRST
+    // StateManager will be updated automatically via event listener
     this.autoPlayManager.start(async (): Promise<void> => {
       await this.nextSlide();
     });
-
-    // Update state through StateManager after AutoPlayManager is started
-    this.stateManager.updateState({ isPlaying: true });
 
     // Update controller state
     if (this.controller) {
@@ -445,10 +443,8 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     }
 
     // Pause auto-play through AutoPlayManager FIRST (emits PLAY_PAUSED)
+    // StateManager will be updated automatically via event listener
     this.autoPlayManager.pause();
-
-    // Update state through StateManager after AutoPlayManager is paused
-    this.stateManager.updateState({ isPlaying: false });
 
     // Update controller state
     if (this.controller) {
@@ -904,6 +900,23 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       enableGesture: true,
       debounceDelay: 50,
       preventDuringTransition: true,
+    });
+
+    // Setup AutoPlayManager event listeners to keep StateManager synchronized
+    this.autoPlayManager.on(SLIDER_EVENTS.PLAY_STARTED, () => {
+      this.stateManager.updateState({ isPlaying: true }, 'autoPlayStarted');
+    });
+
+    this.autoPlayManager.on(SLIDER_EVENTS.PLAY_PAUSED, () => {
+      this.stateManager.updateState({ isPlaying: false }, 'autoPlayPaused');
+    });
+
+    this.autoPlayManager.on(SLIDER_EVENTS.PLAY_RESUMED, () => {
+      this.stateManager.updateState({ isPlaying: true }, 'autoPlayResumed');
+    });
+
+    this.autoPlayManager.on(SLIDER_EVENTS.PLAY_STOPPED, () => {
+      this.stateManager.updateState({ isPlaying: false }, 'autoPlayStopped');
     });
 
     // StateManager doesn't need specific slider config, it uses defaults
