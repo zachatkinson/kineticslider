@@ -55,7 +55,17 @@ export class AutoPlayHelpers {
       await StateSynchronizer.waitForEngineInitialization(page, 3000);
       await page.waitForTimeout(300); // Additional settling time
 
-      // STEP 2: Try specified method or auto-detect (Strategy Pattern)
+      // STEP 2: Enable auto-play configuration (required for auto-play to work)
+      console.info('[AutoPlayHelpers] Enabling auto-play configuration...');
+      const enabled = await this.enableAutoPlay(page);
+      if (!enabled) {
+        console.warn(
+          '[AutoPlayHelpers] Failed to enable auto-play configuration'
+        );
+        return false;
+      }
+
+      // STEP 3: Try specified method or auto-detect (Strategy Pattern)
       let started = false;
 
       if (method === 'api' || method === 'auto') {
@@ -73,7 +83,7 @@ export class AutoPlayHelpers {
         return false;
       }
 
-      // STEP 3: Enhanced verification using StateSynchronizer (follows SOLID principles)
+      // STEP 4: Enhanced verification using StateSynchronizer (follows SOLID principles)
       if (verifyStart) {
         console.info('[AutoPlayHelpers] Verifying auto-play start...');
 
@@ -456,6 +466,59 @@ export class AutoPlayHelpers {
 
           return false;
         }, intervalMs);
+      },
+      false
+    );
+    return result || false;
+  }
+
+  /**
+   * Enable auto-play configuration
+   * This must be called before startAutoPlay() will work
+   */
+  static async enableAutoPlay(page: Page): Promise<boolean> {
+    const result = await E2EErrorHandler.withContextProtection(
+      page,
+      async () => {
+        return await page.evaluate(() => {
+          const engine = (window as any).kineticSlider?.engine as SliderEngine;
+          if (!engine) {
+            console.warn('[enableAutoPlay] Engine not available');
+            return false;
+          }
+
+          // Enable auto-play via updateConfig (preferred method)
+          if (typeof engine.updateConfig === 'function') {
+            try {
+              engine.updateConfig({ autoPlay: true });
+              console.info(
+                '[enableAutoPlay] Successfully enabled auto-play via updateConfig'
+              );
+              return true;
+            } catch (error) {
+              console.warn('[enableAutoPlay] updateConfig failed:', error);
+            }
+          }
+
+          // Fallback - try direct config access
+          if (engine.config && typeof engine.config === 'object') {
+            try {
+              (engine.config as any).autoPlay = true;
+              console.info(
+                '[enableAutoPlay] Enabled auto-play via direct config access'
+              );
+              return true;
+            } catch (error) {
+              console.warn(
+                '[enableAutoPlay] Direct config access failed:',
+                error
+              );
+            }
+          }
+
+          console.warn('[enableAutoPlay] All methods failed');
+          return false;
+        });
       },
       false
     );
