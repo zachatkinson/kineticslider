@@ -810,7 +810,7 @@ test.describe('NavigationManager E2E Tests', () => {
       await page.keyboard.press('Home');
       await page.keyboard.press('End');
       await page.keyboard.press('Digit9'); // Likely invalid slide number
-      
+
       // Wait longer for slider to stabilize after rapid commands
       await page.waitForTimeout(1000);
 
@@ -820,7 +820,9 @@ test.describe('NavigationManager E2E Tests', () => {
       // Wait for slider to be ready before final navigation
       const isReady = await SliderStateHelpers.waitForSliderReady(page, 8000);
       if (!isReady) {
-        console.warn('[Invalid Navigation Test] Slider not ready after rapid commands, skipping final Home navigation');
+        console.warn(
+          '[Invalid Navigation Test] Slider not ready after rapid commands, skipping final Home navigation'
+        );
         return;
       }
 
@@ -836,7 +838,7 @@ test.describe('NavigationManager E2E Tests', () => {
           homeSuccess = true;
           break;
         }
-        
+
         // Wait longer between retries for browser stability
         if (attempt < 2) {
           await page.waitForTimeout(1000);
@@ -845,7 +847,8 @@ test.describe('NavigationManager E2E Tests', () => {
 
       // Verify navigation worked if possible
       if (homeSuccess) {
-        const finalSlideIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+        const finalSlideIndex =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
         expect(finalSlideIndex).toBe(0);
       }
     });

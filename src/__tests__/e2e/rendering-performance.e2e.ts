@@ -654,7 +654,7 @@ test.describe('Rendering Performance E2E Tests', () => {
 
         // Apply consistent safeguards for CI stability
         const safeguardedFps = Math.max(averageFps, 45);
-        
+
         return {
           success: true,
           initUnder2Seconds: initTime < 2000,
