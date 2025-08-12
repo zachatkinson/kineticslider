@@ -409,7 +409,8 @@ test.describe('Auto-Play Controls', () => {
           `[Auto-play Loop] Expected slide 0, got slide ${currentIndex} - loop may not be working`
         );
         // Verify we have a valid slide index even if loop didn't work
-        const totalSlidesForValidation = await SliderStateHelpers.getTotalSlides(page);
+        const totalSlidesForValidation =
+          await SliderStateHelpers.getTotalSlides(page);
         expect(currentIndex).toBeGreaterThanOrEqual(0);
         expect(currentIndex).toBeLessThan(totalSlidesForValidation || 5);
       }
