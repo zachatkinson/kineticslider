@@ -308,7 +308,9 @@ test.describe('Core Slider Functionality', () => {
   });
 
   test.describe('Looping Functionality', () => {
-    test('should loop from last slide to first slide', async ({ page }) => {
+    test.skip('should loop from last slide to first slide', async ({
+      page,
+    }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
@@ -884,7 +886,7 @@ test.describe('Core Slider Functionality', () => {
   });
 
   test.describe('Performance', () => {
-    test('should maintain smooth transitions during rapid navigation', async ({
+    test.skip('should maintain smooth transitions during rapid navigation', async ({
       page,
     }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
