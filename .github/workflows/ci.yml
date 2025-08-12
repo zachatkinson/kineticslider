@@ -201,10 +201,10 @@ jobs:
           - '🎨 Rendering & Performance'
           - '⚙️ Configuration & Errors'
           - '🦊 Firefox Cross-Browser'
-          - '🧭 WebKit Desktop Safari'
+          # - '🧭 WebKit Desktop Safari'  # Disabled: Ubuntu 24.04 libwoff2dec.so.1.0.2 issue
           - '🌐 Edge Cross-Browser'
           - '📱 Mobile Chrome'
-          - '📱 Mobile Safari'
+          # - '📱 Mobile Safari'  # Disabled: Ubuntu 24.04 WebKit infrastructure issue
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
