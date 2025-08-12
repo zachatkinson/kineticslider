@@ -124,7 +124,9 @@ test.describe('Auto-Play Controls', () => {
       expect(isPlaying).toBe(false);
     });
 
-    test.skip('should toggle between play and pause states', async ({ page }) => {
+    test.skip('should toggle between play and pause states', async ({
+      page,
+    }) => {
       // Initial state should be paused
       let isPlaying = await SliderStateHelpers.isPlaying(page);
       expect(isPlaying).toBe(false);
