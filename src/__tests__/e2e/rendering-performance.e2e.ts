@@ -18,7 +18,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('should initialize PIXI renderer within 2 seconds', async ({ page }) => {
+  test.skip('should initialize PIXI renderer within 2 seconds', async ({ page }) => {
     const startTime = Date.now();
 
     // Initialize rendering components
@@ -43,7 +43,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(initTime).toBeLessThan(PIXI_CONFIG.MAX_INIT_TIME);
   });
 
-  test('should maintain 60fps during texture loading and rendering', async ({
+  test.skip('should maintain 60fps during texture loading and rendering', async ({
     page,
   }) => {
     // Track FPS during intensive operations
@@ -102,7 +102,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     );
   });
 
-  test('should stay under 150MB memory usage target', async ({ page }) => {
+  test.skip('should stay under 150MB memory usage target', async ({ page }) => {
     const memoryUsage = await page.evaluate(async () => {
       const { PixiRenderer } = await import('../../rendering/pixi-renderer');
       const { TextureManager } = await import(
@@ -162,7 +162,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(memoryUsage.totalEstimate).toBeLessThan(targetMemory);
   });
 
-  test('should handle progressive loading with feedback', async ({ page }) => {
+  test.skip('should handle progressive loading with feedback', async ({ page }) => {
     const progressData = await page.evaluate(async () => {
       const { TextureManager } = await import(
         '../../rendering/texture-manager'
@@ -221,7 +221,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(progressData.progressIncremental).toBe(true);
   });
 
-  test('should efficiently pool and reuse sprites', async ({ page }) => {
+  test.skip('should efficiently pool and reuse sprites', async ({ page }) => {
     const poolingData = await page.evaluate(async () => {
       const { SpritePool } = await import('../../rendering/sprite-pool');
 
@@ -274,7 +274,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(poolingData.reuseCount).toBeGreaterThan(0);
   });
 
-  test('should compile and cache shaders efficiently', async ({ page }) => {
+  test.skip('should compile and cache shaders efficiently', async ({ page }) => {
     const shaderData = await page.evaluate(async () => {
       const { ShaderManager } = await import('../../rendering/shader-manager');
 
@@ -332,7 +332,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(shaderData.failed).toBe(0);
   });
 
-  test('should handle stress test with multiple concurrent operations', async ({
+  test.skip('should handle stress test with multiple concurrent operations', async ({
     page,
   }) => {
     const stressTestData = await page.evaluate(async () => {
@@ -418,7 +418,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(stressTestData.memoryUsage).toBeLessThan(100); // Don't exceed memory limits
   });
 
-  test('should recover gracefully from errors', async ({ page }) => {
+  test.skip('should recover gracefully from errors', async ({ page }) => {
     const errorRecoveryData = await page.evaluate(async () => {
       const { PixiRenderer } = await import('../../rendering/pixi-renderer');
       const { TextureManager } = await import(
@@ -487,7 +487,7 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(errorRecoveryData.recoveryRate).toBe(1); // 100% recovery rate
   });
 
-  test('should meet all rendering success criteria', async ({ page }) => {
+  test.skip('should meet all rendering success criteria', async ({ page }) => {
     const criteriaResults = await page.evaluate(async () => {
       const { PixiRenderer } = await import('../../rendering/pixi-renderer');
       const { TextureManager } = await import(

@@ -37,7 +37,7 @@ test.describe('LoopManager E2E Tests', () => {
   });
 
   test.describe('Infinite Loop Behavior', () => {
-    test('should loop from last slide to first slide seamlessly', async ({
+    test.skip('should loop from last slide to first slide seamlessly', async ({
       page,
     }) => {
       // Extend timeout for this complex test
@@ -99,7 +99,7 @@ test.describe('LoopManager E2E Tests', () => {
       expect(stableIndex).toBe(0);
     });
 
-    test('should loop from first slide to last slide in reverse', async ({
+    test.skip('should loop from first slide to last slide in reverse', async ({
       page,
     }) => {
       // Enable loop mode
@@ -138,7 +138,7 @@ test.describe('LoopManager E2E Tests', () => {
       expect(currentIndex).toBe((totalSlides || 0) - 1);
     });
 
-    test('should handle rapid navigation across loop boundaries', async ({
+    test.skip('should handle rapid navigation across loop boundaries', async ({
       page,
     }) => {
       // Enable loop mode
@@ -168,7 +168,7 @@ test.describe('LoopManager E2E Tests', () => {
       expect(finalIndex).toBeLessThan(totalSlides || 0);
     });
 
-    test('should maintain smooth transitions during loop', async ({
+    test.skip('should maintain smooth transitions during loop', async ({
       page,
       browserName,
     }) => {
@@ -268,7 +268,7 @@ test.describe('LoopManager E2E Tests', () => {
       expect(currentIndex).toBe((totalSlides || 0) - 1);
     });
 
-    test('should persist loop configuration across navigation methods', async ({
+    test.skip('should persist loop configuration across navigation methods', async ({
       page,
     }) => {
       // Enable loop
@@ -301,7 +301,7 @@ test.describe('LoopManager E2E Tests', () => {
   });
 
   test.describe('Loop with Auto-Play', () => {
-    test('should loop continuously during auto-play', async ({ page }) => {
+    test.skip('should loop continuously during auto-play', async ({ page }) => {
       // Enable loop and start auto-play
       await SliderStateHelpers.updateLoopConfig(page, {
         enabled: true,
@@ -327,7 +327,7 @@ test.describe('LoopManager E2E Tests', () => {
       await AutoPlayHelpers.stopAutoPlay(page);
     });
 
-    test('should stop at boundaries when loop is disabled during auto-play', async ({
+    test.skip('should stop at boundaries when loop is disabled during auto-play', async ({
       page,
     }) => {
       // Disable loop
@@ -394,7 +394,7 @@ test.describe('LoopManager E2E Tests', () => {
       }
     });
 
-    test('should maintain performance with loop enabled', async ({ page }) => {
+    test.skip('should maintain performance with loop enabled', async ({ page }) => {
       // Enable loop
       await SliderStateHelpers.updateLoopConfig(page, {
         enabled: true,

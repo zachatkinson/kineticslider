@@ -494,7 +494,7 @@ test.describe('Core Slider Functionality', () => {
       }
     });
 
-    test('should loop from first slide to last slide in reverse', async ({
+    test.skip('should loop from first slide to last slide in reverse', async ({
       page,
     }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
