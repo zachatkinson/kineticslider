@@ -18,7 +18,9 @@ test.describe('Rendering Performance E2E Tests', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test.skip('should initialize PIXI renderer within 2 seconds', async ({ page }) => {
+  test.skip('should initialize PIXI renderer within 2 seconds', async ({
+    page,
+  }) => {
     const startTime = Date.now();
 
     // Initialize rendering components
@@ -162,7 +164,9 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(memoryUsage.totalEstimate).toBeLessThan(targetMemory);
   });
 
-  test.skip('should handle progressive loading with feedback', async ({ page }) => {
+  test.skip('should handle progressive loading with feedback', async ({
+    page,
+  }) => {
     const progressData = await page.evaluate(async () => {
       const { TextureManager } = await import(
         '../../rendering/texture-manager'
@@ -274,7 +278,9 @@ test.describe('Rendering Performance E2E Tests', () => {
     expect(poolingData.reuseCount).toBeGreaterThan(0);
   });
 
-  test.skip('should compile and cache shaders efficiently', async ({ page }) => {
+  test.skip('should compile and cache shaders efficiently', async ({
+    page,
+  }) => {
     const shaderData = await page.evaluate(async () => {
       const { ShaderManager } = await import('../../rendering/shader-manager');
 

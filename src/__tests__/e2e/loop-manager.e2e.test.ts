@@ -394,7 +394,9 @@ test.describe('LoopManager E2E Tests', () => {
       }
     });
 
-    test.skip('should maintain performance with loop enabled', async ({ page }) => {
+    test.skip('should maintain performance with loop enabled', async ({
+      page,
+    }) => {
       // Enable loop
       await SliderStateHelpers.updateLoopConfig(page, {
         enabled: true,

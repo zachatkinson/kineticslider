@@ -297,7 +297,9 @@ test.describe('Accessibility E2E', () => {
       expect(ariaLive).toBe('polite');
     });
 
-    test.skip('should update aria-valuenow and aria-valuetext', async ({ page }) => {
+    test.skip('should update aria-valuenow and aria-valuetext', async ({
+      page,
+    }) => {
       // CRITICAL: Wait for ARIA attributes to be fully initialized
       await waitForSliderAriaAttributes(page);
 

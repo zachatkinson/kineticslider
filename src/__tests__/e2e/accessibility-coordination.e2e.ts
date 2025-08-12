@@ -50,7 +50,9 @@ test.describe('Animation Coordination Accessibility E2E', () => {
   });
 
   test.describe('Reduced Motion Preferences', () => {
-    test.skip('should respect prefers-reduced-motion setting', async ({ page }) => {
+    test.skip('should respect prefers-reduced-motion setting', async ({
+      page,
+    }) => {
       // Set reduced motion preference
       await page.emulateMedia({ reducedMotion: 'reduce' });
 
@@ -108,7 +110,9 @@ test.describe('Animation Coordination Accessibility E2E', () => {
   });
 
   test.describe('Keyboard Navigation', () => {
-    test.skip('should support keyboard animation triggers', async ({ page }) => {
+    test.skip('should support keyboard animation triggers', async ({
+      page,
+    }) => {
       // Focus on keyboard-accessible animation trigger
       await page.keyboard.press('Tab');
       await page.keyboard.press('Tab'); // Navigate to animation button
@@ -187,7 +191,9 @@ test.describe('Animation Coordination Accessibility E2E', () => {
       });
     });
 
-    test.skip('should provide meaningful progress updates', async ({ page }) => {
+    test.skip('should provide meaningful progress updates', async ({
+      page,
+    }) => {
       // Start long-running animation
       await page.click('[data-testid="progress-animation-trigger"]');
 
@@ -307,7 +313,9 @@ test.describe('Animation Coordination Accessibility E2E', () => {
       expect(responseTime).toBeLessThan(500); // 500ms max for accessibility
     });
 
-    test.skip('should not interfere with assistive technology', async ({ page }) => {
+    test.skip('should not interfere with assistive technology', async ({
+      page,
+    }) => {
       // Simulate assistive technology queries during animations
       await page.click('[data-testid="assistive-tech-animation"]');
 

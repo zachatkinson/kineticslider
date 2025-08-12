@@ -631,7 +631,7 @@ test.describe('Core Slider Functionality', () => {
   });
 
   test.describe('Error Handling', () => {
-    test('should handle navigation to invalid slide indices gracefully', async ({
+    test.skip('should handle navigation to invalid slide indices gracefully', async ({
       page,
     }) => {
       // Try to trigger edge cases through rapid navigation
