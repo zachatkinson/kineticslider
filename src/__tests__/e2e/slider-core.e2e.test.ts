@@ -504,7 +504,9 @@ test.describe('Core Slider Functionality', () => {
       // Wait for slider to be ready before navigation
       const isReady = await SliderStateHelpers.waitForSliderReady(page, 10000);
       if (!isReady) {
-        console.warn('[Loop Reverse Test] Slider not ready, skipping navigation test');
+        console.warn(
+          '[Loop Reverse Test] Slider not ready, skipping navigation test'
+        );
         return;
       }
 
@@ -663,7 +665,9 @@ test.describe('Core Slider Functionality', () => {
       // Wait for slider to be ready before final navigation
       const isReady = await SliderStateHelpers.waitForSliderReady(page, 8000);
       if (!isReady) {
-        console.warn('[Invalid Navigation Test] Slider not ready, skipping final Home navigation');
+        console.warn(
+          '[Invalid Navigation Test] Slider not ready, skipping final Home navigation'
+        );
         return;
       }
 
@@ -1252,9 +1256,14 @@ test.describe('Core Slider Functionality', () => {
 
       if (totalSlides !== undefined && totalSlides > 1) {
         // Wait for slider to be ready for navigation
-        const navigationReady = await SliderStateHelpers.waitForSliderReady(page, 10000);
+        const navigationReady = await SliderStateHelpers.waitForSliderReady(
+          page,
+          10000
+        );
         if (!navigationReady) {
-          console.warn('[LoopManager Integration] Slider not ready for navigation, skipping test');
+          console.warn(
+            '[LoopManager Integration] Slider not ready for navigation, skipping test'
+          );
           return;
         }
 
