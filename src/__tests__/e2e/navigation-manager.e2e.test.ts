@@ -27,7 +27,7 @@ test.describe('NavigationManager E2E Tests', () => {
   });
 
   test.describe('Keyboard Navigation', () => {
-    test.skip('should navigate with arrow keys', async ({ page }) => {
+    test('should navigate with arrow keys', async ({ page }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
@@ -136,7 +136,7 @@ test.describe('NavigationManager E2E Tests', () => {
       }
     });
 
-    test.skip('should navigate with Home and End keys', async ({ page }) => {
+    test('should navigate with Home and End keys', async ({ page }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
@@ -800,7 +800,7 @@ test.describe('NavigationManager E2E Tests', () => {
   });
 
   test.describe('Navigation Error Handling', () => {
-    test.skip('should handle invalid navigation attempts', async ({ page }) => {
+    test('should handle invalid navigation attempts', async ({ page }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
@@ -822,7 +822,7 @@ test.describe('NavigationManager E2E Tests', () => {
       expect(slideIndex).toBe(0); // Should be at first slide
     });
 
-    test.skip('should recover from navigation failures', async ({ page }) => {
+    test('should recover from navigation failures', async ({ page }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Simulate error condition by rapid interaction

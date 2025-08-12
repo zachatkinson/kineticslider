@@ -17,7 +17,7 @@ test.describe('Navigation Swipe Gestures E2E', () => {
     await navigateAndWait(page);
   });
 
-  test.skip('should detect left swipe gesture for next slide', async ({
+  test('should detect left swipe gesture for next slide', async ({
     page,
   }) => {
     const _slider = page.locator('[data-testid="kinetic-slider"]');
@@ -62,7 +62,7 @@ test.describe('Navigation Swipe Gestures E2E', () => {
     }
   });
 
-  test.skip('should detect right swipe gesture for previous slide', async ({
+  test('should detect right swipe gesture for previous slide', async ({
     page,
   }) => {
     const _slider = page.locator('[data-testid="kinetic-slider"]');
