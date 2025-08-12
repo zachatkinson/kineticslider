@@ -126,14 +126,18 @@ export class StateSynchronizer {
               engine.getTotalSlides() > 0)
           );
 
+          // Use proper LoopManager access pattern
+          const loopManager = engine.getLoopManager?.();
+          const loopConfig = loopManager?.getConfig?.();
+
           return {
             currentIndex: engine.getCurrentIndex?.() || 0,
             totalSlides: engine.getTotalSlides?.() || 0,
             isPlaying: engine.isPlaying?.() || false,
             isLoading: state.isLoading || false,
             isInitialized: isInitialized,
-            loopEnabled: engine.loopManager?.isEnabled?.() || false,
-            loopMode: engine.loopManager?.getMode?.() || 'none',
+            loopEnabled: loopManager?.isEnabled?.() || false,
+            loopMode: loopConfig?.mode || 'infinite',
           };
         });
       },

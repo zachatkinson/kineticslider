@@ -319,13 +319,17 @@ export class SliderStateHelpers {
       async () => {
         return await page.evaluate(() => {
           const engine = (window as any).kineticSlider?.engine as SliderEngine;
-          const loopManager = engine?.loopManager;
 
+          // Use proper LoopManager access pattern
+          const loopManager = engine?.getLoopManager?.();
           if (!loopManager) return null;
+
+          const loopConfig = loopManager.getConfig?.();
+          if (!loopConfig) return null;
 
           return {
             enabled: loopManager.isEnabled?.() || false,
-            mode: loopManager.getMode?.() || 'none',
+            mode: loopConfig.mode || 'infinite',
           };
         });
       },
@@ -365,5 +369,73 @@ export class SliderStateHelpers {
       false
     );
     return result || false;
+  }
+
+  /**
+   * Debug loop manager state for troubleshooting
+   */
+  static async debugLoopManager(page: Page): Promise<void> {
+    await E2EErrorHandler.withContextProtection(
+      page,
+      async () => {
+        return await page.evaluate(() => {
+          const engine = (window as any).kineticSlider?.engine as SliderEngine;
+
+          console.log('[LoopManager Debug] Engine available:', !!engine);
+
+          if (!engine) return;
+
+          // Check getLoopManager method
+          const hasGetLoopManager = typeof engine.getLoopManager === 'function';
+          console.log(
+            '[LoopManager Debug] getLoopManager method:',
+            hasGetLoopManager
+          );
+
+          // Check direct property access
+          const hasLoopManagerProperty = !!engine.loopManager;
+          console.log(
+            '[LoopManager Debug] loopManager property:',
+            hasLoopManagerProperty
+          );
+
+          if (hasGetLoopManager) {
+            const loopManager = engine.getLoopManager();
+            console.log(
+              '[LoopManager Debug] LoopManager instance:',
+              !!loopManager
+            );
+
+            if (loopManager) {
+              console.log(
+                '[LoopManager Debug] isEnabled method:',
+                typeof loopManager.isEnabled
+              );
+              console.log(
+                '[LoopManager Debug] getConfig method:',
+                typeof loopManager.getConfig
+              );
+              console.log(
+                '[LoopManager Debug] updateConfig method:',
+                typeof loopManager.updateConfig
+              );
+
+              if (typeof loopManager.isEnabled === 'function') {
+                console.log(
+                  '[LoopManager Debug] isEnabled():',
+                  loopManager.isEnabled()
+                );
+              }
+
+              if (typeof loopManager.getConfig === 'function') {
+                const config = loopManager.getConfig();
+                console.log('[LoopManager Debug] getConfig():', config);
+              }
+            }
+          }
+        });
+      },
+      null
+    );
   }
 }
