@@ -92,7 +92,9 @@ test.describe('LoopManager E2E Tests', () => {
       // Wait for slider to be ready before navigation
       const isReady = await SliderStateHelpers.waitForSliderReady(page, 8000);
       if (!isReady) {
-        console.warn('[Loop Test] Slider not ready for navigation, skipping loop test');
+        console.warn(
+          '[Loop Test] Slider not ready for navigation, skipping loop test'
+        );
         return;
       }
 
@@ -100,9 +102,11 @@ test.describe('LoopManager E2E Tests', () => {
       const navigatedNext = await NavigationHelpers.navigateNext(page, {
         waitForTransition: true,
       });
-      
+
       if (!navigatedNext) {
-        console.warn('[Loop Test] Navigation failed, testing basic loop functionality instead');
+        console.warn(
+          '[Loop Test] Navigation failed, testing basic loop functionality instead'
+        );
         // Verify basic loop configuration exists
         const hasLoopManager = await page.evaluate(() => {
           const engine = window.kineticSlider?.engine as any;
@@ -146,9 +150,14 @@ test.describe('LoopManager E2E Tests', () => {
       expect(firstIndex).toBe(0);
 
       // Wait for slider to be ready before reverse navigation
-      const isReadyReverse = await SliderStateHelpers.waitForSliderReady(page, 8000);
+      const isReadyReverse = await SliderStateHelpers.waitForSliderReady(
+        page,
+        8000
+      );
       if (!isReadyReverse) {
-        console.warn('[Loop Reverse Test] Slider not ready for reverse navigation');
+        console.warn(
+          '[Loop Reverse Test] Slider not ready for reverse navigation'
+        );
         return;
       }
 
@@ -156,7 +165,7 @@ test.describe('LoopManager E2E Tests', () => {
       const navigatedPrevious = await NavigationHelpers.navigatePrevious(page, {
         waitForTransition: true,
       });
-      
+
       if (!navigatedPrevious) {
         console.warn('[Loop Reverse Test] Reverse navigation failed');
         return;
@@ -427,9 +436,7 @@ test.describe('LoopManager E2E Tests', () => {
       }
     });
 
-    test('should maintain performance with loop enabled', async ({
-      page,
-    }) => {
+    test('should maintain performance with loop enabled', async ({ page }) => {
       // Enable loop
       await SliderStateHelpers.updateLoopConfig(page, {
         enabled: true,
