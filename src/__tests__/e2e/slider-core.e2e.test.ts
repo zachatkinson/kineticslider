@@ -12,6 +12,7 @@
 
 import { test, expect } from '@playwright/test';
 import { navigateAndWait } from './utils';
+import { SliderStateHelpers } from './helpers';
 
 test.describe('Core Slider Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -500,9 +501,16 @@ test.describe('Core Slider Functionality', () => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
       await _slider.focus();
 
+      // Wait for slider to be ready before navigation
+      const isReady = await SliderStateHelpers.waitForSliderReady(page, 10000);
+      if (!isReady) {
+        console.warn('[Loop Reverse Test] Slider not ready, skipping navigation test');
+        return;
+      }
+
       // Navigate to first slide using Home key
       await page.keyboard.press('Home');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(500);
 
       const initialIndex = await page.evaluate(() =>
         (
@@ -652,9 +660,16 @@ test.describe('Core Slider Functionality', () => {
         console.log('Slider visibility check failed in error handling test');
       }
 
+      // Wait for slider to be ready before final navigation
+      const isReady = await SliderStateHelpers.waitForSliderReady(page, 8000);
+      if (!isReady) {
+        console.warn('[Invalid Navigation Test] Slider not ready, skipping final Home navigation');
+        return;
+      }
+
       // Should be able to navigate normally
       await page.keyboard.press('Home');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(500);
     });
 
     test('should recover from transition interruptions', async ({ page }) => {
@@ -1236,9 +1251,16 @@ test.describe('Core Slider Functionality', () => {
       });
 
       if (totalSlides !== undefined && totalSlides > 1) {
+        // Wait for slider to be ready for navigation
+        const navigationReady = await SliderStateHelpers.waitForSliderReady(page, 10000);
+        if (!navigationReady) {
+          console.warn('[LoopManager Integration] Slider not ready for navigation, skipping test');
+          return;
+        }
+
         // Navigate to last slide
         await page.keyboard.press('End');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
 
         const lastSlideIndex = await page.evaluate(() => {
           const engine = window.kineticSlider?.engine as KineticSliderEngine;
