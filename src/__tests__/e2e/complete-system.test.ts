@@ -134,7 +134,7 @@ test.describe('Complete System E2E - User Workflows', () => {
   });
 
   test.describe('Touch and Mouse User Workflows', () => {
-    test.skip('should handle swipe gestures from user perspective', async ({
+    test('should handle swipe gestures from user perspective', async ({
       page,
     }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');

@@ -127,9 +127,7 @@ test.describe('Auto-Play Controls', () => {
       expect(isPlaying).toBe(false);
     });
 
-    test('should toggle between play and pause states', async ({
-      page,
-    }) => {
+    test('should toggle between play and pause states', async ({ page }) => {
       // Initial state should be paused
       let isPlaying = await SliderStateHelpers.isPlaying(page);
       expect(isPlaying).toBe(false);
@@ -171,7 +169,8 @@ test.describe('Auto-Play Controls', () => {
       let slideAdvanced = false;
       for (let attempt = 0; attempt < 10; attempt++) {
         await page.waitForTimeout(config.mediumPause);
-        const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
+        const currentIndex =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
         if (currentIndex !== initialIndex) {
           slideAdvanced = true;
           break;
@@ -316,7 +315,7 @@ test.describe('Auto-Play Controls', () => {
       await page.waitForTimeout(config.shortPause);
 
       // Resume auto-play
-      const resumed = await AutoPlayHelpers.startAutoPlay(page, {
+      await AutoPlayHelpers.startAutoPlay(page, {
         verifyStart: false, // Don't strictly verify since it might already be playing
         method: 'button',
       });

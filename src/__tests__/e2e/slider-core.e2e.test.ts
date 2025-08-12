@@ -494,7 +494,7 @@ test.describe('Core Slider Functionality', () => {
       }
     });
 
-    test.skip('should loop from first slide to last slide in reverse', async ({
+    test('should loop from first slide to last slide in reverse', async ({
       page,
     }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');
@@ -631,7 +631,7 @@ test.describe('Core Slider Functionality', () => {
   });
 
   test.describe('Error Handling', () => {
-    test.skip('should handle navigation to invalid slide indices gracefully', async ({
+    test('should handle navigation to invalid slide indices gracefully', async ({
       page,
     }) => {
       // Try to trigger edge cases through rapid navigation
@@ -884,7 +884,7 @@ test.describe('Core Slider Functionality', () => {
   });
 
   test.describe('Performance', () => {
-    test.skip('should maintain smooth transitions during rapid navigation', async ({
+    test('should maintain smooth transitions during rapid navigation', async ({
       page,
     }) => {
       const _slider = page.locator('[data-testid="kinetic-slider"]');

@@ -3,7 +3,7 @@ import { navigateAndWait, testViewportResponsiveness } from './utils';
 import { CSS_SELECTORS } from '../../core/constants';
 
 test.describe('KineticSlider Basic Functionality', () => {
-  test.skip('should load the application', async ({ page }) => {
+  test('should load the application', async ({ page }) => {
     await navigateAndWait(page);
 
     // Check that the page title is correct
@@ -14,7 +14,7 @@ test.describe('KineticSlider Basic Functionality', () => {
     await expect(main).toBeVisible();
   });
 
-  test.skip('should have proper meta tags for SEO', async ({ page }) => {
+  test('should have proper meta tags for SEO', async ({ page }) => {
     await navigateAndWait(page);
 
     // Check for viewport meta tag
@@ -26,7 +26,7 @@ test.describe('KineticSlider Basic Functionality', () => {
     await expect(description).toHaveAttribute('content');
   });
 
-  test.skip('should be accessible', async ({ page }) => {
+  test('should be accessible', async ({ page }) => {
     await navigateAndWait(page);
 
     // Check for proper heading structure
@@ -42,7 +42,7 @@ test.describe('KineticSlider Basic Functionality', () => {
     }
   });
 
-  test.skip('should handle keyboard navigation', async ({ page }) => {
+  test('should handle keyboard navigation', async ({ page }) => {
     await navigateAndWait(page);
 
     // Test tab navigation
@@ -55,7 +55,7 @@ test.describe('KineticSlider Basic Functionality', () => {
     }
   });
 
-  test.skip('should be responsive', async ({ page }) => {
+  test('should be responsive', async ({ page }) => {
     await navigateAndWait(page);
 
     // Test all viewport sizes
@@ -70,7 +70,7 @@ test.describe('KineticSlider Basic Functionality', () => {
     });
   });
 
-  test.skip('should display image meta title', async ({ page }) => {
+  test('should display image meta title', async ({ page }) => {
     await navigateAndWait(page);
 
     const text = (await page.textContent('.image-meta span')) || '';
