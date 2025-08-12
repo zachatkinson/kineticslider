@@ -362,9 +362,17 @@ test.describe('Auto-Play Controls', () => {
       expect(currentIndex).toBe(0);
     });
 
-    test.skip('should stop at last slide when loop is disabled', async ({
+    test('should stop at last slide when loop is disabled', async ({
       page,
+      browserName,
+      isMobile,
     }) => {
+      // Mobile Chrome cannot start auto-play without user interaction
+      if (isMobile && browserName === 'chromium') {
+        // Skip test for mobile Chrome - fundamental browser limitation
+        test.skip();
+        return;
+      }
       // Extend timeout for this complex test involving navigation and auto-play
       test.setTimeout(60000);
 
