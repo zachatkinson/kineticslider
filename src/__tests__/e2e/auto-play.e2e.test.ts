@@ -241,9 +241,18 @@ test.describe('Auto-Play Controls', () => {
   });
 
   test.describe('Auto-Play with User Interactions', () => {
-    test.skip('should pause auto-play on manual navigation', async ({
+    test('should pause auto-play on manual navigation', async ({
       page,
+      browserName,
+      isMobile,
     }) => {
+      // Mobile Chrome cannot start auto-play without user interaction
+      // We need to handle this differently
+      if (isMobile && browserName === 'chromium') {
+        // Skip test for mobile Chrome - fundamental browser limitation
+        test.skip();
+        return;
+      }
       // Start auto-play
       const started = await AutoPlayHelpers.startAutoPlay(page);
       expect(started).toBe(true);
