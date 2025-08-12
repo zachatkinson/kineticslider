@@ -241,10 +241,35 @@ test.describe('Auto-Play Controls', () => {
   });
 
   test.describe('Auto-Play with User Interactions', () => {
-    test.skip('should pause auto-play on manual navigation', async ({ page }) => {
-      // Start auto-play
-      const started = await AutoPlayHelpers.startAutoPlay(page);
-      expect(started).toBe(true);
+    test('should pause auto-play on manual navigation', async ({
+      page,
+      isMobile,
+    }) => {
+      // Mobile browsers may have different auto-play behavior
+      // Some mobile browsers require user interaction before auto-play can start
+      const started = await AutoPlayHelpers.startAutoPlay(page, {
+        verifyStart: !isMobile, // Skip verification on mobile as it may need user interaction
+        method: isMobile ? 'button' : 'auto',
+      });
+      
+      // On mobile, auto-play might not start without user interaction
+      // This is expected browser behavior for mobile devices
+      if (isMobile && !started) {
+        // Try clicking play button directly as user interaction
+        const playButton = page.locator('[data-testid="play-button"]');
+        await playButton.click();
+        await page.waitForTimeout(config.shortPause);
+        
+        // Check if playing now
+        const isPlaying = await SliderStateHelpers.isPlaying(page);
+        if (!isPlaying) {
+          // Mobile auto-play restrictions - skip test
+          test.skip();
+          return;
+        }
+      } else {
+        expect(started).toBe(true);
+      }
 
       // Perform manual navigation
       await NavigationHelpers.navigateNext(page);
