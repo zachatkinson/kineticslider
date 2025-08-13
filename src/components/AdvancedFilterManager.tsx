@@ -57,23 +57,37 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
   const [activeFilters, setActiveFilters] = useState<FilterInstance[]>([]);
   const [availableFilters, setAvailableFilters] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [filtersLoading, setFiltersLoading] = useState(true);
   const [advancedPresets] = useState(() => new AdvancedFilterPresets());
 
   // Get all available filter names (only advanced PIXI filters, not composite effects)
-  const getAllAvailableFilters = useCallback((): string[] => {
-    const advancedFilters = advancedPresets.getAdvancedPresetNames();
+  const getAllAvailableFilters = useCallback(async (): Promise<string[]> => {
+    const advancedFilters = await advancedPresets.getAdvancedPresetNames();
     return advancedFilters;
   }, [advancedPresets]);
 
   // Update available filters (exclude active ones)
   useEffect(() => {
-    const allFilters = getAllAvailableFilters();
-    const usedFilterNames = activeFilters.map((f) => f.name);
-    const available = allFilters.filter(
-      (name) => !usedFilterNames.includes(name)
-    );
-    setAvailableFilters(available);
-  }, [activeFilters, getAllAvailableFilters]);
+    const updateFilters = async (): Promise<void> => {
+      try {
+        setFiltersLoading(true);
+        const allFilters = await getAllAvailableFilters();
+        const usedFilterNames = activeFilters.map((f) => f.name);
+        const available = allFilters.filter(
+          (name) => !usedFilterNames.includes(name)
+        );
+        setAvailableFilters(available);
+      } catch (error) {
+        onError(
+          `Failed to load filter list: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      } finally {
+        setFiltersLoading(false);
+      }
+    };
+
+    updateFilters();
+  }, [activeFilters, getAllAvailableFilters, onError]);
 
   // Stable filter state tracking with proper memoization
   const isApplyingRef = useRef(false);
@@ -4398,7 +4412,18 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
 
       {/* Add Filter Dropdown */}
       <div style={{ position: 'relative' }}>
-        {availableFilters.length > 0 ? (
+        {filtersLoading ? (
+          <div
+            style={{
+              padding: '0.5rem 1rem',
+              color: '#6b7280',
+              fontSize: '0.9rem',
+              fontStyle: 'italic',
+            }}
+          >
+            Loading advanced filters...
+          </div>
+        ) : availableFilters.length > 0 ? (
           <>
             <button
               data-testid="add-filter-button"
@@ -4471,7 +4496,9 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
           </>
         ) : (
           <p style={{ color: '#9ca3af', fontStyle: 'italic' }}>
-            All filters are in use
+            {activeFilters.length > 0
+              ? 'All filters are in use'
+              : 'No advanced filters available - this is normal in headless/CI environments'}
           </p>
         )}
       </div>

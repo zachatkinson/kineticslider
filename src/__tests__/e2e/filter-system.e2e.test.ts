@@ -94,53 +94,7 @@ async function addAndEnableFilter(
     await filterCheckbox.waitFor({ state: 'visible', timeout: 3000 });
     await expect(filterCheckbox).toBeChecked();
   } catch (error) {
-    // In CI environments, the filter UI might not be available
-    console.warn(
-      `Failed to add filter ${filterName}, checking if it already exists:`,
-      error
-    );
-
-    try {
-      // Check if filter is already active
-      const existingCheckbox = page.locator(
-        `[data-testid="filter-checkbox-${mappedName}"]`
-      );
-      const exists = await existingCheckbox.isVisible({ timeout: 1000 });
-
-      if (!exists) {
-        // Check if filter UI is available at all
-        const hasFilterUI = await page
-          .locator('[data-testid="filter-dropdown"]')
-          .isVisible({ timeout: 1000 });
-        if (!hasFilterUI) {
-          // Filter UI not available - this is OK in CI environments
-          console.warn(
-            `Filter UI not available in CI environment - skipping filter ${filterName}`
-          );
-          return;
-        }
-
-        // Filter UI exists but this specific filter failed - re-throw error
-        throw error;
-      }
-      // If it exists, continue - this is OK for rapid tests
-    } catch {
-      // Recovery failed - assume filter UI not available in CI
-      console.warn(`Filter UI not available for ${filterName} - skipping`);
-      return;
-    }
-  }
-}
-
-/**
- * Helper to check if filter UI is available
- */
-async function isFilterUIAvailable(page: Page): Promise<boolean> {
-  try {
-    const addFilterButton = page.locator('[data-testid="add-filter-button"]');
-    return await addFilterButton.isVisible({ timeout: 2000 });
-  } catch {
-    return false;
+    throw new Error(`Failed to add filter ${filterName}: ${error}`);
   }
 }
 
@@ -187,14 +141,6 @@ test.describe('Filter System E2E', () => {
     test('should open filter dropdown and show available filters @critical', async ({
       page,
     }) => {
-      // Check if filter UI is available (might not be in CI environments)
-      const hasFilterUI = await isFilterUIAvailable(page);
-      if (!hasFilterUI) {
-        console.warn('Filter UI not available - skipping test');
-        test.skip();
-        return;
-      }
-
       const addFilterButton = page.locator('[data-testid="add-filter-button"]');
       await addFilterButton.click();
 
@@ -210,14 +156,6 @@ test.describe('Filter System E2E', () => {
     });
 
     test('should apply individual filters correctly', async ({ page }) => {
-      // Check if filter UI is available (might not be in CI environments)
-      const hasFilterUI = await isFilterUIAvailable(page);
-      if (!hasFilterUI) {
-        console.warn('Filter UI not available - skipping test');
-        test.skip();
-        return;
-      }
-
       // Test each core filter individually
       const testFilters: CoreFilterName[] = ['glow', 'alpha', 'pixelate'];
 
@@ -228,16 +166,9 @@ test.describe('Filter System E2E', () => {
         // Add and verify filter
         await addAndEnableFilter(page, filterName);
 
-        // Verify filter is enabled (but allow for UI not being available)
-        try {
-          const enabledCount = await countEnabledFilters(page);
-          expect(enabledCount).toBe(1);
-        } catch {
-          // Filter counting failed - this is OK if UI isn't available
-          console.warn(
-            `Filter counting failed for ${filterName} - may not be available in CI`
-          );
-        }
+        // Verify filter is enabled
+        const enabledCount = await countEnabledFilters(page);
+        expect(enabledCount).toBe(1);
 
         // Verify slider still functions
         const slider = page.locator('[data-testid="kinetic-slider"]');
@@ -246,50 +177,24 @@ test.describe('Filter System E2E', () => {
     });
 
     test('should clear filters correctly', async ({ page }) => {
-      // Check if filter UI is available (might not be in CI environments)
-      const hasFilterUI = await isFilterUIAvailable(page);
-      if (!hasFilterUI) {
-        console.warn('Filter UI not available - skipping test');
-        test.skip();
-        return;
-      }
-
       // Add a filter first
       await addAndEnableFilter(page, 'glow');
 
-      // Verify filter is enabled (but allow for failures in CI)
-      try {
-        const enabledCount = await countEnabledFilters(page);
-        expect(enabledCount).toBe(1);
-      } catch {
-        console.warn('Filter counting failed - may not be available in CI');
-      }
+      // Verify filter is enabled
+      const enabledCount = await countEnabledFilters(page);
+      expect(enabledCount).toBe(1);
 
       // Clear filters
       await clearFiltersAndWait(page);
 
-      // Verify filters are cleared (optional in CI)
-      try {
-        const noFiltersMessage = page.locator('text=No filters active');
-        await expect(noFiltersMessage).toBeVisible();
-      } catch {
-        console.warn(
-          'Filter clear verification failed - may not be available in CI'
-        );
-      }
+      // Verify filters are cleared
+      const noFiltersMessage = page.locator('text=No filters active');
+      await expect(noFiltersMessage).toBeVisible();
     });
   });
 
   test.describe('Advanced Functionality', () => {
     test('should handle multiple filter combinations', async ({ page }) => {
-      // Check if filter UI is available (might not be in CI environments)
-      const hasFilterUI = await isFilterUIAvailable(page);
-      if (!hasFilterUI) {
-        console.warn('Filter UI not available - skipping test');
-        test.skip();
-        return;
-      }
-
       // Test filter combinations
       const combinations: [CoreFilterName, CoreFilterName][] = [
         ['glow', 'alpha'],
@@ -367,14 +272,6 @@ test.describe('Filter System E2E', () => {
     test('should maintain performance with multiple filters @performance', async ({
       page,
     }) => {
-      // Check if filter UI is available (might not be in CI environments)
-      const hasFilterUI = await isFilterUIAvailable(page);
-      if (!hasFilterUI) {
-        console.warn('Filter UI not available - skipping performance test');
-        test.skip();
-        return;
-      }
-
       // Set longer timeout for performance test
       test.setTimeout(60000); // Increased timeout for CI
 
@@ -386,14 +283,10 @@ test.describe('Filter System E2E', () => {
       const startTime = Date.now();
 
       for (const filterName of performanceFilters) {
-        try {
-          await addAndEnableFilter(page, filterName);
-          await page.waitForTimeout(500); // Allow filter to apply
-          await clearFiltersAndWait(page);
-          await page.waitForTimeout(300);
-        } catch (error) {
-          console.warn(`Performance test failed for ${filterName}:`, error);
-        }
+        await addAndEnableFilter(page, filterName);
+        await page.waitForTimeout(500); // Allow filter to apply
+        await clearFiltersAndWait(page);
+        await page.waitForTimeout(300);
       }
 
       const endTime = Date.now();
@@ -408,16 +301,6 @@ test.describe('Filter System E2E', () => {
     });
 
     test('should handle rapid filter interactions', async ({ page }) => {
-      // Check if filter UI is available (might not be in CI environments)
-      const hasFilterUI = await isFilterUIAvailable(page);
-      if (!hasFilterUI) {
-        console.warn(
-          'Filter UI not available - skipping rapid interaction test'
-        );
-        test.skip();
-        return;
-      }
-
       // Set longer timeout for this stress test
       test.setTimeout(60000);
 
@@ -427,44 +310,21 @@ test.describe('Filter System E2E', () => {
       for (let i = 0; i < 2; i++) {
         // Reduced from 3 to 2 iterations
         for (const filterName of rapidFilters) {
-          try {
-            await addAndEnableFilter(page, filterName);
-            await page.waitForTimeout(500); // Increased wait time
-          } catch (error) {
-            console.warn(`Rapid interaction failed for ${filterName}:`, error);
-            // If a filter fails, break the inner loop but continue test
-            break;
-          }
+          await addAndEnableFilter(page, filterName);
+          await page.waitForTimeout(500); // Increased wait time
         }
 
         // Clear and reset with more generous timing
-        try {
-          await clearFiltersAndWait(page);
-          await page.waitForTimeout(1000); // Longer wait between iterations
-        } catch (error) {
-          console.warn(`Clear filters failed in iteration ${i}:`, error);
-          // Try to recover by refreshing the page state
-          await page.evaluate(() => document.body.click());
-          await page.waitForTimeout(500);
-        }
+        await clearFiltersAndWait(page);
+        await page.waitForTimeout(1000); // Longer wait between iterations
       }
 
-      // Verify system stability (be more defensive)
-      try {
-        const slider = page.locator('[data-testid="kinetic-slider"]');
-        await expect(slider).toBeVisible({ timeout: 10000 });
+      // Verify system stability
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible({ timeout: 10000 });
 
-        const addButton = page.locator('[data-testid="add-filter-button"]');
-        await expect(addButton).toBeEnabled({ timeout: 5000 });
-      } catch (error) {
-        console.warn(
-          'Final stability check failed, but test infrastructure survived:',
-          error
-        );
-        // Don't fail the test if the page is still responsive
-        const isPageAlive = await page.evaluate(() => !!document.body);
-        expect(isPageAlive).toBe(true);
-      }
+      const addButton = page.locator('[data-testid="add-filter-button"]');
+      await expect(addButton).toBeEnabled({ timeout: 5000 });
     });
   });
 });

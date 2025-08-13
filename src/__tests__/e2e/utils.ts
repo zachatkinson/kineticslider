@@ -42,6 +42,28 @@ export async function navigateAndWait(
       timeout: timeouts.navigation,
     });
 
+    // Configure PIXI for headless/CI environments if needed
+    if (isCI) {
+      await page.evaluate(async () => {
+        // Auto-configure PIXI adapter for headless environments
+        if (typeof window !== 'undefined' && window.kineticSlider) {
+          // Add a flag to indicate we're in a test environment
+          (window as { testEnvironment?: boolean }).testEnvironment = true;
+        }
+
+        // Configure PIXI testing adapter for filter compatibility
+        try {
+          // Import and configure the PIXI testing adapter
+          const { autoConfigurePixiAdapter } = await import(
+            '../../testing/pixi-testing-adapter.js'
+          );
+          autoConfigurePixiAdapter();
+        } catch (error) {
+          console.log('PIXI testing adapter configuration skipped:', error);
+        }
+      });
+    }
+
     // Quick title check
     const title = await page.title();
     if (!title || !title.includes('KineticSlider')) {
