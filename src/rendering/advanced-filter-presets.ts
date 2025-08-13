@@ -1791,6 +1791,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       };
     }
 
+    // Use dynamic import for OldFilmFilter
+    const OldFilmFilter = this.getFilterClass('OldFilmFilter');
+    if (!OldFilmFilter) {
+      throw new Error(
+        'OldFilmFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new OldFilmFilter();
     filter.sepia = settings.sepia;
     filter.noise = settings.noise;
@@ -1913,6 +1921,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createRGBSplitEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for RGBSplitFilter
+    const RGBSplitFilter = this.getFilterClass('RGBSplitFilter');
+    if (!RGBSplitFilter) {
+      throw new Error(
+        'RGBSplitFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     if (options.customSettings) {
       const settings = options.customSettings;
@@ -1971,6 +1987,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createKawaseBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for KawaseBlurFilter
+    const KawaseBlurFilter = this.getFilterClass('KawaseBlurFilter');
+    if (!KawaseBlurFilter) {
+      throw new Error(
+        'KawaseBlurFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     let settings;
     if (
       options.customSettings &&
@@ -2097,6 +2121,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       };
     }
 
+    // Use dynamic import for MotionBlurFilter
+    const MotionBlurFilter = this.getFilterClass('MotionBlurFilter');
+    if (!MotionBlurFilter) {
+      throw new Error(
+        'MotionBlurFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new MotionBlurFilter({
       velocity: { x: settings.velocityX, y: settings.velocityY }, // Use PointData object format {x, y}
       kernelSize: settings.kernelSize, // Use correct default value (5 instead of 15)
@@ -2122,6 +2154,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createRadialBlurEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for RadialBlurFilter
+    const RadialBlurFilter = this.getFilterClass('RadialBlurFilter');
+    if (!RadialBlurFilter) {
+      throw new Error(
+        'RadialBlurFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     if (options.customSettings) {
       const settings = options.customSettings;
@@ -2265,6 +2305,16 @@ export class AdvancedFilterPresets extends EffectPresets {
       epsilon = 0.05;
     }
 
+    // Use dynamic import for MultiColorReplaceFilter
+    const MultiColorReplaceFilter = this.getFilterClass(
+      'MultiColorReplaceFilter'
+    );
+    if (!MultiColorReplaceFilter) {
+      throw new Error(
+        'MultiColorReplaceFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new MultiColorReplaceFilter(
       replacements, // Array of [originalColor, targetColor] pairs
       epsilon // tolerance for color matching
@@ -2288,6 +2338,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createCrosshatchEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for CrossHatchFilter
+    const CrossHatchFilter = this.getFilterClass('CrossHatchFilter');
+    if (!CrossHatchFilter) {
+      throw new Error(
+        'CrossHatchFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // CrossHatchFilter is a simple artistic effect with no configurable properties
     // It just applies the cross-hatching style transformation
     const filter = new CrossHatchFilter();
@@ -2314,6 +2372,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createShockwaveEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for ShockwaveFilter
+    const ShockwaveFilter = this.getFilterClass('ShockwaveFilter');
+    if (!ShockwaveFilter) {
+      throw new Error(
+        'ShockwaveFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     if (options.customSettings) {
       const settings = options.customSettings;
@@ -2650,6 +2716,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       };
     }
 
+    // Use dynamic import for GodrayFilter
+    const GodrayFilter = this.getFilterClass('GodrayFilter');
+    if (!GodrayFilter) {
+      throw new Error(
+        'GodrayFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new GodrayFilter({
       alpha: settings.alpha,
       angle: settings.angle,
@@ -2826,6 +2900,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         'FILTER_PRESETS'
       );
 
+      // Use dynamic import for BloomFilter
+      const BloomFilter = this.getFilterClass('BloomFilter');
+      if (!BloomFilter) {
+        throw new Error(
+          'BloomFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       const filter = new BloomFilter();
 
       // Apply custom settings - BloomFilter uses strengthX and strengthY properties
@@ -2869,6 +2951,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
+    // Use dynamic import for BloomFilter
+    const BloomFilter = this.getFilterClass('BloomFilter');
+    if (!BloomFilter) {
+      throw new Error(
+        'BloomFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new BloomFilter();
     filter.strength = settings.strength;
 
@@ -2892,6 +2982,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdvancedBloomEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for AdvancedBloomFilter
+    const AdvancedBloomFilter = this.getFilterClass('AdvancedBloomFilter');
+    if (!AdvancedBloomFilter) {
+      throw new Error(
+        'AdvancedBloomFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Use custom settings if provided, otherwise fall back to intensity presets
     if (options.customSettings) {
       const filter = new AdvancedBloomFilter({
@@ -3033,6 +3131,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         shadowColorValue = parseInt(hexColor, 16);
       }
 
+      // Use dynamic import for BevelFilter
+      const BevelFilter = this.getFilterClass('BevelFilter');
+      if (!BevelFilter) {
+        throw new Error(
+          'BevelFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       const filter = new BevelFilter({
         rotation:
           typeof options.customSettings.rotation === 'number'
@@ -3085,6 +3191,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
+    // Use dynamic import for BevelFilter
+    const BevelFilter = this.getFilterClass('BevelFilter');
+    if (!BevelFilter) {
+      throw new Error(
+        'BevelFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new BevelFilter({
       rotation: 45,
       thickness: settings.thickness,
@@ -3122,6 +3236,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         'Using custom settings for bulgePinch filter',
         'FILTER_PRESETS'
       );
+
+      // Use dynamic import for BulgePinchFilter
+      const BulgePinchFilter = this.getFilterClass('BulgePinchFilter');
+      if (!BulgePinchFilter) {
+        throw new Error(
+          'BulgePinchFilter not available - pixi-filters may not be loaded'
+        );
+      }
 
       const filter = new BulgePinchFilter();
 
@@ -3174,6 +3296,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
+    // Use dynamic import for BulgePinchFilter
+    const BulgePinchFilter = this.getFilterClass('BulgePinchFilter');
+    if (!BulgePinchFilter) {
+      throw new Error(
+        'BulgePinchFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new BulgePinchFilter();
     filter.center = [settings.centerX, settings.centerY];
     filter.radius = settings.radius;
@@ -3206,6 +3336,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         'Using custom settings for colorGradient filter',
         'FILTER_PRESETS'
       );
+
+      // Use dynamic import for ColorGradientFilter
+      const ColorGradientFilter = this.getFilterClass('ColorGradientFilter');
+      if (!ColorGradientFilter) {
+        throw new Error(
+          'ColorGradientFilter not available - pixi-filters may not be loaded'
+        );
+      }
 
       const filter = new ColorGradientFilter();
 
@@ -3293,6 +3431,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       intense: { alpha: 0.9 },
     };
     const settings = intensityMap[options.intensity];
+
+    // Use dynamic import for ColorGradientFilter
+    const ColorGradientFilter = this.getFilterClass('ColorGradientFilter');
+    if (!ColorGradientFilter) {
+      throw new Error(
+        'ColorGradientFilter not available - pixi-filters may not be loaded'
+      );
+    }
 
     // Use the simpler constructor approach for ColorGradientFilter
     const filter = new ColorGradientFilter();
@@ -3387,6 +3533,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         );
       }
 
+      // Use dynamic import for ColorMapFilter
+      const ColorMapFilter = this.getFilterClass('ColorMapFilter');
+      if (!ColorMapFilter) {
+        throw new Error(
+          'ColorMapFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       const filter = new ColorMapFilter({
         colorMap: colorMapTexture,
         mix: mix,
@@ -3435,6 +3589,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       ctx.fillRect(0, 0, 256, 256);
     }
     const initialTexture = Texture.from(canvas);
+
+    // Use dynamic import for ColorMapFilter
+    const ColorMapFilter = this.getFilterClass('ColorMapFilter');
+    if (!ColorMapFilter) {
+      throw new Error(
+        'ColorMapFilter not available - pixi-filters may not be loaded'
+      );
+    }
 
     const filter = new ColorMapFilter({
       colorMap: initialTexture,
@@ -3643,6 +3805,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       };
     }
 
+    // Use dynamic import for HslAdjustmentFilter
+    const HslAdjustmentFilter = this.getFilterClass('HslAdjustmentFilter');
+    if (!HslAdjustmentFilter) {
+      throw new Error(
+        'HslAdjustmentFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new HslAdjustmentFilter({
       alpha: settings.alpha,
       colorize: settings.colorize,
@@ -3698,6 +3868,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         'FILTER_PRESETS'
       );
 
+      // Use dynamic import for ColorOverlayFilter
+      const ColorOverlayFilter = this.getFilterClass('ColorOverlayFilter');
+      if (!ColorOverlayFilter) {
+        throw new Error(
+          'ColorOverlayFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       const filter = new ColorOverlayFilter(color, alpha);
 
       const filterChain = new FilterChain({ name: 'color-overlay-effect' });
@@ -3722,6 +3900,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       intense: { alpha: 0.8 },
     };
     const settings = intensityMap[options.intensity];
+
+    // Use dynamic import for ColorOverlayFilter
+    const ColorOverlayFilter = this.getFilterClass('ColorOverlayFilter');
+    if (!ColorOverlayFilter) {
+      throw new Error(
+        'ColorOverlayFilter not available - pixi-filters may not be loaded'
+      );
+    }
 
     // Create filter with a nice blue color by default
     const filter = new ColorOverlayFilter(0x4488ff, settings.alpha);
@@ -3780,6 +3966,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         'FILTER_PRESETS'
       );
 
+      // Use dynamic import for ColorReplaceFilter
+      const ColorReplaceFilter = this.getFilterClass('ColorReplaceFilter');
+      if (!ColorReplaceFilter) {
+        throw new Error(
+          'ColorReplaceFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       const filter = new ColorReplaceFilter({
         originalColor,
         targetColor,
@@ -3808,6 +4002,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       intense: { tolerance: 0.8 },
     };
     const settings = intensityMap[options.intensity];
+
+    // Use dynamic import for ColorReplaceFilter
+    const ColorReplaceFilter = this.getFilterClass('ColorReplaceFilter');
+    if (!ColorReplaceFilter) {
+      throw new Error(
+        'ColorReplaceFilter not available - pixi-filters may not be loaded'
+      );
+    }
 
     // Replace the specific color #D9B94A with lime green
     const filter = new ColorReplaceFilter({
@@ -3938,6 +4140,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         'FILTER_PRESETS'
       );
 
+      // Use dynamic import for ConvolutionFilter
+      const ConvolutionFilter = this.getFilterClass('ConvolutionFilter');
+      if (!ConvolutionFilter) {
+        throw new Error(
+          'ConvolutionFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       const filter = new ConvolutionFilter(matrix, width, height);
 
       const filterChain = new FilterChain({ name: 'convolution-effect' });
@@ -3979,6 +4189,14 @@ export class AdvancedFilterPresets extends EffectPresets {
         height: 3,
       },
     };
+
+    // Use dynamic import for ConvolutionFilter
+    const ConvolutionFilter = this.getFilterClass('ConvolutionFilter');
+    if (!ConvolutionFilter) {
+      throw new Error(
+        'ConvolutionFilter not available - pixi-filters may not be loaded'
+      );
+    }
 
     const settings = matrices[options.intensity];
     const filter = new ConvolutionFilter(
@@ -4026,6 +4244,14 @@ export class AdvancedFilterPresets extends EffectPresets {
           ? options.customSettings.blurY
           : 8;
       const strength = (blurX + blurY) / 2;
+
+      // Use dynamic import for BackdropBlurFilter
+      const BackdropBlurFilter = this.getFilterClass('BackdropBlurFilter');
+      if (!BackdropBlurFilter) {
+        throw new Error(
+          'BackdropBlurFilter not available - pixi-filters may not be loaded'
+        );
+      }
 
       const filter = new BackdropBlurFilter({
         strength,
@@ -4096,6 +4322,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
+    // Use dynamic import for BackdropBlurFilter
+    const BackdropBlurFilter = this.getFilterClass('BackdropBlurFilter');
+    if (!BackdropBlurFilter) {
+      throw new Error(
+        'BackdropBlurFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     const filter = new BackdropBlurFilter({
       strength: settings.strength,
       quality: settings.quality,
@@ -4160,6 +4394,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createReflectionEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for ReflectionFilter
+    const ReflectionFilter = this.getFilterClass('ReflectionFilter');
+    if (!ReflectionFilter) {
+      throw new Error(
+        'ReflectionFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     if (options.customSettings) {
       const settings = options.customSettings;
@@ -4369,6 +4611,14 @@ export class AdvancedFilterPresets extends EffectPresets {
             ? settings.color
             : 0x666666;
 
+      // Use dynamic import for SimpleLightmapFilter
+      const SimpleLightmapFilter = this.getFilterClass('SimpleLightmapFilter');
+      if (!SimpleLightmapFilter) {
+        throw new Error(
+          'SimpleLightmapFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       // Create the filter
       const filter = new SimpleLightmapFilter(lightmapTexture, color);
       filter.alpha = typeof settings.alpha === 'number' ? settings.alpha : 1;
@@ -4441,6 +4691,14 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     const lightmapTexture = Texture.from(canvas);
 
+    // Use dynamic import for SimpleLightmapFilter
+    const SimpleLightmapFilter = this.getFilterClass('SimpleLightmapFilter');
+    if (!SimpleLightmapFilter) {
+      throw new Error(
+        'SimpleLightmapFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Create the filter
     const filter = new SimpleLightmapFilter(lightmapTexture, settings.color);
     filter.alpha = settings.alpha;
@@ -4510,6 +4768,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Check for custom settings first
     if (options.customSettings) {
       const settings = options.customSettings;
+
+      // Use dynamic import for SimplexNoiseFilter
+      const SimplexNoiseFilter = this.getFilterClass('SimplexNoiseFilter');
+      if (!SimplexNoiseFilter) {
+        throw new Error(
+          'SimplexNoiseFilter not available - pixi-filters may not be loaded'
+        );
+      }
 
       // Create the filter with custom settings
       const filter = new SimplexNoiseFilter({
@@ -4610,6 +4876,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     };
     const settings = intensityMap[options.intensity];
 
+    // Use dynamic import for SimplexNoiseFilter
+    const SimplexNoiseFilter = this.getFilterClass('SimplexNoiseFilter');
+    if (!SimplexNoiseFilter) {
+      throw new Error(
+        'SimplexNoiseFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Create the filter with proper options
     const filter = new SimplexNoiseFilter({
       strength: settings.strength,
@@ -4691,6 +4965,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     if (options.customSettings) {
       const settings = options.customSettings;
 
+      // Use dynamic import for TiltShiftFilter
+      const TiltShiftFilter = this.getFilterClass('TiltShiftFilter');
+      if (!TiltShiftFilter) {
+        throw new Error(
+          'TiltShiftFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       // Convert pixel coordinates to normalized coordinates (0-1 range)
       const normalizeX = (x: number): number => x / 1200; // Stage width is 1200
       const normalizeY = (y: number): number => y / 400; // Stage height is 400
@@ -4742,6 +5024,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Larger gradientBlur = smoother transition between sharp and blurred areas
     const centerY = 0.5;
     const halfFocusHeight = settings.focusHeight / 2;
+
+    // Use dynamic import for TiltShiftFilter
+    const TiltShiftFilter = this.getFilterClass('TiltShiftFilter');
+    if (!TiltShiftFilter) {
+      throw new Error(
+        'TiltShiftFilter not available - pixi-filters may not be loaded'
+      );
+    }
 
     // These define the gradient transition points, not the focus boundaries
     const startY = centerY - halfFocusHeight;
@@ -4828,6 +5118,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createTwistEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for TwistFilter
+    const TwistFilter = this.getFilterClass('TwistFilter');
+    if (!TwistFilter) {
+      throw new Error(
+        'TwistFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     if (options.customSettings) {
       const settings = options.customSettings;
@@ -5002,6 +5300,14 @@ export class AdvancedFilterPresets extends EffectPresets {
     if (options.customSettings) {
       const settings = options.customSettings;
 
+      // Use dynamic import for ZoomBlurFilter
+      const ZoomBlurFilter = this.getFilterClass('ZoomBlurFilter');
+      if (!ZoomBlurFilter) {
+        throw new Error(
+          'ZoomBlurFilter not available - pixi-filters may not be loaded'
+        );
+      }
+
       // Create ZoomBlurFilter with custom settings
       const filter = new ZoomBlurFilter({
         strength:
@@ -5037,6 +5343,14 @@ export class AdvancedFilterPresets extends EffectPresets {
       intense: { strength: 0.3, radius: -1, innerRadius: 0 },
     };
     const settings = intensityMap[options.intensity];
+
+    // Use dynamic import for ZoomBlurFilter
+    const ZoomBlurFilter = this.getFilterClass('ZoomBlurFilter');
+    if (!ZoomBlurFilter) {
+      throw new Error(
+        'ZoomBlurFilter not available - pixi-filters may not be loaded'
+      );
+    }
 
     // Create ZoomBlurFilter with pixel coordinates like TwistFilter
     const filter = new ZoomBlurFilter({
