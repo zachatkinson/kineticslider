@@ -45,7 +45,7 @@ test.describe('Accessibility Implementation', () => {
       await slider.focus();
 
       // Navigate to next slide
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(500); // Allow for announcement
 
       // Check if a live region has content (may vary based on implementation)
@@ -68,7 +68,7 @@ test.describe('Accessibility Implementation', () => {
       await slider.focus();
 
       // Navigate right
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
 
       // Verify slide navigation worked (basic check that no errors occurred)
@@ -83,7 +83,7 @@ test.describe('Accessibility Implementation', () => {
       await slider.focus();
 
       // Press space to toggle play
-      await page.keyboard.press('Space');
+      await slider.press('Space');
       await page.waitForTimeout(300);
 
       // Check for play state changes (could be visual indicators or aria attributes)
@@ -103,7 +103,7 @@ test.describe('Accessibility Implementation', () => {
       await slider.focus();
 
       // Press escape (should stop auto-play if running)
-      await page.keyboard.press('Escape');
+      await slider.press('Escape');
       await page.waitForTimeout(300);
 
       // Verify escape handling (test passes if no errors thrown)
@@ -183,7 +183,7 @@ test.describe('Accessibility Implementation', () => {
       // Navigate to trigger announcement
       const slider = page.locator('[data-testid="kinetic-slider"]');
       await slider.focus();
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(500);
 
       // Check that ARIA attributes exist and are valid
@@ -198,7 +198,7 @@ test.describe('Accessibility Implementation', () => {
       await slider.focus();
 
       // Navigate to second slide
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(500);
 
       // Check for aria-current indicators (if implemented)
@@ -219,7 +219,7 @@ test.describe('Accessibility Implementation', () => {
       await slider.focus();
 
       // Start transition
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(500);
 
       // Check that accessibility features remain functional during transition

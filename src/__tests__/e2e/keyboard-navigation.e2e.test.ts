@@ -27,10 +27,10 @@ test.describe('Keyboard Navigation E2E', () => {
       consoleMessages.push(msg.text());
     });
 
-    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    const slider = page.locator('[data-testid="kinetic-slider"]');
 
     // Focus on slider with improved CI stability strategy
-    await expect(_slider).toBeVisible();
+    await expect(slider).toBeVisible();
 
     // Enhanced focus strategy for CI environments
     const establishFocus = async (): Promise<boolean> => {
@@ -41,32 +41,32 @@ test.describe('Keyboard Navigation E2E', () => {
           // Try multiple focus strategies
           if (attempt === 1) {
             // Strategy 1: Direct focus
-            await _slider.focus();
+            await slider.focus();
           } else if (attempt === 2) {
             // Strategy 2: Click then focus
-            await _slider.click();
+            await slider.click();
             await page.waitForTimeout(100);
-            await _slider.focus();
+            await slider.focus();
           } else if (attempt === 3) {
             // Strategy 3: Tab navigation to element
             await page.keyboard.press('Tab');
             await page.waitForTimeout(100);
           } else if (attempt === 4) {
             // Strategy 4: JavaScript focus
-            await _slider.evaluate((el) => {
+            await slider.evaluate((el) => {
               el.focus();
               el.dispatchEvent(new FocusEvent('focus'));
             });
           } else {
             // Strategy 5: Force focus with click and JS
-            await _slider.click({ force: true });
-            await _slider.evaluate((el) => el.focus());
+            await slider.click({ force: true });
+            await slider.evaluate((el) => el.focus());
           }
 
           await page.waitForTimeout(150); // Allow focus to stabilize
 
           // Check if focus was established
-          const isFocused = await _slider.evaluate((el) => {
+          const isFocused = await slider.evaluate((el) => {
             return (
               el === document.activeElement ||
               el.contains(document.activeElement)
@@ -96,7 +96,7 @@ test.describe('Keyboard Navigation E2E', () => {
       );
 
       // Still test that keyboard events are handled even if focus isn't perfect
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(500);
 
       // Just verify no errors occurred
@@ -124,7 +124,7 @@ test.describe('Keyboard Navigation E2E', () => {
     );
 
     // Navigate with arrow key
-    await page.keyboard.press('ArrowRight');
+    await slider.press('ArrowRight');
     await page.waitForTimeout(1000); // Reduced for CI performance
 
     // Check debug info after navigation
@@ -153,7 +153,7 @@ test.describe('Keyboard Navigation E2E', () => {
       expect(currentIndex).toBe(1);
 
       // Test previous navigation
-      await page.keyboard.press('ArrowLeft');
+      await slider.press('ArrowLeft');
       await page.waitForTimeout(500);
       const newIndex = await page.evaluate(() =>
         (
@@ -166,13 +166,13 @@ test.describe('Keyboard Navigation E2E', () => {
       expect(initialIndex).toBeGreaterThanOrEqual(0);
 
       // Ensure basic accessibility
-      const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+      const ariaValueNow = await slider.getAttribute('aria-valuenow');
       expect(ariaValueNow).toBeTruthy();
     }
   });
 
   test('should handle escape key for accessibility', async ({ page }) => {
-    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    const slider = page.locator('[data-testid="kinetic-slider"]');
 
     // Start auto-play
     await page.evaluate(() =>
@@ -195,7 +195,7 @@ test.describe('Keyboard Navigation E2E', () => {
 
     // If webkit auto-play isn't working, skip the full test but verify escape key doesn't crash
     if (!isPlayingWorking) {
-      await page.keyboard.press('Escape');
+      await slider.press('Escape');
       await page.waitForTimeout(500);
       // Test passes if no errors occurred
       expect(true).toBe(true);
@@ -203,8 +203,8 @@ test.describe('Keyboard Navigation E2E', () => {
     }
 
     // Focus and press escape
-    await _slider.focus();
-    await page.keyboard.press('Escape');
+    await slider.focus();
+    await slider.press('Escape');
 
     // Should pause auto-play and reset to first slide
     await page.waitForFunction(
@@ -222,10 +222,10 @@ test.describe('Keyboard Navigation E2E', () => {
   });
 
   test('should announce slide changes to screen readers', async ({ page }) => {
-    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    const slider = page.locator('[data-testid="kinetic-slider"]');
 
     // Focus on slider
-    await _slider.focus();
+    await slider.focus();
 
     const initialIndex = await page.evaluate(() =>
       (
@@ -233,10 +233,10 @@ test.describe('Keyboard Navigation E2E', () => {
       )?.getCurrentIndex?.()
     );
 
-    const initialAriaValue = await _slider.getAttribute('aria-valuenow');
+    const initialAriaValue = await slider.getAttribute('aria-valuenow');
 
     // Navigate to next slide
-    await page.keyboard.press('ArrowRight');
+    await slider.press('ArrowRight');
     await page.waitForTimeout(500);
 
     const newIndex = await page.evaluate(() =>
@@ -251,13 +251,13 @@ test.describe('Keyboard Navigation E2E', () => {
       // Based on implementation: aria-valuenow = String(getCurrentIndex() + 1)
       // So if initialIndex=0, initialAria="1"; if newIndex=1, newAria should be "2"
       const expectedAriaValue = String((newIndex || 0) + 1);
-      await expect(_slider).toHaveAttribute('aria-valuenow', expectedAriaValue);
+      await expect(slider).toHaveAttribute('aria-valuenow', expectedAriaValue);
 
       // Also verify that ARIA value actually changed from initial
-      const newAriaValue = await _slider.getAttribute('aria-valuenow');
+      const newAriaValue = await slider.getAttribute('aria-valuenow');
       expect(newAriaValue).not.toBe(initialAriaValue);
 
-      await expect(_slider).toHaveAttribute(
+      await expect(slider).toHaveAttribute(
         'aria-valuetext',
         /slide \d+ of \d+/i
       );
@@ -269,18 +269,18 @@ test.describe('Keyboard Navigation E2E', () => {
       }
     } else {
       // Navigation not working - test basic accessibility
-      const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+      const ariaValueNow = await slider.getAttribute('aria-valuenow');
       expect(ariaValueNow).toBeTruthy();
 
-      const ariaValueText = await _slider.getAttribute('aria-valuetext');
+      const ariaValueText = await slider.getAttribute('aria-valuetext');
       expect(ariaValueText).toBeTruthy();
     }
   });
 
   test('should support keyboard shortcuts', async ({ page }) => {
-    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    const slider = page.locator('[data-testid="kinetic-slider"]');
 
-    await _slider.focus();
+    await slider.focus();
 
     const initialIndex = await page.evaluate(() =>
       (
@@ -289,7 +289,7 @@ test.describe('Keyboard Navigation E2E', () => {
     );
 
     // Test Home key (first slide)
-    await page.keyboard.press('Home');
+    await slider.press('Home');
     await page.waitForTimeout(500);
 
     const homeIndex = await page.evaluate(() =>
@@ -304,7 +304,7 @@ test.describe('Keyboard Navigation E2E', () => {
       (homeIndex === 0 || homeIndex !== initialIndex)
     ) {
       // Navigation working - test End key
-      await page.keyboard.press('End');
+      await slider.press('End');
       await page.waitForTimeout(500);
 
       const endIndex = await page.evaluate(() =>
@@ -322,7 +322,7 @@ test.describe('Keyboard Navigation E2E', () => {
       }
 
       // Test Space key (play/pause) - should not throw errors
-      await page.keyboard.press('Space');
+      await slider.press('Space');
       await page.waitForTimeout(500);
 
       const isPlayingAfterSpace = await page.evaluate(() =>
@@ -340,7 +340,7 @@ test.describe('Keyboard Navigation E2E', () => {
       expect(initialIndex).toBeGreaterThanOrEqual(0);
 
       // Ensure basic accessibility
-      const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+      const ariaValueNow = await slider.getAttribute('aria-valuenow');
       expect(ariaValueNow).toBeTruthy();
     }
   });
@@ -350,7 +350,7 @@ test.describe('Keyboard Navigation E2E', () => {
     await waitForSliderAriaAttributes(page);
     await waitForSliderFocus(page);
 
-    const _slider = page.locator('[data-testid="kinetic-slider"]');
+    const slider = page.locator('[data-testid="kinetic-slider"]');
 
     const initialIndex = await page.evaluate(() =>
       (
@@ -359,7 +359,7 @@ test.describe('Keyboard Navigation E2E', () => {
     );
 
     // Navigate to slide 2 with number key
-    await page.keyboard.press('2');
+    await slider.press('2');
     await page.waitForTimeout(500);
 
     const slide2Index = await page.evaluate(() =>
@@ -371,7 +371,7 @@ test.describe('Keyboard Navigation E2E', () => {
     // Check if navigation is working
     if (slide2Index !== undefined && slide2Index === 1) {
       // Navigation working - test another number key
-      await page.keyboard.press('3');
+      await slider.press('3');
       await page.waitForTimeout(500);
 
       const slide3Index = await page.evaluate(() =>
@@ -385,7 +385,7 @@ test.describe('Keyboard Navigation E2E', () => {
       expect(initialIndex).toBeGreaterThanOrEqual(0);
 
       // Ensure basic accessibility - now guaranteed to be present
-      const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+      const ariaValueNow = await slider.getAttribute('aria-valuenow');
       expect(ariaValueNow).toBeTruthy();
     }
   });

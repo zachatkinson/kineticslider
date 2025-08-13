@@ -309,7 +309,8 @@ test.describe('LoopManager E2E Tests', () => {
       await NavigationHelpers.navigateToLast(page);
 
       // Try to navigate forward (should not loop)
-      await page.keyboard.press('ArrowRight');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(config.mediumPause);
 
       // Should still be at last slide
@@ -343,7 +344,8 @@ test.describe('LoopManager E2E Tests', () => {
 
       // Navigate to last and try to go forward
       await NavigationHelpers.navigateToLast(page);
-      await page.keyboard.press('ArrowRight');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(config.mediumPause);
 
       // Should stay at last

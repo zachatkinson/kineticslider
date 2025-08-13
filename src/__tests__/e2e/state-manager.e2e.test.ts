@@ -30,13 +30,12 @@ test.describe('StateManager E2E Tests', () => {
     test('should synchronize slide state across UI components', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       const initialIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate to slide 2 using helper function
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
       const slideIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
@@ -80,8 +79,8 @@ test.describe('StateManager E2E Tests', () => {
     });
 
     test('should synchronize play state across controls', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Start auto-play using helper function
       const autoPlayStarted = await AutoPlayHelpers.startAutoPlay(page);
@@ -104,8 +103,8 @@ test.describe('StateManager E2E Tests', () => {
           await expect(autoPlayIndicator).toBeVisible();
         }
 
-        // Check _slider element state (if it exists)
-        const sliderState = await _slider.getAttribute('data-playing');
+        // Check slider element state (if it exists)
+        const sliderState = await slider.getAttribute('data-playing');
         if (sliderState !== null) {
           expect(sliderState).toBe('true');
         }
@@ -160,9 +159,8 @@ test.describe('StateManager E2E Tests', () => {
         (await loadingProgress.count()) > 0
       ) {
         // Trigger navigation that might cause loading
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
-        await page.keyboard.press('ArrowRight');
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.press('ArrowRight');
 
         // Check if loading states are synchronized
         if ((await loadingSpinner.count()) > 0) {
@@ -184,8 +182,8 @@ test.describe('StateManager E2E Tests', () => {
     }) => {
       // Use minimal test approach to prevent browser crashes
       try {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         const initialIndex =
           (await SliderStateHelpers.getCurrentSlideIndex(page)) || 0;
@@ -193,7 +191,7 @@ test.describe('StateManager E2E Tests', () => {
         // Very limited navigation to test consistency without overloading browser
         let finalIndex = initialIndex;
         try {
-          await page.keyboard.press('ArrowRight');
+          await slider.press('ArrowRight');
           await page.waitForTimeout(200);
           finalIndex =
             (await SliderStateHelpers.getCurrentSlideIndex(page)) || 0;
@@ -206,7 +204,7 @@ test.describe('StateManager E2E Tests', () => {
         expect(finalIndex).toBeGreaterThanOrEqual(0);
 
         // Basic functionality check without causing browser stress
-        const isVisible = await _slider.isVisible().catch(() => false);
+        const isVisible = await slider.isVisible().catch(() => false);
         expect(isVisible).toBe(true);
       } catch {
         // If test causes issues, just verify page is still responsive
@@ -221,13 +219,13 @@ test.describe('StateManager E2E Tests', () => {
     test('should persist slide position across page refreshes', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       const initialIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate to specific slide
-      await page.keyboard.press('Digit3'); // Go to slide 3
+      await slider.press('Digit3'); // Go to slide 3
       await page.waitForTimeout(500);
 
       const slideIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -253,11 +251,10 @@ test.describe('StateManager E2E Tests', () => {
     });
 
     test('should persist auto-play preference', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Enable auto-play
-      await page.keyboard.press('Space');
+      await slider.press('Space');
       await page.waitForTimeout(300);
 
       // Refresh page
@@ -330,13 +327,13 @@ test.describe('StateManager E2E Tests', () => {
       });
 
       // Now try to use the slider normally
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
-      await page.keyboard.press('ArrowRight');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
 
       // Should still function despite storage issues
-      await expect(_slider).toBeVisible();
+      await expect(slider).toBeVisible();
 
       // Check slide index
       const currentSlide = page.locator('[data-current-slide]');
@@ -361,26 +358,26 @@ test.describe('StateManager E2E Tests', () => {
         .first();
 
       if ((await liveRegion.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Navigate to trigger announcement
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
         await page.waitForTimeout(500);
 
         const content = await liveRegion.textContent();
         expect(content).toMatch(/slide|image|[0-9]/i);
       } else {
         // If no live region, ensure basic accessibility is still present
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Wait for accessibility manager to initialize
         await StateSynchronizer.waitForEngineInitialization(page, 5000);
         await page.waitForTimeout(500); // Additional time for ARIA attributes
 
-        const ariaValueNow = await _slider.getAttribute('aria-valuenow');
-        const ariaValueText = await _slider.getAttribute('aria-valuetext');
+        const ariaValueNow = await slider.getAttribute('aria-valuenow');
+        const ariaValueText = await slider.getAttribute('aria-valuetext');
 
         // Should have some form of accessibility labeling
         expect(ariaValueNow || ariaValueText).toBeTruthy();
@@ -391,8 +388,8 @@ test.describe('StateManager E2E Tests', () => {
       const announcement = page.locator('#slider-announcements');
 
       if ((await announcement.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Get initial announcement text
         const initialContent = await announcement.textContent();
@@ -401,7 +398,7 @@ test.describe('StateManager E2E Tests', () => {
         let toggleAttempted = false;
 
         // Try spacebar first
-        await page.keyboard.press('Space');
+        await slider.press('Space');
         await page.waitForTimeout(1000); // Longer wait for webkit announcements
 
         let content = await announcement.textContent();
@@ -462,17 +459,20 @@ test.describe('StateManager E2E Tests', () => {
         .first();
 
       if ((await announcement.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         const initialIndex =
           await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Rapid navigation that would trigger multiple announcements
-        await page.keyboard.press('ArrowRight');
-        await page.keyboard.press('ArrowRight');
-        await page.keyboard.press('Space'); // Play
-        await page.keyboard.press('Space'); // Pause
+        await slider.press('ArrowRight');
+        await page.waitForTimeout(100); // Add delay between rapid key sequences
+        await slider.press('ArrowRight');
+        await page.waitForTimeout(150); // Add delay between rapid key sequences
+        await slider.press('Space'); // Play
+        await page.waitForTimeout(150); // Add delay between rapid key sequences
+        await slider.press('Space'); // Pause
         await page.waitForTimeout(1000);
 
         const finalIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -496,11 +496,11 @@ test.describe('StateManager E2E Tests', () => {
 
       if ((await announcement.count()) > 0) {
         // Try to trigger an error condition
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Try invalid navigation
-        await page.keyboard.press('Digit9'); // Likely invalid slide
+        await slider.press('Digit9'); // Likely invalid slide
         await page.waitForTimeout(500);
 
         const content = await announcement.textContent();
@@ -515,11 +515,11 @@ test.describe('StateManager E2E Tests', () => {
       );
 
       if ((await helpAnnouncement.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Trigger help mode
-        await page.keyboard.press('F1');
+        await slider.press('F1');
         await page.waitForTimeout(500);
 
         const helpContent = await helpAnnouncement.textContent();
@@ -535,12 +535,12 @@ test.describe('StateManager E2E Tests', () => {
       );
 
       if ((await performanceDisplay.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Trigger multiple renders
         for (let i = 0; i < 5; i++) {
-          await page.keyboard.press('ArrowRight');
+          await slider.press('ArrowRight');
           await page.waitForTimeout(200);
         }
 
@@ -555,12 +555,12 @@ test.describe('StateManager E2E Tests', () => {
 
       if ((await memoryDisplay.count()) > 0) {
         // Perform memory-intensive operations
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Rapid navigation to potentially stress memory
         for (let i = 0; i < 20; i++) {
-          await page.keyboard.press('ArrowRight');
+          await slider.press('ArrowRight');
           await page.waitForTimeout(50);
         }
 
@@ -575,13 +575,15 @@ test.describe('StateManager E2E Tests', () => {
       );
 
       if ((await interactionDisplay.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Various interactions
-        await page.keyboard.press('ArrowRight');
-        await page.keyboard.press('Space');
-        await page.keyboard.press('Home');
+        await slider.press('ArrowRight');
+        await page.waitForTimeout(100); // Add delay between rapid key sequences
+        await slider.press('Space');
+        await page.waitForTimeout(100); // Add delay between rapid key sequences
+        await slider.press('Home');
         await page.waitForTimeout(500);
 
         const interactionText = await interactionDisplay.textContent();
@@ -628,16 +630,17 @@ test.describe('StateManager E2E Tests', () => {
       });
 
       if (hasReduxDevTools) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Perform actions that should be logged
-        await page.keyboard.press('ArrowRight');
-        await page.keyboard.press('Space');
+        await slider.press('ArrowRight');
+        await page.waitForTimeout(100); // Add delay between rapid key sequences
+        await slider.press('Space');
         await page.waitForTimeout(300);
 
         // DevTools should be functional (this is implicit - no errors should occur)
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
       }
     });
 
@@ -648,14 +651,14 @@ test.describe('StateManager E2E Tests', () => {
       );
 
       if ((await timeControlls.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
+        const slider = page.locator('[data-testid="kinetic-slider"]');
         const currentSlide = page.locator('[data-current-slide]');
-        await _slider.focus();
+        await slider.focus();
 
         // Perform sequence of actions
-        await page.keyboard.press('ArrowRight'); // Action 1
+        await slider.press('ArrowRight'); // Action 1
         await page.waitForTimeout(200);
-        await page.keyboard.press('ArrowRight'); // Action 2
+        await slider.press('ArrowRight'); // Action 2
         await page.waitForTimeout(200);
 
         // Check slide index
@@ -685,12 +688,12 @@ test.describe('StateManager E2E Tests', () => {
         (await exportButton.count()) > 0 &&
         (await importButton.count()) > 0
       ) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
+        const slider = page.locator('[data-testid="kinetic-slider"]');
         const currentSlide = page.locator('[data-current-slide]');
-        await _slider.focus();
+        await slider.focus();
 
         // Navigate to specific state
-        await page.keyboard.press('Digit3');
+        await slider.press('Digit3');
         await page.waitForTimeout(300);
 
         // Export state
@@ -698,7 +701,7 @@ test.describe('StateManager E2E Tests', () => {
         await page.waitForTimeout(300);
 
         // Change state
-        await page.keyboard.press('Home');
+        await slider.press('Home');
         await page.waitForTimeout(300);
 
         // Import previous state
@@ -730,12 +733,12 @@ test.describe('StateManager E2E Tests', () => {
         waitForSlider: true,
       });
 
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       // Should be functional with default state
-      await _slider.focus();
-      await page.keyboard.press('ArrowRight');
+      await slider.focus();
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
 
       // Check slide index
@@ -746,7 +749,7 @@ test.describe('StateManager E2E Tests', () => {
         await expect(currentSlide).toBeVisible();
       } else {
         // If currentSlide doesn't exist, test that slider is still functional
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
       }
     });
 
@@ -756,20 +759,20 @@ test.describe('StateManager E2E Tests', () => {
       // Reframe the test to focus on what we actually care about: system stability
       test.slow(); // Mark as slow test to get 3x timeout
 
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
       await page.waitForTimeout(500);
 
       // Verify initial system state
-      await expect(_slider).toBeVisible();
+      await expect(slider).toBeVisible();
 
       // Test system stability with mixed operations instead of trying to cause failures
       const operations = [
-        () => page.keyboard.press('ArrowRight'),
-        () => page.keyboard.press('ArrowLeft'),
-        () => page.keyboard.press('Space'),
-        () => page.keyboard.press('Home'),
-        () => page.keyboard.press('End'),
+        () => slider.press('ArrowRight'),
+        () => slider.press('ArrowLeft'),
+        () => slider.press('Space'),
+        () => slider.press('Home'),
+        () => slider.press('End'),
       ];
 
       // Perform operations in a controlled manner
@@ -780,11 +783,11 @@ test.describe('StateManager E2E Tests', () => {
         }
 
         // Verify system remains stable after each cycle
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
       }
 
       // Final stability check - ensure slider is still functional
-      await page.keyboard.press('Home');
+      await slider.press('Home');
       await page.waitForTimeout(500);
 
       // Wait for system to be fully stable
@@ -829,12 +832,13 @@ test.describe('StateManager E2E Tests', () => {
       const errorDisplay = page.locator('[data-testid="_error-message"]');
 
       // Trigger potential middleware error
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Try operations that might fail
-      await page.keyboard.press('Digit0'); // Invalid slide
-      await page.keyboard.press('ArrowRight');
+      await slider.press('Digit0'); // Invalid slide
+      await page.waitForTimeout(100); // Add delay between rapid key sequences
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
 
       // Should either show error or handle gracefully
@@ -843,15 +847,15 @@ test.describe('StateManager E2E Tests', () => {
         expect(errorText).toBeTruthy();
       } else {
         // No error shown - should still be functional
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
       }
     });
 
     test('should handle state rollback on errors', async ({ page }) => {
       // Use minimal approach to prevent browser crashes
       try {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Test basic state handling without complex operations
         const initialIndex =
@@ -861,7 +865,7 @@ test.describe('StateManager E2E Tests', () => {
         expect(initialIndex).toBeGreaterThanOrEqual(0);
 
         // Test that slider remains functional without triggering complex state changes
-        const isVisible = await _slider.isVisible().catch(() => false);
+        const isVisible = await slider.isVisible().catch(() => false);
         expect(isVisible).toBe(true);
 
         // Test minimal state operation
@@ -887,12 +891,12 @@ test.describe('StateManager E2E Tests', () => {
       const reactComponent = page.locator('[data-react-component]');
 
       if ((await reactComponent.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
+        const slider = page.locator('[data-testid="kinetic-slider"]');
         const currentSlide = page.locator('[data-current-slide]');
-        await _slider.focus();
+        await slider.focus();
 
         // Trigger state change
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
         await page.waitForTimeout(300);
 
         // React components should update
@@ -908,18 +912,18 @@ test.describe('StateManager E2E Tests', () => {
     });
 
     test('should handle concurrent state updates', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
       await page.waitForTimeout(500);
 
       // Get initial state
       await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Perform sequential state updates instead of concurrent to avoid race conditions
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(200);
 
-      await page.keyboard.press('Space'); // Toggle play/pause
+      await slider.press('Space'); // Toggle play/pause
       await page.waitForTimeout(200);
 
       // Check that system is still stable after multiple updates

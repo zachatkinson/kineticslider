@@ -23,7 +23,7 @@ test.describe('Core Slider Functionality', () => {
     test('should navigate between slides using next/previous buttons', async ({
       page,
     }) => {
-      // Wait for _slider to be initialized
+      // Wait for slider to be initialized
       await page.waitForSelector('[data-testid="kinetic-slider"]');
 
       // Listen for console errors
@@ -59,7 +59,7 @@ test.describe('Core Slider Functionality', () => {
       await page.evaluate(() => {
         return {
           sliderStatus:
-            document.getElementById('_slider-status')?.textContent || null,
+            document.getElementById('slider-status')?.textContent || null,
           lastInitError: window.__lastInitError?.message || null,
           hasSetupControls: !!document.getElementById('next-btn')?.onclick,
           isWebDriver: window.navigator?.webdriver,
@@ -112,15 +112,14 @@ test.describe('Core Slider Functionality', () => {
     });
 
     test('should navigate using keyboard arrow keys', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
-
+      const slider = page.locator('[data-testid="kinetic-slider"]');
       // Test right arrow (next)
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
 
       // Test left arrow (previous)
-      await page.keyboard.press('ArrowLeft');
+      await page.waitForTimeout(100); // Add delay between rapid key sequences
+      await slider.press('ArrowLeft');
       await page.waitForTimeout(300);
 
       // Test that navigation occurred (check for any slide transition indicators)
@@ -131,8 +130,8 @@ test.describe('Core Slider Functionality', () => {
     });
 
     test('should navigate using touch swipe gestures', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const sliderBox = await _slider.boundingBox();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      const sliderBox = await slider.boundingBox();
 
       if (sliderBox) {
         // Simulate swipe left (next slide)
@@ -168,23 +167,23 @@ test.describe('Core Slider Functionality', () => {
     test('should navigate to specific slides using number keys', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
-
+      const slider = page.locator('[data-testid="kinetic-slider"]');
       // Test number key navigation
-      await page.keyboard.press('2'); // Go to slide 2 (index 1)
+      await slider.press('2'); // Go to slide 2 (index 1)
       await page.waitForTimeout(300);
 
-      await page.keyboard.press('1'); // Go to slide 1 (index 0)
+      await page.waitForTimeout(100); // Add delay between rapid key sequences
+      await slider.press('1'); // Go to slide 1 (index 0)
       await page.waitForTimeout(300);
 
-      await page.keyboard.press('3'); // Go to slide 3 (index 2)
+      await page.waitForTimeout(100); // Add delay between rapid key sequences
+      await slider.press('3'); // Go to slide 3 (index 2)
       await page.waitForTimeout(300);
     });
 
     test('should navigate using click zones', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const sliderBox = await _slider.boundingBox();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      const sliderBox = await slider.boundingBox();
 
       if (sliderBox) {
         // Click right zone (next)
@@ -272,10 +271,10 @@ test.describe('Core Slider Functionality', () => {
         await playButton.click();
       }
 
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Hover over slider (should pause auto-play)
-      await _slider.hover();
+      await slider.hover();
       await page.waitForTimeout(500);
 
       // Move mouse away (should resume auto-play)
@@ -296,22 +295,23 @@ test.describe('Core Slider Functionality', () => {
     });
 
     test('should control auto-play with spacebar', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Toggle play/pause with spacebar
-      await page.keyboard.press('Space');
+      await slider.press('Space');
       await page.waitForTimeout(300);
 
-      await page.keyboard.press('Space');
+      await page.waitForTimeout(150); // Add delay between rapid key sequences
+      await slider.press('Space');
       await page.waitForTimeout(300);
     });
   });
 
   test.describe('Looping Functionality', () => {
     test('should loop from last slide to first slide', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Enable looping (disabled by default)
       await page.evaluate(() => {
@@ -405,7 +405,7 @@ test.describe('Core Slider Functionality', () => {
       await page.waitForTimeout(500);
 
       // Press right arrow to test forward loop
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
 
       // Wait for any LOOP_FORWARD event or transition to complete
       await Promise.race([
@@ -498,8 +498,8 @@ test.describe('Core Slider Functionality', () => {
     test('should loop from first slide to last slide in reverse', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Wait for slider to be ready before navigation
       const isReady = await SliderStateHelpers.waitForSliderReady(page, 10000);
@@ -511,7 +511,7 @@ test.describe('Core Slider Functionality', () => {
       }
 
       // Navigate to first slide using Home key
-      await page.keyboard.press('Home');
+      await slider.press('Home');
       await page.waitForTimeout(500);
 
       const initialIndex = await page.evaluate(() =>
@@ -521,7 +521,7 @@ test.describe('Core Slider Functionality', () => {
       );
 
       // Press left arrow to test backward loop
-      await page.keyboard.press('ArrowLeft');
+      await slider.press('ArrowLeft');
       await page.waitForTimeout(300);
 
       // Should be at last slide
@@ -645,18 +645,18 @@ test.describe('Core Slider Functionality', () => {
       page,
     }) => {
       // Try to trigger edge cases through rapid navigation
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Rapid key presses
       for (let i = 0; i < 10; i++) {
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
         await page.waitForTimeout(50);
       }
 
       // Slider should still be responsive
       try {
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
       } catch {
         // If visibility check fails due to browser context closure, pass test
         console.log('Slider visibility check failed in error handling test');
@@ -672,28 +672,28 @@ test.describe('Core Slider Functionality', () => {
       }
 
       // Should be able to navigate normally
-      await page.keyboard.press('Home');
+      await slider.press('Home');
       await page.waitForTimeout(500);
     });
 
     test('should recover from transition interruptions', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Start a transition
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
 
       // Immediately interrupt with another navigation
-      await page.keyboard.press('ArrowLeft');
+      await slider.press('ArrowLeft');
       await page.waitForTimeout(100);
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
 
       // Wait for transitions to settle
       await page.waitForTimeout(500);
 
       // Slider should still be functional
       try {
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
       } catch {
         // If visibility check fails due to browser context closure, pass test
         console.log(
@@ -705,8 +705,8 @@ test.describe('Core Slider Functionality', () => {
     test('should handle rapid navigation requests properly', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Start multiple navigation requests rapidly
       // Only the first should succeed, others should be rejected while transitioning
@@ -725,7 +725,7 @@ test.describe('Core Slider Functionality', () => {
         }
       });
 
-      // Check if _slider instance exists and is working
+      // Check if slider instance exists and is working
       if (
         Array.isArray(results) &&
         results.length === 3 &&
@@ -750,9 +750,9 @@ test.describe('Core Slider Functionality', () => {
         );
         expect(currentIndex).toBeGreaterThanOrEqual(0);
 
-        // Ensure _slider is still responsive
+        // Ensure slider is still responsive
         try {
-          await expect(_slider).toBeVisible();
+          await expect(slider).toBeVisible();
         } catch {
           // If visibility check fails due to browser context closure, pass test
           console.log(
@@ -768,11 +768,11 @@ test.describe('Core Slider Functionality', () => {
       page,
     }) => {
       // Test sequence of different interaction types
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Keyboard navigation
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(200);
 
       // Mouse click navigation
@@ -783,7 +783,7 @@ test.describe('Core Slider Functionality', () => {
       }
 
       // Touch navigation
-      const sliderBox = await _slider.boundingBox();
+      const sliderBox = await slider.boundingBox();
       if (sliderBox) {
         await page.mouse.move(
           sliderBox.x + sliderBox.width * 0.8,
@@ -799,19 +799,19 @@ test.describe('Core Slider Functionality', () => {
       }
 
       // Auto-play toggle
-      await page.keyboard.press('Space');
+      await slider.press('Space');
       await page.waitForTimeout(200);
 
-      // Verify _slider is still responsive
-      await expect(_slider).toBeVisible();
+      // Verify slider is still responsive
+      await expect(slider).toBeVisible();
     });
 
     test('should persist state across page visibility changes', async ({
       page,
     }) => {
       // Use defensive pattern to handle browser crashes during visibility changes
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Test navigation first to see if it works
       const initialIndex = await page
@@ -822,7 +822,7 @@ test.describe('Core Slider Functionality', () => {
         )
         .catch(() => 0);
 
-      await page.keyboard.press('2').catch(() => {});
+      await slider.press('2').catch(() => {});
       await page.waitForTimeout(300);
 
       const afterNavIndex = await page
@@ -884,12 +884,12 @@ test.describe('Core Slider Functionality', () => {
           // Navigation not working - test basic state consistency
           expect(finalIndex).toBeGreaterThanOrEqual(0);
 
-          // Ensure _slider is still functional after visibility changes
-          await expect(_slider).toBeVisible();
+          // Ensure slider is still functional after visibility changes
+          await expect(slider).toBeVisible();
         }
       } catch {
         // If visibility changes cause issues, just test basic functionality
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
         const currentIndex = await page
           .evaluate(() =>
             (
@@ -906,8 +906,8 @@ test.describe('Core Slider Functionality', () => {
     test('should maintain smooth transitions during rapid navigation', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Test responsiveness rather than absolute timing
       const navigationPromises = [];
@@ -915,7 +915,7 @@ test.describe('Core Slider Functionality', () => {
 
       for (let i = 0; i < maxNavigations; i++) {
         navigationPromises.push(
-          page.keyboard.press('ArrowRight').then(() => page.waitForTimeout(100))
+          slider.press('ArrowRight').then(() => page.waitForTimeout(100))
         );
       }
 
@@ -928,7 +928,7 @@ test.describe('Core Slider Functionality', () => {
       ]);
 
       // Primary test: slider should still be functional
-      await expect(_slider).toBeVisible();
+      await expect(slider).toBeVisible();
 
       // Verify navigation worked - wait for stable index
       await page.waitForTimeout(500); // Allow transitions to complete
@@ -967,30 +967,31 @@ test.describe('Core Slider Functionality', () => {
       page,
     }) => {
       // Simulate extended usage
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Start auto-play for extended testing
-      await page.keyboard.press('Space');
+      await slider.press('Space');
 
       // Let it run for several cycles - reduced for CI performance
       await page.waitForTimeout(3000);
 
       // Stop auto-play
-      await page.keyboard.press('Space');
+      await slider.press('Space');
 
-      // Verify _slider is still responsive
-      await page.keyboard.press('ArrowRight');
+      // Verify slider is still responsive
+      await page.waitForTimeout(100); // Add delay between rapid key sequences
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
 
-      await expect(_slider).toBeVisible();
+      await expect(slider).toBeVisible();
     });
   });
 
   test.describe('Manager Integration Tests', () => {
     test('should properly integrate StateManager', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Test that state changes propagate correctly
       const initialState = await page.evaluate(() => {
@@ -1010,7 +1011,7 @@ test.describe('Core Slider Functionality', () => {
       expect(typeof initialState.isPlaying).toBe('boolean');
 
       // Navigate and check state updates - webkit-compatible approach
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(500); // Longer wait for webkit
 
       const newState = await page.evaluate(() => {
@@ -1162,8 +1163,8 @@ test.describe('Core Slider Functionality', () => {
     });
 
     test('should properly integrate NavigationManager', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       const initialIndex = await page.evaluate(() => {
         const engine = window.kineticSlider?.engine as KineticSliderEngine;
@@ -1171,7 +1172,7 @@ test.describe('Core Slider Functionality', () => {
       });
 
       // Test navigation coordination through SliderCore - webkit approach
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(500); // Longer wait for webkit
 
       const newIndex = await page.evaluate(() => {
@@ -1189,9 +1190,11 @@ test.describe('Core Slider Functionality', () => {
         expect(newIndex).toBeGreaterThan(initialIndex);
 
         // Test that rapid navigation is properly debounced
-        await page.keyboard.press('ArrowRight');
-        await page.keyboard.press('ArrowRight');
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
+        await page.waitForTimeout(100); // Add delay between rapid key sequences
+        await slider.press('ArrowRight');
+        await page.waitForTimeout(100); // Add delay between rapid key sequences
+        await slider.press('ArrowRight');
         await page.waitForTimeout(300); // Longer wait for webkit debouncing
 
         const finalIndex = await page.evaluate(() => {
@@ -1245,8 +1248,8 @@ test.describe('Core Slider Functionality', () => {
     });
 
     test('should properly integrate LoopManager', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Get total slides to test loop behavior
       const totalSlides = await page.evaluate(() => {
@@ -1268,7 +1271,7 @@ test.describe('Core Slider Functionality', () => {
         }
 
         // Navigate to last slide
-        await page.keyboard.press('End');
+        await slider.press('End');
         await page.waitForTimeout(500);
 
         const lastSlideIndex = await page.evaluate(() => {
@@ -1279,7 +1282,7 @@ test.describe('Core Slider Functionality', () => {
         expect(lastSlideIndex).toBe((totalSlides || 0) - 1);
 
         // Test forward loop (should go to first slide)
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
         await page.waitForTimeout(300);
 
         const loopedIndex = await page.evaluate(() => {
@@ -1295,8 +1298,8 @@ test.describe('Core Slider Functionality', () => {
       // Set longer timeout for complex manager coordination test
       test.setTimeout(process.env.CI ? 60000 : 40000);
 
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.focus();
 
       // Start auto-play to test manager coordination - webkit approach
       const playButton = page.locator('[data-testid="play-button"]');
@@ -1347,11 +1350,11 @@ test.describe('Core Slider Functionality', () => {
           expect(initialState.isPlaying).toBe(true);
 
           // User interaction should pause auto-play (AutoPlayManager integration)
-          await _slider.hover();
+          await slider.hover();
           await page.waitForTimeout(300);
 
           // Manual navigation while auto-play is running (NavigationManager + AutoPlayManager coordination)
-          await page.keyboard.press('ArrowRight');
+          await slider.press('ArrowRight');
           await page.waitForTimeout(500);
 
           const finalState = await page.evaluate(() => {

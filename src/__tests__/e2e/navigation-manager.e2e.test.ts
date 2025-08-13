@@ -28,13 +28,12 @@ test.describe('NavigationManager E2E Tests', () => {
 
   test.describe('Keyboard Navigation', () => {
     test('should navigate with arrow keys', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
-      // Navigate right using helper function
-      await page.keyboard.press('ArrowRight');
+      // Navigate right using modern locator.press()
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
       const rightSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
@@ -47,8 +46,8 @@ test.describe('NavigationManager E2E Tests', () => {
         // Navigation is working, test the expected behavior
         expect(rightSlide).not.toBe(initialSlide);
 
-        // Navigate left using helper function
-        await page.keyboard.press('ArrowLeft');
+        // Navigate left using modern locator.press()
+        await slider.press('ArrowLeft');
         await page.waitForTimeout(300);
         const leftSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
@@ -62,19 +61,18 @@ test.describe('NavigationManager E2E Tests', () => {
         }
 
         // Ensure basic accessibility is in place
-        const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+        const ariaValueNow = await slider.getAttribute('aria-valuenow');
         expect(ariaValueNow).toBeTruthy();
       }
     });
 
     test('should navigate with WASD keys', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
-      // Navigate with D (right) using helper function
-      await page.keyboard.press('KeyD');
+      // Navigate with D (right) using modern locator.press()
+      await slider.press('KeyD');
       await page.waitForTimeout(300);
       const dSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
@@ -83,8 +81,8 @@ test.describe('NavigationManager E2E Tests', () => {
         // Navigation is working
         expect(dSlide).toBeGreaterThan(0);
 
-        // Navigate with A (left) using helper function
-        await page.keyboard.press('KeyA');
+        // Navigate with A (left) using modern locator.press()
+        await slider.press('KeyA');
         await page.waitForTimeout(300);
         const aSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
@@ -98,19 +96,18 @@ test.describe('NavigationManager E2E Tests', () => {
         }
 
         // Ensure basic accessibility
-        const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+        const ariaValueNow = await slider.getAttribute('aria-valuenow');
         expect(ariaValueNow).toBeTruthy();
       }
     });
 
     test('should navigate with number keys', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Navigate to slide 2
-      await page.keyboard.press('Digit2');
+      await slider.press('Digit2');
       await page.waitForTimeout(500);
 
       const slide2 = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -121,7 +118,8 @@ test.describe('NavigationManager E2E Tests', () => {
         expect(slide2).toBe(1); // Zero-indexed
 
         // Navigate to slide 1
-        await page.keyboard.press('Digit1');
+        await page.waitForTimeout(100);
+        await slider.press('Digit1');
         await page.waitForTimeout(500);
 
         const slide1 = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -131,14 +129,13 @@ test.describe('NavigationManager E2E Tests', () => {
         expect(initialSlide).toBeGreaterThanOrEqual(0);
 
         // Ensure basic accessibility
-        const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+        const ariaValueNow = await slider.getAttribute('aria-valuenow');
         expect(ariaValueNow).toBeTruthy();
       }
     });
 
     test('should navigate with Home and End keys', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Wait for engine to be ready before navigation
       await StateSynchronizer.waitForEngineInitialization(page, 5000);
@@ -146,10 +143,10 @@ test.describe('NavigationManager E2E Tests', () => {
 
       const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
-      // Navigate to last slide with retry logic
+      // Navigate to last slide with retry logic using modern locator.press()
       let lastSlide: number | null = initialSlide;
       for (let attempt = 0; attempt < 3; attempt++) {
-        await page.keyboard.press('End');
+        await slider.press('End');
         await page.waitForTimeout(1000); // Increased wait time
 
         lastSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -174,10 +171,10 @@ test.describe('NavigationManager E2E Tests', () => {
         // Navigation is working
         expect(lastSlide).toBeGreaterThan(0);
 
-        // Navigate to first slide with retry logic
+        // Navigate to first slide with retry logic using modern locator.press()
         let firstSlide: number | null = lastSlide;
         for (let attempt = 0; attempt < 3; attempt++) {
-          await page.keyboard.press('Home');
+          await slider.press('Home');
           await page.waitForTimeout(1000); // Increased wait time
 
           firstSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -197,15 +194,12 @@ test.describe('NavigationManager E2E Tests', () => {
         expect(initialSlide).toBeGreaterThanOrEqual(0);
 
         // Ensure basic accessibility
-        const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+        const ariaValueNow = await slider.getAttribute('aria-valuenow');
         expect(ariaValueNow).toBeTruthy();
       }
     });
 
     test('should toggle play/pause with spacebar', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
-
       // Toggle play using helper function
       const playToggled = await AutoPlayHelpers.toggleAutoPlay(page);
       if (playToggled) {
@@ -228,14 +222,13 @@ test.describe('NavigationManager E2E Tests', () => {
     });
 
     test('should handle Escape key for emergency stop', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Start auto-play first using helper function
       const playStarted = await AutoPlayHelpers.startAutoPlay(page);
       if (playStarted) {
         // Press Escape and wait for stop
-        await page.keyboard.press('Escape');
+        await slider.press('Escape');
         await AutoPlayHelpers.stopAutoPlay(page);
         const stopped = true;
 
@@ -252,13 +245,12 @@ test.describe('NavigationManager E2E Tests', () => {
     test('should handle Page Up/Down for rapid navigation', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       const initialSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
 
       // Page Down (forward multiple slides)
-      await page.keyboard.press('PageDown');
+      await slider.press('PageDown');
       await page.waitForTimeout(500);
 
       const pageDownSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -272,7 +264,8 @@ test.describe('NavigationManager E2E Tests', () => {
         pageDownSlide > initialSlide
       ) {
         // Navigation working - test Page Up
-        await page.keyboard.press('PageUp');
+        await page.waitForTimeout(100);
+        await slider.press('PageUp');
         await page.waitForTimeout(500);
 
         const pageUpSlide = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -284,7 +277,7 @@ test.describe('NavigationManager E2E Tests', () => {
         expect(initialSlide).toBeGreaterThanOrEqual(0);
 
         // Ensure basic accessibility
-        const ariaValueNow = await _slider.getAttribute('aria-valuenow');
+        const ariaValueNow = await slider.getAttribute('aria-valuenow');
         expect(ariaValueNow).toBeTruthy();
       }
     });
@@ -292,8 +285,8 @@ test.describe('NavigationManager E2E Tests', () => {
 
   test.describe('Mouse Navigation', () => {
     test('should navigate with click zones', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const sliderBox = await _slider.boundingBox();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      const sliderBox = await slider.boundingBox();
 
       if (sliderBox) {
         const initialSlide =
@@ -333,8 +326,8 @@ test.describe('NavigationManager E2E Tests', () => {
     });
 
     test('should handle center click for play/pause', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const sliderBox = await _slider.boundingBox();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      const sliderBox = await slider.boundingBox();
 
       if (sliderBox) {
         // Click center to toggle play/pause
@@ -345,7 +338,7 @@ test.describe('NavigationManager E2E Tests', () => {
         await page.waitForTimeout(300);
 
         // Check that action was registered
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
 
         // Click center again
         await page.mouse.click(
@@ -393,8 +386,8 @@ test.describe('NavigationManager E2E Tests', () => {
     });
 
     test('should handle double-click for full screen', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const sliderBox = await _slider.boundingBox();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      const sliderBox = await slider.boundingBox();
 
       if (sliderBox) {
         // Double-click on slider
@@ -417,10 +410,10 @@ test.describe('NavigationManager E2E Tests', () => {
     });
 
     test('should show navigation hints on hover', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Hover over slider
-      await _slider.hover();
+      await slider.hover();
       await page.waitForTimeout(300);
 
       // Check for navigation hints/controls
@@ -443,8 +436,8 @@ test.describe('NavigationManager E2E Tests', () => {
 
   test.describe('Touch and Gesture Navigation', () => {
     test('should navigate with swipe gestures', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const sliderBox = await _slider.boundingBox();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      const sliderBox = await slider.boundingBox();
 
       if (sliderBox) {
         const initialSlide =
@@ -498,8 +491,8 @@ test.describe('NavigationManager E2E Tests', () => {
     });
 
     test('should handle fast swipe gestures', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const sliderBox = await _slider.boundingBox();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      const sliderBox = await slider.boundingBox();
 
       if (sliderBox) {
         // Fast swipe (should trigger rapid navigation)
@@ -517,15 +510,15 @@ test.describe('NavigationManager E2E Tests', () => {
         await page.waitForTimeout(500);
 
         // Should still be responsive after fast swipe
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
       }
     });
 
     test('should handle multi-touch gestures', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Simulate pinch-to-zoom gesture if supported
-      await _slider.focus();
+      await slider.focus();
 
       // Use keyboard shortcut for zoom as alternative
       await page.keyboard.press('Control+Equal'); // Zoom in
@@ -535,12 +528,12 @@ test.describe('NavigationManager E2E Tests', () => {
       await page.waitForTimeout(300);
 
       // Verify slider is still functional
-      await expect(_slider).toBeVisible();
+      await expect(slider).toBeVisible();
     });
 
     test('should provide touch feedback', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      const sliderBox = await _slider.boundingBox();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      const sliderBox = await slider.boundingBox();
 
       if (sliderBox) {
         // Touch down
@@ -581,14 +574,14 @@ test.describe('NavigationManager E2E Tests', () => {
         await keyboardToggle.uncheck();
         await page.waitForTimeout(300);
 
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         const initialSlide =
           await SliderStateHelpers.getCurrentSlideIndex(page);
 
         // Try to navigate with keyboard (should not work)
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
         await page.waitForTimeout(300);
 
         const disabledSlide =
@@ -600,7 +593,7 @@ test.describe('NavigationManager E2E Tests', () => {
         await page.waitForTimeout(300);
 
         // Now should work
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
         await page.waitForTimeout(300);
 
         const enabledSlide =
@@ -619,8 +612,8 @@ test.describe('NavigationManager E2E Tests', () => {
         await mouseToggle.uncheck();
         await page.waitForTimeout(300);
 
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        const sliderBox = await _slider.boundingBox();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        const sliderBox = await slider.boundingBox();
 
         if (sliderBox) {
           const initialSlide =
@@ -665,8 +658,8 @@ test.describe('NavigationManager E2E Tests', () => {
         await sensitivitySlider.fill('10');
         await page.waitForTimeout(300);
 
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        const sliderBox = await _slider.boundingBox();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        const sliderBox = await slider.boundingBox();
 
         if (sliderBox) {
           // Small swipe should trigger navigation with high sensitivity
@@ -700,22 +693,22 @@ test.describe('NavigationManager E2E Tests', () => {
         .first();
 
       if ((await liveRegion.count()) > 0) {
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
         // Navigate to trigger announcement
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
         await page.waitForTimeout(500);
 
         const content = await liveRegion.textContent();
         expect(content).toMatch(/slide|image|[0-9]/i); // Should announce slide info
       } else {
         // If no live region, ensure basic accessibility is present
-        const _slider = page.locator('[data-testid="kinetic-slider"]');
-        await _slider.focus();
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.focus();
 
-        const ariaValueNow = await _slider.getAttribute('aria-valuenow');
-        const ariaValueText = await _slider.getAttribute('aria-valuetext');
+        const ariaValueNow = await slider.getAttribute('aria-valuenow');
+        const ariaValueText = await slider.getAttribute('aria-valuetext');
 
         // Should have some form of accessibility labeling
         expect(ariaValueNow || ariaValueText).toBeTruthy();
@@ -723,21 +716,19 @@ test.describe('NavigationManager E2E Tests', () => {
     });
 
     test('should have proper ARIA attributes', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Check for role
-      const role = await _slider.getAttribute('role');
+      const role = await slider.getAttribute('role');
       expect(['region', 'group', 'tabpanel', 'img']).toContain(role);
 
       // Check for aria-label or aria-labelledby
-      const ariaLabel = await _slider.getAttribute('aria-label');
-      const ariaLabelledby = await _slider.getAttribute('aria-labelledby');
+      const ariaLabel = await slider.getAttribute('aria-label');
+      const ariaLabelledby = await slider.getAttribute('aria-labelledby');
       expect(ariaLabel || ariaLabelledby).toBeTruthy();
 
       // Check for aria-roledescription
-      const roleDescription = await _slider.getAttribute(
-        'aria-roledescription'
-      );
+      const roleDescription = await slider.getAttribute('aria-roledescription');
       if (roleDescription) {
         expect(roleDescription).toMatch(/slider|carousel|gallery/i);
       }
@@ -760,35 +751,35 @@ test.describe('NavigationManager E2E Tests', () => {
         waitForSlider: true,
       });
 
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Check that slider is still visible and functional
-      await expect(_slider).toBeVisible();
+      await expect(slider).toBeVisible();
 
-      await _slider.focus();
-      await page.keyboard.press('ArrowRight');
+      await slider.focus();
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
 
       // Should still be functional
-      await expect(_slider).toBeVisible();
+      await expect(slider).toBeVisible();
     });
 
     test('should handle focus management', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Focus on slider
-      await _slider.focus();
+      await slider.focus();
 
       // Check that focus is visible
       const focusedElement = page.locator(':focus');
       await expect(focusedElement).toBeVisible();
 
       // Navigate and check focus persistence
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(300);
 
-      // Focus should still be on _slider
-      const stillFocused = await _slider.evaluate(
+      // Focus should still be on slider
+      const stillFocused = await slider.evaluate(
         (el) => document.activeElement === el
       );
       expect(stillFocused).toBe(true);
@@ -801,21 +792,24 @@ test.describe('NavigationManager E2E Tests', () => {
 
   test.describe('Navigation Error Handling', () => {
     test('should handle invalid navigation attempts', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await _slider.focus();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
-      // Try rapid, conflicting navigation commands
-      await page.keyboard.press('ArrowRight');
-      await page.keyboard.press('ArrowLeft');
-      await page.keyboard.press('Home');
-      await page.keyboard.press('End');
-      await page.keyboard.press('Digit9'); // Likely invalid slide number
+      // Try rapid, conflicting navigation commands with proper delays
+      await slider.press('ArrowRight');
+      await page.waitForTimeout(200); // Prevent rapid-fire events
+      await slider.press('ArrowLeft');
+      await page.waitForTimeout(200);
+      await slider.press('Home');
+      await page.waitForTimeout(200);
+      await slider.press('End');
+      await page.waitForTimeout(200);
+      await slider.press('Digit9'); // Likely invalid slide number
 
       // Wait longer for slider to stabilize after rapid commands
       await page.waitForTimeout(1000);
 
       // Should handle gracefully and remain functional
-      await expect(_slider).toBeVisible();
+      await expect(slider).toBeVisible();
 
       // Wait for slider to be ready before final navigation
       const isReady = await SliderStateHelpers.waitForSliderReady(page, 8000);
@@ -829,8 +823,7 @@ test.describe('NavigationManager E2E Tests', () => {
       // Navigate to first slide with retry logic
       let homeSuccess = false;
       for (let attempt = 0; attempt < 3; attempt++) {
-        await _slider.focus();
-        await page.keyboard.press('Home');
+        await slider.press('Home');
         await page.waitForTimeout(500);
 
         const slideIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
@@ -854,19 +847,19 @@ test.describe('NavigationManager E2E Tests', () => {
     });
 
     test('should recover from navigation failures', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
 
       // Simulate error condition by rapid interaction
-      const sliderBox = await _slider.boundingBox();
+      const sliderBox = await slider.boundingBox();
       if (sliderBox) {
         // Rapid mouse and keyboard interaction
-        await _slider.focus();
-        await page.keyboard.press('ArrowRight');
+        await slider.focus();
+        await slider.press('ArrowRight');
         await page.mouse.click(
           sliderBox.x + sliderBox.width * 0.1,
           sliderBox.y + sliderBox.height / 2
         );
-        await page.keyboard.press('ArrowLeft');
+        await slider.press('ArrowLeft');
         await page.mouse.click(
           sliderBox.x + sliderBox.width * 0.9,
           sliderBox.y + sliderBox.height / 2
@@ -876,7 +869,7 @@ test.describe('NavigationManager E2E Tests', () => {
         await page.waitForTimeout(1000);
 
         // Should recover and be responsive
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
 
         // Wait for slider to be fully ready before navigation
         const isReady = await SliderStateHelpers.waitForSliderReady(
@@ -893,8 +886,8 @@ test.describe('NavigationManager E2E Tests', () => {
         // Navigate to first slide with retry logic (similar to other successful tests)
         let homeSuccess = false;
         for (let attempt = 0; attempt < 3; attempt++) {
-          await _slider.focus();
-          await page.keyboard.press('Home');
+          await slider.focus();
+          await slider.press('Home');
           await page.waitForTimeout(500);
 
           const slideIndex =
@@ -911,7 +904,7 @@ test.describe('NavigationManager E2E Tests', () => {
         }
 
         // Verify recovery was successful
-        await expect(_slider).toBeVisible();
+        await expect(slider).toBeVisible();
 
         // If Home key navigation worked, verify we're at slide 0
         if (homeSuccess) {

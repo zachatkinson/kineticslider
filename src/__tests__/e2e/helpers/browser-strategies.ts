@@ -56,8 +56,9 @@ export abstract class BrowserStrategy {
       const key = distance > 0 ? 'ArrowRight' : 'ArrowLeft';
       const steps = Math.abs(distance);
 
+      const slider = page.locator('[data-testid="kinetic-slider"]');
       for (let i = 0; i < steps; i++) {
-        await page.keyboard.press(key);
+        await slider.press(key);
         await page.waitForTimeout(100); // Small delay between keypresses
       }
 
@@ -122,22 +123,24 @@ export class ChromiumStrategy extends BrowserStrategy {
       });
 
       if (state.totalSlides > 0) {
+        const slider = page.locator('[data-testid="kinetic-slider"]');
         // Navigate to first slide
         if (index === 0) {
-          await page.keyboard.press('Home');
+          await slider.press('Home');
           return true;
         }
 
         // Navigate to last slide
         if (index === state.totalSlides - 1) {
-          await page.keyboard.press('End');
+          await slider.press('End');
           return true;
         }
       }
 
       // Method 2: Use digit keys for slides 1-9 (backward compatibility)
       if (index >= 0 && index <= 8) {
-        await page.keyboard.press(`Digit${index + 1}`);
+        const slider = page.locator('[data-testid="kinetic-slider"]');
+        await slider.press(`Digit${index + 1}`);
         return true;
       }
 

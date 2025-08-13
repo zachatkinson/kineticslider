@@ -10,22 +10,22 @@ test.describe('Complete System E2E - User Workflows', () => {
   });
 
   test.describe('User-Facing Accessibility Workflows', () => {
-    test('should provide accessible _slider interface for screen reader users', async ({
+    test('should provide accessible slider interface for screen reader users', async ({
       page,
     }) => {
       // Test accessibility from user perspective
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       // Check user-facing ARIA attributes
-      await expect(_slider).toHaveAttribute('role', 'region');
-      await expect(_slider).toHaveAttribute(
+      await expect(slider).toHaveAttribute('role', 'region');
+      await expect(slider).toHaveAttribute(
         'aria-label',
         'Interactive image slider'
       );
-      await expect(_slider).toHaveAttribute('aria-valuenow');
-      await expect(_slider).toHaveAttribute('aria-valuemin', '1');
-      await expect(_slider).toHaveAttribute('aria-valuemax', '5');
+      await expect(slider).toHaveAttribute('aria-valuenow');
+      await expect(slider).toHaveAttribute('aria-valuemin', '1');
+      await expect(slider).toHaveAttribute('aria-valuemax', '5');
 
       // Verify main content area exists for navigation
       const mainElement = page.locator('main[role="main"]');
@@ -35,14 +35,14 @@ test.describe('Complete System E2E - User Workflows', () => {
     test('should handle keyboard navigation from user perspective', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
-      // Focus the _slider as a keyboard user would
-      await _slider.focus();
+      // Focus the slider as a keyboard user would
+      await slider.focus();
 
       // Get initial ARIA value for comparison
-      const initialAriaValue = await _slider.getAttribute('aria-valuenow');
+      const initialAriaValue = await slider.getAttribute('aria-valuenow');
 
       // Check engine state for navigation fallback
       const initialEngineIndex = await page.evaluate(() =>
@@ -54,7 +54,7 @@ test.describe('Complete System E2E - User Workflows', () => {
       );
 
       // Navigate using arrow keys as a user would
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(500);
 
       const afterRightEngineIndex = await page.evaluate(() =>
@@ -66,7 +66,7 @@ test.describe('Complete System E2E - User Workflows', () => {
       );
 
       // Verify navigation from user perspective
-      const newAriaValue = await _slider.getAttribute('aria-valuenow');
+      const newAriaValue = await slider.getAttribute('aria-valuenow');
 
       // Handle intermittent keyboard navigation like other working tests
       if (
@@ -91,17 +91,17 @@ test.describe('Complete System E2E - User Workflows', () => {
         consoleLogs.push(`[${msg.type()}] ${msg.text()}`);
       });
 
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       // Focus and get initial UI state
-      await _slider.focus();
+      await slider.focus();
       const initialStatusText = await page
         .locator('#play-status')
         .textContent();
 
       // Toggle play/pause using space bar as user would
-      await page.keyboard.press('Space');
+      await slider.press('Space');
       await page.waitForTimeout(1000); // Extra time for webkit
 
       // Verify UI feedback for user - webkit-compatible approach
@@ -137,8 +137,8 @@ test.describe('Complete System E2E - User Workflows', () => {
     test('should handle swipe gestures from user perspective', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       // Get initial slide indicator for user feedback
       const initialSlideText = await page
@@ -147,7 +147,7 @@ test.describe('Complete System E2E - User Workflows', () => {
       const initialSlideNumber = parseInt(initialSlideText || '1');
 
       // Perform swipe gesture as user would - ensure we exceed 50px threshold
-      const box = await _slider.boundingBox();
+      const box = await slider.boundingBox();
 
       // Check if this is a mobile browser and use appropriate interaction
       const userAgent = await page.evaluate(() => navigator.userAgent);
@@ -174,11 +174,11 @@ test.describe('Complete System E2E - User Workflows', () => {
           // Try programmatic navigation first
           const programmaticResult = await page.evaluate(
             ({ startX, startY: _startY, endX, endY: _endY }) => {
-              const _slider = document.querySelector(
+              const slider = document.querySelector(
                 '[data-testid="kinetic-slider"]'
               );
               if (
-                _slider &&
+                slider &&
                 window.kineticSlider &&
                 window.kineticSlider.engine
               ) {
@@ -346,11 +346,11 @@ test.describe('Complete System E2E - User Workflows', () => {
     });
 
     test('should handle precise mouse interactions', async ({ page }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       // Get initial state from user interface
-      const initialAriaValue = await _slider.getAttribute('aria-valuenow');
+      const initialAriaValue = await slider.getAttribute('aria-valuenow');
       const initialEngineIndex = await page.evaluate(() =>
         (
           window.kineticSlider?.engine as KineticSliderEngine | undefined
@@ -358,7 +358,7 @@ test.describe('Complete System E2E - User Workflows', () => {
       );
 
       // Perform precise interaction based on browser type
-      const box = await _slider.boundingBox();
+      const box = await slider.boundingBox();
       if (box) {
         const centerY = box.y + box.height / 2;
         const startX = box.x + box.width * 0.7;
@@ -383,11 +383,11 @@ test.describe('Complete System E2E - User Workflows', () => {
           // Try programmatic navigation first
           const programmaticResult = await page.evaluate(
             ({ startX, startY: _startY, endX, endY: _endY }) => {
-              const _slider = document.querySelector(
+              const slider = document.querySelector(
                 '[data-testid="kinetic-slider"]'
               );
               if (
-                _slider &&
+                slider &&
                 window.kineticSlider &&
                 window.kineticSlider.engine
               ) {
@@ -480,7 +480,7 @@ test.describe('Complete System E2E - User Workflows', () => {
       await page.waitForTimeout(500);
 
       // Mobile Safari-compatible verification - check multiple state indicators
-      const newAriaValue = await _slider.getAttribute('aria-valuenow');
+      const newAriaValue = await slider.getAttribute('aria-valuenow');
       const newEngineIndex = await page.evaluate(() =>
         (
           window.kineticSlider?.engine as KineticSliderEngine | undefined
@@ -513,7 +513,7 @@ test.describe('Complete System E2E - User Workflows', () => {
 
         await page.waitForTimeout(500);
 
-        const finalAriaValue = await _slider.getAttribute('aria-valuenow');
+        const finalAriaValue = await slider.getAttribute('aria-valuenow');
         const finalEngineIndex = await page.evaluate(() =>
           (
             window.kineticSlider?.engine as KineticSliderEngine | undefined
@@ -542,7 +542,7 @@ test.describe('Complete System E2E - User Workflows', () => {
 
           await page.waitForTimeout(500);
 
-          const finalAriaValue = await _slider.getAttribute('aria-valuenow');
+          const finalAriaValue = await slider.getAttribute('aria-valuenow');
           const finalEngineIndex = await page.evaluate(() =>
             (
               window.kineticSlider?.engine as KineticSliderEngine | undefined
@@ -565,21 +565,21 @@ test.describe('Complete System E2E - User Workflows', () => {
     test('should handle complete user interaction workflow', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       // Start of user journey
-      const initialAriaValue = await _slider.getAttribute('aria-valuenow');
+      const initialAriaValue = await slider.getAttribute('aria-valuenow');
 
-      // User focuses _slider
-      await _slider.focus();
+      // User focuses slider
+      await slider.focus();
 
       // User navigates with keyboard - webkit-compatible approach
-      await page.keyboard.press('ArrowRight');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(1000);
 
       // Verify user sees change - with webkit fallback
-      let afterKeyboardAriaValue = await _slider.getAttribute('aria-valuenow');
+      let afterKeyboardAriaValue = await slider.getAttribute('aria-valuenow');
 
       // If keyboard didn't work in webkit, try programmatic navigation
       if (afterKeyboardAriaValue === initialAriaValue) {
@@ -602,7 +602,7 @@ test.describe('Complete System E2E - User Workflows', () => {
 
         if (navigationResult.changed) {
           // Re-check aria value after programmatic navigation
-          afterKeyboardAriaValue = await _slider.getAttribute('aria-valuenow');
+          afterKeyboardAriaValue = await slider.getAttribute('aria-valuenow');
         }
       }
 
@@ -611,7 +611,7 @@ test.describe('Complete System E2E - User Workflows', () => {
         expect(afterKeyboardAriaValue).not.toBe(initialAriaValue);
 
         // User then uses mouse
-        const box = await _slider.boundingBox();
+        const box = await slider.boundingBox();
         if (box) {
           // Ensure drag distance exceeds 50px threshold
           await page.mouse.move(
@@ -630,7 +630,7 @@ test.describe('Complete System E2E - User Workflows', () => {
         await page.waitForTimeout(1000);
 
         // Verify final state from user perspective
-        const finalAriaValue = await _slider.getAttribute('aria-valuenow');
+        const finalAriaValue = await slider.getAttribute('aria-valuenow');
 
         // If mouse didn't change aria value, try programmatic navigation as fallback
         if (finalAriaValue === afterKeyboardAriaValue) {
@@ -643,7 +643,7 @@ test.describe('Complete System E2E - User Workflows', () => {
 
           await page.waitForTimeout(500);
           const programmaticFinalValue =
-            await _slider.getAttribute('aria-valuenow');
+            await slider.getAttribute('aria-valuenow');
 
           if (programmaticFinalValue !== afterKeyboardAriaValue) {
             expect(programmaticFinalValue).not.toBe(afterKeyboardAriaValue);
@@ -657,7 +657,7 @@ test.describe('Complete System E2E - User Workflows', () => {
         }
       } else {
         // Keyboard navigation didn't work in webkit - test mouse interaction only
-        const box = await _slider.boundingBox();
+        const box = await slider.boundingBox();
         if (box) {
           // Ensure drag distance exceeds 50px threshold
           await page.mouse.move(
@@ -676,7 +676,7 @@ test.describe('Complete System E2E - User Workflows', () => {
         await page.waitForTimeout(1000);
 
         // Verify mouse interaction worked
-        const finalAriaValue = await _slider.getAttribute('aria-valuenow');
+        const finalAriaValue = await slider.getAttribute('aria-valuenow');
 
         // If mouse worked, test it; otherwise just verify basic functionality
         if (finalAriaValue !== initialAriaValue) {
@@ -687,7 +687,7 @@ test.describe('Complete System E2E - User Workflows', () => {
           expect(parseInt(initialAriaValue || '1')).toBeGreaterThanOrEqual(1);
 
           // Verify slider is still interactive
-          await expect(_slider).toBeVisible();
+          await expect(slider).toBeVisible();
         }
       }
     });
@@ -695,13 +695,13 @@ test.describe('Complete System E2E - User Workflows', () => {
     test('should maintain usability during rapid user interactions', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       const startTime = Date.now();
 
       // Simulate rapid user interactions
-      const box = await _slider.boundingBox();
+      const box = await slider.boundingBox();
       if (box) {
         for (let i = 0; i < 5; i++) {
           // Ensure each drag exceeds 50px threshold
@@ -728,11 +728,11 @@ test.describe('Complete System E2E - User Workflows', () => {
       expect(duration).toBeLessThan(timeThreshold);
 
       // Slider should still be interactive
-      await _slider.focus();
-      await page.keyboard.press('ArrowLeft');
+      await slider.focus();
+      await slider.press('ArrowLeft');
 
       // Should still respond to user input
-      const isSliderResponsive = await _slider.isVisible();
+      const isSliderResponsive = await slider.isVisible();
       expect(isSliderResponsive).toBe(true);
     });
   });
@@ -749,45 +749,45 @@ test.describe('Complete System E2E - User Workflows', () => {
         }
       });
 
-      // User interacts with _slider
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      // User interacts with slider
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       // User attempts interaction
-      await _slider.focus();
-      await page.keyboard.press('ArrowRight');
+      await slider.focus();
+      await slider.press('ArrowRight');
 
-      // From user perspective, _slider should remain functional
-      const isStillUsable = await _slider.isVisible();
+      // From user perspective, slider should remain functional
+      const isStillUsable = await slider.isVisible();
       expect(isStillUsable).toBe(true);
 
-      // User should be able to continue using the _slider
-      await page.keyboard.press('ArrowLeft');
-      const ariaValue = await _slider.getAttribute('aria-valuenow');
+      // User should be able to continue using the slider
+      await slider.press('ArrowLeft');
+      const ariaValue = await slider.getAttribute('aria-valuenow');
       expect(ariaValue).toBeTruthy();
     });
 
     test('should gracefully handle edge case user interactions', async ({
       page,
     }) => {
-      const _slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(_slider).toBeVisible();
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await expect(slider).toBeVisible();
 
       // User performs edge case interactions
-      await _slider.focus();
+      await slider.focus();
 
       // Rapid keyboard presses
       for (let i = 0; i < 10; i++) {
-        await page.keyboard.press('ArrowRight');
+        await slider.press('ArrowRight');
         await page.waitForTimeout(10);
       }
 
       // User should still see consistent interface
-      const ariaValue = await _slider.getAttribute('aria-valuenow');
+      const ariaValue = await slider.getAttribute('aria-valuenow');
       expect(ariaValue).toBeTruthy();
 
       // Interface should remain accessible
-      await expect(_slider).toHaveAttribute('role', 'region');
+      await expect(slider).toHaveAttribute('role', 'region');
     });
   });
 });

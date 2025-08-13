@@ -346,7 +346,8 @@ test.describe('Auto-Play Controls', () => {
       });
 
       // Keyboard navigation
-      await page.keyboard.press('ArrowRight');
+      const slider = page.locator('[data-testid="kinetic-slider"]');
+      await slider.press('ArrowRight');
       await page.waitForTimeout(config.shortPause);
 
       // Verify that keyboard navigation worked (don't enforce pause behavior)
