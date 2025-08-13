@@ -840,6 +840,26 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       this.emit(SLIDER_EVENTS.PLAY_STOPPED);
     });
 
+    // Accessibility integration - listen for our own events to trigger accessibility features
+    this.on(SLIDER_EVENTS.SLIDE_CHANGED, (...args: unknown[]) => {
+      const data = args[0] as { currentIndex: number; previousIndex: number };
+      if (this.accessibilityManager && data) {
+        const totalSlides = this.stateManager.getTotalSlides();
+        this.accessibilityManager.announceSlideChange(
+          data.currentIndex,
+          totalSlides
+        );
+      }
+    });
+
+    this.on(SLIDER_EVENTS.PLAY_STATE_CHANGED, (...args: unknown[]) => {
+      const data = args[0] as { isPlaying: boolean };
+      if (this.accessibilityManager && data) {
+        // AccessibilityManager will handle play state announcements
+        this.accessibilityManager.emit(SLIDER_EVENTS.PLAY_STATE_CHANGED, data);
+      }
+    });
+
     // Auto-play resume events with proper callback restoration
     this.autoPlayManager.on(SLIDER_EVENTS.PLAY_RESUMED, () => {
       // Reconnect the nextSlide callback when auto-play resumes
@@ -934,6 +954,27 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       debounceDelay: 50,
       preventDuringTransition: true,
     });
+
+    // Configure AccessibilityManager with accessibility settings
+    if (this.container && this.accessibilityManager) {
+      const accessibilityConfig = config.accessibility || {};
+
+      // Initialize AccessibilityManager with proper container and engine reference
+      // This will setup ARIA attributes and event listeners
+      this.accessibilityManager
+        .initialize(this.container, this)
+        .catch((error) => {
+          debugLogger.error(
+            'Failed to initialize AccessibilityManager:',
+            error
+          );
+        });
+
+      // Update accessibility configuration if provided
+      if (Object.keys(accessibilityConfig).length > 0) {
+        this.accessibilityManager.updateConfig(accessibilityConfig);
+      }
+    }
 
     // Setup AutoPlayManager event listeners to keep StateManager synchronized
     this.autoPlayManager.on(SLIDER_EVENTS.PLAY_STARTED, () => {

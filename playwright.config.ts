@@ -229,7 +229,7 @@ export default defineConfig({
         '**/configuration-system.e2e.test.ts',
         '**/error-handling.test.ts',
         '**/resource-loader.e2e.test.ts',
-        '**/filter-system-essential.e2e.test.ts',
+        '**/filter-system.e2e.test.ts',
         '**/debug-console.test.ts',
       ],
       use: { 
