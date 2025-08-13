@@ -62,7 +62,7 @@ export class ScreenReaderSupport extends SimpleEventEmitter {
   // Announcement management
   private announcementQueue: QueuedAnnouncement[] = [];
   private isProcessingQueue = false;
-  private announcementTimer: number | null = null;
+  private announcementTimer: ReturnType<typeof setTimeout> | null = null;
   private lastAnnouncement = '';
   private announcementCount = 0;
 
@@ -228,7 +228,7 @@ export class ScreenReaderSupport extends SimpleEventEmitter {
     }
 
     // Process next announcement
-    this.announcementTimer = window.setTimeout(() => {
+    this.announcementTimer = setTimeout(() => {
       const announcement = this.announcementQueue.shift();
       if (!announcement) {
         this.isProcessingQueue = false;
