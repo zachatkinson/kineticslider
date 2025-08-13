@@ -76,7 +76,7 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
       }
 
       if (kineticSlider?.filterManager) {
-        kineticSlider.filterManager.isAdvancedFiltersLoaded = () =>
+        kineticSlider.filterManager.isAdvancedFiltersLoaded = (): boolean =>
           !filtersLoading;
       }
     }
