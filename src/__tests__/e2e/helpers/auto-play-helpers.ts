@@ -88,64 +88,85 @@ export class AutoPlayHelpers {
         console.info('[AutoPlayHelpers] Verifying auto-play start...');
 
         // Use Playwright 2025 best practices: expect.poll() for custom state verification
-        console.info('[AutoPlayHelpers] Using expect.poll() for auto-play verification...');
-        
+        console.info(
+          '[AutoPlayHelpers] Using expect.poll() for auto-play verification...'
+        );
+
         try {
           // Import expect for polling (modern Playwright approach)
           const { expect } = await import('@playwright/test');
-          
+
           // Use expect.poll() to wait for auto-play state
-          await expect.poll(async () => {
-            // Check engine state first (primary verification method)
-            const engineState = await page.evaluate(() => {
-              const engine = (window as any).kineticSlider?.engine;
-              return engine && typeof engine.isPlaying === 'function' ? engine.isPlaying() : null;
-            });
-            
-            if (engineState === true) {
-              console.info('[AutoPlayHelpers] Auto-play verified via engine state');
-              return true;
-            }
-            
-            // Fallback: Check button state for backward compatibility
-            const playButton = page.locator('[data-testid="play-button"]');
-            if (await playButton.count() > 0) {
-              const dataPlaying = await playButton.getAttribute('data-playing');
-              if (dataPlaying === 'true') {
-                console.info('[AutoPlayHelpers] Auto-play verified via button state');
-                return true;
+          await expect
+            .poll(
+              async () => {
+                // Check engine state first (primary verification method)
+                const engineState = await page.evaluate(() => {
+                  const engine = (window as any).kineticSlider?.engine;
+                  return engine && typeof engine.isPlaying === 'function'
+                    ? engine.isPlaying()
+                    : null;
+                });
+
+                if (engineState === true) {
+                  console.info(
+                    '[AutoPlayHelpers] Auto-play verified via engine state'
+                  );
+                  return true;
+                }
+
+                // Fallback: Check button state for backward compatibility
+                const playButton = page.locator('[data-testid="play-button"]');
+                if ((await playButton.count()) > 0) {
+                  const dataPlaying =
+                    await playButton.getAttribute('data-playing');
+                  if (dataPlaying === 'true') {
+                    console.info(
+                      '[AutoPlayHelpers] Auto-play verified via button state'
+                    );
+                    return true;
+                  }
+                }
+
+                // Alternative button check
+                const altButton = page.locator('#play-pause-btn');
+                if ((await altButton.count()) > 0) {
+                  const altPlaying =
+                    await altButton.getAttribute('data-playing');
+                  if (altPlaying === 'true') {
+                    console.info(
+                      '[AutoPlayHelpers] Auto-play verified via alternative button'
+                    );
+                    return true;
+                  }
+                }
+
+                return false;
+              },
+              {
+                timeout: 8000, // Reasonable timeout for CI environments
+                message: 'Auto-play state verification failed',
               }
-            }
-            
-            // Alternative button check
-            const altButton = page.locator('#play-pause-btn');
-            if (await altButton.count() > 0) {
-              const altPlaying = await altButton.getAttribute('data-playing');
-              if (altPlaying === 'true') {
-                console.info('[AutoPlayHelpers] Auto-play verified via alternative button');
-                return true;
-              }
-            }
-            
-            return false;
-          }, {
-            timeout: 8000, // Reasonable timeout for CI environments
-            message: 'Auto-play state verification failed',
-          }).toBe(true);
-          
+            )
+            .toBe(true);
+
           return true;
-        } catch (pollingError) {
-          console.warn('[AutoPlayHelpers] expect.poll() verification failed, falling back to StateSynchronizer');
-          
+        } catch {
+          console.warn(
+            '[AutoPlayHelpers] expect.poll() verification failed, falling back to StateSynchronizer'
+          );
+
           // Fallback to existing StateSynchronizer approach if expect.poll() fails
           const stateVerified = await StateSynchronizer.waitForEngineState(
             page,
             (state) => state.isPlaying === true,
             5000
           );
-          
+
           if (stateVerified) {
-            console.info('[AutoPlayHelpers] Auto-play verified via StateSynchronizer fallback');
+            console.info(
+              '[AutoPlayHelpers] Auto-play verified via StateSynchronizer fallback'
+            );
             return true;
           }
         }
@@ -202,62 +223,81 @@ export class AutoPlayHelpers {
         try {
           // Import expect for polling (modern Playwright approach)
           const { expect } = await import('@playwright/test');
-          
+
           // Use expect.poll() to wait for auto-play stop state
-          await expect.poll(async () => {
-            // Check engine state first (primary verification method)
-            const engineState = await page.evaluate(() => {
-              const engine = (window as any).kineticSlider?.engine;
-              return engine && typeof engine.isPlaying === 'function' ? engine.isPlaying() : null;
-            });
-            
-            if (engineState === false) {
-              console.info('[AutoPlayHelpers] Auto-play stop verified via engine state');
-              return true;
-            }
-            
-            // Fallback: Check button state for backward compatibility
-            const playButton = page.locator('[data-testid="play-button"]');
-            if (await playButton.count() > 0) {
-              const dataPlaying = await playButton.getAttribute('data-playing');
-              if (dataPlaying === 'false') {
-                console.info('[AutoPlayHelpers] Auto-play stop verified via button state');
-                return true;
+          await expect
+            .poll(
+              async () => {
+                // Check engine state first (primary verification method)
+                const engineState = await page.evaluate(() => {
+                  const engine = (window as any).kineticSlider?.engine;
+                  return engine && typeof engine.isPlaying === 'function'
+                    ? engine.isPlaying()
+                    : null;
+                });
+
+                if (engineState === false) {
+                  console.info(
+                    '[AutoPlayHelpers] Auto-play stop verified via engine state'
+                  );
+                  return true;
+                }
+
+                // Fallback: Check button state for backward compatibility
+                const playButton = page.locator('[data-testid="play-button"]');
+                if ((await playButton.count()) > 0) {
+                  const dataPlaying =
+                    await playButton.getAttribute('data-playing');
+                  if (dataPlaying === 'false') {
+                    console.info(
+                      '[AutoPlayHelpers] Auto-play stop verified via button state'
+                    );
+                    return true;
+                  }
+                }
+
+                // Alternative button check
+                const altButton = page.locator('#play-pause-btn');
+                if ((await altButton.count()) > 0) {
+                  const altPlaying =
+                    await altButton.getAttribute('data-playing');
+                  if (altPlaying === 'false') {
+                    console.info(
+                      '[AutoPlayHelpers] Auto-play stop verified via alternative button'
+                    );
+                    return true;
+                  }
+                }
+
+                return false;
+              },
+              {
+                timeout: 6000, // Reasonable timeout for stop verification
+                message: 'Auto-play stop verification failed',
               }
-            }
-            
-            // Alternative button check
-            const altButton = page.locator('#play-pause-btn');
-            if (await altButton.count() > 0) {
-              const altPlaying = await altButton.getAttribute('data-playing');
-              if (altPlaying === 'false') {
-                console.info('[AutoPlayHelpers] Auto-play stop verified via alternative button');
-                return true;
-              }
-            }
-            
-            return false;
-          }, {
-            timeout: 6000, // Reasonable timeout for stop verification
-            message: 'Auto-play stop verification failed',
-          }).toBe(true);
-          
+            )
+            .toBe(true);
+
           return true;
-        } catch (pollingError) {
-          console.warn('[AutoPlayHelpers] expect.poll() stop verification failed, falling back to StateSynchronizer');
-          
+        } catch {
+          console.warn(
+            '[AutoPlayHelpers] expect.poll() stop verification failed, falling back to StateSynchronizer'
+          );
+
           // Fallback to existing StateSynchronizer approach if expect.poll() fails
           const stateVerified = await StateSynchronizer.waitForEngineState(
             page,
             (state) => state.isPlaying === false,
             4000
           );
-          
+
           if (stateVerified) {
-            console.info('[AutoPlayHelpers] Auto-play stop verified via StateSynchronizer fallback');
+            console.info(
+              '[AutoPlayHelpers] Auto-play stop verified via StateSynchronizer fallback'
+            );
             return true;
           }
-          
+
           console.warn(
             '[AutoPlayHelpers] Auto-play stop verification failed on both engine and button state'
           );
