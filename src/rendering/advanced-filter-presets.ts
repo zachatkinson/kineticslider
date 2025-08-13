@@ -111,6 +111,9 @@ export class AdvancedFilterPresets extends EffectPresets {
           'AdvancedFilterPresets',
           error
         );
+
+        // Still register preset names for UI purposes, even though filters won't work
+        this.registerAdvancedPresets();
         return null;
       }
     })();
@@ -229,12 +232,14 @@ export class AdvancedFilterPresets extends EffectPresets {
    * Only registers if pixi-filters loaded successfully
    */
   private registerAdvancedPresets(): void {
+    // Always register preset names for UI purposes, even if pixi-filters failed to load
+    // The individual filter creation methods will handle the case where filters aren't available
+
     if (!this.pixiFilters) {
       debugLogger.warn(
-        'pixi-filters not available - skipping advanced preset registration',
+        'pixi-filters not available - registering preset names only for UI purposes',
         'AdvancedFilterPresets'
       );
-      return;
     }
 
     // Basic Effects
