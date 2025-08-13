@@ -17,7 +17,6 @@ import {
   Assets,
   Texture,
   DisplacementFilter,
-  AlphaFilter,
 } from 'pixi.js';
 import { FilterChain } from './filter-chain';
 import { FilterManager } from './filter-manager';
@@ -662,6 +661,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAsciiEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for AsciiFilter
+    const AsciiFilter = this.getFilterClass('AsciiFilter');
+    if (!AsciiFilter) {
+      throw new Error(
+        'AsciiFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Use custom settings if provided, otherwise fall back to intensity presets
     if (options.customSettings) {
       // Convert hex color string to RGB array [r, g, b] with values 0-1 (common PIXI.js format)
@@ -857,6 +864,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createDotEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for DotFilter
+    const DotFilter = this.getFilterClass('DotFilter');
+    if (!DotFilter) {
+      throw new Error(
+        'DotFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     let settings;
     if (
@@ -911,6 +926,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createDropShadowEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for DropShadowFilter
+    const DropShadowFilter = this.getFilterClass('DropShadowFilter');
+    if (!DropShadowFilter) {
+      throw new Error(
+        'DropShadowFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     let settings;
     if (
@@ -1000,6 +1023,8 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdvancedGlowEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for GlowFilter
+    const GlowFilter = this.getFilterClass('GlowFilter');
     let settings;
 
     // Check for custom settings first
@@ -1100,6 +1125,8 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdvancedAlphaEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for AlphaFilter
+    const AlphaFilter = this.getFilterClass('AlphaFilter');
     // Check for custom settings first
     if (
       options.customSettings &&
@@ -1148,6 +1175,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createCRTEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for CRTFilter
+    const CRTFilter = this.getFilterClass('CRTFilter');
+    if (!CRTFilter) {
+      throw new Error(
+        'CRTFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     if (
       options.customSettings &&
@@ -1290,6 +1325,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdvancedGlitchEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for GlitchFilter
+    const GlitchFilter = this.getFilterClass('GlitchFilter');
+    if (!GlitchFilter) {
+      throw new Error(
+        'GlitchFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     let settings;
     if (
@@ -1540,6 +1583,9 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createPixelateEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for PixelateFilter
+    const PixelateFilter = this.getFilterClass('PixelateFilter');
+
     // Check for custom settings first
     if (options.customSettings) {
       const settings = options.customSettings;
@@ -1826,6 +1872,14 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createEmbossEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for EmbossFilter
+    const EmbossFilter = this.getFilterClass('EmbossFilter');
+    if (!EmbossFilter) {
+      throw new Error(
+        'EmbossFilter not available - pixi-filters may not be loaded'
+      );
+    }
+
     // Check for custom settings first
     let strength;
     if (
@@ -2463,6 +2517,8 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createOutlineEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for OutlineFilter
+    const OutlineFilter = this.getFilterClass('OutlineFilter');
     // Check for custom settings first
     if (options.customSettings) {
       const settings = options.customSettings;
@@ -2661,6 +2717,8 @@ export class AdvancedFilterPresets extends EffectPresets {
   private createAdjustmentEffect(
     options: Required<PresetOptions>
   ): EffectPresetResult {
+    // Use dynamic import for AdjustmentFilter
+    const AdjustmentFilter = this.getFilterClass('AdjustmentFilter');
     // Use custom settings if provided, otherwise fall back to intensity presets
     if (options.customSettings) {
       const filter = new AdjustmentFilter({

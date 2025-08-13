@@ -60,6 +60,28 @@ export const AdvancedFilterManager: React.FC<AdvancedFilterManagerProps> = ({
   const [filtersLoading, setFiltersLoading] = useState(true);
   const [advancedPresets] = useState(() => new AdvancedFilterPresets());
 
+  // Expose filter loading status to global scope for testing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const kineticSlider = (
+        window as {
+          kineticSlider?: {
+            filterManager?: { isAdvancedFiltersLoaded?: () => boolean };
+          };
+        }
+      ).kineticSlider;
+
+      if (kineticSlider && !kineticSlider.filterManager) {
+        kineticSlider.filterManager = {};
+      }
+
+      if (kineticSlider?.filterManager) {
+        kineticSlider.filterManager.isAdvancedFiltersLoaded = () =>
+          !filtersLoading;
+      }
+    }
+  }, [filtersLoading]);
+
   // Get all available filter names (only advanced PIXI filters, not composite effects)
   const getAllAvailableFilters = useCallback(async (): Promise<string[]> => {
     const advancedFilters = await advancedPresets.getAdvancedPresetNames();

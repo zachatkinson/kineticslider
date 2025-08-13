@@ -9,7 +9,7 @@
 
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { navigateAndWait } from './utils';
+import { navigateAndWait, waitForDynamicImports } from './utils';
 
 // Core filter mapping for reliable testing (focus on key filters)
 const coreFilters = {
@@ -111,6 +111,8 @@ async function countEnabledFilters(page: Page): Promise<number> {
 test.describe('Filter System E2E', () => {
   test.beforeEach(async ({ page }) => {
     await navigateAndWait(page);
+    // Wait for dynamic imports to complete before testing
+    await waitForDynamicImports(page);
     // Start with clean state
     await clearFiltersAndWait(page);
   });
@@ -195,6 +197,9 @@ test.describe('Filter System E2E', () => {
 
   test.describe('Advanced Functionality', () => {
     test('should handle multiple filter combinations', async ({ page }) => {
+      // Set longer timeout for CI dynamic loading
+      test.setTimeout(60000);
+
       // Test filter combinations
       const combinations: [CoreFilterName, CoreFilterName][] = [
         ['glow', 'alpha'],
@@ -205,21 +210,22 @@ test.describe('Filter System E2E', () => {
         // Clear state between combinations
         await clearFiltersAndWait(page);
 
-        // Add first filter
+        // Add first filter with longer wait
         await addAndEnableFilter(page, filter1);
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(1000); // Increased wait for dynamic imports
 
-        // Add second filter
+        // Add second filter with longer wait
         await addAndEnableFilter(page, filter2);
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(1000); // Increased wait for dynamic imports
 
-        // Verify both filters are enabled
-        const enabledCount = await countEnabledFilters(page);
-        expect(enabledCount).toBe(2);
+        // Verify both filters are enabled using robust polling
+        await expect
+          .poll(async () => await countEnabledFilters(page), { timeout: 10000 })
+          .toBe(2);
 
         // Verify slider is still responsive
         const slider = page.locator('[data-testid="kinetic-slider"]');
-        await expect(slider).toBeVisible();
+        await expect(slider).toBeVisible({ timeout: 10000 });
       }
     });
 
@@ -302,7 +308,7 @@ test.describe('Filter System E2E', () => {
 
     test('should handle rapid filter interactions', async ({ page }) => {
       // Set longer timeout for this stress test
-      test.setTimeout(60000);
+      test.setTimeout(120000); // Increased to 2 minutes for CI
 
       // Test rapid toggling without system crash (reduced iterations for CI stability)
       const rapidFilters: CoreFilterName[] = ['glow', 'alpha'];
@@ -311,20 +317,26 @@ test.describe('Filter System E2E', () => {
         // Reduced from 3 to 2 iterations
         for (const filterName of rapidFilters) {
           await addAndEnableFilter(page, filterName);
-          await page.waitForTimeout(500); // Increased wait time
+          // Wait for filter to fully load using polling
+          await expect
+            .poll(async () => await countEnabledFilters(page), {
+              timeout: 15000,
+            })
+            .toBeGreaterThan(0);
+          await page.waitForTimeout(1000); // Increased wait time
         }
 
         // Clear and reset with more generous timing
         await clearFiltersAndWait(page);
-        await page.waitForTimeout(1000); // Longer wait between iterations
+        await page.waitForTimeout(2000); // Longer wait between iterations
       }
 
-      // Verify system stability
+      // Verify system stability using robust assertions
       const slider = page.locator('[data-testid="kinetic-slider"]');
-      await expect(slider).toBeVisible({ timeout: 10000 });
+      await expect(slider).toBeVisible({ timeout: 15000 });
 
       const addButton = page.locator('[data-testid="add-filter-button"]');
-      await expect(addButton).toBeEnabled({ timeout: 5000 });
+      await expect(addButton).toBeEnabled({ timeout: 10000 });
     });
   });
 });

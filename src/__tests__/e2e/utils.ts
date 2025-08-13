@@ -202,6 +202,36 @@ export async function navigateAndReset(
 }
 
 /**
+ * Wait for dynamic imports to complete (especially pixi-filters)
+ * Uses expect.poll() for robust async loading detection
+ */
+export async function waitForDynamicImports(
+  page: Page,
+  timeout: number = 15000
+): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        return await page.evaluate(() => {
+          // Check if advanced filters are loaded
+          const kineticSlider = (
+            window as {
+              kineticSlider?: {
+                filterManager?: { isAdvancedFiltersLoaded?: () => boolean };
+              };
+            }
+          ).kineticSlider;
+          return (
+            kineticSlider?.filterManager?.isAdvancedFiltersLoaded?.() ?? false
+          );
+        });
+      },
+      { timeout }
+    )
+    .toBe(true);
+}
+
+/**
  * Wait for slider ARIA attributes to be fully initialized
  * This addresses the timing issue where tests check attributes before they're set
  */
