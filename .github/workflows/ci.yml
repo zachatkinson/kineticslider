@@ -81,6 +81,21 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: 🔧 Install system dependencies for headless rendering
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libjpeg-dev \
+            libgif-dev \
+            librsvg2-dev \
+            libgl1-mesa-dev \
+            libxi-dev \
+            libglew-dev \
+            libegl1-mesa-dev \
+            xvfb
+
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -153,6 +168,21 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: 🔧 Install system dependencies for headless rendering
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libjpeg-dev \
+            libgif-dev \
+            librsvg2-dev \
+            libgl1-mesa-dev \
+            libxi-dev \
+            libglew-dev \
+            libegl1-mesa-dev \
+            xvfb
+
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -224,6 +254,21 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+
+      - name: 🔧 Install system dependencies for headless rendering
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libjpeg-dev \
+            libgif-dev \
+            librsvg2-dev \
+            libgl1-mesa-dev \
+            libxi-dev \
+            libglew-dev \
+            libegl1-mesa-dev \
+            xvfb
 
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
@@ -440,6 +485,21 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+
+      - name: 🔧 Install system dependencies for headless rendering
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libjpeg-dev \
+            libgif-dev \
+            librsvg2-dev \
+            libgl1-mesa-dev \
+            libxi-dev \
+            libglew-dev \
+            libegl1-mesa-dev \
+            xvfb
 
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
