@@ -511,8 +511,15 @@ test.describe('LoopManager E2E Tests', () => {
       // Start auto-play
       await AutoPlayHelpers.startAutoPlay(page);
 
-      // Wait for auto-play to reach the end
+      // Wait for auto-play to reach the end and stop
       await page.waitForTimeout(config.longPause * 3);
+
+      // Add explicit state synchronization to ensure auto-play has stopped
+      await StateSynchronizer.waitForEngineState(
+        page,
+        (state) => state.isPlaying === false,
+        5000
+      );
 
       // Should be stopped at last slide
       const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);

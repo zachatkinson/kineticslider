@@ -459,8 +459,15 @@ test.describe('Auto-Play Controls', () => {
       });
       expect(started).toBe(true);
 
-      // Wait for auto-play to reach the end
+      // Wait for auto-play to reach the end and stop
       await page.waitForTimeout(config.longPause * 3);
+
+      // Add explicit state synchronization to ensure auto-play has stopped
+      await StateSynchronizer.waitForEngineState(
+        page,
+        (state) => state.isPlaying === false,
+        5000
+      );
 
       // Verify stopped at last slide (use defensive checking)
       const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);

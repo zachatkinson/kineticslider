@@ -278,13 +278,15 @@ jobs:
           # Convert project name to safe artifact name with unique suffix
           PROJECT_CLEAN=$(echo "${{ matrix.project }}" | sed 's/[^a-zA-Z0-9 ]//g' | sed 's/  */-/g' | tr '[:upper:]' '[:lower:]' | sed 's/^-\|-$//g')
           SAFE_NAME="${PROJECT_CLEAN}-$(echo "${{ matrix.project }}" | sha1sum | cut -c1-8)"
-          echo "name=$SAFE_NAME" >> $GITHUB_OUTPUT
+          # Add job index for uniqueness across parallel jobs
+          UNIQUE_NAME="${SAFE_NAME}-${{ strategy.job-index }}-${{ github.run_number }}"
+          echo "name=$UNIQUE_NAME" >> $GITHUB_OUTPUT
 
       - name: 📤 Upload Playwright report
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report-${{ github.run_id }}-${{ steps.artifact-name.outputs.name }}
+          name: playwright-report-${{ steps.artifact-name.outputs.name }}
           path: playwright-report/
           retention-days: 30
           if-no-files-found: ignore
@@ -296,7 +298,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-coverage-${{ github.run_id }}-${{ steps.artifact-name.outputs.name }}
+          name: e2e-coverage-${{ steps.artifact-name.outputs.name }}
           path: |
             coverage/.nyc_output/
             coverage/e2e-coverage.json
