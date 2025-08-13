@@ -648,7 +648,7 @@ export class AutoPlayHelpers {
       const totalSlides = initialState.totalSlides;
       let cyclesCompleted = 0;
       let hasSeenLastSlide = false;
-      let hasSeenFirstSlide = startIndex === 0; // Track if we started at first slide
+      let hasReturnedToFirst = false; // Track if we've returned to first slide after seeing last slide
 
       const startTime = Date.now();
 
@@ -680,11 +680,11 @@ export class AutoPlayHelpers {
           hasSeenLastSlide = true;
         }
 
-        // Detect cycle completion: we've seen the last slide and now we're at first slide
+        // Detect cycle completion: we've seen the last slide and now we're back at first slide
         if (hasSeenLastSlide && currentIndex === 0) {
-          if (!hasSeenFirstSlide) {
+          if (!hasReturnedToFirst) {
             cyclesCompleted++;
-            hasSeenFirstSlide = true;
+            hasReturnedToFirst = true;
             console.info(
               `[AutoPlayHelpers] Cycle ${cyclesCompleted} completed (looped back to first slide)`
             );
@@ -698,10 +698,8 @@ export class AutoPlayHelpers {
 
             // Reset for next cycle
             hasSeenLastSlide = false;
+            hasReturnedToFirst = false;
           }
-        } else if (currentIndex !== 0) {
-          // Reset first slide flag when we move away from first slide
-          hasSeenFirstSlide = false;
         }
       }
 
