@@ -487,20 +487,29 @@ export class AutoPlayHelpers {
             return false;
           }
 
-          // Enable auto-play via updateConfig (preferred method)
-          if (typeof engine.updateConfig === 'function') {
+          // Access AutoPlayManager directly to configure without auto-starting
+          // This follows Single Responsibility Principle: ONLY configure, don't start
+          const managers = engine.getManagers?.();
+          const autoPlayManager = managers?.autoPlayManager;
+          if (
+            autoPlayManager &&
+            typeof autoPlayManager.updateConfig === 'function'
+          ) {
             try {
-              engine.updateConfig({ autoPlay: true });
+              autoPlayManager.updateConfig({ enabled: true });
               console.info(
-                '[enableAutoPlay] Successfully enabled auto-play via updateConfig'
+                '[enableAutoPlay] Successfully enabled auto-play configuration via AutoPlayManager'
               );
               return true;
             } catch (error) {
-              console.warn('[enableAutoPlay] updateConfig failed:', error);
+              console.warn(
+                '[enableAutoPlay] AutoPlayManager.updateConfig failed:',
+                error
+              );
             }
           }
 
-          // Fallback - try direct config access
+          // Fallback - try engine config access (but avoid engine.updateConfig to prevent auto-start)
           if (engine.config && typeof engine.config === 'object') {
             try {
               (engine.config as any).autoPlay = true;
@@ -516,7 +525,7 @@ export class AutoPlayHelpers {
             }
           }
 
-          console.warn('[enableAutoPlay] All methods failed');
+          console.warn('[enableAutoPlay] All configuration methods failed');
           return false;
         });
       },
