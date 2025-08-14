@@ -814,7 +814,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     try {
       // Mark as destroyed to prevent further operations
       this.isDestroyed = true;
-      
+
       // Emit destroy event before cleanup
       this.emit(SLIDER_EVENTS.DESTROYED);
 

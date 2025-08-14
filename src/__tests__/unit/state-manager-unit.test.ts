@@ -777,10 +777,10 @@ describe('StateManager', () => {
 
       // Test scenario: bounds checking disabled but validation enabled
       // This tests the case where a user wants validation warnings but not automatic clamping
-      const customManager = new StateManager({ 
+      const customManager = new StateManager({
         allowTransientStates: true,
         strictValidation: true, // Enable strict validation to trigger validation warnings
-        enableBoundsChecking: false // Disable bounds checking to allow out-of-bounds state to reach validation
+        enableBoundsChecking: false, // Disable bounds checking to allow out-of-bounds state to reach validation
       });
       customManager.on(SLIDER_EVENTS.STATE_VALIDATION_WARNING, warningSpy);
 
@@ -794,7 +794,9 @@ describe('StateManager', () => {
 
       expect(warningSpy).toHaveBeenCalled();
       expect(warningSpy).toHaveBeenCalledWith({
-        warnings: ['currentIndex 5 is out of bounds but allowed during transition'],
+        warnings: [
+          'currentIndex 5 is out of bounds but allowed during transition',
+        ],
         state: expect.objectContaining({
           totalSlides: 3,
           currentIndex: 5,
