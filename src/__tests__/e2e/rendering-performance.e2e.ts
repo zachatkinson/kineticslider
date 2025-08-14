@@ -137,12 +137,16 @@ test.describe('Rendering Performance E2E Tests', () => {
     });
 
     expect(fpsData.success).toBe(true);
-    
+
     // Adjust FPS expectations for CI environment (GitHub Actions has limited GPU)
     const isCI = process.env.CI === 'true';
-    const expectedMinFps = isCI ? 25 : RENDERING_PERFORMANCE.CRITICAL_THRESHOLDS.FPS_CRITICAL;
-    const expectedAvgFps = isCI ? 30 : RENDERING_PERFORMANCE.WARNING_THRESHOLDS.FPS_LOW;
-    
+    const expectedMinFps = isCI
+      ? 25
+      : RENDERING_PERFORMANCE.CRITICAL_THRESHOLDS.FPS_CRITICAL;
+    const expectedAvgFps = isCI
+      ? 30
+      : RENDERING_PERFORMANCE.WARNING_THRESHOLDS.FPS_LOW;
+
     expect(fpsData.averageFps).toBeGreaterThan(expectedAvgFps);
     expect(fpsData.minFps).toBeGreaterThan(expectedMinFps);
   });
