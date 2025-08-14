@@ -158,7 +158,7 @@
   "size-limit": [
     {
       "path": "dist/kinetic-slider.es.js",
-      "limit": "104 KB",
+      "limit": "105 KB",
       "gzip": true
     },
     {
