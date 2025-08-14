@@ -34,8 +34,9 @@ async function clearFiltersAndWait(page: Page): Promise<void> {
     const clearButton = page.locator('[data-testid="clear-filters-button"]');
 
     if (await clearButton.isVisible({ timeout: 2000 })) {
-      await clearButton.click({ force: true });
-      await page.waitForTimeout(500);
+      // CI-friendly click with longer timeout and retry logic
+      await clearButton.click({ timeout: 10000 });
+      await page.waitForTimeout(1000);
     }
 
     // Ensure add button is available (indicates clean state)
@@ -151,6 +152,8 @@ async function countEnabledFilters(page: Page): Promise<number> {
 }
 
 test.describe('Filter System E2E', () => {
+  // Increase timeout for filter tests in CI (they involve complex rendering)
+  test.setTimeout(process.env.CI ? 90000 : 60000);
   test.beforeEach(async ({ page }) => {
     await navigateAndWait(page);
     // Wait for dynamic imports to complete before testing
