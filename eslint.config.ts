@@ -20,7 +20,19 @@ const config = tseslint.config(
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: (() => {
+        // Workaround for globals@16.3.0 bug with AudioWorkletGlobalScope trailing space
+        // See: https://github.com/sindresorhus/globals/issues/239
+        const GLOBALS_BROWSER_FIX = Object.assign({}, globals.browser);
+        
+        // Fix the AudioWorkletGlobalScope trailing space issue
+        if ('AudioWorkletGlobalScope ' in GLOBALS_BROWSER_FIX) {
+          GLOBALS_BROWSER_FIX.AudioWorkletGlobalScope = GLOBALS_BROWSER_FIX['AudioWorkletGlobalScope '];
+          delete GLOBALS_BROWSER_FIX['AudioWorkletGlobalScope '];
+        }
+        
+        return GLOBALS_BROWSER_FIX;
+      })(),
     },
     plugins: {
       'react-hooks': reactHooks,
