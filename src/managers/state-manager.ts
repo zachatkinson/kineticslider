@@ -13,6 +13,7 @@ import {
   SLIDER_ERROR_CODES,
   ERROR_HANDLING_DEFAULTS,
 } from '../core/constants';
+import { SliderError } from '../core/types';
 import { ErrorRecovery } from '../core/error-recovery';
 
 /**
@@ -217,6 +218,35 @@ export class StateManager extends SimpleEventEmitter {
     const previousState = { ...this.state };
     const newState = { ...this.state, ...updates };
 
+    // Defensive bounds checking for currentIndex (only if bounds checking is enabled)
+    if (
+      this.config.enableBoundsChecking &&
+      'currentIndex' in updates &&
+      typeof updates.currentIndex === 'number' &&
+      newState.totalSlides > 0 &&
+      updates.currentIndex >= newState.totalSlides
+    ) {
+      const clampedIndex = Math.max(0, newState.totalSlides - 1);
+      // Emit warning event instead of console.warn
+      this.emit(SLIDER_EVENTS.ERROR, {
+        error: new SliderError(
+          `Defensive bounds check: currentIndex ${updates.currentIndex} exceeds totalSlides ${newState.totalSlides}, clamping to ${clampedIndex}. Context: ${context || 'unknown'}`,
+          SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX,
+          {
+            currentIndex: updates.currentIndex,
+            totalSlides: newState.totalSlides,
+            clampedIndex,
+            context,
+          }
+        ),
+        context: 'StateManager.updateState.bounds-check',
+        recoverable: true,
+      });
+      newState.currentIndex = clampedIndex;
+      // Also update the updates object for consistency
+      updates.currentIndex = clampedIndex;
+    }
+
     // Validate state change if validation is enabled
     if (this.config.strictValidation && !this.isValidating) {
       const validation = this.validateState(newState);
@@ -271,6 +301,29 @@ export class StateManager extends SimpleEventEmitter {
    * Get current slide index
    */
   getCurrentIndex(): number {
+    // Only apply defensive bounds checking if bounds checking is enabled
+    if (
+      this.config.enableBoundsChecking &&
+      this.state.totalSlides > 0 &&
+      this.state.currentIndex >= this.state.totalSlides
+    ) {
+      const clampedIndex = Math.max(0, this.state.totalSlides - 1);
+      // Emit warning event instead of console.warn
+      this.emit(SLIDER_EVENTS.ERROR, {
+        error: new SliderError(
+          `Detected out-of-bounds currentIndex ${this.state.currentIndex} >= totalSlides ${this.state.totalSlides}, returning clamped value ${clampedIndex}`,
+          SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX,
+          {
+            currentIndex: this.state.currentIndex,
+            totalSlides: this.state.totalSlides,
+            clampedIndex,
+          }
+        ),
+        context: 'StateManager.getCurrentIndex.bounds-check',
+        recoverable: true,
+      });
+      return clampedIndex;
+    }
     return this.state.currentIndex;
   }
 

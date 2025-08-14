@@ -297,31 +297,38 @@ export class AutoPlayManager extends SimpleEventEmitter {
     const interval = Math.max(1, this.config.interval);
 
     this.timer = window.setTimeout(async () => {
-      if (this.isPlaying && this.pauseReasons.size === 0) {
-        try {
-          await onNext();
+      // Check if we should still be running before doing anything
+      if (!this.isPlaying || this.pauseReasons.size > 0) {
+        return;
+      }
 
-          // Continue scheduling if still playing and not paused
-          if (this.isPlaying && this.pauseReasons.size === 0) {
-            this.scheduleNext(onNext);
-          }
-        } catch (error) {
-          const sliderError =
-            error instanceof Error ? error : new Error(String(error));
+      try {
+        await onNext();
 
-          // Emit error with enhanced context
-          this.emit(SLIDER_EVENTS.ERROR, {
-            error: new SliderError(
-              `Auto-play failed: ${sliderError.message}`,
-              SLIDER_ERROR_CODES.ANIMATION_ERROR,
-              { originalError: sliderError, manager: 'AutoPlayManager' }
-            ),
-            context: 'AutoPlayManager.scheduleNext',
-          });
-
-          // Stop auto-play on error to prevent infinite error loops
-          this.stop();
+        // CRITICAL: Check state again immediately after onNext() to prevent race conditions
+        // onNext() might have called stop() due to boundary detection
+        if (!this.isPlaying || this.pauseReasons.size > 0) {
+          return; // Auto-play was stopped during onNext(), don't schedule again
         }
+
+        // Continue scheduling only if we're still in a valid playing state
+        this.scheduleNext(onNext);
+      } catch (error) {
+        const sliderError =
+          error instanceof Error ? error : new Error(String(error));
+
+        // Emit error with enhanced context
+        this.emit(SLIDER_EVENTS.ERROR, {
+          error: new SliderError(
+            `Auto-play failed: ${sliderError.message}`,
+            SLIDER_ERROR_CODES.ANIMATION_ERROR,
+            { originalError: sliderError, manager: 'AutoPlayManager' }
+          ),
+          context: 'AutoPlayManager.scheduleNext',
+        });
+
+        // Stop auto-play on error to prevent infinite error loops
+        this.stop();
       }
     }, interval);
   }

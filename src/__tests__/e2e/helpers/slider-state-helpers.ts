@@ -110,8 +110,18 @@ export class SliderStateHelpers {
   /**
    * Get total number of slides with enhanced validation
    * Reuses robust state validation from getSliderState (DRY principle)
+   * FIXED: Now waits for proper initialization to avoid timing issues
    */
   static async getTotalSlides(page: Page): Promise<number | null> {
+    // CRITICAL FIX: Wait for slider to be fully initialized before getting totalSlides
+    // This prevents the timing issue where getTotalSlides returns intermediate values (like 1 or 2)
+    const isReady = await this.waitForSliderReady(page, 10000);
+    if (!isReady) {
+      console.warn(
+        '[getTotalSlides] Warning: Slider not ready after 10s, proceeding anyway'
+      );
+    }
+
     const state = await this.getSliderState(page);
     // Enhanced validation: ensure we never return 0 unless intentional
     const totalSlides = state?.totalSlides ?? null;

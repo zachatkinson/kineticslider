@@ -188,9 +188,10 @@ test.describe('Auto-Play Controls', () => {
       browserName,
     }) => {
       // Skip for browsers with known visibility API issues
-      if (browserName === 'webkit') {
-        test.skip();
-      }
+      test.skip(
+        browserName === 'webkit',
+        'WebKit has known issues with Page Visibility API in test environments'
+      );
 
       // Start auto-play
       const started = await AutoPlayHelpers.startAutoPlay(page, {
@@ -217,9 +218,10 @@ test.describe('Auto-Play Controls', () => {
       browserName,
     }) => {
       // Skip for browsers with known visibility API issues
-      if (browserName === 'webkit') {
-        test.skip();
-      }
+      test.skip(
+        browserName === 'webkit',
+        'WebKit has known issues with Page Visibility API in test environments'
+      );
 
       // Start auto-play
       const started = await AutoPlayHelpers.startAutoPlay(page, {
@@ -244,10 +246,11 @@ test.describe('Auto-Play Controls', () => {
       browserName,
       isMobile,
     }) => {
-      // Skip for mobile browsers
-      if (isMobile) {
-        test.skip();
-      }
+      // Skip for mobile browsers - focus/blur events work differently
+      test.skip(
+        isMobile,
+        'Mobile browsers handle focus/blur events differently - platform limitation'
+      );
 
       // Start auto-play
       const started = await AutoPlayHelpers.startAutoPlay(page, {
@@ -282,12 +285,10 @@ test.describe('Auto-Play Controls', () => {
       isMobile,
     }) => {
       // Mobile Chrome cannot start auto-play without user interaction
-      // We need to handle this differently
-      if (isMobile && browserName === 'chromium') {
-        // Skip test for mobile Chrome - fundamental browser limitation
-        test.skip();
-        return;
-      }
+      test.skip(
+        isMobile && browserName === 'chromium',
+        'Mobile Chrome requires user gesture for auto-play - browser security policy'
+      );
       // Start auto-play
       const started = await AutoPlayHelpers.startAutoPlay(page, {
         verifyStart: true,
@@ -334,10 +335,11 @@ test.describe('Auto-Play Controls', () => {
       page,
       isMobile,
     }) => {
-      // Skip for mobile (no keyboard)
-      if (isMobile) {
-        test.skip();
-      }
+      // Skip for mobile - no physical keyboard available
+      test.skip(
+        isMobile,
+        'Mobile devices do not have physical keyboard for testing keyboard navigation'
+      );
 
       // Start auto-play
       await AutoPlayHelpers.startAutoPlay(page, {
@@ -428,11 +430,10 @@ test.describe('Auto-Play Controls', () => {
       isMobile,
     }) => {
       // Mobile Chrome cannot start auto-play without user interaction
-      if (isMobile && browserName === 'chromium') {
-        // Skip test for mobile Chrome - fundamental browser limitation
-        test.skip();
-        return;
-      }
+      test.skip(
+        isMobile && browserName === 'chromium',
+        'Mobile Chrome requires user gesture for auto-play - browser security policy'
+      );
       // Extend timeout for this complex test involving navigation and auto-play
       test.setTimeout(60000);
 
@@ -441,10 +442,9 @@ test.describe('Auto-Play Controls', () => {
 
       expect(totalSlides).toBeGreaterThan(1);
 
-      // Navigate near the end
-      if (totalSlides !== null && totalSlides > 2) {
-        await NavigationHelpers.navigateToSlide(page, totalSlides - 2);
-      }
+      // Navigate to the first slide to ensure we start from the beginning
+      // (Changed from last slide - can't start auto-play from last slide with loop disabled)
+      await NavigationHelpers.navigateToFirst(page);
 
       // Disable loop and start auto-play
       await SliderStateHelpers.updateLoopConfig(page, {
@@ -474,25 +474,29 @@ test.describe('Auto-Play Controls', () => {
       const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
       const isPlaying = await SliderStateHelpers.isPlaying(page);
 
+      // Re-read totalSlides to ensure we have the current value
+      const currentTotalSlides = await SliderStateHelpers.getTotalSlides(page);
+      const actualTotalSlides = currentTotalSlides || totalSlides;
+
       // Debug info for troubleshooting out-of-bounds issues
       console.log(
-        `[Auto-play Debug] totalSlides: ${totalSlides}, currentIndex: ${currentIndex}, isPlaying: ${isPlaying}`
+        `[Auto-play Debug] totalSlides: ${actualTotalSlides}, currentIndex: ${currentIndex}, isPlaying: ${isPlaying}`
       );
 
       // Use defensive checking instead of exact slide calculation
-      if (totalSlides && currentIndex !== null) {
-        if (currentIndex >= totalSlides) {
+      if (actualTotalSlides && currentIndex !== null) {
+        if (currentIndex >= actualTotalSlides) {
           console.warn(
-            `[Auto-play Test] Index out of bounds: currentIndex=${currentIndex} >= totalSlides=${totalSlides}. This indicates an auto-play boundary bug.`
+            `[Auto-play Test] Index out of bounds: currentIndex=${currentIndex} >= totalSlides=${actualTotalSlides}. This indicates an auto-play boundary bug.`
           );
           // Accept this as a known issue but verify auto-play stopped
           expect(isPlaying).toBe(false);
         } else {
           // Normal case: should be at or near the last slide
           expect(currentIndex).toBeGreaterThanOrEqual(
-            Math.max(0, totalSlides - 2)
+            Math.max(0, actualTotalSlides - 2)
           );
-          expect(currentIndex).toBeLessThan(totalSlides);
+          expect(currentIndex).toBeLessThan(actualTotalSlides);
           expect(isPlaying).toBe(false);
         }
       } else {

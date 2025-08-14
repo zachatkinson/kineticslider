@@ -160,6 +160,29 @@ export class LoopManager extends SimpleEventEmitter {
         throw new Error(`Invalid totalSlides: ${totalSlides}`);
       }
 
+      // Defensive bounds checking: if currentIndex is already out of bounds,
+      // clamp it to valid range to prevent further boundary violations
+      if (totalSlides > 0 && currentIndex >= totalSlides) {
+        // CurrentIndex is out of bounds - clamp to last valid slide
+        const clampedIndex = Math.max(0, totalSlides - 1);
+        // Emit warning event instead of console.warn
+        this.emit(SLIDER_EVENTS.ERROR, {
+          error: new SliderError(
+            `CurrentIndex ${currentIndex} exceeds totalSlides ${totalSlides}, clamping to ${clampedIndex}`,
+            SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX,
+            {
+              currentIndex,
+              totalSlides,
+              clampedIndex,
+              context: 'LoopManager.getNextIndex',
+            }
+          ),
+          context: 'LoopManager.getNextIndex.bounds-check',
+          recoverable: true,
+        });
+        currentIndex = clampedIndex;
+      }
+
       // Handle single slide - bounce mode should still allow "bouncing" in place
       if (totalSlides <= 1) {
         if (this.config.mode === LoopMode.BOUNCE) {
@@ -585,8 +608,20 @@ export class LoopManager extends SimpleEventEmitter {
         }
       } catch (recoveryError) {
         // Recovery failed, but don't cascade errors
-        // eslint-disable-next-line no-console
-        console.warn('LoopManager error recovery failed:', recoveryError);
+        // Use debugLogger or emit error event instead of console.warn
+        this.emit(SLIDER_EVENTS.ERROR, {
+          error: new SliderError(
+            `Recovery failed: ${recoveryError instanceof Error ? recoveryError.message : String(recoveryError)}`,
+            SLIDER_ERROR_CODES.RECOVERY_FAILED,
+            {
+              originalError: loopError,
+              recoveryError,
+              context: `LoopManager.${context}`,
+            }
+          ),
+          context: `LoopManager.${context}.recovery`,
+          recoverable: false,
+        });
       }
     }
   }

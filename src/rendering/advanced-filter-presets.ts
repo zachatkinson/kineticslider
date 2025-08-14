@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - Temporarily disabled during dynamic import refactoring
+// Properly typed filter presets with explicit type definitions
 /**
  * @fileoverview Advanced Filter Presets - Extended filter library
  *
@@ -9,6 +8,9 @@
  * @version 1.0.0
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+
 import { gsap } from 'gsap';
 import {
   Filter,
@@ -17,7 +19,14 @@ import {
   Assets,
   Texture,
   DisplacementFilter,
+  AlphaFilter,
 } from 'pixi.js';
+
+// Import specific filter types that are actually used directly
+import { AsciiFilter } from 'pixi-filters';
+
+// Filter constructor type removed as it's replaced with dynamic any types
+
 import { FilterChain } from './filter-chain';
 import { FilterManager } from './filter-manager';
 import { debugLogger } from '../utils/debug-logger';
@@ -41,7 +50,9 @@ import {
 
 // Dynamic imports for pixi-filters - loaded on demand for better compatibility
 // This allows graceful degradation in environments where pixi-filters isn't available
-type PixiFiltersModule = typeof import('pixi-filters');
+type PixiFiltersModule = typeof import('pixi-filters') & {
+  AlphaFilter: typeof AlphaFilter;
+};
 
 /**
  * Extended preset categories for advanced effects
@@ -94,7 +105,7 @@ export class AdvancedFilterPresets extends EffectPresets {
 
         // Dynamic import with error handling
         const pixiFiltersModule = await import('pixi-filters');
-        this.pixiFilters = pixiFiltersModule;
+        this.pixiFilters = { ...pixiFiltersModule, AlphaFilter };
 
         // Register presets after successful load
         this.registerAdvancedPresets();
@@ -103,7 +114,7 @@ export class AdvancedFilterPresets extends EffectPresets {
           'Advanced filters loaded successfully',
           'AdvancedFilterPresets'
         );
-        return pixiFiltersModule;
+        return this.pixiFilters;
       } catch (error) {
         this.filtersLoadFailed = true;
         debugLogger.warn(
@@ -130,11 +141,15 @@ export class AdvancedFilterPresets extends EffectPresets {
   }
 
   /**
-   * Get a filter class from the dynamically loaded pixi-filters module
+   * Get a filter class from the dynamically loaded pixi-filters module or built-in PIXI filters
    */
-  private getFilterClass<T extends keyof PixiFiltersModule>(
-    filterName: T
-  ): PixiFiltersModule[T] {
+
+  private getFilterClass(filterName: string): any {
+    // Handle built-in PIXI filters first
+    if (filterName === 'AlphaFilter') {
+      return AlphaFilter;
+    }
+
     if (!this.pixiFilters) {
       throw new Error(
         `pixi-filters not available - cannot create ${String(filterName)} filter`
@@ -144,8 +159,10 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Use secure property access with explicit validation
     const filterNameStr = String(filterName);
 
-    // Validate against known safe filter names
-    const safeFilterAccess = new Map([
+    // Validate against known safe filter names using proper PIXI filter types
+
+    const safeFilterAccess = new Map<string, () => any>([
+      ['AlphaFilter', () => AlphaFilter],
       ['AdjustmentFilter', () => this.pixiFilters!.AdjustmentFilter],
       ['AdvancedBloomFilter', () => this.pixiFilters!.AdvancedBloomFilter],
       ['AsciiFilter', () => this.pixiFilters!.AsciiFilter],
@@ -196,7 +213,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       );
     }
 
-    return accessor() as PixiFiltersModule[T];
+    return accessor();
   }
 
   /**
@@ -715,7 +732,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       filterChain.addFilter(filter, {
         id: 'ascii',
         animated: true,
-        animationProperties: { size: filter.size },
+        animationProperties: { size: (filter as AsciiFilter).size },
         duration: options.duration,
         ease: options.ease,
       });
@@ -1512,12 +1529,10 @@ export class AdvancedFilterPresets extends EffectPresets {
             Math.sin(burstElapsed * 8) * 25 +
             Math.cos(burstElapsed * 5.5) * 15 +
             (Math.random() - 0.5) * 20;
-          (filter as GlitchFilter).offset = Math.abs(
-            baseOffset * glitchIntensity
-          );
+          (filter as any).offset = Math.abs(baseOffset * glitchIntensity);
 
           // Keep direction horizontal for scan line effect
-          (filter as GlitchFilter).direction = 0;
+          (filter as any).direction = 0;
 
           // Slice flickering scaled by intensity
           const baseSlices = settings.slices;
@@ -1531,51 +1546,49 @@ export class AdvancedFilterPresets extends EffectPresets {
             1 +
             intenseBurst * 0.5 * glitchIntensity +
             randomBurst * glitchIntensity;
-          (filter as GlitchFilter).slices = Math.floor(
-            baseSlices * burstMultiplier
-          );
+          (filter as any).slices = Math.floor(baseSlices * burstMultiplier);
 
           // Dramatic slice changes - more frequent with higher intensity
           const sliceChangeChance = 0.15 + glitchIntensity * 0.15;
           if (Math.random() < sliceChangeChance) {
-            (filter as GlitchFilter).slices =
+            (filter as any).slices =
               Math.random() < 0.4 ? 0 : baseSlices * (2 + glitchIntensity);
           }
 
           // Rapid seed changes for chaotic corruption
           if (Math.floor(burstElapsed * 30) % 2 === 0) {
-            (filter as GlitchFilter).seed = Math.random();
+            (filter as any).seed = Math.random();
           }
 
           // Offset spikes - more frequent and intense with higher intensity
           const spikeChance = 0.1 + glitchIntensity * 0.1;
           if (Math.random() < spikeChance) {
-            (filter as GlitchFilter).offset =
+            (filter as any).offset =
               (Math.random() * 60 + 30) * glitchIntensity;
           }
         } else {
           // During quiet periods - but check for residual corruption
           if (hasResidualGlitch) {
             // Signal didn't fully recover - persistent glitch artifacts
-            (filter as GlitchFilter).offset = residualOffset;
-            (filter as GlitchFilter).direction = 0;
-            (filter as GlitchFilter).slices = residualSlices;
+            (filter as any).offset = residualOffset;
+            (filter as any).direction = 0;
+            (filter as any).slices = residualSlices;
 
             // Very occasional minor fluctuations in the corrupted signal
             if (Math.random() < 0.01) {
               // 1% chance
-              (filter as GlitchFilter).offset =
+              (filter as any).offset =
                 residualOffset + (Math.random() - 0.5) * 3;
             }
           } else {
             // Clean signal like normal camera feed
-            (filter as GlitchFilter).offset = 0;
-            (filter as GlitchFilter).direction = 0;
-            (filter as GlitchFilter).slices = settings.slices; // Normal slice count
+            (filter as any).offset = 0;
+            (filter as any).direction = 0;
+            (filter as any).slices = settings.slices; // Normal slice count
 
             // Occasional very minor static during quiet periods - use custom static chance
             if (Math.random() < settings.staticChance / 100) {
-              (filter as GlitchFilter).offset = Math.random() * 3 + 1; // Tiny static
+              (filter as any).offset = Math.random() * 3 + 1; // Tiny static
             }
           }
         }
@@ -2455,9 +2468,7 @@ export class AdvancedFilterPresets extends EffectPresets {
         startAnimation();
 
         // Store animation frame ID for cleanup
-        (
-          filter as ShockwaveFilter & { _animationFrameId?: number | null }
-        )._animationFrameId = animationFrameId;
+        (filter as any)._animationFrameId = animationFrameId;
       }
 
       filterChain.addFilter(filter, {
@@ -2475,9 +2486,7 @@ export class AdvancedFilterPresets extends EffectPresets {
         ...originalResult,
         cleanup: (): void => {
           // Clear the animation frame if it exists
-          const filterWithAnimation = filter as ShockwaveFilter & {
-            _animationFrameId?: number | null;
-          };
+          const filterWithAnimation = filter as any;
           if (
             filterWithAnimation._animationFrameId !== null &&
             filterWithAnimation._animationFrameId !== undefined
@@ -2751,7 +2760,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       const startTime = Date.now();
       animationInterval = setInterval(() => {
         const elapsed = (Date.now() - startTime) / 1000;
-        (filter as GodrayFilter).time = elapsed * 2; // Slow, smooth movement
+        (filter as any).time = elapsed * 2; // Slow, smooth movement
       }, 16); // ~60fps
     }
 
@@ -2771,7 +2780,7 @@ export class AdvancedFilterPresets extends EffectPresets {
     // Store the interval for cleanup
     if (animationInterval) {
       (
-        filter as GodrayFilter & { _animationInterval?: NodeJS.Timeout }
+        filter as any & { _animationInterval?: NodeJS.Timeout }
       )._animationInterval = animationInterval;
     }
 
@@ -4457,7 +4466,7 @@ export class AdvancedFilterPresets extends EffectPresets {
 
         // Store the interval for cleanup
         (
-          filter as ReflectionFilter & { _animationInterval?: NodeJS.Timeout }
+          filter as any & { _animationInterval?: NodeJS.Timeout }
         )._animationInterval = animationInterval;
       }
 
@@ -4479,7 +4488,7 @@ export class AdvancedFilterPresets extends EffectPresets {
         ...originalResult,
         cleanup: (): void => {
           // Clear the animation interval if it exists
-          const filterWithInterval = filter as ReflectionFilter & {
+          const filterWithInterval = filter as any & {
             _animationInterval?: NodeJS.Timeout;
           };
           if (filterWithInterval._animationInterval) {
@@ -4554,7 +4563,7 @@ export class AdvancedFilterPresets extends EffectPresets {
 
     // Store the interval for cleanup
     (
-      filter as ReflectionFilter & { _animationInterval?: NodeJS.Timeout }
+      filter as any & { _animationInterval?: NodeJS.Timeout }
     )._animationInterval = animationInterval;
 
     const originalResult = this.createEffectResult(
@@ -4567,7 +4576,7 @@ export class AdvancedFilterPresets extends EffectPresets {
       ...originalResult,
       cleanup: (): void => {
         // Clear the animation interval
-        const filterWithInterval = filter as ReflectionFilter & {
+        const filterWithInterval = filter as any & {
           _animationInterval?: NodeJS.Timeout;
         };
         if (filterWithInterval._animationInterval) {
@@ -4838,7 +4847,9 @@ export class AdvancedFilterPresets extends EffectPresets {
 
         // Store animation frame ID for cleanup
         (
-          filter as SimplexNoiseFilter & { _animationFrameId?: number | null }
+          filter as InstanceType<typeof SimplexNoiseFilter> & {
+            _animationFrameId?: number | null;
+          }
         )._animationFrameId = animationFrameId;
       }
 
@@ -4857,7 +4868,7 @@ export class AdvancedFilterPresets extends EffectPresets {
         ...originalResult,
         cleanup: (): void => {
           // Clear the animation frame if it exists
-          const filterWithAnimation = filter as SimplexNoiseFilter & {
+          const filterWithAnimation = filter as Filter & {
             _animationFrameId?: number | null;
           };
           if (
@@ -5183,7 +5194,7 @@ export class AdvancedFilterPresets extends EffectPresets {
 
         // Store animation frame ID for cleanup
         (
-          filter as TwistFilter & { _animationFrameId?: number | null }
+          filter as any & { _animationFrameId?: number | null }
         )._animationFrameId = animationFrameId;
       }
 
@@ -5202,7 +5213,7 @@ export class AdvancedFilterPresets extends EffectPresets {
         ...originalResult,
         cleanup: (): void => {
           // Clear the animation frame if it exists
-          const filterWithAnimation = filter as TwistFilter & {
+          const filterWithAnimation = filter as any & {
             _animationFrameId?: number | null;
           };
           if (

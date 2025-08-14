@@ -772,13 +772,20 @@ describe('StateManager', () => {
   });
 
   describe('Event Handling', () => {
-    it('should emit validation warnings', () => {
+    it('should emit validation warnings when bounds checking is disabled', () => {
       const warningSpy = vi.fn();
-      stateManager.on(SLIDER_EVENTS.STATE_VALIDATION_WARNING, warningSpy);
 
-      const customManager = new StateManager({ allowTransientStates: true });
+      // Test scenario: bounds checking disabled but validation enabled
+      // This tests the case where a user wants validation warnings but not automatic clamping
+      const customManager = new StateManager({ 
+        allowTransientStates: true,
+        strictValidation: true, // Enable strict validation to trigger validation warnings
+        enableBoundsChecking: false // Disable bounds checking to allow out-of-bounds state to reach validation
+      });
       customManager.on(SLIDER_EVENTS.STATE_VALIDATION_WARNING, warningSpy);
 
+      // This out-of-bounds state during transition should trigger a validation warning
+      // (but not be clamped since bounds checking is disabled)
       customManager.updateState({
         totalSlides: 3,
         currentIndex: 5,
@@ -786,6 +793,14 @@ describe('StateManager', () => {
       });
 
       expect(warningSpy).toHaveBeenCalled();
+      expect(warningSpy).toHaveBeenCalledWith({
+        warnings: ['currentIndex 5 is out of bounds but allowed during transition'],
+        state: expect.objectContaining({
+          totalSlides: 3,
+          currentIndex: 5,
+          isTransitioning: true,
+        }),
+      });
       customManager.destroy();
     });
   });

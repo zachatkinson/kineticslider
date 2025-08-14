@@ -60,6 +60,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private timelineFactory: GSAPTimelineFactory;
   private currentTimeline: gsap.core.Timeline | null = null;
   private container: HTMLElement | null = null;
+  private isDestroyed: boolean = false;
 
   // Manager dependencies - extracted functionality
   private stateManager: StateManager;
@@ -308,6 +309,20 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         // Transition failed but we'll continue with state update
       }
 
+      // Check if slider was destroyed during transition
+      if (this.isDestroyed) {
+        // Gracefully exit without updating state if destroyed
+        return;
+      }
+
+      // Defensive check: ensure index is still valid before updating state
+      const finalTotalSlides = this.stateManager.getTotalSlides();
+      if (index < 0 || index >= finalTotalSlides) {
+        throw new Error(
+          `${SLIDER_ERROR_CODES.INVALID_SLIDE_INDEX}: Cannot set index ${index} with ${finalTotalSlides} slides`
+        );
+      }
+
       // Update states through managers
       this.stateManager.updateState({
         currentIndex: index,
@@ -357,6 +372,34 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     const currentIndex = this.stateManager.getCurrentIndex();
     const totalSlides = this.stateManager.getTotalSlides();
 
+    // Early boundary check: if auto-play is running and we're at the last slide without loop,
+    // stop auto-play IMMEDIATELY to prevent race conditions
+    if (this.autoPlayManager.isActive() || this.stateManager.isPlaying()) {
+      const isAtLastSlide = currentIndex >= totalSlides - 1;
+      const loopEnabled = this.loopManager.isEnabled();
+
+      if (isAtLastSlide && !loopEnabled) {
+        // STOP auto-play BEFORE attempting any navigation
+        this.autoPlayManager.stop();
+        this.stateManager.updateState({ isPlaying: false }, 'boundary-reached');
+
+        // Update controller state
+        if (this.controller) {
+          this.controller.updatePlayState(false);
+        }
+
+        // Emit events for boundary reached
+        this.emit(SLIDER_EVENTS.PLAY_STATE_CHANGED, { isPlaying: false });
+        this.emit(SLIDER_EVENTS.BOUNDARY_REACHED, {
+          currentIndex,
+          totalSlides,
+          direction: 'forward',
+        });
+
+        return; // Exit early - don't attempt navigation
+      }
+    }
+
     // Use LoopManager to determine next index
     const loopTransition = this.loopManager.getNextIndex(
       currentIndex,
@@ -364,10 +407,21 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       'forward'
     );
 
+    // Secondary check if we can't navigate (should be rare now due to early check)
     if (!loopTransition.shouldNavigate) {
-      // If auto-play is running and we can't loop, pause auto-play
-      if (this.stateManager.isPlaying()) {
-        this.pause();
+      // This should rarely be hit now, but keep as backup
+      if (this.autoPlayManager.isActive() || this.stateManager.isPlaying()) {
+        this.autoPlayManager.stop();
+        this.stateManager.updateState({ isPlaying: false }, 'boundary-reached');
+        if (this.controller) {
+          this.controller.updatePlayState(false);
+        }
+        this.emit(SLIDER_EVENTS.PLAY_STATE_CHANGED, { isPlaying: false });
+        this.emit(SLIDER_EVENTS.BOUNDARY_REACHED, {
+          currentIndex,
+          totalSlides,
+          direction: 'forward',
+        });
       }
       return;
     }
@@ -388,6 +442,34 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     const currentIndex = this.stateManager.getCurrentIndex();
     const totalSlides = this.stateManager.getTotalSlides();
 
+    // Early boundary check: if auto-play is running and we're at the first slide without loop,
+    // stop auto-play IMMEDIATELY to prevent race conditions
+    if (this.autoPlayManager.isActive() || this.stateManager.isPlaying()) {
+      const isAtFirstSlide = currentIndex <= 0;
+      const loopEnabled = this.loopManager.isEnabled();
+
+      if (isAtFirstSlide && !loopEnabled) {
+        // STOP auto-play BEFORE attempting any navigation
+        this.autoPlayManager.stop();
+        this.stateManager.updateState({ isPlaying: false }, 'boundary-reached');
+
+        // Update controller state
+        if (this.controller) {
+          this.controller.updatePlayState(false);
+        }
+
+        // Emit events for boundary reached
+        this.emit(SLIDER_EVENTS.PLAY_STATE_CHANGED, { isPlaying: false });
+        this.emit(SLIDER_EVENTS.BOUNDARY_REACHED, {
+          currentIndex,
+          totalSlides,
+          direction: 'backward',
+        });
+
+        return; // Exit early - don't attempt navigation
+      }
+    }
+
     // Use LoopManager to determine previous index
     const loopTransition = this.loopManager.getNextIndex(
       currentIndex,
@@ -395,7 +477,22 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       'backward'
     );
 
+    // Secondary check if we can't navigate (should be rare now due to early check)
     if (!loopTransition.shouldNavigate) {
+      // This should rarely be hit now, but keep as backup
+      if (this.autoPlayManager.isActive() || this.stateManager.isPlaying()) {
+        this.autoPlayManager.stop();
+        this.stateManager.updateState({ isPlaying: false }, 'boundary-reached');
+        if (this.controller) {
+          this.controller.updatePlayState(false);
+        }
+        this.emit(SLIDER_EVENTS.PLAY_STATE_CHANGED, { isPlaying: false });
+        this.emit(SLIDER_EVENTS.BOUNDARY_REACHED, {
+          currentIndex,
+          totalSlides,
+          direction: 'backward',
+        });
+      }
       return;
     }
 
@@ -406,7 +503,8 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
    * Start auto-play
    */
   play(): void {
-    if (this.stateManager.isPlaying()) {
+    // Check both managers for current play state to avoid conflicts
+    if (this.stateManager.isPlaying() || this.autoPlayManager.isActive()) {
       return;
     }
 
@@ -417,21 +515,24 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       this.autoPlayManager.updateConfig({ enabled: true });
     }
 
-    // For manual play, also disable automatic pausing that might interfere
-    this.autoPlayManager.updateConfig({
-      enabled: true,
-      pauseOnFocus: false,
-      pauseOnHover: false,
-      pauseOnInteraction: false,
-    });
+    // Proactive boundary check: if we're already at the last slide with loop disabled, don't start
+    const currentIndex = this.stateManager.getCurrentIndex();
+    const totalSlides = this.stateManager.getTotalSlides();
+    const isAtLastSlide = currentIndex >= totalSlides - 1;
+    const loopEnabled = this.loopManager.isEnabled();
 
-    // Start auto-play through AutoPlayManager FIRST
+    if (isAtLastSlide && !loopEnabled && totalSlides > 1) {
+      // Don't start auto-play if we're at the end and can't loop
+      return;
+    }
+
+    // Update StateManager FIRST to ensure synchronous state consistency
+    this.stateManager.updateState({ isPlaying: true }, 'manual-play');
+
+    // Start auto-play through AutoPlayManager
     this.autoPlayManager.start(async (): Promise<void> => {
       await this.nextSlide();
     });
-
-    // Update StateManager immediately to ensure synchronous state consistency
-    this.stateManager.updateState({ isPlaying: true }, 'manual-play');
 
     // Update controller state
     if (this.controller) {
@@ -446,7 +547,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
    * Pause auto-play
    */
   pause(): void {
-    if (!this.stateManager.isPlaying()) {
+    // Change the condition to check both managers OR prioritize AutoPlayManager
+    // This ensures we can pause when AutoPlayManager is active even if StateManager thinks we're not playing
+    if (!this.stateManager.isPlaying() && !this.autoPlayManager.isActive()) {
       return;
     }
 
@@ -709,6 +812,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
    */
   destroy(): void {
     try {
+      // Mark as destroyed to prevent further operations
+      this.isDestroyed = true;
+      
       // Emit destroy event before cleanup
       this.emit(SLIDER_EVENTS.DESTROYED);
 
@@ -774,7 +880,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   }
 
   isPlaying(): boolean {
-    return this.stateManager.isPlaying();
+    // Check both StateManager and AutoPlayManager to ensure consistency
+    // AutoPlayManager.isActive() is the source of truth for whether auto-play is actually running
+    return this.autoPlayManager.isActive() || this.stateManager.isPlaying();
   }
 
   /**

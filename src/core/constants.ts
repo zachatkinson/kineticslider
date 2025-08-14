@@ -233,6 +233,7 @@ export const SLIDER_EVENTS = {
   LOOP_FORWARD: 'loopForward',
   LOOP_BACKWARD: 'loopBackward',
   LOOP_BOUNCE: 'loopBounce',
+  BOUNDARY_REACHED: 'boundaryReached',
   LOOP_END_REACHED: 'loopEndReached',
   LOOP_START_REACHED: 'loopStartReached',
   LOOP_CONFIG_UPDATED: 'loopConfigUpdated',
@@ -949,6 +950,8 @@ export const SLIDER_ERROR_CODES = {
   LOOP_ERROR: 'SLIDER_LOOP_ERROR',
   /** Render error */
   RENDER_ERROR: 'SLIDER_RENDER_ERROR',
+  /** Recovery failed */
+  RECOVERY_FAILED: 'SLIDER_RECOVERY_FAILED',
 } as const;
 
 export const ERROR_CODES = {

@@ -504,55 +504,60 @@ test.describe('LoopManager E2E Tests', () => {
         enabled: false,
       });
 
+      // Use Playwright's Clock API for precise timer control (must be installed BEFORE starting timers)
+      await page.clock.install();
+
       // Navigate near the end
       const totalSlides = await SliderStateHelpers.getTotalSlides(page);
       if (totalSlides && totalSlides > 2) {
         await NavigationHelpers.navigateToSlide(page, totalSlides - 2);
       }
 
-      // Start auto-play
+      // Start auto-play (after clock is installed)
       await AutoPlayHelpers.startAutoPlay(page);
 
-      // Wait for auto-play to reach the end and stop
-      await page.waitForTimeout(config.longPause * 3);
+      // CRITICAL FIX: Re-disable loop after auto-play starts
+      // Some initialization during auto-play start may re-enable loop, so ensure it stays disabled
+      await SliderStateHelpers.updateLoopConfig(page, {
+        enabled: false,
+      });
 
-      // Add explicit state synchronization to ensure auto-play has stopped
-      await StateSynchronizer.waitForEngineState(
-        page,
-        (state) => state.isPlaying === false,
-        5000
-      );
+      // Brief wait for loop configuration to take effect
+      await page.waitForTimeout(100);
 
-      // Should be stopped at last slide
-      const currentIndex = await SliderStateHelpers.getCurrentSlideIndex(page);
-      const isPlaying = await SliderStateHelpers.isPlaying(page);
+      // Fast-forward through enough auto-play intervals to reach the boundary
+      // Default interval is 3000ms, so we need at least 2 intervals to go from (totalSlides-2) to boundary
+      const autoPlayInterval = 3000;
+      await page.clock.runFor(autoPlayInterval * 3); // Extra margin for boundary detection
 
-      // Debug info for troubleshooting out-of-bounds issues
-      console.log(
-        `[Loop Test Debug] totalSlides: ${totalSlides}, currentIndex: ${currentIndex}, isPlaying: ${isPlaying}`
-      );
+      // Use expect.poll() for robust state checking (Playwright best practice)
+      await expect
+        .poll(
+          async () => {
+            const isPlaying = await SliderStateHelpers.isPlaying(page);
+            return isPlaying;
+          },
+          {
+            timeout: 5000,
+            message: 'Auto-play should have stopped at boundary',
+          }
+        )
+        .toBe(false);
 
-      // More defensive checking - handle the out-of-bounds bug gracefully
-      if (currentIndex !== null && totalSlides !== null) {
-        if (currentIndex >= totalSlides) {
-          console.warn(
-            `[Loop Test] Index out of bounds: currentIndex=${currentIndex} >= totalSlides=${totalSlides}. This indicates an auto-play boundary bug.`
-          );
-          // Accept this as a known issue but verify auto-play stopped
-          expect(isPlaying).toBe(false);
-        } else {
-          // Normal case: verify index is within bounds
-          expect(currentIndex).toBeGreaterThanOrEqual(0);
-          expect(currentIndex).toBeLessThan(totalSlides);
-          expect(isPlaying).toBe(false);
-        }
-      } else {
-        // Fallback: just verify auto-play stopped
-        console.warn(
-          `[Loop Test] Unable to verify slide index (currentIndex: ${currentIndex}, totalSlides: ${totalSlides}), only checking auto-play state`
-        );
+      // Use expect.toPass() for comprehensive boundary validation (Playwright best practice)
+      await expect(async () => {
+        const currentIndex =
+          await SliderStateHelpers.getCurrentSlideIndex(page);
+        const isPlaying = await SliderStateHelpers.isPlaying(page);
+        const actualTotalSlides = await SliderStateHelpers.getTotalSlides(page);
+
+        // Assert complete expected state
+        expect(currentIndex).not.toBeNull();
+        expect(actualTotalSlides).not.toBeNull();
+        expect(currentIndex!).toBeGreaterThanOrEqual(0);
+        expect(currentIndex!).toBeLessThan(actualTotalSlides!);
         expect(isPlaying).toBe(false);
-      }
+      }).toPass();
     });
   });
 
@@ -655,7 +660,10 @@ test.describe('LoopManager E2E Tests', () => {
           await SliderStateHelpers.getCurrentSlideIndex(page);
         expect(currentIndex).toBe(0);
       } else {
-        test.skip();
+        test.skip(
+          totalSlides !== 1,
+          `Test requires single slide setup, but found ${totalSlides} slides`
+        );
       }
     });
 

@@ -144,7 +144,7 @@ export class AutoPlayHelpers {
                 return false;
               },
               {
-                timeout: 8000, // Reasonable timeout for CI environments
+                timeout: 15000, // Increased timeout to account for initialization delays in CI
                 message: 'Auto-play state verification failed',
               }
             )
@@ -173,6 +173,27 @@ export class AutoPlayHelpers {
 
         console.warn(
           '[AutoPlayHelpers] Auto-play verification failed on both engine and button state'
+        );
+
+        // GRACEFUL DEGRADATION: Give one final chance with longer wait
+        // This addresses timing issues in CI environments without breaking test reliability
+        await page.waitForTimeout(2000); // Brief additional wait
+
+        const finalVerification = await StateSynchronizer.waitForEngineState(
+          page,
+          (state) => state.isPlaying === true,
+          3000
+        );
+
+        if (finalVerification) {
+          console.info(
+            '[AutoPlayHelpers] Auto-play verified via final attempt'
+          );
+          return true;
+        }
+
+        console.error(
+          '[AutoPlayHelpers] All verification attempts failed - auto-play may not have started'
         );
         // Return false to indicate verification failure - this is critical for test reliability
         return false;
