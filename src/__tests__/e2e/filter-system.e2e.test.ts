@@ -395,7 +395,10 @@ test.describe('Filter System E2E', () => {
         try {
           await clearFiltersAndWait(page);
         } catch (clearError) {
-          console.warn(`Clear failed in iteration ${i}, continuing:`, clearError);
+          console.warn(
+            `Clear failed in iteration ${i}, continuing:`,
+            clearError
+          );
           // Force a page refresh to reset state if clearing fails completely
           if (i === rapidFilters.length - 1) {
             await page.reload();
