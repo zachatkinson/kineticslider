@@ -6,6 +6,9 @@
  * 2. Real memory leak detection over time
  * 3. Real performance trend analysis
  * 4. Real warning threshold triggers
+ *
+ * CI Infrastructure Test: Auto-play tests were passing in run #289 but failed in #290
+ * without code changes - testing if failure is due to CI infrastructure variability
  */
 
 import { test, expect } from '@playwright/test';
