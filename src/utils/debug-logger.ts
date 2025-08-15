@@ -224,7 +224,7 @@ export const debug = (
   context?: string,
   data?: unknown
 ): void => {
-  debugLogger.debug(message, context, data);
+  DebugLogger.getInstance().debug(message, context, data);
 };
 
 export const info = (
@@ -232,7 +232,7 @@ export const info = (
   context?: string,
   data?: unknown
 ): void => {
-  debugLogger.info(message, context, data);
+  DebugLogger.getInstance().info(message, context, data);
 };
 
 export const warn = (
@@ -240,7 +240,7 @@ export const warn = (
   context?: string,
   data?: unknown
 ): void => {
-  debugLogger.warn(message, context, data);
+  DebugLogger.getInstance().warn(message, context, data);
 };
 
 export const error = (
@@ -248,5 +248,5 @@ export const error = (
   context?: string,
   data?: unknown
 ): void => {
-  debugLogger.error(message, context, data);
+  DebugLogger.getInstance().error(message, context, data);
 };

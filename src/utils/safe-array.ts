@@ -14,7 +14,11 @@
  * @returns The element at the index or undefined if out of bounds
  */
 export function safeArrayAccess<T>(array: T[], index: number): T | undefined {
-  if (!Array.isArray(array) || typeof index !== 'number') {
+  if (
+    !Array.isArray(array) ||
+    typeof index !== 'number' ||
+    !Number.isFinite(index)
+  ) {
     return undefined;
   }
 
@@ -37,7 +41,11 @@ export function safeArrayAssign<T>(
   index: number,
   value: T
 ): boolean {
-  if (!Array.isArray(array) || typeof index !== 'number') {
+  if (
+    !Array.isArray(array) ||
+    typeof index !== 'number' ||
+    !Number.isFinite(index)
+  ) {
     return false;
   }
 
@@ -114,11 +122,15 @@ export function safeArrayInsertSorted<T>(
 
   let insertIndex = 0;
 
+  // Find the insertion point using binary search approach
+  // We want to insert before the first element that is greater than item
   for (const [index, element] of array.entries()) {
-    if (compareFn(item, element) < 0) {
+    // If item should come before current element, insert here
+    if (compareFn(item, element) <= 0) {
       insertIndex = index;
       break;
     }
+    // Otherwise, continue and potentially insert after this element
     insertIndex = index + 1;
   }
 
@@ -133,7 +145,11 @@ export function safeArrayInsertSorted<T>(
  * @returns The removed element or undefined
  */
 export function safeArrayRemove<T>(array: T[], index: number): T | undefined {
-  if (!Array.isArray(array) || typeof index !== 'number') {
+  if (
+    !Array.isArray(array) ||
+    typeof index !== 'number' ||
+    !Number.isFinite(index)
+  ) {
     return undefined;
   }
 

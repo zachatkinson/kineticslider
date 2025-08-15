@@ -393,7 +393,7 @@ describe('Constants Validation', () => {
 
     it('should have immutable constant objects', () => {
       const originalValue = PERFORMANCE.TARGET_FPS;
-      
+
       // Test that constants maintain their values through type system
       // Note: Runtime immutability depends on implementation, but TypeScript prevents modifications
       expect(PERFORMANCE.TARGET_FPS).toBe(originalValue);

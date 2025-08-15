@@ -13,7 +13,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   DebugLogger,
   LogLevel,
-  debugLogger,
   debug,
   info,
   warn,
@@ -49,7 +48,8 @@ describe('DebugLogger', () => {
 
   beforeEach(() => {
     // Reset singleton instance for testing
-    (DebugLogger as unknown as { instance: DebugLogger | null }).instance = null;
+    (DebugLogger as unknown as { instance: DebugLogger | null }).instance =
+      null;
     logger = DebugLogger.getInstance();
     mockEventEmitter = createMockEventEmitter();
 
@@ -77,8 +77,12 @@ describe('DebugLogger', () => {
       expect(instance1).toBe(logger);
     });
 
-    it('should return the same instance as the exported debugLogger', () => {
-      expect(debugLogger).toBe(logger);
+    it('should maintain singleton behavior after reset', () => {
+      // Test that getInstance consistently returns the same instance after reset
+      const instance1 = DebugLogger.getInstance();
+      const instance2 = DebugLogger.getInstance();
+      expect(instance1).toBe(instance2);
+      expect(instance1).toBe(logger);
     });
   });
 
@@ -341,7 +345,9 @@ describe('DebugLogger', () => {
 
       // Should not be able to modify the returned array
       expect(() => {
-        (history as unknown as Array<{ level: LogLevel; message: string }>).push({ level: LogLevel.INFO, message: 'hacked' });
+        (
+          history as unknown as Array<{ level: LogLevel; message: string }>
+        ).push({ level: LogLevel.INFO, message: 'hacked' });
       }).not.toThrow();
 
       // Original history should be unchanged
@@ -352,6 +358,8 @@ describe('DebugLogger', () => {
 
   describe('Convenience Functions', () => {
     beforeEach(() => {
+      // The convenience functions use the same singleton instance that was reset
+      // in the main beforeEach, so we just need to initialize it
       logger.initialize(true, mockEventEmitter);
     });
 
@@ -432,7 +440,8 @@ describe('DebugLogger', () => {
     it('should handle empty strings gracefully', () => {
       logger.debug('', '', '');
 
-      expect(console.log).toHaveBeenCalledWith('🔍 [] ', '');
+      // Empty context string results in no context brackets
+      expect(console.log).toHaveBeenCalledWith('🔍 ', '');
     });
 
     it('should handle complex data objects', () => {

@@ -43,14 +43,22 @@ describe('Safe Array Operations', () => {
 
       // Invalid array
       expect(safeArrayAccess(null as unknown as number[], 0)).toBeUndefined();
-      expect(safeArrayAccess(undefined as unknown as number[], 0)).toBeUndefined();
-      expect(safeArrayAccess('not-array' as unknown as number[], 0)).toBeUndefined();
+      expect(
+        safeArrayAccess(undefined as unknown as number[], 0)
+      ).toBeUndefined();
+      expect(
+        safeArrayAccess('not-array' as unknown as number[], 0)
+      ).toBeUndefined();
       expect(safeArrayAccess({} as unknown as number[], 0)).toBeUndefined();
 
       // Invalid index
-      expect(safeArrayAccess(array, 'string' as unknown as number)).toBeUndefined();
+      expect(
+        safeArrayAccess(array, 'string' as unknown as number)
+      ).toBeUndefined();
       expect(safeArrayAccess(array, null as unknown as number)).toBeUndefined();
-      expect(safeArrayAccess(array, undefined as unknown as number)).toBeUndefined();
+      expect(
+        safeArrayAccess(array, undefined as unknown as number)
+      ).toBeUndefined();
       expect(safeArrayAccess(array, NaN)).toBeUndefined();
     });
 
@@ -110,11 +118,17 @@ describe('Safe Array Operations', () => {
 
       // Invalid array
       expect(safeArrayAssign(null as unknown as number[], 0, 1)).toBe(false);
-      expect(safeArrayAssign(undefined as unknown as number[], 0, 1)).toBe(false);
-      expect(safeArrayAssign('not-array' as unknown as number[], 0, 1)).toBe(false);
+      expect(safeArrayAssign(undefined as unknown as number[], 0, 1)).toBe(
+        false
+      );
+      expect(safeArrayAssign('not-array' as unknown as number[], 0, 1)).toBe(
+        false
+      );
 
       // Invalid index
-      expect(safeArrayAssign(array, 'string' as unknown as number, 1)).toBe(false);
+      expect(safeArrayAssign(array, 'string' as unknown as number, 1)).toBe(
+        false
+      );
       expect(safeArrayAssign(array, null as unknown as number, 1)).toBe(false);
       expect(safeArrayAssign(array, NaN, 1)).toBe(false);
     });
@@ -246,9 +260,15 @@ describe('Safe Array Operations', () => {
     it('should handle invalid arrays', () => {
       const predicate = (element: unknown) => element === 'test';
 
-      expect(safeArrayFind(null as unknown as number[], predicate)).toBeUndefined();
-      expect(safeArrayFind(undefined as unknown as number[], predicate)).toBeUndefined();
-      expect(safeArrayFind('not-array' as unknown as number[], predicate)).toBeUndefined();
+      expect(
+        safeArrayFind(null as unknown as number[], predicate)
+      ).toBeUndefined();
+      expect(
+        safeArrayFind(undefined as unknown as number[], predicate)
+      ).toBeUndefined();
+      expect(
+        safeArrayFind('not-array' as unknown as number[], predicate)
+      ).toBeUndefined();
     });
 
     it('should handle empty arrays', () => {
@@ -346,9 +366,15 @@ describe('Safe Array Operations', () => {
     it('should return -1 for invalid arrays', () => {
       const compareFn = (a: number, b: number) => a - b;
 
-      expect(safeArrayInsertSorted(null as unknown as number[], 1, compareFn)).toBe(-1);
-      expect(safeArrayInsertSorted(undefined as unknown as number[], 1, compareFn)).toBe(-1);
-      expect(safeArrayInsertSorted('not-array' as unknown as number[], 1, compareFn)).toBe(-1);
+      expect(
+        safeArrayInsertSorted(null as unknown as number[], 1, compareFn)
+      ).toBe(-1);
+      expect(
+        safeArrayInsertSorted(undefined as unknown as number[], 1, compareFn)
+      ).toBe(-1);
+      expect(
+        safeArrayInsertSorted('not-array' as unknown as number[], 1, compareFn)
+      ).toBe(-1);
     });
 
     it('should work with complex objects', () => {
@@ -417,11 +443,17 @@ describe('Safe Array Operations', () => {
 
       // Invalid array
       expect(safeArrayRemove(null as unknown as number[], 0)).toBeUndefined();
-      expect(safeArrayRemove(undefined as unknown as number[], 0)).toBeUndefined();
-      expect(safeArrayRemove('not-array' as unknown as number[], 0)).toBeUndefined();
+      expect(
+        safeArrayRemove(undefined as unknown as number[], 0)
+      ).toBeUndefined();
+      expect(
+        safeArrayRemove('not-array' as unknown as number[], 0)
+      ).toBeUndefined();
 
       // Invalid index
-      expect(safeArrayRemove(array, 'string' as unknown as number)).toBeUndefined();
+      expect(
+        safeArrayRemove(array, 'string' as unknown as number)
+      ).toBeUndefined();
       expect(safeArrayRemove(array, null as unknown as number)).toBeUndefined();
       expect(safeArrayRemove(array, NaN)).toBeUndefined();
     });
@@ -529,8 +561,12 @@ describe('Safe Array Operations', () => {
 
     it('should return empty array for invalid arrays', () => {
       expect(safeArraySlice(null as unknown as number[], 0, 1)).toEqual([]);
-      expect(safeArraySlice(undefined as unknown as number[], 0, 1)).toEqual([]);
-      expect(safeArraySlice('not-array' as unknown as number[], 0, 1)).toEqual([]);
+      expect(safeArraySlice(undefined as unknown as number[], 0, 1)).toEqual(
+        []
+      );
+      expect(safeArraySlice('not-array' as unknown as number[], 0, 1)).toEqual(
+        []
+      );
       expect(safeArraySlice({} as unknown as number[], 0, 1)).toEqual([]);
     });
 
