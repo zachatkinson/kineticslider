@@ -3,14 +3,24 @@
   "version": "1.1.0",
   "description": "A high-performance, customizable slider component with kinetic scrolling and advanced effects",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/kinetic-slider.umd.js",
+  "module": "./dist/kinetic-slider.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/kinetic-slider.es.js",
+      "require": "./dist/kinetic-slider.umd.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "build": "vite build && tsc --project tsconfig.build.json",
     "dev": "vite",
     "preview": "vite preview",
     "test": "vitest run",
