@@ -174,14 +174,10 @@ export class TextureAtlas extends SimpleEventEmitter {
     this.totalArea = this.config.maxWidth * this.config.maxHeight;
     this.stats.atlasCount = 1;
 
-    debugLogger.info(
-      'TextureAtlas initialized',
-      'TextureAtlas',
-      {
-        maxSize: `${this.config.maxWidth}x${this.config.maxHeight}`,
-        algorithm: this.algorithm,
-      }
-    );
+    debugLogger.info('TextureAtlas initialized', 'TextureAtlas', {
+      maxSize: `${this.config.maxWidth}x${this.config.maxHeight}`,
+      algorithm: this.algorithm,
+    });
   }
 
   /**
@@ -200,7 +196,10 @@ export class TextureAtlas extends SimpleEventEmitter {
 
     // Check if texture fits in atlas
     if (width > this.config.maxWidth || height > this.config.maxHeight) {
-      debugLogger.error(`Texture ${id} too large for atlas`, 'TextureAtlas', { width, height });
+      debugLogger.error(`Texture ${id} too large for atlas`, 'TextureAtlas', {
+        width,
+        height,
+      });
       return null;
     }
 
@@ -424,14 +423,10 @@ export class TextureAtlas extends SimpleEventEmitter {
     this.isDirty = false;
     this.emit('atlas-created', this);
 
-    debugLogger.info(
-      'Atlas rebuilt',
-      'TextureAtlas',
-      {
-        frames: this.stats.frameCount,
-        efficiency: `${this.stats.packingEfficiency.toFixed(1)}%`,
-      }
-    );
+    debugLogger.info('Atlas rebuilt', 'TextureAtlas', {
+      frames: this.stats.frameCount,
+      efficiency: `${this.stats.packingEfficiency.toFixed(1)}%`,
+    });
   }
 
   /**

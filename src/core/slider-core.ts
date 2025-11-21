@@ -972,7 +972,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   /**
    * Enable virtual rendering for large datasets
    */
-  enableVirtualRendering(config?: Partial<ConstructorParameters<typeof VirtualRenderer>[0]>): void {
+  enableVirtualRendering(
+    config?: Partial<ConstructorParameters<typeof VirtualRenderer>[0]>
+  ): void {
     if (this.virtualRenderer) {
       return; // Already enabled
     }
@@ -1001,7 +1003,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   /**
    * Enable texture atlasing for optimized rendering
    */
-  enableTextureAtlasing(config?: Partial<ConstructorParameters<typeof TextureAtlas>[0]>): void {
+  enableTextureAtlasing(
+    config?: Partial<ConstructorParameters<typeof TextureAtlas>[0]>
+  ): void {
     if (this.textureAtlas) {
       return; // Already enabled
     }
@@ -1021,7 +1025,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   /**
    * Enable memory profiling for performance monitoring
    */
-  enableMemoryProfiling(config?: Partial<ConstructorParameters<typeof MemoryProfiler>[0]>): void {
+  enableMemoryProfiling(
+    config?: Partial<ConstructorParameters<typeof MemoryProfiler>[0]>
+  ): void {
     if (this.memoryProfiler) {
       return; // Already enabled
     }
@@ -1054,7 +1060,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   /**
    * Load a lazy feature by ID
    */
-  async loadLazyFeature<T = unknown>(featureId: string): Promise<T | undefined> {
+  async loadLazyFeature<T = unknown>(
+    featureId: string
+  ): Promise<T | undefined> {
     if (!this.lazyLoader) {
       throw new Error('Lazy loader not initialized');
     }
@@ -1860,8 +1868,16 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
       // Register core modules for analysis
       this.bundleOptimizer.registerModule('slider-core.ts', 'core', 50000);
-      this.bundleOptimizer.registerModule('slider-renderer.ts', 'rendering', 30000);
-      this.bundleOptimizer.registerModule('slider-physics.ts', 'physics', 20000);
+      this.bundleOptimizer.registerModule(
+        'slider-renderer.ts',
+        'rendering',
+        30000
+      );
+      this.bundleOptimizer.registerModule(
+        'slider-physics.ts',
+        'physics',
+        20000
+      );
     }
 
     // Initialize lazy loader for progressive enhancement
@@ -1889,7 +1905,10 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     // Setup event integration
     this.lazyLoader.on('feature-loaded', (result: unknown) => {
       const loadResult = result as LoadResult;
-      debugLogger.info(`Feature loaded: ${loadResult.featureId} (${loadResult.loadTime}ms)`, 'LazyLoader');
+      debugLogger.info(
+        `Feature loaded: ${loadResult.featureId} (${loadResult.loadTime}ms)`,
+        'LazyLoader'
+      );
 
       // Track with memory profiler if available
       if (this.memoryProfiler && loadResult.module) {
@@ -1904,7 +1923,11 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
     this.lazyLoader.on('feature-failed', (result: unknown) => {
       const loadResult = result as LoadResult;
-      debugLogger.error(`Feature failed to load: ${loadResult.featureId}`, 'LazyLoader', loadResult.error);
+      debugLogger.error(
+        `Feature failed to load: ${loadResult.featureId}`,
+        'LazyLoader',
+        loadResult.error
+      );
     });
 
     // Register common lazy features
@@ -1960,7 +1983,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       },
     ];
 
-    commonFeatures.forEach(feature => this.lazyLoader!.registerFeature(feature));
+    commonFeatures.forEach((feature) =>
+      this.lazyLoader!.registerFeature(feature)
+    );
   }
 
   /**
@@ -1975,7 +2000,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
     const sprites = this.renderer.getSprites();
     if (sprites.length > 0) {
       const textureMap = new Map();
-      
+
       sprites.forEach((sprite, index) => {
         if (sprite && typeof sprite === 'object' && 'texture' in sprite) {
           textureMap.set(`slide-${index}`, sprite.texture);
@@ -1983,20 +2008,37 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       });
 
       if (textureMap.size > 0) {
-        this.textureAtlas.addTextures(textureMap).then(() => {
-          debugLogger.info(`Texture atlas created with ${textureMap.size} textures`, 'SliderCore');
+        this.textureAtlas
+          .addTextures(textureMap)
+          .then(() => {
+            debugLogger.info(
+              `Texture atlas created with ${textureMap.size} textures`,
+              'SliderCore'
+            );
 
-          // Update sprites to use atlas textures
-          sprites.forEach((sprite, index) => {
-            const atlasTexture = this.textureAtlas!.getTexture(`slide-${index}`);
-            if (atlasTexture && sprite && typeof sprite === 'object' && 'texture' in sprite) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (sprite as any).texture = atlasTexture;
-            }
+            // Update sprites to use atlas textures
+            sprites.forEach((sprite, index) => {
+              const atlasTexture = this.textureAtlas!.getTexture(
+                `slide-${index}`
+              );
+              if (
+                atlasTexture &&
+                sprite &&
+                typeof sprite === 'object' &&
+                'texture' in sprite
+              ) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (sprite as any).texture = atlasTexture;
+              }
+            });
+          })
+          .catch((error) => {
+            debugLogger.warn(
+              'Failed to create texture atlas:',
+              'SliderCore',
+              error
+            );
           });
-        }).catch(error => {
-          debugLogger.warn('Failed to create texture atlas:', 'SliderCore', error);
-        });
       }
     }
   }
@@ -2007,10 +2049,16 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private setupPerformanceIntegration(): void {
     // Integrate memory profiler with performance monitor
     if (this.memoryProfiler && this.performanceMonitor) {
-      this.memoryProfiler.on('memory-threshold-exceeded', (snapshot: unknown) => {
-        const memSnapshot = snapshot as MemorySnapshot;
-        debugLogger.warn(`Memory threshold exceeded: ${(memSnapshot.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`, 'Performance');
-      });
+      this.memoryProfiler.on(
+        'memory-threshold-exceeded',
+        (snapshot: unknown) => {
+          const memSnapshot = snapshot as MemorySnapshot;
+          debugLogger.warn(
+            `Memory threshold exceeded: ${(memSnapshot.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+            'Performance'
+          );
+        }
+      );
 
       this.memoryProfiler.on('gc-detected', (_stats) => {
         // GC detected - handled by memory profiler

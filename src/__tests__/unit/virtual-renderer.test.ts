@@ -1,6 +1,7 @@
 /**
  * @fileoverview Unit tests for VirtualRenderer
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { VirtualRenderer } from '../../performance/virtual-renderer';
@@ -179,7 +180,7 @@ describe('VirtualRenderer', () => {
       expect(scrollStartSpy).toHaveBeenCalled();
 
       // Wait for scroll end timeout
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       expect(scrollEndSpy).toHaveBeenCalled();
     });
 
@@ -235,7 +236,9 @@ describe('VirtualRenderer', () => {
       virtualRenderer.updateViewport(0, 1000);
 
       // Wait for RAF
-      await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)));
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => resolve(undefined))
+      );
       expect(itemsUpdateSpy).toHaveBeenCalled();
       const updatedItems = itemsUpdateSpy.mock.calls[0][0];
       expect(Array.isArray(updatedItems)).toBe(true);
@@ -339,7 +342,7 @@ describe('VirtualRenderer', () => {
       const items = Array.from({ length: 10000 }, (_, i) => ({ id: i }));
       virtualRenderer.setItems(items);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       global.requestAnimationFrame = originalRAF;
       // Performance warning might be emitted based on actual timing
     });

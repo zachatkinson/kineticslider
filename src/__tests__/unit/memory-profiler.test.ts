@@ -1,12 +1,11 @@
 /**
  * @fileoverview Unit tests for MemoryProfiler
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { MemoryProfiler } from '../../performance/memory-profiler';
-import type {
-  MemoryProfilerConfig,
-} from '../../performance/memory-profiler';
+import type { MemoryProfilerConfig } from '../../performance/memory-profiler';
 
 // Mock performance.memory
 const mockMemory = {

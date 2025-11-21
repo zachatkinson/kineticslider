@@ -174,15 +174,11 @@ export class BundleOptimizer {
       this.registerModule(module, 'core', 0);
     });
 
-    debugLogger.info(
-      'BundleOptimizer initialized',
-      'BundleOptimizer',
-      {
-        targetSize: `${this.config.targetSize}KB`,
-        treeShaking: this.config.enableTreeShaking,
-        codeSplitting: this.config.enableCodeSplitting,
-      }
-    );
+    debugLogger.info('BundleOptimizer initialized', 'BundleOptimizer', {
+      targetSize: `${this.config.targetSize}KB`,
+      treeShaking: this.config.enableTreeShaking,
+      codeSplitting: this.config.enableCodeSplitting,
+    });
   }
 
   /**
@@ -322,7 +318,7 @@ export class BundleOptimizer {
   createDynamicImport(
     modulePath: string,
     condition?: () => boolean
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): () => Promise<any> {
     return async () => {
       if (condition && !condition()) {
@@ -341,7 +337,11 @@ export class BundleOptimizer {
 
         return module;
       } catch (error) {
-        debugLogger.error(`Failed to load module: ${modulePath}`, 'BundleOptimizer', error);
+        debugLogger.error(
+          `Failed to load module: ${modulePath}`,
+          'BundleOptimizer',
+          error
+        );
         throw error;
       }
     };

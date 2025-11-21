@@ -4,6 +4,7 @@
  * Tests the integration of VirtualRenderer with other KineticSlider components,
  * particularly with SliderCore, PerformanceMonitor, and the rendering pipeline.
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { VirtualRenderer } from '../../performance/virtual-renderer';
@@ -49,7 +50,9 @@ vi.mock('pixi.js', () => ({
     x: 0,
     y: 0,
   })),
-  Rectangle: vi.fn().mockImplementation((x, y, w, h) => ({ x, y, width: w, height: h })),
+  Rectangle: vi
+    .fn()
+    .mockImplementation((x, y, w, h) => ({ x, y, width: w, height: h })),
 }));
 
 describe('VirtualRenderer Integration Tests', () => {
@@ -304,7 +307,12 @@ describe('VirtualRenderer Integration Tests', () => {
       // Track allocations
       const items = Array.from({ length: 200 }, (_, i) => ({ id: i }));
       virtualRenderer.setItems(items);
-      memoryProfiler.trackAllocation('virtual-items', items, 'Array', 200 * 100);
+      memoryProfiler.trackAllocation(
+        'virtual-items',
+        items,
+        'Array',
+        200 * 100
+      );
 
       virtualRenderer.forceUpdate();
 
@@ -391,9 +399,7 @@ describe('VirtualRenderer Integration Tests', () => {
 
       // Batch update by recreating items
       const updatedItems = initialItems.map((item, i) =>
-        i === 10 || i === 20 || i === 30
-          ? { ...item, updated: true }
-          : item
+        i === 10 || i === 20 || i === 30 ? { ...item, updated: true } : item
       );
       virtualRenderer.setItems(updatedItems);
 
@@ -451,13 +457,19 @@ describe('VirtualRenderer Integration Tests', () => {
 
       // Invalid viewport values
       virtualRenderer.updateViewport(NaN, -Infinity);
-      expect(virtualRenderer.getStats().renderedItems).toBeGreaterThanOrEqual(0);
+      expect(virtualRenderer.getStats().renderedItems).toBeGreaterThanOrEqual(
+        0
+      );
 
       virtualRenderer.updateViewport(-10000, -10000);
-      expect(virtualRenderer.getStats().renderedItems).toBeGreaterThanOrEqual(0);
+      expect(virtualRenderer.getStats().renderedItems).toBeGreaterThanOrEqual(
+        0
+      );
 
       virtualRenderer.updateViewport(100000, 100000);
-      expect(virtualRenderer.getStats().renderedItems).toBeGreaterThanOrEqual(0);
+      expect(virtualRenderer.getStats().renderedItems).toBeGreaterThanOrEqual(
+        0
+      );
     });
   });
 });

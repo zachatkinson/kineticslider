@@ -217,14 +217,10 @@ export class MemoryProfiler extends SimpleEventEmitter {
     // Monitor GC if available
     this.monitorGarbageCollection();
 
-    debugLogger.info(
-      'Memory profiling started',
-      'MemoryProfiler',
-      {
-        interval: this.config.profileInterval,
-        memoryLimit: `${this.config.memoryLimit}MB`,
-      }
-    );
+    debugLogger.info('Memory profiling started', 'MemoryProfiler', {
+      interval: this.config.profileInterval,
+      memoryLimit: `${this.config.memoryLimit}MB`,
+    });
   }
 
   /**
@@ -746,7 +742,7 @@ export class MemoryProfiler extends SimpleEventEmitter {
 
     for (const key in object) {
       if (Object.prototype.hasOwnProperty.call(object, key)) {
-        // eslint-disable-next-line security/detect-object-injection
+        // eslint-disable-next-line security/detect-object-injection, @typescript-eslint/no-explicit-any
         const value = (object as any)[key];
         if (typeof value === 'string') {
           size += value.length * 2; // 2 bytes per character

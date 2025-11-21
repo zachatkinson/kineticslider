@@ -4,6 +4,7 @@
  * Tests the integration of LazyLoader with SliderCore, dynamic imports,
  * browser APIs, and the overall feature loading pipeline.
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LazyLoader } from '../../performance/lazy-loader';
@@ -16,20 +17,24 @@ import type { LoadableFeature } from '../../performance/lazy-loader';
 (global as any).import = vi.fn();
 
 // Mock IntersectionObserver
-(global as any).IntersectionObserver = vi.fn().mockImplementation((_callback: any) => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-  root: null,
-  rootMargin: '',
-  thresholds: [0],
-}));
+(global as any).IntersectionObserver = vi
+  .fn()
+  .mockImplementation((_callback: any) => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+    root: null,
+    rootMargin: '',
+    thresholds: [0],
+  }));
 
 // Mock requestIdleCallback
-(global as any).requestIdleCallback = vi.fn().mockImplementation((callback: any) => {
-  setTimeout(callback, 0);
-  return 1;
-});
+(global as any).requestIdleCallback = vi
+  .fn()
+  .mockImplementation((callback: any) => {
+    setTimeout(callback, 0);
+    return 1;
+  });
 
 (global as any).cancelIdleCallback = vi.fn();
 
@@ -110,7 +115,9 @@ describe('LazyLoader Integration Tests', () => {
       expect(result.cached).toBe(false);
 
       // Verify import was called correctly
-      expect((global as any).import).toHaveBeenCalledWith('./features/test-feature.js');
+      expect((global as any).import).toHaveBeenCalledWith(
+        './features/test-feature.js'
+      );
     });
 
     it('should handle import failures gracefully', async () => {
@@ -127,13 +134,15 @@ describe('LazyLoader Integration Tests', () => {
 
       lazyLoader.registerFeature(feature);
 
-      await expect(lazyLoader.loadFeature('failing-feature')).rejects.toThrow('Module not found');
+      await expect(lazyLoader.loadFeature('failing-feature')).rejects.toThrow(
+        'Module not found'
+      );
     });
 
     it('should respect timeout during slow imports', async () => {
       // Mock slow import
-      vi.mocked((global as any).import).mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 10000)) // 10 second delay
+      vi.mocked((global as any).import).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 10000)) // 10 second delay
       );
 
       const feature: LoadableFeature = {
@@ -147,7 +156,9 @@ describe('LazyLoader Integration Tests', () => {
 
       lazyLoader.registerFeature(feature);
 
-      await expect(lazyLoader.loadFeature('slow-feature')).rejects.toThrow(/timeout/i);
+      await expect(lazyLoader.loadFeature('slow-feature')).rejects.toThrow(
+        /timeout/i
+      );
     });
   });
 
@@ -158,23 +169,26 @@ describe('LazyLoader Integration Tests', () => {
       const mockModule = { default: 'test' };
       vi.mocked((global as any).import).mockResolvedValue(mockModule);
 
-      const features: LoadableFeature[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `perf-feature-${i}`,
-        name: `Performance Feature ${i}`,
-        modulePath: `./features/perf-${i}.js`,
-        strategy: 'on-demand',
-        priority: 'medium',
-        estimatedSize: 1000,
-      }));
+      const features: LoadableFeature[] = Array.from(
+        { length: 10 },
+        (_, i) => ({
+          id: `perf-feature-${i}`,
+          name: `Performance Feature ${i}`,
+          modulePath: `./features/perf-${i}.js`,
+          strategy: 'on-demand',
+          priority: 'medium',
+          estimatedSize: 1000,
+        })
+      );
 
       // Register and load features
-      features.forEach(f => lazyLoader.registerFeature(f));
+      features.forEach((f) => lazyLoader.registerFeature(f));
 
-      const loadPromises = features.map(f => lazyLoader.loadFeature(f.id));
+      const loadPromises = features.map((f) => lazyLoader.loadFeature(f.id));
       const results = await Promise.all(loadPromises);
 
       // All should succeed
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.success).toBe(true);
         expect(result.loadTime).toBeGreaterThan(0);
       });
@@ -217,7 +231,9 @@ describe('LazyLoader Integration Tests', () => {
       lazyLoader.registerFeature(feature);
 
       // Should respect network condition
-      await expect(lazyLoader.loadFeature('network-sensitive')).rejects.toThrow(/conditions not met/i);
+      await expect(lazyLoader.loadFeature('network-sensitive')).rejects.toThrow(
+        /conditions not met/i
+      );
     });
   });
 
@@ -227,7 +243,9 @@ describe('LazyLoader Integration Tests', () => {
 
       const mockModule: any = {
         default: { data: new Array(10000).fill(0) }, // Large module
-        LargeClass: function(this: any) { this.data = new Array(5000); },
+        LargeClass: function (this: any) {
+          this.data = new Array(5000);
+        },
       };
 
       vi.mocked((global as any).import).mockResolvedValue(mockModule);
@@ -290,7 +308,9 @@ describe('LazyLoader Integration Tests', () => {
       lazyLoader.registerFeature(feature);
 
       // Should respect memory condition
-      await expect(lazyLoader.loadFeature('memory-sensitive')).rejects.toThrow(/conditions not met/i);
+      await expect(lazyLoader.loadFeature('memory-sensitive')).rejects.toThrow(
+        /conditions not met/i
+      );
     });
 
     it('should manage cache memory efficiently', async () => {
@@ -315,7 +335,7 @@ describe('LazyLoader Integration Tests', () => {
         estimatedSize: 8000,
       }));
 
-      features.forEach(f => lazyLoader.registerFeature(f));
+      features.forEach((f) => lazyLoader.registerFeature(f));
 
       // Load all features
       for (const feature of features) {
@@ -336,14 +356,26 @@ describe('LazyLoader Integration Tests', () => {
     it('should coordinate with global event system', async () => {
       const globalEvents: string[] = [];
 
-      eventEmitter.on('feature-loading', () => globalEvents.push('feature-loading'));
-      eventEmitter.on('feature-loaded', () => globalEvents.push('feature-loaded'));
-      eventEmitter.on('feature-failed', () => globalEvents.push('feature-failed'));
+      eventEmitter.on('feature-loading', () =>
+        globalEvents.push('feature-loading')
+      );
+      eventEmitter.on('feature-loaded', () =>
+        globalEvents.push('feature-loaded')
+      );
+      eventEmitter.on('feature-failed', () =>
+        globalEvents.push('feature-failed')
+      );
 
       // Bridge LazyLoader events to global system
-      lazyLoader.on('feature-loading', () => eventEmitter.emit('feature-loading'));
-      lazyLoader.on('feature-loaded', () => eventEmitter.emit('feature-loaded'));
-      lazyLoader.on('feature-failed', () => eventEmitter.emit('feature-failed'));
+      lazyLoader.on('feature-loading', () =>
+        eventEmitter.emit('feature-loading')
+      );
+      lazyLoader.on('feature-loaded', () =>
+        eventEmitter.emit('feature-loaded')
+      );
+      lazyLoader.on('feature-failed', () =>
+        eventEmitter.emit('feature-failed')
+      );
 
       const mockModule = { default: 'test' };
       vi.mocked((global as any).import).mockResolvedValue(mockModule);
@@ -367,28 +399,30 @@ describe('LazyLoader Integration Tests', () => {
       const mockModule = { default: 'interaction' };
       vi.mocked((global as any).import).mockResolvedValue(mockModule);
 
-      const interactionFeatures = ['tooltip', 'modal', 'dropdown'].map(name => ({
-        id: `interaction-${name}`,
-        name: `Interaction ${name}`,
-        modulePath: `./features/${name}.js`,
-        strategy: 'on-interaction' as const,
-        priority: 'high' as const,
-      }));
+      const interactionFeatures = ['tooltip', 'modal', 'dropdown'].map(
+        (name) => ({
+          id: `interaction-${name}`,
+          name: `Interaction ${name}`,
+          modulePath: `./features/${name}.js`,
+          strategy: 'on-interaction' as const,
+          priority: 'high' as const,
+        })
+      );
 
-      interactionFeatures.forEach(f => lazyLoader.registerFeature(f));
+      interactionFeatures.forEach((f) => lazyLoader.registerFeature(f));
 
       // Setup interaction loading
-      lazyLoader.loadOnInteraction(interactionFeatures.map(f => f.id));
+      lazyLoader.loadOnInteraction(interactionFeatures.map((f) => f.id));
 
       // Simulate user interaction
       const clickEvent = new Event('click');
       document.dispatchEvent(clickEvent);
 
       // Wait for features to load
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Features should be loaded after interaction
-      interactionFeatures.forEach(feature => {
+      interactionFeatures.forEach((feature) => {
         expect(lazyLoader.isLoaded(feature.id)).toBe(true);
       });
     });
@@ -411,7 +445,7 @@ describe('LazyLoader Integration Tests', () => {
       lazyLoader.registerFeature(immediateFeature);
 
       // Wait a bit for async loading
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(lazyLoader.isLoaded('immediate-feature')).toBe(true);
     });
@@ -434,7 +468,7 @@ describe('LazyLoader Integration Tests', () => {
       expect(global.requestIdleCallback).toHaveBeenCalled();
 
       // Wait for preload
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(lazyLoader.isLoaded('preload-feature')).toBe(true);
     });
@@ -457,10 +491,11 @@ describe('LazyLoader Integration Tests', () => {
       expect(global.requestIdleCallback).toHaveBeenCalled();
 
       // Trigger idle callback
-      const idleCallback = vi.mocked((global as any).requestIdleCallback).mock.calls[0][0];
+      const idleCallback = vi.mocked((global as any).requestIdleCallback).mock
+        .calls[0][0];
       idleCallback({ didTimeout: false, timeRemaining: () => 50 } as any);
 
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(lazyLoader.isLoaded('idle-feature')).toBe(true);
     });
@@ -504,7 +539,9 @@ describe('LazyLoader Integration Tests', () => {
     });
 
     it('should handle circular dependencies gracefully', async () => {
-      vi.mocked((global as any).import).mockResolvedValue({ default: 'circular' });
+      vi.mocked((global as any).import).mockResolvedValue({
+        default: 'circular',
+      });
 
       const featureA: LoadableFeature = {
         id: 'feature-a',
@@ -540,8 +577,8 @@ describe('LazyLoader Integration Tests', () => {
       vi.mocked((global as any).import).mockImplementation(() => {
         activeLoads++;
         maxActiveLoads = Math.max(maxActiveLoads, activeLoads);
-        
-        return new Promise(resolve => {
+
+        return new Promise((resolve) => {
           setTimeout(() => {
             activeLoads--;
             resolve({ default: 'concurrent' });
@@ -557,10 +594,10 @@ describe('LazyLoader Integration Tests', () => {
         priority: 'medium' as const,
       }));
 
-      features.forEach(f => lazyLoader.registerFeature(f));
+      features.forEach((f) => lazyLoader.registerFeature(f));
 
       // Load all features simultaneously
-      const loadPromises = features.map(f => lazyLoader.loadFeature(f.id));
+      const loadPromises = features.map((f) => lazyLoader.loadFeature(f.id));
       await Promise.all(loadPromises);
 
       // Should not exceed maxConcurrentLoads (3)
@@ -572,7 +609,7 @@ describe('LazyLoader Integration Tests', () => {
 
       vi.mocked((global as any).import).mockImplementation(() => {
         const start = Date.now();
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           setTimeout(() => {
             loadTimes.push(Date.now() - start);
             resolve({ default: 'queued' });
@@ -588,15 +625,17 @@ describe('LazyLoader Integration Tests', () => {
         priority: 'medium' as const,
       }));
 
-      features.forEach(f => lazyLoader.registerFeature(f));
+      features.forEach((f) => lazyLoader.registerFeature(f));
 
       // Load all features
-      const loadPromises = features.map(f => lazyLoader.loadFeature(f.id));
+      const loadPromises = features.map((f) => lazyLoader.loadFeature(f.id));
       await Promise.all(loadPromises);
 
       // Some features should have been queued (longer load times)
       const sortedTimes = [...loadTimes].sort((a, b) => a - b);
-      expect(sortedTimes[sortedTimes.length - 1]).toBeGreaterThan(sortedTimes[0] + 50);
+      expect(sortedTimes[sortedTimes.length - 1]).toBeGreaterThan(
+        sortedTimes[0] + 50
+      );
     });
   });
 
@@ -652,7 +691,7 @@ describe('LazyLoader Integration Tests', () => {
         estimatedSize: 500,
       }));
 
-      features.forEach(f => lazyLoader.registerFeature(f));
+      features.forEach((f) => lazyLoader.registerFeature(f));
 
       // Load all features
       for (const feature of features) {

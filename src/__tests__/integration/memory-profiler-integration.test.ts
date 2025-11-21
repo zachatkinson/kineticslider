@@ -4,6 +4,7 @@
  * Tests the integration of MemoryProfiler with other KineticSlider components,
  * real memory monitoring, and performance optimization workflows.
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MemoryProfiler } from '../../performance/memory-profiler';
@@ -90,7 +91,7 @@ describe('MemoryProfiler Integration Tests', () => {
 
       // Simulate adding large dataset
       const items = Array.from({ length: 5000 }, (_, i) => ({ id: i }));
-      
+
       // Track items allocation
       memoryProfiler.trackAllocation(
         'virtual-items',
@@ -107,7 +108,9 @@ describe('MemoryProfiler Integration Tests', () => {
       mockMemory.usedJSHeapSize += 10 * 1024 * 1024; // +10MB
       const snapshot2 = memoryProfiler.takeSnapshot();
 
-      expect(snapshot2.usedJSHeapSize).toBeGreaterThan(snapshot1.usedJSHeapSize);
+      expect(snapshot2.usedJSHeapSize).toBeGreaterThan(
+        snapshot1.usedJSHeapSize
+      );
 
       // Clean up
       memoryProfiler.freeAllocation('virtual-items');
@@ -130,12 +133,12 @@ describe('MemoryProfiler Integration Tests', () => {
       // Simulate texture loading cycles
       for (let cycle = 0; cycle < 3; cycle++) {
         const textures = new Map();
-        
+
         for (let i = 0; i < 10; i++) {
           const textureId = `cycle-${cycle}-texture-${i}`;
           const mockTexture = { destroy: vi.fn() };
           textures.set(textureId, mockTexture);
-          
+
           // Track allocation
           memoryProfiler.trackAllocation(
             textureId,
@@ -147,14 +150,14 @@ describe('MemoryProfiler Integration Tests', () => {
 
         // Simulate atlas operations
         await textureAtlas.addTextures(textures);
-        
+
         // Simulate memory growth
         mockMemory.usedJSHeapSize += 5 * 1024 * 1024;
         memoryProfiler.takeSnapshot();
 
         // Clear textures
         textureAtlas.clear();
-        
+
         // Track deallocations
         textures.forEach((_, id) => {
           memoryProfiler.freeAllocation(id);
@@ -163,7 +166,7 @@ describe('MemoryProfiler Integration Tests', () => {
 
       // Check for leaks
       const leaks = memoryProfiler.detectLeaks();
-      
+
       // Should not detect leaks if properly cleaned up
       expect(leaks.suspectedSources.length).toBe(0);
       expect(leaks.recommendations.length).toBeGreaterThan(0);
@@ -203,8 +206,11 @@ describe('MemoryProfiler Integration Tests', () => {
       memoryProfiler.startProfiling();
 
       // Create some test objects
-      const objects = Array.from({ length: 100 }, (_, i) => ({ id: i, data: new Array(1000) }));
-      
+      const objects = Array.from({ length: 100 }, (_, i) => ({
+        id: i,
+        data: new Array(1000),
+      }));
+
       objects.forEach((obj, i) => {
         memoryProfiler.trackAllocation(`obj-${i}`, obj, 'TestObject', 1000);
       });
@@ -247,7 +253,9 @@ describe('MemoryProfiler Integration Tests', () => {
 
       // Create various allocation patterns
       const largeArrays = Array.from({ length: 5 }, () => new Array(10000));
-      const manySmallObjects = Array.from({ length: 1000 }, (_, i) => ({ id: i }));
+      const manySmallObjects = Array.from({ length: 1000 }, (_, i) => ({
+        id: i,
+      }));
       const retainedObjects: any[] = [];
 
       largeArrays.forEach((arr, i) => {
@@ -264,18 +272,24 @@ describe('MemoryProfiler Integration Tests', () => {
       memoryProfiler.takeSnapshot();
 
       const recommendations = memoryProfiler.getOptimizationRecommendations();
-      
+
       expect(recommendations.length).toBeGreaterThan(0);
-      expect(recommendations.some((r: any) => r.type === 'reduce-allocations')).toBe(true);
+      expect(
+        recommendations.some((r: any) => r.type === 'reduce-allocations')
+      ).toBe(true);
     });
   });
 
   describe('Event System Integration', () => {
     it('should emit events that coordinate with global system', () => {
       const globalEvents: string[] = [];
-      
-      eventEmitter.on('memory-warning', () => globalEvents.push('memory-warning'));
-      eventEmitter.on('memory-optimized', () => globalEvents.push('memory-optimized'));
+
+      eventEmitter.on('memory-warning', () =>
+        globalEvents.push('memory-warning')
+      );
+      eventEmitter.on('memory-optimized', () =>
+        globalEvents.push('memory-optimized')
+      );
 
       // Bridge memory profiler events to global system
       memoryProfiler.on('memory-threshold-exceeded', () => {
@@ -291,7 +305,7 @@ describe('MemoryProfiler Integration Tests', () => {
       // Trigger memory threshold
       mockMemory.usedJSHeapSize = 150 * 1024 * 1024;
       const snapshot = memoryProfiler.takeSnapshot();
-      
+
       if (snapshot.usedJSHeapSize > 100 * 1024 * 1024) {
         memoryProfiler.emit('memory-threshold-exceeded', snapshot);
       }
@@ -302,18 +316,21 @@ describe('MemoryProfiler Integration Tests', () => {
     it('should respond to external optimization triggers', () => {
       memoryProfiler.startProfiling();
 
-      const optimizationSpy = vi.spyOn(memoryProfiler, 'forceGarbageCollection');
+      const optimizationSpy = vi.spyOn(
+        memoryProfiler,
+        'forceGarbageCollection'
+      );
 
       // External system requests memory optimization
       eventEmitter.emit('request-memory-optimization');
-      
+
       // Memory profiler should respond
       eventEmitter.on('request-memory-optimization', () => {
         memoryProfiler.forceGarbageCollection();
       });
 
       eventEmitter.emit('request-memory-optimization');
-      
+
       expect(optimizationSpy).toHaveBeenCalled();
     });
   });
@@ -344,14 +361,15 @@ describe('MemoryProfiler Integration Tests', () => {
 
         // Simulate memory growth
         mockMemory.usedJSHeapSize += phase * 10 * 1024 * 1024;
-        
+
         const snapshot = memoryProfiler.takeSnapshot();
         snapshots.push(snapshot);
 
         // Clean up some objects from previous phases
         if (phase > 1) {
           const prevPhase = phase - 2;
-          for (let i = 0; i < 25; i++) { // Clean half
+          for (let i = 0; i < 25; i++) {
+            // Clean half
             memoryProfiler.freeAllocation(`phase-${prevPhase}-obj-${i}`);
           }
         }
@@ -359,7 +377,9 @@ describe('MemoryProfiler Integration Tests', () => {
 
       // Analyze trends
       expect(snapshots.length).toBe(5);
-      expect(snapshots[4].usedJSHeapSize).toBeGreaterThan(snapshots[0].usedJSHeapSize);
+      expect(snapshots[4].usedJSHeapSize).toBeGreaterThan(
+        snapshots[0].usedJSHeapSize
+      );
 
       const currentUsage = memoryProfiler.getCurrentUsage();
       expect(currentUsage.usedJSHeapSize).toBeGreaterThan(0);
@@ -373,11 +393,11 @@ describe('MemoryProfiler Integration Tests', () => {
 
       // Create objects that won't be properly cleaned up (leak simulation)
       const leakyObjects: any[] = [];
-      
+
       for (let i = 0; i < 20; i++) {
         const obj = { id: i, leaky: true, data: new Array(1000) };
         leakyObjects.push(obj); // Keep references
-        
+
         memoryProfiler.trackAllocation(`leaky-${i}`, obj, 'LeakyObject', 8000);
       }
 
@@ -400,14 +420,18 @@ describe('MemoryProfiler Integration Tests', () => {
       expect(leaks.suspectedSources.length).toBeGreaterThan(0);
 
       // Should identify leak sources
-      expect(leaks.suspectedSources.some((source: string) => source.includes('Leaky'))).toBe(true);
+      expect(
+        leaks.suspectedSources.some((source: string) =>
+          source.includes('Leaky')
+        )
+      ).toBe(true);
     });
   });
 
   describe('Performance Impact', () => {
     it('should have minimal overhead during profiling', () => {
       const startTime = performance.now();
-      
+
       memoryProfiler.startProfiling();
 
       // Perform many allocations
@@ -436,7 +460,12 @@ describe('MemoryProfiler Integration Tests', () => {
       // Track many objects
       for (let i = 0; i < 500; i++) {
         const obj = { id: i };
-        memoryProfiler.trackAllocation(`memory-test-${i}`, obj, 'MemoryTest', 100);
+        memoryProfiler.trackAllocation(
+          `memory-test-${i}`,
+          obj,
+          'MemoryTest',
+          100
+        );
       }
 
       // Take snapshots

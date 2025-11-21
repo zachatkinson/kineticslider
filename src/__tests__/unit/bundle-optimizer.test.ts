@@ -1,6 +1,7 @@
 /**
  * @fileoverview Unit tests for BundleOptimizer
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { BundleOptimizer } from '../../performance/bundle-optimizer';

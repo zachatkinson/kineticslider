@@ -167,7 +167,12 @@ export class LazyLoader extends SimpleEventEmitter {
   private failedFeatures = new Set<string>();
   private intersectionObserver: IntersectionObserver | null = null;
   private idleCallback: number | null = null;
-  private networkInfo: { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean } | null = null;
+  private networkInfo: {
+    effectiveType?: string;
+    downlink?: number;
+    rtt?: number;
+    saveData?: boolean;
+  } | null = null;
   private stats: LoadingStats;
 
   constructor(config: Partial<LazyLoaderConfig> = {}) {
@@ -485,13 +490,9 @@ export class LazyLoader extends SimpleEventEmitter {
       this.stats.totalBytesLoaded += feature.estimatedSize || 1024;
 
       this.emit('feature-loaded', result);
-      debugLogger.info(
-        `Feature loaded: ${feature.id}`,
-        'LazyLoader',
-        {
-          loadTime: `${loadTime.toFixed(2)}ms`,
-        }
-      );
+      debugLogger.info(`Feature loaded: ${feature.id}`, 'LazyLoader', {
+        loadTime: `${loadTime.toFixed(2)}ms`,
+      });
 
       return result;
     } catch (error) {
@@ -506,7 +507,11 @@ export class LazyLoader extends SimpleEventEmitter {
 
       this.failedFeatures.add(feature.id);
       this.emit('feature-failed', result);
-      debugLogger.error(`Feature load failed: ${feature.id}`, 'LazyLoader', error);
+      debugLogger.error(
+        `Feature load failed: ${feature.id}`,
+        'LazyLoader',
+        error
+      );
 
       throw error;
     } finally {

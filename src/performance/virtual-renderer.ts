@@ -148,14 +148,10 @@ export class VirtualRenderer extends SimpleEventEmitter {
       this.initializeSpritePool();
     }
 
-    debugLogger.info(
-      'VirtualRenderer initialized',
-      'VirtualRenderer',
-      {
-        config: this.config,
-        poolSize: this.spritePool.length,
-      }
-    );
+    debugLogger.info('VirtualRenderer initialized', 'VirtualRenderer', {
+      config: this.config,
+      poolSize: this.spritePool.length,
+    });
   }
 
   /**
@@ -469,15 +465,11 @@ export class VirtualRenderer extends SimpleEventEmitter {
     this.emit('items-update', visibleItemsList);
 
     if (this.config.debug) {
-      debugLogger.debug(
-        'Virtual renderer update',
-        'VirtualRenderer',
-        {
-          visible: this.stats.visibleItems,
-          rendered: this.stats.renderedItems,
-          updateTime: this.stats.updateTime,
-        }
-      );
+      debugLogger.debug('Virtual renderer update', 'VirtualRenderer', {
+        visible: this.stats.visibleItems,
+        rendered: this.stats.renderedItems,
+        updateTime: this.stats.updateTime,
+      });
     }
   }
 

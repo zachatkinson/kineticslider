@@ -1,6 +1,7 @@
 /**
  * @fileoverview Unit tests for LazyLoader
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { LazyLoader } from '../../performance/lazy-loader';

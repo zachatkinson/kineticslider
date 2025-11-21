@@ -8,6 +8,7 @@
  * - Bundle size under 150KB
  * - Load time under 2 seconds
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { VirtualRenderer } from '../../performance/virtual-renderer';

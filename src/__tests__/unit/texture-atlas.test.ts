@@ -1,6 +1,7 @@
 /**
  * @fileoverview Unit tests for TextureAtlas
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { TextureAtlas } from '../../performance/texture-atlas';
@@ -118,7 +119,7 @@ describe('TextureAtlas', () => {
     let mockTexture: Texture;
 
     beforeEach(() => {
-      mockTexture = Texture.from("test");
+      mockTexture = Texture.from('test');
     });
 
     it('should add texture to atlas', async () => {
@@ -145,7 +146,7 @@ describe('TextureAtlas', () => {
     });
 
     it('should reject textures larger than atlas', async () => {
-      const largeTexture = Texture.from("test");
+      const largeTexture = Texture.from('test');
 
       const frame = await atlas.addTexture('large', largeTexture);
       expect(frame).toBeNull();
@@ -154,10 +155,7 @@ describe('TextureAtlas', () => {
     it('should add multiple textures in batch', async () => {
       const textures = new Map<string, Texture>();
       for (let i = 0; i < 10; i++) {
-        textures.set(
-          `texture-${i}`,
-          Texture.from("test")
-        );
+        textures.set(`texture-${i}`, Texture.from('test'));
       }
 
       const frames = await atlas.addTextures(textures);
@@ -169,18 +167,9 @@ describe('TextureAtlas', () => {
 
     it('should sort textures by size for better packing', async () => {
       const textures = new Map<string, Texture>();
-      textures.set(
-        'small',
-        Texture.from("test")
-      );
-      textures.set(
-        'large',
-        Texture.from("test")
-      );
-      textures.set(
-        'medium',
-        Texture.from("test")
-      );
+      textures.set('small', Texture.from('test'));
+      textures.set('large', Texture.from('test'));
+      textures.set('medium', Texture.from('test'));
 
       const frameAddedSpy = vi.fn();
       atlas.on('frame-added', frameAddedSpy);
@@ -199,7 +188,7 @@ describe('TextureAtlas', () => {
 
       // Fill atlas with large textures
       for (let i = 0; i < 100; i++) {
-        const texture = Texture.from("test");
+        const texture = Texture.from('test');
         const frame = await atlas.addTexture(`texture-${i}`, texture);
 
         if (!frame) {
@@ -216,7 +205,7 @@ describe('TextureAtlas', () => {
     let mockTexture: Texture;
 
     beforeEach(async () => {
-      mockTexture = Texture.from("test");
+      mockTexture = Texture.from('test');
       await atlas.addTexture('test-frame', mockTexture);
     });
 
@@ -249,7 +238,7 @@ describe('TextureAtlas', () => {
 
     it('should handle rotated frames when creating sprites', async () => {
       // Add a frame that will be rotated
-      const rotatedTexture = Texture.from("test");
+      const rotatedTexture = Texture.from('test');
 
       // Force rotation by manipulating internal state
       const frame = await atlas.addTexture('rotated', rotatedTexture);
@@ -285,10 +274,7 @@ describe('TextureAtlas', () => {
     beforeEach(async () => {
       const textures = new Map<string, Texture>();
       for (let i = 0; i < 5; i++) {
-        textures.set(
-          `texture-${i}`,
-          Texture.from("test")
-        );
+        textures.set(`texture-${i}`, Texture.from('test'));
       }
       await atlas.addTextures(textures);
     });
@@ -334,7 +320,7 @@ describe('TextureAtlas', () => {
 
   describe('Statistics and Memory', () => {
     it('should track packing efficiency', async () => {
-      const texture = Texture.from("test");
+      const texture = Texture.from('test');
 
       await atlas.addTexture('efficiency-test', texture);
 
@@ -346,10 +332,7 @@ describe('TextureAtlas', () => {
     it('should calculate memory usage', async () => {
       const textures = new Map<string, Texture>();
       for (let i = 0; i < 10; i++) {
-        textures.set(
-          `texture-${i}`,
-          Texture.from("test")
-        );
+        textures.set(`texture-${i}`, Texture.from('test'));
       }
 
       await atlas.addTextures(textures);
@@ -365,10 +348,7 @@ describe('TextureAtlas', () => {
       // Add many textures to trigger memory warning
       const textures = new Map<string, Texture>();
       for (let i = 0; i < 50; i++) {
-        textures.set(
-          `texture-${i}`,
-          Texture.from("test")
-        );
+        textures.set(`texture-${i}`, Texture.from('test'));
       }
 
       // This might trigger memory warning depending on configuration
@@ -383,10 +363,7 @@ describe('TextureAtlas', () => {
     it('should calculate draw calls saved', async () => {
       const textures = new Map<string, Texture>();
       for (let i = 0; i < 20; i++) {
-        textures.set(
-          `texture-${i}`,
-          Texture.from("test")
-        );
+        textures.set(`texture-${i}`, Texture.from('test'));
       }
 
       await atlas.addTextures(textures);
@@ -407,7 +384,7 @@ describe('TextureAtlas', () => {
       });
 
       // Add a texture that benefits from rotation
-      const texture = Texture.from("test");
+      const texture = Texture.from('test');
 
       const frame = await atlasWithRotation.addTexture('rotatable', texture);
       expect(frame).toBeDefined();
@@ -422,7 +399,7 @@ describe('TextureAtlas', () => {
         maxHeight: 512,
       });
 
-      const texture = Texture.from("test");
+      const texture = Texture.from('test');
 
       const frame = await atlasNoRotation.addTexture('not-rotatable', texture);
       expect(frame).toBeDefined();
@@ -438,7 +415,7 @@ describe('TextureAtlas', () => {
         padding: 10,
       });
 
-      const texture = Texture.from("test");
+      const texture = Texture.from('test');
 
       const frame = await atlasWithPadding.addTexture('padded', texture);
       expect(frame).toBeDefined();
@@ -468,7 +445,7 @@ describe('TextureAtlas', () => {
     });
 
     it('should destroy base texture on disposal', async () => {
-      const texture = Texture.from("test");
+      const texture = Texture.from('test');
 
       await atlas.addTexture('test', texture);
       await atlas.rebuild();
@@ -501,7 +478,7 @@ describe('TextureAtlas', () => {
     });
 
     it('should handle textures with no base texture resource', async () => {
-      const textureNoResource = Texture.from("test");
+      const textureNoResource = Texture.from('test');
 
       // Remove resource
       textureNoResource.baseTexture.resource = null as any;
@@ -512,7 +489,7 @@ describe('TextureAtlas', () => {
 
     it('should handle rapid additions and removals', async () => {
       for (let i = 0; i < 50; i++) {
-        const texture = Texture.from("test");
+        const texture = Texture.from('test');
 
         const id = `rapid-${i}`;
         await atlas.addTexture(id, texture);

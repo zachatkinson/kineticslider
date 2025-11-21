@@ -4,6 +4,7 @@
  * Tests the integration of TextureAtlas with PIXI.js renderer,
  * SliderCore, and texture management pipeline.
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TextureAtlas } from '../../performance/texture-atlas';
@@ -44,7 +45,9 @@ vi.mock('pixi.js', () => ({
       destroy: vi.fn(),
     },
   })),
-  Rectangle: vi.fn().mockImplementation((x, y, w, h) => ({ x, y, width: w, height: h })),
+  Rectangle: vi
+    .fn()
+    .mockImplementation((x, y, w, h) => ({ x, y, width: w, height: h })),
   Graphics: vi.fn().mockImplementation(() => ({
     clear: vi.fn(),
     beginFill: vi.fn(),
@@ -120,7 +123,7 @@ describe('TextureAtlas Integration Tests', () => {
       // Create test textures
       const textures = new Map();
       for (let i = 0; i < 10; i++) {
-        const texture = Texture.from("test");
+        const texture = Texture.from('test');
         textures.set(`texture-${i}`, texture);
       }
 
@@ -149,7 +152,7 @@ describe('TextureAtlas Integration Tests', () => {
       // Create multiple small textures (typical use case)
       const textures = new Map();
       for (let i = 0; i < 50; i++) {
-        textures.set(`icon-${i}`, Texture.from("test"));
+        textures.set(`icon-${i}`, Texture.from('test'));
       }
 
       await textureAtlas.addTextures(textures);
@@ -166,7 +169,7 @@ describe('TextureAtlas Integration Tests', () => {
       }
 
       // Verify all sprites use the same texture source (atlas)
-      const sources = new Set(sprites.map(sprite => sprite.texture?.source));
+      const sources = new Set(sprites.map((sprite) => sprite.texture?.source));
       expect(sources.size).toBe(1); // All sprites share one atlas texture
 
       const stats = textureAtlas.getStats();
@@ -180,7 +183,10 @@ describe('TextureAtlas Integration Tests', () => {
       // Initial atlas
       const initialTextures = new Map();
       for (let i = 0; i < 5; i++) {
-        initialTextures.set(`texture-${i}`, new Texture({ width: 100, height: 100 }));
+        initialTextures.set(
+          `texture-${i}`,
+          new Texture({ width: 100, height: 100 })
+        );
       }
       await textureAtlas.addTextures(initialTextures);
 
@@ -189,7 +195,10 @@ describe('TextureAtlas Integration Tests', () => {
       // Add more textures
       const additionalTextures = new Map();
       for (let i = 5; i < 10; i++) {
-        additionalTextures.set(`texture-${i}`, new Texture({ width: 100, height: 100 }));
+        additionalTextures.set(
+          `texture-${i}`,
+          new Texture({ width: 100, height: 100 })
+        );
       }
       await textureAtlas.addTextures(additionalTextures);
 
@@ -214,7 +223,7 @@ describe('TextureAtlas Integration Tests', () => {
 
       const textures = new Map();
       for (let i = 0; i < 20; i++) {
-        const texture = Texture.from("test");
+        const texture = Texture.from('test');
         textures.set(`large-texture-${i}`, texture);
 
         // Track allocation
@@ -277,7 +286,7 @@ describe('TextureAtlas Integration Tests', () => {
       const textures = new Map();
       for (let i = 0; i < 15; i++) {
         // Simulate mostly transparent texture
-        const texture = Texture.from("test");
+        const texture = Texture.from('test');
         textures.set(`sparse-texture-${i}`, texture);
       }
 
@@ -298,7 +307,10 @@ describe('TextureAtlas Integration Tests', () => {
       // Create many small textures
       const textures = new Map();
       for (let i = 0; i < 100; i++) {
-        textures.set(`mini-texture-${i}`, new Texture({ width: 100, height: 100 }));
+        textures.set(
+          `mini-texture-${i}`,
+          new Texture({ width: 100, height: 100 })
+        );
       }
 
       const startTime = performance.now();
@@ -354,12 +366,17 @@ describe('TextureAtlas Integration Tests', () => {
 
       textureAtlas.on('texture-added', () => events.push('texture-added'));
       textureAtlas.on('atlas-generated', () => events.push('atlas-generated'));
-      textureAtlas.on('packing-optimized', () => events.push('packing-optimized'));
+      textureAtlas.on('packing-optimized', () =>
+        events.push('packing-optimized')
+      );
 
       // Add textures
       const textures = new Map();
       for (let i = 0; i < 5; i++) {
-        textures.set(`event-texture-${i}`, new Texture({ width: 100, height: 100 }));
+        textures.set(
+          `event-texture-${i}`,
+          new Texture({ width: 100, height: 100 })
+        );
       }
 
       await textureAtlas.addTextures(textures);
@@ -372,8 +389,12 @@ describe('TextureAtlas Integration Tests', () => {
       const { Texture } = require('pixi.js');
 
       const globalEvents: string[] = [];
-      eventEmitter.on('atlas-updated', () => globalEvents.push('atlas-updated'));
-      eventEmitter.on('memory-optimized', () => globalEvents.push('memory-optimized'));
+      eventEmitter.on('atlas-updated', () =>
+        globalEvents.push('atlas-updated')
+      );
+      eventEmitter.on('memory-optimized', () =>
+        globalEvents.push('memory-optimized')
+      );
 
       // Bridge events
       textureAtlas.on('atlas-generated', () => {
@@ -389,7 +410,10 @@ describe('TextureAtlas Integration Tests', () => {
       // Trigger events
       const textures = new Map();
       for (let i = 0; i < 20; i++) {
-        textures.set(`global-texture-${i}`, new Texture({ width: 100, height: 100 }));
+        textures.set(
+          `global-texture-${i}`,
+          new Texture({ width: 100, height: 100 })
+        );
       }
 
       await textureAtlas.addTextures(textures);
@@ -433,7 +457,10 @@ describe('TextureAtlas Integration Tests', () => {
 
       const textures = new Map();
       for (let i = 0; i < 5; i++) {
-        textures.set(`recovery-texture-${i}`, new Texture({ width: 100, height: 100 }));
+        textures.set(
+          `recovery-texture-${i}`,
+          new Texture({ width: 100, height: 100 })
+        );
       }
 
       // Should handle error gracefully
@@ -452,7 +479,7 @@ describe('TextureAtlas Integration Tests', () => {
       // Create large textures that will require multiple atlases
       const textures = new Map();
       for (let i = 0; i < 30; i++) {
-        textures.set(`large-texture-${i}`, Texture.from("test"));
+        textures.set(`large-texture-${i}`, Texture.from('test'));
       }
 
       await textureAtlas.addTextures(textures);
@@ -471,12 +498,12 @@ describe('TextureAtlas Integration Tests', () => {
 
       // Large textures
       for (let i = 0; i < 5; i++) {
-        textures.set(`large-${i}`, Texture.from("test"));
+        textures.set(`large-${i}`, Texture.from('test'));
       }
 
       // Small textures
       for (let i = 0; i < 50; i++) {
-        textures.set(`small-${i}`, Texture.from("test"));
+        textures.set(`small-${i}`, Texture.from('test'));
       }
 
       await textureAtlas.addTextures(textures);
