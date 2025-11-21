@@ -43,6 +43,11 @@ storybook-static/
 *_NOTES.md
 TEMP_*.md
 TODO_*.md
+claude.md
+DOCUMENTATION_REVIEW_SUMMARY.md
+
+# Temporary fix scripts
+scripts/fix-*.js
 
 # IDE and editor files
 .idea/

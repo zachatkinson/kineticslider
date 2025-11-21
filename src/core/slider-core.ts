@@ -52,6 +52,15 @@ import { AccessibilityManager } from '../accessibility/accessibility-manager';
 import { AnimationManager } from '../managers/animation-manager';
 import { PerformanceMonitor } from '../managers/performance-monitor';
 
+// Phase 5.2 Performance imports
+import { VirtualRenderer } from '../performance/virtual-renderer';
+import { TextureAtlas } from '../performance/texture-atlas';
+import { MemoryProfiler } from '../performance/memory-profiler';
+import type { MemorySnapshot } from '../performance/memory-profiler';
+import { BundleOptimizer } from '../performance/bundle-optimizer';
+import { LazyLoader } from '../performance/lazy-loader';
+import type { LoadableFeature, LoadResult } from '../performance/lazy-loader';
+
 /**
  * Main slider component providing essential functionality
  */
@@ -70,6 +79,13 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
   private accessibilityManager: AccessibilityManager;
   private animationManager: AnimationManager;
   private performanceMonitor: PerformanceMonitor;
+
+  // Phase 5.2 Performance components
+  private virtualRenderer: VirtualRenderer | null = null;
+  private textureAtlas: TextureAtlas | null = null;
+  private memoryProfiler: MemoryProfiler | null = null;
+  private bundleOptimizer: BundleOptimizer | null = null;
+  private lazyLoader: LazyLoader | null = null;
 
   // Service dependencies
   private physics: ISliderPhysics | null = null;
@@ -125,6 +141,7 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
 
     this.setupManagerEventHandling();
     this.setupErrorHandling();
+    this.initializePerformanceComponents();
   }
 
   // =============================================================================
@@ -213,6 +230,14 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       if (initialIndex > 0) {
         // Use goToSlide without animation to immediately show the correct slide
         await this.goToSlide(initialIndex, false);
+      }
+
+      // Setup performance integration
+      this.setupPerformanceIntegration();
+
+      // Integrate texture atlas if enabled
+      if (this.textureAtlas) {
+        this.integrateTextureAtlas();
       }
 
       // Start auto-play if enabled
@@ -841,6 +866,9 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       this.accessibilityManager.destroy();
       this.stateManager.destroy();
 
+      // Destroy performance components
+      this.disposePerformanceComponents();
+
       // Destroy services
       if (this.renderer) {
         this.renderer.destroy();
@@ -919,6 +947,145 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
       accessibilityManager: this.accessibilityManager,
       animationManager: this.animationManager,
       performanceMonitor: this.performanceMonitor,
+    };
+  }
+
+  /**
+   * Get performance components for advanced operations
+   */
+  getPerformanceComponents(): {
+    virtualRenderer: VirtualRenderer | null;
+    textureAtlas: TextureAtlas | null;
+    memoryProfiler: MemoryProfiler | null;
+    bundleOptimizer: BundleOptimizer | null;
+    lazyLoader: LazyLoader | null;
+  } {
+    return {
+      virtualRenderer: this.virtualRenderer,
+      textureAtlas: this.textureAtlas,
+      memoryProfiler: this.memoryProfiler,
+      bundleOptimizer: this.bundleOptimizer,
+      lazyLoader: this.lazyLoader,
+    };
+  }
+
+  /**
+   * Enable virtual rendering for large datasets
+   */
+  enableVirtualRendering(config?: Partial<ConstructorParameters<typeof VirtualRenderer>[0]>): void {
+    if (this.virtualRenderer) {
+      return; // Already enabled
+    }
+
+    this.virtualRenderer = new VirtualRenderer({
+      containerWidth: this.container?.clientWidth || 800,
+      containerHeight: this.container?.clientHeight || 600,
+      itemWidth: 200,
+      itemHeight: 150,
+      enableRecycling: true,
+      maxPoolSize: 100,
+      bufferSize: 2,
+      ...config,
+    });
+
+    // Note: VirtualRenderer.initialize expects a PIXI Container, not HTMLElement
+    // This would need to be called after PIXI renderer is set up with proper container
+    const app = this.renderer?.getApplication();
+    if (app && app.stage && this.renderer) {
+      this.virtualRenderer.initialize(app.stage, this.renderer);
+    }
+
+    debugLogger.info('Virtual rendering enabled', 'SliderCore');
+  }
+
+  /**
+   * Enable texture atlasing for optimized rendering
+   */
+  enableTextureAtlasing(config?: Partial<ConstructorParameters<typeof TextureAtlas>[0]>): void {
+    if (this.textureAtlas) {
+      return; // Already enabled
+    }
+
+    this.textureAtlas = new TextureAtlas({
+      maxWidth: 2048,
+      maxHeight: 2048,
+      enableTrim: true,
+      allowRotation: true,
+      generateMipmaps: false,
+      ...config,
+    });
+
+    debugLogger.info('Texture atlasing enabled', 'SliderCore');
+  }
+
+  /**
+   * Enable memory profiling for performance monitoring
+   */
+  enableMemoryProfiling(config?: Partial<ConstructorParameters<typeof MemoryProfiler>[0]>): void {
+    if (this.memoryProfiler) {
+      return; // Already enabled
+    }
+
+    this.memoryProfiler = new MemoryProfiler({
+      autoProfile: true,
+      enableLeakDetection: true,
+      detailedTracking: true,
+      memoryLimit: 100, // 100MB
+      profileInterval: 5000, // 5 seconds
+      ...config,
+    });
+
+    this.memoryProfiler.startProfiling();
+    debugLogger.info('Memory profiling enabled', 'SliderCore');
+  }
+
+  /**
+   * Register a feature for lazy loading
+   */
+  registerLazyFeature(feature: LoadableFeature): void {
+    if (!this.lazyLoader) {
+      this.initializeLazyLoader();
+    }
+
+    this.lazyLoader!.registerFeature(feature);
+    debugLogger.info(`Lazy feature registered: ${feature.id}`, 'SliderCore');
+  }
+
+  /**
+   * Load a lazy feature by ID
+   */
+  async loadLazyFeature<T = unknown>(featureId: string): Promise<T | undefined> {
+    if (!this.lazyLoader) {
+      throw new Error('Lazy loader not initialized');
+    }
+
+    try {
+      const result = await this.lazyLoader.loadFeature<T>(featureId);
+      return result.module;
+    } catch (error) {
+      this.handleError(error, 'loadLazyFeature');
+      return undefined;
+    }
+  }
+
+  /**
+   * Get performance metrics from all components
+   */
+  getPerformanceMetrics(): {
+    memory?: ReturnType<MemoryProfiler['getCurrentUsage']>;
+    virtual?: ReturnType<VirtualRenderer['getStats']>;
+    atlas?: ReturnType<TextureAtlas['getStats']>;
+    bundle?: ReturnType<BundleOptimizer['getBundleSizeAnalysis']>;
+    lazy?: ReturnType<LazyLoader['getStats']>;
+    monitor?: ReturnType<PerformanceMonitor['getMetrics']>;
+  } {
+    return {
+      memory: this.memoryProfiler?.getCurrentUsage(),
+      virtual: this.virtualRenderer?.getStats(),
+      atlas: this.textureAtlas?.getStats(),
+      bundle: this.bundleOptimizer?.getBundleSizeAnalysis(),
+      lazy: this.lazyLoader?.getStats(),
+      monitor: this.performanceMonitor.getMetrics(),
     };
   }
 
@@ -1673,6 +1840,235 @@ export class SliderCore extends SimpleEventEmitter implements ISliderEngine {
         'VISUAL_UPDATE'
       );
     }
+  }
+
+  // =============================================================================
+  // 🚀 Performance Component Management (Phase 5.2)
+  // =============================================================================
+
+  /**
+   * Initialize performance components based on configuration
+   */
+  private initializePerformanceComponents(): void {
+    // Initialize bundle optimizer for development builds
+    if (process.env.NODE_ENV === 'development') {
+      this.bundleOptimizer = new BundleOptimizer({
+        targetSize: 150, // 150KB target
+        enableTreeShaking: true,
+        enableCodeSplitting: true,
+      });
+
+      // Register core modules for analysis
+      this.bundleOptimizer.registerModule('slider-core.ts', 'core', 50000);
+      this.bundleOptimizer.registerModule('slider-renderer.ts', 'rendering', 30000);
+      this.bundleOptimizer.registerModule('slider-physics.ts', 'physics', 20000);
+    }
+
+    // Initialize lazy loader for progressive enhancement
+    this.initializeLazyLoader();
+  }
+
+  /**
+   * Initialize lazy loader
+   */
+  private initializeLazyLoader(): void {
+    if (this.lazyLoader) {
+      return;
+    }
+
+    this.lazyLoader = new LazyLoader({
+      enableCaching: true,
+      maxCacheSize: 50 * 1024 * 1024, // 50MB
+      defaultTimeout: 10000,
+      maxConcurrentLoads: 3,
+      enablePreloading: true,
+      preloadThreshold: 2000,
+      enablePerformanceMonitoring: true,
+    });
+
+    // Setup event integration
+    this.lazyLoader.on('feature-loaded', (result: unknown) => {
+      const loadResult = result as LoadResult;
+      debugLogger.info(`Feature loaded: ${loadResult.featureId} (${loadResult.loadTime}ms)`, 'LazyLoader');
+
+      // Track with memory profiler if available
+      if (this.memoryProfiler && loadResult.module) {
+        this.memoryProfiler.trackAllocation(
+          `lazy-feature-${loadResult.featureId}`,
+          loadResult.module,
+          'LazyFeature',
+          1024 // Estimate 1KB per feature
+        );
+      }
+    });
+
+    this.lazyLoader.on('feature-failed', (result: unknown) => {
+      const loadResult = result as LoadResult;
+      debugLogger.error(`Feature failed to load: ${loadResult.featureId}`, 'LazyLoader', loadResult.error);
+    });
+
+    // Register common lazy features
+    this.registerCommonLazyFeatures();
+  }
+
+  /**
+   * Register commonly used lazy features
+   */
+  private registerCommonLazyFeatures(): void {
+    if (!this.lazyLoader) return;
+
+    const commonFeatures: LoadableFeature[] = [
+      {
+        id: 'advanced-filters',
+        name: 'Advanced Filter Effects',
+        modulePath: './rendering/advanced-filter-presets.js',
+        strategy: 'on-demand',
+        priority: 'medium',
+        estimatedSize: 15000,
+      },
+      {
+        id: 'accessibility-enhancements',
+        name: 'Enhanced Accessibility Features',
+        modulePath: './accessibility/accessibility-manager.js',
+        strategy: 'immediate',
+        priority: 'high',
+        estimatedSize: 10000,
+      },
+      {
+        id: 'touch-gestures',
+        name: 'Advanced Touch Gestures',
+        modulePath: './input/gesture-recognizer.js',
+        strategy: 'on-interaction',
+        priority: 'medium',
+        estimatedSize: 8000,
+      },
+      {
+        id: 'audio-support',
+        name: 'Audio Playback Support',
+        modulePath: './audio/audio-manager.js',
+        strategy: 'on-demand',
+        priority: 'low',
+        estimatedSize: 20000,
+      },
+      {
+        id: 'video-support',
+        name: 'Video Playback Support',
+        modulePath: './video/video-manager.js',
+        strategy: 'on-demand',
+        priority: 'low',
+        estimatedSize: 30000,
+      },
+    ];
+
+    commonFeatures.forEach(feature => this.lazyLoader!.registerFeature(feature));
+  }
+
+  /**
+   * Integrate texture atlas with existing renderer
+   */
+  private integrateTextureAtlas(): void {
+    if (!this.textureAtlas || !this.renderer) {
+      return;
+    }
+
+    // Get existing sprites and add to atlas
+    const sprites = this.renderer.getSprites();
+    if (sprites.length > 0) {
+      const textureMap = new Map();
+      
+      sprites.forEach((sprite, index) => {
+        if (sprite && typeof sprite === 'object' && 'texture' in sprite) {
+          textureMap.set(`slide-${index}`, sprite.texture);
+        }
+      });
+
+      if (textureMap.size > 0) {
+        this.textureAtlas.addTextures(textureMap).then(() => {
+          debugLogger.info(`Texture atlas created with ${textureMap.size} textures`, 'SliderCore');
+
+          // Update sprites to use atlas textures
+          sprites.forEach((sprite, index) => {
+            const atlasTexture = this.textureAtlas!.getTexture(`slide-${index}`);
+            if (atlasTexture && sprite && typeof sprite === 'object' && 'texture' in sprite) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (sprite as any).texture = atlasTexture;
+            }
+          });
+        }).catch(error => {
+          debugLogger.warn('Failed to create texture atlas:', 'SliderCore', error);
+        });
+      }
+    }
+  }
+
+  /**
+   * Setup performance monitoring integration
+   */
+  private setupPerformanceIntegration(): void {
+    // Integrate memory profiler with performance monitor
+    if (this.memoryProfiler && this.performanceMonitor) {
+      this.memoryProfiler.on('memory-threshold-exceeded', (snapshot: unknown) => {
+        const memSnapshot = snapshot as MemorySnapshot;
+        debugLogger.warn(`Memory threshold exceeded: ${(memSnapshot.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`, 'Performance');
+      });
+
+      this.memoryProfiler.on('gc-detected', (_stats) => {
+        // GC detected - handled by memory profiler
+      });
+    }
+
+    // Integrate virtual renderer with performance monitor
+    if (this.virtualRenderer && this.performanceMonitor) {
+      this.virtualRenderer.on('items-updated', () => {
+        // Items updated - stats available via getStats()
+      });
+    }
+
+    // Monitor texture atlas performance
+    if (this.textureAtlas && this.performanceMonitor) {
+      this.textureAtlas.on('atlas-generated', () => {
+        // Atlas generated - stats available via getStats()
+      });
+    }
+
+    // Monitor lazy loading performance
+    if (this.lazyLoader && this.performanceMonitor) {
+      this.lazyLoader.on('feature-loaded', () => {
+        // Feature loaded - stats available via getStats()
+      });
+    }
+  }
+
+  /**
+   * Dispose of all performance components
+   */
+  private disposePerformanceComponents(): void {
+    if (this.virtualRenderer) {
+      this.virtualRenderer.dispose();
+      this.virtualRenderer = null;
+    }
+
+    if (this.textureAtlas) {
+      this.textureAtlas.dispose();
+      this.textureAtlas = null;
+    }
+
+    if (this.memoryProfiler) {
+      this.memoryProfiler.dispose();
+      this.memoryProfiler = null;
+    }
+
+    if (this.bundleOptimizer) {
+      this.bundleOptimizer.clear();
+      this.bundleOptimizer = null;
+    }
+
+    if (this.lazyLoader) {
+      this.lazyLoader.dispose();
+      this.lazyLoader = null;
+    }
+
+    debugLogger.info('Performance components disposed', 'SliderCore');
   }
 }
 

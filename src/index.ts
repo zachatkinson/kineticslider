@@ -63,6 +63,29 @@ export {
   type ValidationWarning,
 } from './config';
 
+// NEW: Phase 5.2 Performance exports
+export {
+  VirtualRenderer,
+  TextureAtlas,
+  MemoryProfiler,
+  BundleOptimizer,
+  LazyLoader,
+} from './performance';
+
+// NEW: Performance type exports
+export type {
+  VirtualItem,
+  VirtualRendererConfig,
+  AtlasFrame,
+  AtlasConfig,
+  MemorySnapshot,
+  MemoryProfilerConfig,
+  BundleAnalysis,
+  BundleOptimizerConfig,
+  LoadableFeature,
+  LazyLoaderConfig,
+} from './performance';
+
 // React components
 export { KineticSlider } from './components';
 export type { KineticSliderProps } from './components';
